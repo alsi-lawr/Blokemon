@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b121-title b121-desc">
+  <title id="b121-title">BLK-121 Marathon non-final comic mock-up</title>
+  <desc id="b121-desc">A long, exhausted runner holds a crooked final-mile stride toward one comet-white point, blank race vest and tired arms framed by midnight barriers and trailing reflective foil. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b121-night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071526"/><stop offset=".52" stop-color="#173859"/><stop offset="1" stop-color="#080c17"/></linearGradient>
+    <radialGradient id="b121-point" cx="50%" cy="50%" r="50%"><stop stop-color="#ffffff"/><stop offset=".24" stop-color="#dff5ff" stop-opacity=".7"/><stop offset="1" stop-color="#dff5ff" stop-opacity="0"/></radialGradient>
+    <pattern id="b121-road" width="79" height="47" patternUnits="userSpaceOnUse"><rect width="79" height="47" fill="#162538"/><path d="M4 13c21-6 41-5 61 2M15 36c19-4 36-3 53 2" fill="none" stroke="#30445b" stroke-width="4" opacity=".55"/></pattern>
+    <filter id="b121-fatigue" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence baseFrequency=".014 .05" numOctaves="1" seed="121" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="1.6"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#b121-night)"/>
+  <circle cx="402" cy="84" r="118" fill="url(#b121-point)"/>
+  <circle cx="402" cy="84" r="10" fill="#fff"/>
+  <!-- long-lens barrier tunnel converges on the white point -->
+  <path d="M0 129 331 206v199L0 560Zm800 0-328 77v199l328 155Z" fill="#0e1c2e" stroke="#08111c" stroke-width="10"/>
+  <path d="M0 171 333 224M0 239l333 27M0 315l333 2M800 171l-330 53m330 15-330 27m330 49-330 2" fill="none" stroke="#60758a" stroke-width="7" opacity=".52"/>
+  <path d="M0 399c238-49 539-44 800 4v157H0Z" fill="url(#b121-road)" stroke="#0a111a" stroke-width="11"/>
+  <path d="M398 102 386 560m20-392 18 392" stroke="#d8e8e5" stroke-width="7" stroke-dasharray="39 31" opacity=".58"/>
+  <!-- reflective foil snags and trails from a rear barrier, never wings -->
+  <path d="M121 229c51 18 90 46 118 85l-35 62-130-38Z" fill="#c9d4d2" stroke="#1a222a" stroke-width="8"/>
+  <path d="m98 246 41 99m2-83 43 100m-4-78 38 73" stroke="#f0f6e9" stroke-width="6" opacity=".72"/>
+  <path d="M214 295c37 17 66 42 86 75" fill="none" stroke="#a9b8b7" stroke-width="10"/>
+  <!-- long arrow skull, salt-stipple crop -->
+  <path d="M332 93c38-39 97-42 137-5 35 31 42 80 24 120-19 43-67 72-111 61-48-12-76-58-72-104 2-25 10-49 22-72Z" fill="#b96f55" stroke="#1e171b" stroke-width="11" filter="url(#b121-fatigue)"/>
+  <path d="M333 97c28-41 85-53 126-19 18 15 29 34 32 56-34-24-70-26-108-13-23 8-43 5-59-8Z" fill="#4b4846" stroke="#191719" stroke-width="9"/>
+  <path d="M338 91c28-14 57-17 87-10m-99 31c36-15 70-17 103-8" fill="none" stroke="#bbb2a2" stroke-width="4" stroke-dasharray="3 9"/>
+  <path d="M326 137c-25-9-43 11-36 37 7 24 31 35 51 19m144-52c25-9 43 12 35 38-7 24-31 34-51 18" fill="#aa614d" stroke="#24191b" stroke-width="8"/>
+  <!-- exhausted horizontal slits -->
+  <path d="M350 153c17-10 36-8 51 4m29 3c14-8 30-5 41 6" fill="none" stroke="#41262b" stroke-width="8"/>
+  <path d="M357 169h35m45 4h27" stroke="#ead9ba" stroke-width="6"/>
+  <!-- blunt crooked nose and clenched lower lip -->
+  <path d="M411 156c-8 19-19 34-32 47-11 10-5 27 10 32 15 5 27-5 40-3 17 2 27-16 17-29-10-14-18-26-35-47Z" fill="#9f5547" stroke="#512b2d" stroke-width="7"/>
+  <path d="M387 198c12 5 21 13 25 25" fill="none" stroke="#de8464" stroke-width="5"/>
+  <path d="M356 242c29-6 61-2 86 14-15 18-51 21-86 7" fill="#4f292e" stroke="#28191d" stroke-width="7"/>
+  <path d="M370 258c19 2 37 1 54-4" stroke="#d37b68" stroke-width="4"/>
+  <path d="M321 207c-8 15-7 28 4 37m154-37c9 15 9 28-2 38" fill="none" stroke="#a9d4dc" stroke-width="6"/>
+  <path d="M321 201c-7 13-5 24 5 30 10-8 8-20-5-30Z" fill="#a9d4dc" stroke="#253844" stroke-width="4"/>
+  <!-- narrow full runner with asymmetrical exhausted arms -->
+  <path d="M328 275c44-21 103-21 146 3 51 29 70 89 58 163l-240 0c-5-74 4-129 36-166Z" fill="#3c566f" stroke="#131a22" stroke-width="12"/>
+  <path d="M312 304c64 23 132 24 199-1m-212 50c79 27 154 25 225-4" fill="none" stroke="#66839a" stroke-width="7" opacity=".5"/>
+  <path d="M355 274c-5 44-2 90 11 136m62-134c15 44 20 89 14 135" fill="none" stroke="#263d51" stroke-width="9"/>
+  <path d="m368 303 68 1 7 64-81-1Z" fill="#d9d6c2" stroke="#29333a" stroke-width="7"/>
+  <path d="M379 324h47m-45 19h43" stroke="#aaa996" stroke-width="5"/>
+  <path d="M329 297c-45 17-78 47-99 89-11 22-4 40 13 47 18 7 31-10 41-31l70-79Z" fill="#ae6650" stroke="#1e171b" stroke-width="10"/>
+  <path d="M471 300c39 23 68 56 86 99 9 22 1 40-17 46-18 6-30-12-39-33l-58-87Z" fill="#ae6650" stroke="#1e171b" stroke-width="10"/>
+  <!-- hands remain natural, not mirrored paddles -->
+  <path d="M236 378c-22 12-31 30-24 46 8 16 25 11 42 1l27-17-15 25c-9 15-3 28 11 30 14 2 23-13 31-28l22-43c10-19 1-38-17-46-18-7-38 2-77 32Z" fill="#bb7357" stroke="#1e171b" stroke-width="8"/>
+  <path d="M554 390c22 13 30 31 22 47-8 16-26 10-42-1l-26-18 14 25c8 16 1 28-13 30-14 1-22-14-30-30l-20-44c-9-19 1-38 20-45 18-7 38 3 75 36Z" fill="#bb7357" stroke="#1e171b" stroke-width="8"/>
+  <path d="M224 400c19 3 36 11 51 24m-60-6c18 4 34 12 47 24m308-31c-19 2-37 9-52 21m61-3c-18 3-35 10-49 22" fill="none" stroke="#713f37" stroke-width="5"/>
+  <!-- bent final-mile stride and battered shoes -->
+  <path d="M347 429c-20 31-36 67-47 108m140-106c16 31 36 64 61 99" stroke="#263847" stroke-width="40"/>
+  <path d="M262 515c30-7 59-2 82 17-3 12-21 16-47 11l-46-8c-6-8-2-14 11-20Zm203 3c31-10 61-7 85 11 0 12-19 18-45 15l-47-6c-7-8-4-13 7-20Z" fill="#e9e2cb" stroke="#17171a" stroke-width="9"/>
+  <path d="M266 528c21 6 42 7 63 3m142 1c21 6 42 6 64 1" stroke="#7b8290" stroke-width="5"/>
+  <path d="M42 459l53 13m-30-43 43 20m585 16 56-17" stroke="#8aa7ba" stroke-width="6" opacity=".55"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#07101a" stroke-width="12"/>
+</svg>

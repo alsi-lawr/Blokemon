@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b087-title b087-desc">
+  <title id="b087-title">BLK-087 Ice Bath non-final comic mock-up</title>
+  <desc id="b087-desc">A true overhead view holds a calm round-faced athlete neck-deep in a tiled ice bath, broad shoulders still beneath pale water while two abstract timers and folded towels wait symmetrically beyond the frosted rim. Non-final placeholder art.</desc>
+  <defs>
+    <radialGradient id="b087-water" cx="50%" cy="44%" r="64%"><stop stop-color="#d7f0ee"/><stop offset=".48" stop-color="#91cbd1"/><stop offset="1" stop-color="#527f97"/></radialGradient>
+    <linearGradient id="b087-lav" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8d5ee"/><stop offset=".5" stop-color="#879dc4"/><stop offset="1" stop-color="#536b8e"/></linearGradient>
+    <pattern id="b087-tile" width="66" height="66" patternUnits="userSpaceOnUse"><rect width="66" height="66" fill="#d9dfd8"/><path d="M0 1h66M0 65h66M1 0v66M65 0v66" stroke="#9eaaa5" stroke-width="5"/><path d="M8 12c17-5 32-4 47 2" fill="none" stroke="#edf0e7" stroke-width="3" opacity=".6"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b087-tile)"/>
+  <!-- perfectly prepared bath geometry viewed from directly above -->
+  <rect x="121" y="52" width="558" height="456" rx="98" fill="#c6cfca" stroke="#28353a" stroke-width="13"/>
+  <rect x="153" y="84" width="494" height="392" rx="75" fill="url(#b087-water)" stroke="#567682" stroke-width="9"/>
+  <path d="M179 142c116-33 241-34 375-2m-369 77c139-31 280-31 423 1m-423 85c143-32 285-32 426 0m-410 88c128-28 255-27 382 1" fill="none" stroke="#ddf8f2" stroke-width="7" opacity=".5"/>
+  <!-- broad submerged shoulders and still separate hands -->
+  <path d="M229 299c38-73 99-108 173-106 79 1 141 39 171 116l-50 144H270Z" fill="url(#b087-lav)" fill-opacity=".72" stroke="#38566c" stroke-width="11"/>
+  <path d="M248 319c102 30 204 30 306 0m-286 62c86 25 172 24 258-1" fill="none" stroke="#bfcbe1" stroke-width="8" opacity=".48"/>
+  <path d="M280 305c-36 28-57 62-62 102-3 24 10 39 28 38 18-1 27-20 30-42l30-74Z" fill="#9e705e" fill-opacity=".8" stroke="#355466" stroke-width="9"/>
+  <path d="M521 307c36 28 57 62 62 102 3 24-10 39-28 38-18-1-27-20-30-42l-30-74Z" fill="#9e705e" fill-opacity=".8" stroke="#355466" stroke-width="9"/>
+  <path d="M219 397c-17 11-22 26-13 38 9 12 23 6 36-5l22-19c11-10 13-23 3-31-11-8-26-2-48 17Zm362 2c17 11 22 26 13 38-9 12-23 6-36-5l-22-19c-11-10-13-23-3-31 11-8 26-2 48 17Z" fill="#aa7863" stroke="#355466" stroke-width="7"/>
+  <!-- round face flattened by overhead view, wet halo -->
+  <path d="M304 145c34-52 105-71 158-39 45 26 61 83 40 130-23 51-86 76-138 54-58-25-84-96-60-145Z" fill="#b77a61" stroke="#26363e" stroke-width="11"/>
+  <path d="M306 150c12-37 42-57 78-57 37-19 82 4 96 43-40-16-79-13-116 5-22 11-41 14-58 9Z" fill="#3b343b" stroke="#22252b" stroke-width="9"/>
+  <path d="M311 119c26-14 53-17 81-10m-87 34c35-17 70-20 105-10" fill="none" stroke="#766774" stroke-width="6"/>
+  <path d="M303 151c-25-7-42 7-44 27 22 8 42 4 59-13m164-22c25-7 43 6 45 26-21 9-42 5-60-12M278 186c-17 9-26 23-27 42m267-50c17 9 26 23 27 42" fill="none" stroke="#3b343b" stroke-width="11" stroke-linecap="round"/>
+  <!-- calm dot eyes, triangle nose, line mouth -->
+  <path d="M337 185c17-11 36-10 51 3m26 1c14-9 30-6 41 7" fill="none" stroke="#41292d" stroke-width="8"/>
+  <circle cx="371" cy="199" r="5" fill="#ebe0c7"/><circle cx="439" cy="203" r="5" fill="#ebe0c7"/>
+  <path d="m402 187-20 47 39 1Z" fill="#a66655" stroke="#563336" stroke-width="6"/>
+  <path d="M366 256c27 6 55 6 83-1" fill="none" stroke="#4f3033" stroke-width="7" stroke-linecap="round"/>
+  <!-- floating ice shapes and frost hatching -->
+  <g fill="#edf8f0" fill-opacity=".72" stroke="#79a8af" stroke-width="5"><path d="m194 156 49-18 31 35-42 30Z"/><path d="m532 150 48-15 29 37-45 27Z"/><path d="m183 300 48-13 24 33-39 27Z"/><path d="m543 284 51-9 20 38-44 22Z"/><path d="m348 420 43-17 27 30-39 27Z"/></g>
+  <path d="M135 103l22 20m14-38 9 26m437-11-18 24m39-4-25 19M133 432l25-17m-3 43 20-24m472 0-22-19m0 42-18-25" stroke="#f7ffff" stroke-width="6" stroke-linecap="round"/>
+  <!-- symmetric plain timers and towel stacks beyond rim -->
+  <path d="M28 93h112l18 121H13Z" fill="#363e45" stroke="#171c20" stroke-width="10"/>
+  <path d="M45 112h78l10 67H34Z" fill="#aab7b7" stroke="#283238" stroke-width="6"/>
+  <circle cx="82" cy="146" r="19" fill="#6e7e83"/><path d="M82 146 95 134" stroke="#d8e0d9" stroke-width="5"/>
+  <path d="M660 93h112l15 121H642Z" fill="#363e45" stroke="#171c20" stroke-width="10"/>
+  <path d="M677 112h78l9 67h-99Z" fill="#aab7b7" stroke="#283238" stroke-width="6"/>
+  <circle cx="714" cy="146" r="19" fill="#6e7e83"/><path d="M714 146 701 134" stroke="#d8e0d9" stroke-width="5"/>
+  <path d="M31 354c37-29 86-32 126-9l-5 121H12Z" fill="#ece7d6" stroke="#6b6f70" stroke-width="9"/>
+  <path d="M28 374c44 15 87 15 128 0m-133 34c47 14 91 14 132 0m-135 34c48 13 92 13 133 0" fill="none" stroke="#bcb8ae" stroke-width="6"/>
+  <path d="M645 345c40-23 89-20 126 9l19 112H648Z" fill="#ece7d6" stroke="#6b6f70" stroke-width="9"/>
+  <path d="M648 374c43 15 86 15 128 0m-127 34c45 14 89 14 131 0m-127 34c46 13 90 13 132 0" fill="none" stroke="#bcb8ae" stroke-width="6"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#253238" stroke-width="12"/>
+</svg>

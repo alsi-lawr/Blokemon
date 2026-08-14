@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="k13-title k13-desc">
+  <title id="k13-title">KIT-013 Health-and-Safety Rep non-final comic-vector mock-up</title>
+  <desc id="k13-desc">From a steep inspection angle, a wiry angular safety representative in severe beaked profile braces a battered umbrella barrier against a falling steel hazard while stretching measuring tape around a crouched basic patron. Flyaway bun, jointed fingers, blank clipboard, cable, spill, ladder and scattered site clutter make the protection specific. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="k13-site" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a3aa9d"/>
+      <stop offset=".45" stop-color="#697870"/>
+      <stop offset="1" stop-color="#2f3c41"/>
+    </linearGradient>
+    <linearGradient id="k13-mac" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e5c34c"/>
+      <stop offset=".48" stop-color="#b0842d"/>
+      <stop offset="1" stop-color="#5b492a"/>
+    </linearGradient>
+    <linearGradient id="k13-skirt" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#394759"/>
+      <stop offset="1" stop-color="#17212c"/>
+    </linearGradient>
+    <radialGradient id="k13-face" cx="34%" cy="26%" r="84%">
+      <stop offset="0" stop-color="#e5aa7c"/>
+      <stop offset=".58" stop-color="#a75f50"/>
+      <stop offset="1" stop-color="#5e343c"/>
+    </radialGradient>
+    <radialGradient id="k13-basicface" cx="38%" cy="24%" r="82%">
+      <stop offset="0" stop-color="#d9a071"/>
+      <stop offset=".6" stop-color="#96604c"/>
+      <stop offset="1" stop-color="#55353b"/>
+    </radialGradient>
+    <linearGradient id="k13-shield" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d9e4bd" stop-opacity=".84"/>
+      <stop offset=".5" stop-color="#87a68b" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#45666b" stop-opacity=".86"/>
+    </linearGradient>
+    <linearGradient id="k13-beam" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c6553"/>
+      <stop offset=".5" stop-color="#3c4242"/>
+      <stop offset="1" stop-color="#191f22"/>
+    </linearGradient>
+    <radialGradient id="k13-impact" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#fff2a2" stop-opacity=".95"/>
+      <stop offset=".36" stop-color="#e9c64b" stop-opacity=".48"/>
+      <stop offset="1" stop-color="#d99a30" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="k13-tiles" width="116" height="88" patternUnits="userSpaceOnUse" patternTransform="skewX(-18)">
+      <path d="M0 0h116v88H0Z" fill="none" stroke="#2c3a3b" stroke-width="5" opacity=".3"/>
+      <path d="M9 12c26-8 56-7 91 3M19 70c25-6 50-5 76 2" fill="none" stroke="#d7dfc6" stroke-width="3" opacity=".12"/>
+    </pattern>
+    <pattern id="k13-hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(-31)">
+      <path d="M0 3h12M0 9h12" stroke="#1c2224" stroke-width="2" opacity=".25"/>
+    </pattern>
+    <filter id="k13-grit" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency=".31" numOctaves="3" seed="513" result="noise"/>
+      <feColorMatrix in="noise" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .085 0" result="dust"/>
+      <feBlend in="SourceGraphic" in2="dust" mode="multiply"/>
+    </filter>
+    <clipPath id="k13-macclip">
+      <path d="M279 197c24-39 69-61 108-43 34 16 51 52 43 90l-24 112-13 160-154-7 32-156-18-91c-5-25 5-49 26-65Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#k13-site)"/>
+  <rect width="800" height="560" fill="url(#k13-tiles)"/>
+  <!-- steep high-angle floor perspective -->
+  <path d="M0 117 800 32M0 277 800 149M0 461 800 285" fill="none" stroke="#e0e2cc" stroke-width="5" opacity=".22"/>
+  <path d="M127 0 58 560M309 0 265 560M508 0l27 560M686 0l88 560" fill="none" stroke="#273438" stroke-width="7" opacity=".38"/>
+  <path d="M0 0h800v66L0 151Z" fill="#465355" opacity=".76"/>
+
+  <!-- deep site clutter: ladder, tray, cable, spill, loose fittings -->
+  <g stroke="#242526" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M23 22 191 0l41 188-170 35Z" fill="#6f6554" stroke-width="9"/>
+    <path d="M58 19 96 206M159 3l39 186M76 62l101-19M86 109l102-20M96 157l101-22" fill="none" stroke="#b89a64" stroke-width="13"/>
+    <path d="M62 242 221 213l26 100-171 28Z" fill="#775545" stroke-width="9"/>
+    <path d="m84 257 119-22 14 57-128 23Z" fill="#a06f4f" stroke-width="5"/>
+    <path d="M-7 475c92-64 174-48 254-6 67 35 125 27 191-11 74-42 145-34 226 19 46 31 94 41 143 30" fill="none" stroke="#24292d" stroke-width="19"/>
+    <path d="M-7 474c94-49 169-34 239 1" fill="none" stroke="#7c5950" stroke-width="6"/>
+  </g>
+  <path d="M63 370c61-43 126-41 194 7 31 22 63 22 96 2-47 71-125 91-225 62-59-17-80-41-65-71Z" fill="#68959b" opacity=".6" stroke="#304e55" stroke-width="7"/>
+  <path d="M82 383c49-21 98-16 148 16M119 418c44 12 86 8 126-12" fill="none" stroke="#b2d2ca" stroke-width="5" opacity=".42"/>
+  <g fill="#52493d" stroke="#232222" stroke-width="4">
+    <path d="m493 476 25-8 11 15-29 10Z"/><path d="m554 434 17 7-4 17-20-8Z"/><path d="m697 483 28 2-1 18-31-1Z"/>
+    <circle cx="460" cy="408" r="11"/><circle cx="742" cy="361" r="13"/>
+  </g>
+  <path d="M122 526 175 399l45 20-37 141H94Z" fill="#d6aa36" stroke="#2c291f" stroke-width="9"/>
+  <path d="m130 504 55-11m-44-35 57-11" stroke="#f5d76d" stroke-width="7"/>
+
+  <!-- vulnerable Basic crouched low inside the protected zone -->
+  <path d="M478 359c36-44 96-56 141-27 41 27 55 79 39 143l-30 85H433c-7-92 5-160 45-201Z" fill="#46606b" stroke="#152028" stroke-width="11"/>
+  <path d="M469 416c51-26 104-27 157-4M455 473c60-21 119-20 177 5" fill="none" stroke="#89a3a4" stroke-width="7" opacity=".44"/>
+  <path d="M510 313c3-34 28-58 62-62l39 12 28 31 5 39-18 35-32 21-39-3-31-27Z" fill="url(#k13-basicface)" stroke="#20191d" stroke-width="9"/>
+  <path d="M520 288c18-31 60-45 92-25 16 10 27 26 30 45-28-15-50-11-69 8-20 19-39 14-55-4Z" fill="#48413c" stroke="#242023" stroke-width="7"/>
+  <path d="M532 326c11-6 23-5 32 3M602 319c10 3 18 9 23 18" fill="none" stroke="#2b2024" stroke-width="6"/>
+  <path d="M561 345c15 12 32 16 51 10" fill="none" stroke="#60353a" stroke-width="7"/>
+  <path d="M512 334c-19 6-22 31-5 42 14 9 32 0 34-19l-10-20Z" fill="#9a5f4e" stroke="#261b20" stroke-width="6"/>
+  <path d="M518 346c8-5 15-1 17 8" fill="none" stroke="#5a3539" stroke-width="4"/>
+  <path d="M462 391c-19 25-29 60-30 106M618 399c21 20 35 49 42 85" fill="none" stroke="#263844" stroke-width="29" stroke-linecap="round"/>
+  <path d="M423 488c13-7 28-6 40 3l13 12c8 8 7 18-1 23-8 5-16-1-24-7l-8-6 12 16c6 9 3 18-6 21-9 3-15-5-21-13l-8-12 6 17c4 10-1 17-10 17-9-1-12-11-15-21l-4-15-2 16c-1 10-8 15-15 11-7-4-6-15-4-25l3-16c3-10 11-17 24-21Z" fill="url(#k13-basicface)" stroke="#24191e" stroke-width="7"/>
+
+  <!-- tape enclosure visibly removes the incoming weakness -->
+  <path d="M358 330c42-46 96-69 160-69 78 0 145 32 202 94M362 347c42-40 95-60 158-59 72 1 131 29 181 84" fill="none" stroke="#e8cf48" stroke-width="10"/>
+  <path d="M384 325 413 355m49-74 25 30m62-47 20 31m58-2 18 35m43-4 16 29" stroke="#282823" stroke-width="8"/>
+
+  <!-- rep: thin diagonal anatomy, no rounded host torso -->
+  <path d="M279 197c24-39 69-61 108-43 34 16 51 52 43 90l-24 112-13 160-154-7 32-156-18-91c-5-25 5-49 26-65Z" fill="url(#k13-mac)" stroke="#30281c" stroke-width="11"/>
+  <rect x="238" y="144" width="216" height="378" fill="url(#k13-hatch)" clip-path="url(#k13-macclip)" opacity=".62"/>
+  <path d="M276 224c38 15 82 13 132-6M266 293c47 17 95 15 143-7M259 352c42 15 88 15 139 1" fill="none" stroke="#f1d778" stroke-width="7" opacity=".47"/>
+  <path d="M259 358 219 509h61l54-146Zm81 4 34 154h73l-37-169Z" fill="url(#k13-skirt)" stroke="#182029" stroke-width="10"/>
+  <path d="m220 507-43 34c-13 10-8 19 8 19h96l-2-52Zm154 8 15 45h113c15-6 9-17-5-23l-52-22Z" fill="#292626" stroke="#171719" stroke-width="9"/>
+  <path d="M199 544c22-7 43-7 64 0m140-4c27-7 54-5 81 7" fill="none" stroke="#746251" stroke-width="6"/>
+
+  <!-- severe beaked profile and flyaway bun -->
+  <path d="M273 108c-3-36 24-69 59-75l40 5 31 25 14 36-8 36-14 22 23 12-39 20-42-4-40-20-24-33Z" fill="url(#k13-face)" stroke="#24191e" stroke-width="10"/>
+  <path d="M288 68c17-30 51-45 83-30 17 8 29 24 34 42-24-12-45-9-62 8-19 18-37 18-55 4Z" fill="#563f39" stroke="#231c20" stroke-width="7"/>
+  <path d="M341 37c11-29 48-39 70-16 20 21 6 55-22 58-19 2-37-13-38-32" fill="#493833" stroke="#231c20" stroke-width="8"/>
+  <path d="M349 32c20-10 37-8 51 7m-44 3c18-7 33-3 42 10" fill="none" stroke="#806457" stroke-width="5"/>
+  <path d="M300 58c-18-26-33-34-46-24M291 73c-25-15-43-15-56 0M385 38c14-23 31-34 50-33" fill="none" stroke="#3b2b2a" stroke-width="6" stroke-linecap="round"/>
+  <path d="M300 111c11-14 27-19 44-13" fill="none" stroke="#3e2529" stroke-width="8"/>
+  <path d="M311 113c7-3 14-2 20 2" fill="none" stroke="#17171b" stroke-width="5"/>
+  <path d="M344 117c23 2 46 12 68 30l-34 12-25-11" fill="#bd735b" stroke="#63343a" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M371 172c13 4 25 2 36-7" fill="none" stroke="#402329" stroke-width="7"/>
+  <path d="M369 178c14 9 27 10 39 3" fill="none" stroke="#6d343a" stroke-width="4"/>
+  <path d="M287 120c-22-4-33 16-23 36 8 16 28 21 43 5l3-28Z" fill="#a86454" stroke="#251a1f" stroke-width="7"/>
+  <path d="M277 132c11-4 20 2 20 13-7-3-13 0-16 7" fill="none" stroke="#61363a" stroke-width="4"/>
+  <path d="M315 85c11-8 24-11 37-8M322 77c13-7 27-8 40-3" fill="none" stroke="#2d2023" stroke-width="5"/>
+  <path d="M327 127c5 7 8 15 8 23M316 154c8 3 16 2 23-2" fill="none" stroke="#824a48" stroke-width="4"/>
+
+  <!-- left arm measures a protected path; fingers pinch the tape case -->
+  <path d="M277 240c-35 23-61 54-78 92-13 29-32 50-57 62" fill="none" stroke="#9b7928" stroke-width="43" stroke-linecap="round"/>
+  <path d="M154 370c-14-6-30-3-41 7l-15 13c-9 8-9 19-1 25 8 6 17 0 26-7l9-7-13 18c-7 10-3 20 7 23 9 3 16-6 23-15l9-12-8 19c-5 11 0 20 10 20 10 0 14-12 18-23l6-17-1 20c-1 11 6 19 15 16 9-3 10-15 10-26l-1-22c-1-13-9-23-21-30Z" fill="url(#k13-face)" stroke="#24191e" stroke-width="8"/>
+  <path d="M132 388c5 9 6 19 2 29m18-19c5 10 5 20 0 30m19-22c4 10 3 20-3 29" fill="none" stroke="#713b40" stroke-width="5"/>
+  <path d="M104 371c21-12 46-9 62 8l-10 54c-22 12-46 7-59-11Z" fill="#2a3032" stroke="#171a1c" stroke-width="7"/>
+  <circle cx="129" cy="402" r="17" fill="#e1b73d" stroke="#29271f" stroke-width="6"/>
+  <path d="M127 401c88-34 173-48 255-42" fill="none" stroke="#f4d85a" stroke-width="8"/>
+  <path d="M180 382c1 8 5 15 12 21m48-40c2 9 7 16 14 21m51-34c3 9 8 16 16 21" fill="none" stroke="#2c2b25" stroke-width="6"/>
+
+  <!-- right arm and individually drawn grip brace the umbrella-shield -->
+  <path d="M400 231c36 10 68 31 94 61 19 23 42 38 68 46" fill="none" stroke="#a9852c" stroke-width="46" stroke-linecap="round"/>
+  <path d="M548 316c17-5 35-1 47 11l15 15c8 8 6 19-3 24-9 5-17-2-25-9l-10-9 14 20c7 10 3 20-7 23-10 3-17-7-24-17l-9-13 8 22c4 12-2 21-12 20-10-1-14-13-18-25l-5-16-1 19c0 12-8 19-17 15-9-4-9-17-8-29l2-18c2-15 11-25 29-33Z" fill="url(#k13-face)" stroke="#24191e" stroke-width="8"/>
+  <path d="M564 334c-5 9-5 18 0 28m-18-18c-5 10-4 20 1 30m-19-22c-4 10-2 20 4 29" fill="none" stroke="#713b40" stroke-width="5"/>
+  <path d="M577 345 690 213" fill="none" stroke="#2a2d2e" stroke-width="13"/>
+
+  <!-- battered umbrella barrier takes the huge edge hazard -->
+  <path d="M444 219c63-104 192-148 299-82 31 19 52 45 57 76-71-19-115-6-141 39-43-31-84-29-123 7-21-28-52-42-92-40Z" fill="url(#k13-shield)" stroke="#213236" stroke-width="11" stroke-linejoin="round"/>
+  <path d="M464 214c54-25 118-9 159 29 19-53 61-85 126-96M623 243 681 91M536 259c-5-62 17-109 67-142" fill="none" stroke="#35545a" stroke-width="7"/>
+  <path d="M479 198c43-14 82-7 117 23m63-7c25-27 55-43 89-48" fill="none" stroke="#dce7c2" stroke-width="5" opacity=".6"/>
+  <path d="M506 172c10-8 21-11 33-10m87-42c13-3 25-2 36 3m47 23c12-1 23 1 33 7" fill="none" stroke="#f4f1cf" stroke-width="4" opacity=".58"/>
+  <path d="M689 212c10 8 15 20 13 33M661 228c9 7 13 17 11 29" fill="none" stroke="#d9bf59" stroke-width="5"/>
+
+  <!-- giant structural weakness crashes in from the upper-right edge -->
+  <path d="M643-31 811 22l-6 172-89 25-56-80-75-35Z" fill="url(#k13-beam)" stroke="#171c1e" stroke-width="13"/>
+  <path d="m685-9 86 30-6 115-44 15-32-44-53-25Z" fill="#67594c" stroke="#292b29" stroke-width="8"/>
+  <path d="m708 20 35 10-4 41-38-12Z" fill="#262d2e" stroke="#15191b" stroke-width="6"/>
+  <circle cx="671" cy="86" r="14" fill="#a88b5a" stroke="#272522" stroke-width="6"/>
+  <circle cx="759" cy="120" r="12" fill="#a88b5a" stroke="#272522" stroke-width="6"/>
+  <path d="M636 73c33 10 63 30 89 60M691 1c17 27 26 58 27 92" fill="none" stroke="#998169" stroke-width="6" opacity=".55"/>
+  <ellipse cx="689" cy="173" rx="127" ry="113" fill="url(#k13-impact)"/>
+  <path d="m647 164-38-28 24-9-17-32 45 24 4-29 26 47m13 22 49-20-6 27 39 8-52 20 16 25-45-21" fill="none" stroke="#f2d562" stroke-width="10" stroke-linejoin="round"/>
+  <path d="m655 184-35 20m83-10 18 38m-49-47-13 37" stroke="#fff0a0" stroke-width="6"/>
+
+  <!-- blank clipboard is bodily integrated under her elbow -->
+  <path d="m328 224 116 30-45 165-126-34Z" fill="#d8d2b2" stroke="#292622" stroke-width="9"/>
+  <path d="m354 226 52 14-6 24-54-14Z" fill="#62584b" stroke="#27231f" stroke-width="6"/>
+  <path d="m304 284 101 27m-111 17 100 27m-109 16 67 18" fill="none" stroke="#8a856f" stroke-width="5" opacity=".7"/>
+  <path d="M319 271c8 10 20 14 33 10m-41 47c8 9 19 12 31 9" fill="none" stroke="#4f685f" stroke-width="5"/>
+
+  <path d="M239 510c17-5 34-5 50 1M373 504c21-4 41-3 61 4" fill="none" stroke="#dbc867" stroke-width="5" opacity=".45"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#k13-grit)"/>
+  <rect x="6" y="6" width="788" height="548" rx="17" fill="none" stroke="#111719" stroke-width="12"/>
+</svg>

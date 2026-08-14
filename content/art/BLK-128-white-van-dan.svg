@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b128-title b128-desc">
+  <title id="b128-title">BLK-128 White Van Dan non-final comic mock-up</title>
+  <desc id="b128-desc">A broad ginger-chopped commander stands full-body at open white van doors, gesturing three distinct mates around ratchet straps, crates and plain paper cups across a busy roadside work area. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b128-sky" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#aab7b8"/><stop offset=".5" stop-color="#6f858e"/><stop offset="1" stop-color="#354c58"/></linearGradient>
+    <linearGradient id="b128-navy" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#435b77"/><stop offset=".5" stop-color="#273b59"/><stop offset="1" stop-color="#19263b"/></linearGradient>
+    <pattern id="b128-road" width="89" height="47" patternUnits="userSpaceOnUse"><rect width="89" height="47" fill="#45484b"/><path d="M8 14c22-6 42-5 62 2M18 36c18-4 35-3 52 2" fill="none" stroke="#73777a" stroke-width="4" opacity=".5"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b128-sky)"/>
+  <path d="M0 391c219-39 513-35 800 5v164H0Z" fill="url(#b128-road)" stroke="#232528" stroke-width="10"/>
+  <!-- unmarked open white van -->
+  <path d="M186 51h514l43 355H151Z" fill="#e6e6df" stroke="#202328" stroke-width="13"/>
+  <path d="M211 76h224l-21 285H176Z" fill="#f4f2e7" stroke="#33363a" stroke-width="9"/>
+  <path d="M457 76h217l42 286H437Z" fill="#efeee4" stroke="#33363a" stroke-width="9"/>
+  <path d="M236 105h173l-17 210H205Zm245 0h168l31 210H461Z" fill="#273644" stroke="#1a2026" stroke-width="7"/>
+  <path d="M253 128h138m107 0h134M242 281h151m118 0h149" stroke="#536472" stroke-width="6"/>
+  <circle cx="414" cy="216" r="9" fill="#8e8d84"/><circle cx="478" cy="216" r="9" fill="#8e8d84"/>
+  <!-- crew mate left: lank crate lifter -->
+  <path d="M33 244c20-49 61-62 93-29 29 29 27 77 9 118l-33 75H4Z" fill="#40546d" stroke="#171b21" stroke-width="9"/>
+  <path d="M59 184c22-25 59-20 70 11 10 28-5 54-31 61-29 8-58-38-39-72Z" fill="#a76853" stroke="#21181b" stroke-width="8"/>
+  <path d="M60 189c18-28 56-35 78-8-29-4-52 3-75 20Z" fill="#392d2b"/>
+  <path d="M15 354h131l17 127H-5Z" fill="#6d5039" stroke="#29221d" stroke-width="9"/>
+  <path d="M29 372h102m-97 33h105m-101 35h108" stroke="#a97a4d" stroke-width="6"/>
+  <!-- mate right: crouched strap handler -->
+  <path d="M672 277c23-53 67-65 100-28 30 33 25 84 5 128l-39 80H638Z" fill="#314862" stroke="#171b21" stroke-width="9"/>
+  <path d="M704 212c21-26 59-23 72 8 11 27-2 54-28 63-29 10-62-35-44-71Z" fill="#b97659" stroke="#21181b" stroke-width="8"/>
+  <g fill="#503c34" stroke="#21181b" stroke-width="5"><circle cx="710" cy="214" r="17"/><circle cx="731" cy="199" r="18"/><circle cx="753" cy="207" r="17"/></g>
+  <!-- third mate behind Dan, different mass -->
+  <path d="M570 246c17-42 51-56 80-31 27 23 31 65 18 103l-25 71h-99Z" fill="#52677f" stroke="#171b21" stroke-width="8"/>
+  <path d="M592 193c19-22 53-17 62 12 9 25-6 49-29 56-27 8-55-38-33-68Z" fill="#95614f" stroke="#21181b" stroke-width="7"/>
+  <!-- broad shovel skull and ginger chops -->
+  <path d="M300 122c43-38 108-38 150 2 37 36 38 88 14 130-28 48-91 60-136 28-50-36-60-116-28-160Z" fill="#b66e53" stroke="#201619" stroke-width="11"/>
+  <path d="M307 128c30-33 84-42 124-14" fill="none" stroke="#4b382f" stroke-width="12" stroke-dasharray="5 10"/>
+  <path d="M304 155c-22 27-27 59-15 96l44-8 13-85Zm151 2c21 28 25 60 11 97l-44-11-8-86Z" fill="#8c4e36" stroke="#241a18" stroke-width="8"/>
+  <path d="M301 160c-27-8-46 13-38 40 8 25 34 36 56 18m142-54c27-9 46 12 38 39-8 25-34 36-56 19" fill="#a45f4a" stroke="#24181a" stroke-width="9"/>
+  <!-- one squint, one scan, boxer nose, open command wedge -->
+  <path d="M326 174c18-12 39-10 55 4m30 2c15-10 32-7 44 6" fill="none" stroke="#402529" stroke-width="9"/>
+  <path d="M335 188h34m49 3c13-6 28-2 37 8" stroke="#ebd9b8" stroke-width="6"/>
+  <circle cx="440" cy="198" r="5" fill="#131619"/>
+  <path d="M394 177c-9 20-20 34-34 47-11 10-6 28 10 33 15 5 28-5 41-3 17 2 28-16 17-30-10-13-18-25-34-47Z" fill="#9b5143" stroke="#512a2c" stroke-width="8"/>
+  <path d="M336 265c31-10 68-5 96 15-9 31-56 40-96 14Z" fill="#4a2429" stroke="#25181b" stroke-width="7"/>
+  <!-- huge full-body commander -->
+  <path d="M260 302c57-31 139-33 198 0 74 40 107 120 102 221H173c1-98 26-172 87-221Z" fill="url(#b128-navy)" stroke="#141820" stroke-width="13"/>
+  <path d="M272 329c72 30 148 31 227 3m-251 59c98 34 192 32 283-6" fill="none" stroke="#627b99" stroke-width="8" opacity=".5"/>
+  <path d="M315 301c-5 53-1 107 13 164m78-163c19 51 26 105 20 162" fill="none" stroke="#1f3350" stroke-width="9"/>
+  <!-- directing arms use different hand verbs -->
+  <path d="M268 326c-63 6-118 25-165 58-22 16-25 37-10 51 15 14 35 4 56-10l143-63Z" fill="#a96650" stroke="#201619" stroke-width="11"/>
+  <path d="M102 374c-29 0-48 13-50 32-1 19 18 25 40 21l36-6-25 18c-15 12-12 28 3 34 15 6 29-7 43-19l37-33c17-16 15-39-3-52-18-13-41-13-81 5Z" fill="#b57356" stroke="#201619" stroke-width="9"/>
+  <path d="M454 323c61-3 116 10 166 38 23 13 29 34 16 50-13 16-34 9-57-3l-148-46Z" fill="#a96650" stroke="#201619" stroke-width="11"/>
+  <path d="M619 351c28-4 49 6 53 25 4 19-15 28-36 28l-37 1 28 13c17 8 17 25 4 34-13 9-29-1-45-10l-43-25c-20-12-22-36-7-52 15-16 38-20 83-14Z" fill="#b57356" stroke="#201619" stroke-width="9"/>
+  <path d="M72 395c21 2 40 9 56 22m-67-5c20 3 38 10 53 23m536-64c-20 5-37 15-52 29m64-13c-19 6-35 15-49 29" fill="none" stroke="#704037" stroke-width="5"/>
+  <path d="M284 506c-5 17-7 34-7 51m181-52c7 18 10 35 9 52" stroke="#273a55" stroke-width="44"/>
+  <path d="M239 531c33-9 66-5 92 14-2 12-22 17-50 13l-49-7c-7-9-4-15 7-20Zm185 10c32-13 66-11 93 7 0 13-20 18-48 15l-50-6c-8-8-5-12 5-16Z" fill="#49382f" stroke="#171519" stroke-width="9"/>
+  <!-- ratchet straps, cups and work-map clutter -->
+  <path d="M570 384c19 36 28 74 26 113m25-119c17 39 21 79 13 119" fill="none" stroke="#d59731" stroke-width="9"/>
+  <path d="M595 402c30-16 59-17 88-3" fill="none" stroke="#eab44c" stroke-width="7"/>
+  <path d="M26 487h70l-8 70H36Z" fill="#ddd2b2" stroke="#302824" stroke-width="7"/><path d="M704 463h65l-7 74h-48Z" fill="#ddd2b2" stroke="#302824" stroke-width="7"/>
+  <path d="M35 503c17 7 35 7 53 0m624-24c16 7 33 7 50 0" stroke="#b09c77" stroke-width="5"/>
+  <path d="M12 526c83-16 160-14 232-4m331 0c64-8 130-5 199 7" fill="none" stroke="#6e7272" stroke-width="6"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#1c242a" stroke-width="12"/>
+</svg>

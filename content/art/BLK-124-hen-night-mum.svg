@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b124-title b124-desc">
+  <title id="b124-title">BLK-124 Hen Night Mum non-final comic mock-up</title>
+  <desc id="b124-desc">A glamorous diamond-faced matriarch twists through a winter gust, giant platinum hair, blank hot-pink sash and faux-fur coat flying away from one devastating backward stare. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b124-winter" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a5dbe8"/><stop offset=".5" stop-color="#4f8ca9"/><stop offset="1" stop-color="#203a55"/></linearGradient>
+    <linearGradient id="b124-fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f1eee0"/><stop offset=".5" stop-color="#a6a9ab"/><stop offset="1" stop-color="#575c65"/></linearGradient>
+    <pattern id="b124-pave" width="91" height="61" patternUnits="userSpaceOnUse"><rect width="91" height="61" fill="#668c9f"/><path d="M0 1h91M0 60h91M1 0v61M90 0v61" stroke="#385b70" stroke-width="5"/><path d="M9 14c23-6 44-4 64 3" fill="none" stroke="#a8c6cd" stroke-width="4" opacity=".5"/></pattern>
+    <filter id="b124-gust" x="-6%" y="-6%" width="112%" height="112%"><feTurbulence baseFrequency=".018 .06" numOctaves="1" seed="124" result="g"/><feDisplacementMap in="SourceGraphic" in2="g" scale="1.8"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#b124-winter)"/>
+  <path d="M0 359c214-38 513-34 800 4v197H0Z" fill="url(#b124-pave)" stroke="#29485c" stroke-width="10"/>
+  <path d="M20 433c136-26 274-25 414-5m72 7c93-8 184-3 274 13" fill="none" stroke="#b4d4d7" stroke-width="7" opacity=".55"/>
+  <!-- vague minibus form stays secondary and unmarked -->
+  <path d="M25 94h268l28 244H5Z" fill="#38627b" stroke="#1b3445" stroke-width="11"/>
+  <path d="M47 119h99v125H38Zm123 0h95l21 126H159Z" fill="#8bbcc6" stroke="#274b5d" stroke-width="7"/>
+  <path d="M63 138 133 226M177 138l91 90" stroke="#d0e6df" stroke-width="5" opacity=".35"/>
+  <!-- enormous wind-tossed platinum fan -->
+  <path d="M302 66c43-63 130-70 180-17 59-27 125 6 131 63 50-1 82 40 66 83-12 35-47 51-88 43l-287 14c-51-31-64-79-27-115-17-22-9-53 25-71Z" fill="#ece5d2" stroke="#211923" stroke-width="12" filter="url(#b124-gust)"/>
+  <path d="M326 75c30 9 53 30 68 61m-30-94c30 18 50 44 60 78m16-91c22 23 35 51 38 84m28-74c20 22 30 47 30 75m42-52c14 18 20 40 16 64m43-22c6 17 4 34-7 50" fill="none" stroke="#aaa69d" stroke-width="7" stroke-linecap="round"/>
+  <!-- diamond matriarch skull -->
+  <path d="M345 123c43-40 107-40 148 2 35 35 34 85 11 125-25 43-67 82-111 74-50-10-83-63-78-111 3-33 12-64 30-90Z" fill="#c47b61" stroke="#21171d" stroke-width="11"/>
+  <path d="M335 167c-27-8-46 13-38 40 8 26 34 36 56 18m144-54c27-9 46 12 38 39-8 25-34 36-56 19" fill="#b26d58" stroke="#25191e" stroke-width="9"/>
+  <!-- tiny furious pin eyes -->
+  <path d="M359 177c18-12 39-11 56 3m29 4c15-10 33-7 45 6" fill="none" stroke="#41242c" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="396" cy="194" r="5" fill="#f0ddbc"/><circle cx="472" cy="199" r="5" fill="#f0ddbc"/>
+  <!-- short sharp upturn and plum slash -->
+  <path d="M427 181c-5 15-8 27-7 38 1 12 13 19 25 15 13-4 17-18 7-27-9-9-14-16-25-26Z" fill="#ae6352" stroke="#573137" stroke-width="6"/>
+  <path d="M371 258c31-5 63 1 87 17" fill="none" stroke="#67263d" stroke-width="9" stroke-linecap="round"/>
+  <path d="M386 273c20 2 38 0 55-5" stroke="#e15c91" stroke-width="5"/>
+  <path d="M334 237l-18 11m20 7-15 14m169-11 19 11m-23 5 16 14" stroke="#8a3c51" stroke-width="5"/>
+  <!-- heavy faux-fur body torques opposite hair -->
+  <path d="M295 320c59-31 143-34 204-4 76 37 112 117 111 227H184c4-105 32-180 111-223Z" fill="url(#b124-fur)" stroke="#17171c" stroke-width="13"/>
+  <path d="M259 348c91 33 188 35 290 5m-324 65c128 41 252 39 371-6" fill="none" stroke="#e5e2d8" stroke-width="9" opacity=".55"/>
+  <path d="M227 341c18 21 31 45 39 73m25-88c18 28 29 57 34 87m197-83c-18 28-28 58-31 89m55-72c-18 22-31 47-39 75" fill="none" stroke="#787d83" stroke-width="7"/>
+  <!-- blank hot-pink sash physically whips one way -->
+  <path d="M260 325c83 33 162 90 237 172l-45 63C384 478 306 418 218 381Z" fill="#e33d8b" stroke="#5b2246" stroke-width="10"/>
+  <path d="M250 354c71 38 138 88 201 151" fill="none" stroke="#ff91bd" stroke-width="7" opacity=".65"/>
+  <!-- one hand clamps coat, other cuts back into wind -->
+  <path d="M290 347c-55 20-99 51-131 93-17 22-12 43 6 52 18 9 36-7 52-28l101-88Z" fill="#b96f58" stroke="#21171d" stroke-width="10"/>
+  <path d="M165 428c-27 9-41 27-35 44 6 18 26 15 46 6l31-15-19 23c-11 14-5 29 9 32 15 3 25-12 36-27l27-42c12-19 3-40-16-48-19-8-40 0-79 27Z" fill="#c67d61" stroke="#21171d" stroke-width="9"/>
+  <path d="M498 340c52-8 98-30 138-66 19-17 39-17 51-2 12 15 2 33-16 49-51 44-103 72-157 81Z" fill="#b96f58" stroke="#21171d" stroke-width="10"/>
+  <path d="M645 267c25-9 45-3 51 12 6 16-10 25-28 29l-31 7 26 6c18 4 23 18 12 29-11 10-27 3-43-4l-39-18c-19-9-24-30-12-45 12-15 31-20 64-16Z" fill="#c67d61" stroke="#21171d" stroke-width="9"/>
+  <path d="M150 449c21 2 40 9 56 22m-67-5c20 3 38 10 53 23m472-202c-20 3-38 11-53 24m64-7c-19 4-36 11-50 23" fill="none" stroke="#78433a" stroke-width="5"/>
+  <!-- frost and gust scratches -->
+  <path d="M27 279l76 18m-55-65 67 42m537-63-78 47m132-5-101 39M22 501l73 13m583-2 95-18" stroke="#f3fbef" stroke-width="8" stroke-linecap="round" opacity=".72"/>
+  <path d="M79 388l9 18m18-25 4 20m545-31-8 21m31-14-13 20" stroke="#ff6ba9" stroke-width="6"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#173248" stroke-width="12"/>
+</svg>

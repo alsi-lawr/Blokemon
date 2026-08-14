@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="kit003-title kit003-desc">
+  <title id="kit003-title">KIT-003 The Relic Hunter non-final comic-vector mock-up</title>
+  <desc id="kit003-desc">An overhead raid on a battered display cabinet is dominated by foreshortened arms, individually crooked fingers, magnifier, blank tags and peculiar finds. A distorted face appears only in reflection while a chalk-and-foil ward deflects intrusive ability-like sparks from the prized relic. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="kit003-floor" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#584333"/><stop offset=".48" stop-color="#342b27"/><stop offset="1" stop-color="#171b1c"/></linearGradient>
+    <linearGradient id="kit003-cabinet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9a6a41"/><stop offset=".45" stop-color="#63432f"/><stop offset="1" stop-color="#30251f"/></linearGradient>
+    <radialGradient id="kit003-glass" cx="41%" cy="35%" r="72%"><stop stop-color="#e1f0d8" stop-opacity=".58"/><stop offset=".55" stop-color="#87a89a" stop-opacity=".21"/><stop offset="1" stop-color="#223d3d" stop-opacity=".52"/></radialGradient>
+    <radialGradient id="kit003-skin" cx="35%" cy="29%" r="80%"><stop stop-color="#d49a70"/><stop offset=".55" stop-color="#9a5949"/><stop offset="1" stop-color="#563138"/></radialGradient>
+    <linearGradient id="kit003-glove" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c2b787"/><stop offset=".52" stop-color="#77765f"/><stop offset="1" stop-color="#363d37"/></linearGradient>
+    <radialGradient id="kit003-relic" cx="38%" cy="32%" r="72%"><stop stop-color="#f2c96d"/><stop offset=".42" stop-color="#9a8f58"/><stop offset="1" stop-color="#3f4d43"/></radialGradient>
+    <pattern id="kit003-board" width="112" height="46" patternUnits="userSpaceOnUse" patternTransform="rotate(-9)">
+      <rect width="112" height="46" fill="transparent"/><path d="M0 3h112M0 43h112" stroke="#a97a50" stroke-width="5" opacity=".32"/><path d="M12 22c23-8 49-6 78 1" fill="none" stroke="#201c1b" stroke-width="3" opacity=".45"/>
+    </pattern>
+    <pattern id="kit003-hatch" width="13" height="13" patternUnits="userSpaceOnUse" patternTransform="rotate(24)"><path d="M0 2h13M0 9h13" stroke="#15191a" stroke-width="2" opacity=".3"/></pattern>
+    <filter id="kit003-rough" x="-8%" y="-8%" width="116%" height="116%"><feTurbulence type="turbulence" baseFrequency=".018 .048" numOctaves="2" seed="303" result="w"/><feDisplacementMap in="SourceGraphic" in2="w" scale="1.9"/></filter>
+    <filter id="kit003-grain" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".7" numOctaves="2" seed="33" result="n"/><feColorMatrix in="n" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .08 0"/><feBlend in="SourceGraphic" mode="multiply"/></filter>
+    <clipPath id="kit003-lens-clip"><ellipse cx="649" cy="127" rx="97" ry="85" transform="rotate(11 649 127)"/></clipPath>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#kit003-floor)"/>
+  <rect width="800" height="560" fill="url(#kit003-board)"/>
+  <!-- skewed cabinet viewed directly down -->
+  <path d="M86 44 738 17l46 480-702 40Z" fill="url(#kit003-cabinet)" stroke="#171717" stroke-width="14" filter="url(#kit003-rough)"/>
+  <path d="M120 76 707 51l37 409-625 37Z" fill="#3d3329" stroke="#b08354" stroke-width="9"/>
+  <path d="M139 96 687 73l32 365-574 34Z" fill="url(#kit003-glass)" stroke="#1b2929" stroke-width="8"/>
+  <path d="M158 113 669 92l27 325-531 31Z" fill="#31443d" opacity=".44"/>
+
+  <!-- cabinet dividers and scuffed reflections -->
+  <path d="M141 257 706 226M408 84l21 371" fill="none" stroke="#7b593d" stroke-width="13"/>
+  <path d="M155 239 700 210M391 87l21 365" fill="none" stroke="#c79a66" stroke-width="4" opacity=".55"/>
+  <path d="M176 123c67 35 112 49 177 48m94-66c65 22 133 23 205 4M178 405c75-18 137-22 207-16m80 1c75-17 142-19 208-6" fill="none" stroke="#e3eee1" stroke-width="8" opacity=".18"/>
+  <path d="M206 109 167 443M512 84l40 341M633 81l55 307" stroke="#d7eee4" stroke-width="5" opacity=".12"/>
+
+  <!-- tagged oddities: no readable words -->
+  <g stroke="#211b1b" stroke-linejoin="round">
+    <path d="M183 144c22-23 57-21 73 5l-4 64-70 4-17-38Z" fill="#8f7b52" stroke-width="7"/>
+    <path d="M189 160c18 10 36 10 55-2m-47 30c14 7 28 7 42-2" fill="none" stroke="#d5c28f" stroke-width="5"/>
+    <path d="M288 113c26 8 44 28 45 53-2 22-23 35-47 31-25-5-36-28-28-49 6-17 15-29 30-35Z" fill="#806c68" stroke-width="7"/>
+    <path d="M281 140c11 13 28 16 46 8m-62 20c17 8 37 9 58 2" fill="none" stroke="#d0b3a0" stroke-width="4"/>
+    <path d="M460 126c14-18 40-18 53-1 12 16 4 41-14 52-18 11-42 5-50-13-6-13-2-27 11-38Z" fill="#7f9278" stroke-width="7"/>
+    <path d="m470 137 31 27m0-31-27 30" stroke="#d6c48d" stroke-width="5"/>
+    <path d="M573 280c33-21 81-12 98 23l-16 89-75 4-33-69Z" fill="#655d62" stroke-width="8"/>
+    <path d="M576 309c19-10 46-8 68 5m-61 23c21-8 42-6 62 4m-54 20c18-5 35-3 50 5" fill="none" stroke="#bbb29d" stroke-width="5"/>
+    <path d="M194 313c22-19 54-18 73 1 18 19 14 51-8 66-23 16-57 7-66-19-7-19-6-35 1-48Z" fill="#9d784e" stroke-width="8"/>
+    <path d="m211 325 33 39m-3-44-31 48" stroke="#45362b" stroke-width="6"/>
+  </g>
+  <!-- little bent spoon, false teeth, key, tiny boot -->
+  <path d="M342 121c-19 24-21 53-4 85 12 22 1 37-31 45" fill="none" stroke="#c3bca1" stroke-width="10"/>
+  <ellipse cx="347" cy="112" rx="19" ry="28" transform="rotate(16 347 112)" fill="#8c938b" stroke="#272b29" stroke-width="6"/>
+  <path d="M461 334c27-25 63-24 86 1-2 34-19 55-50 59-28-2-44-20-47-52Z" fill="#b2846e" stroke="#292022" stroke-width="7"/>
+  <path d="M461 339c24 15 52 15 82 0m-70 10 3 24m17-20 1 27m18-27-3 23m19-27-5 19" fill="none" stroke="#eee0c0" stroke-width="6"/>
+  <path d="M329 331c34-7 61 6 80 38l-19 18-14-21-52 12-14-20Z" fill="#7d7258" stroke="#25221f" stroke-width="7"/>
+  <path d="M361 351c-5-20 7-37 30-43" fill="none" stroke="#c5af73" stroke-width="8"/>
+  <circle cx="397" cy="306" r="12" fill="none" stroke="#c5af73" stroke-width="7"/>
+  <path d="M251 410c27-15 58-14 85 3l-1 26-76 6-23-18Z" fill="#4b3d37" stroke="#201b1b" stroke-width="7"/>
+  <path d="M271 408c2-18 13-30 31-35 10 4 15 13 14 28" fill="#706253" stroke="#201b1b" stroke-width="7"/>
+
+  <!-- blank punched tags and threads -->
+  <g fill="#d8c89c" stroke="#514638" stroke-width="4">
+    <path d="m159 112 49-4 19 22-17 31-49 2-15-31Z"/><path d="m365 88 46-3 17 20-14 29-47 3-17-25Z"/>
+    <path d="m522 209 48-3 17 20-14 30-51 3-16-25Z"/><path d="m166 391 49-2 19 21-14 29-50 3-17-24Z"/>
+    <circle cx="158" cy="132" r="6" fill="#4b4034"/><circle cx="364" cy="107" r="6" fill="#4b4034"/><circle cx="521" cy="230" r="6" fill="#4b4034"/><circle cx="168" cy="413" r="6" fill="#4b4034"/>
+  </g>
+  <path d="M158 132c-20 0-33 8-42 24m248-49c-20-11-38-11-55 0m212 123c-28-18-52-18-74 0M168 413c-23-12-42-10-57 5" fill="none" stroke="#b9a875" stroke-width="4"/>
+
+  <!-- central chalk-and-foil anti-ability ward -->
+  <path d="M293 222c45-39 126-50 190-25 58 23 84 81 58 129-27 49-104 69-174 50-68-18-112-66-97-111 5-16 12-30 23-43Z" fill="#1c2b28" fill-opacity=".38" stroke="#ddd2a0" stroke-width="9" stroke-dasharray="21 10 5 9" filter="url(#kit003-rough)"/>
+  <path d="M317 236c38-27 96-34 144-15 42 16 60 54 43 84-19 34-73 47-122 34-49-13-77-44-66-77 3-10 4-18 1-26Z" fill="url(#kit003-relic)" stroke="#24261f" stroke-width="9"/>
+  <path d="m375 257 34-19 31 24 29-7-11 34 17 27-38 1-27 22-17-32-36-13 27-25Z" fill="#b8a65f" stroke="#3c3a29" stroke-width="7"/>
+  <path d="M388 266c14 11 31 15 50 11m-59 20c22 9 45 10 70 2" fill="none" stroke="#eee1a2" stroke-width="5" opacity=".65"/>
+  <g fill="#d8c989" stroke="#443c2d" stroke-width="4">
+    <path d="m278 220 24-16 14 20-18 22Z"/><path d="m483 193 26 14-11 25-25-12Z"/><path d="m526 329 21 20-19 20-22-17Z"/><path d="m283 337 24 18-16 23-25-17Z"/>
+  </g>
+  <!-- incoming ability sparks visibly deflect -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m56 274 101-11 34-25 27 18-28 25 42 20" stroke="#7ed5bc" stroke-width="9"/>
+    <path d="m758 171-91 45-41-7-15 27 39 13-18 37" stroke="#d688d0" stroke-width="9"/>
+    <path d="m716 489-83-65-37-4-7-31 35-3 7-36" stroke="#e4bd63" stroke-width="9"/>
+    <path d="M189 265c18-2 35 2 50 12m378-51c-18 2-35 10-49 24m40 167c-15-11-25-25-30-43" stroke="#f0e6b0" stroke-width="5" opacity=".7"/>
+  </g>
+
+  <!-- foreshortened hunter arms dominate lower frame -->
+  <path d="M28 570c33-93 91-169 176-228 43-30 84-43 124-37l31 72c-38 11-74 34-109 67-43 40-72 81-86 126Z" fill="#3f5544" stroke="#17221d" stroke-width="12"/>
+  <path d="M771 570c-29-94-73-164-135-211-39-30-77-43-113-38l-26 72c38 9 70 29 98 60 30 34 50 73 59 117Z" fill="#59634c" stroke="#17221d" stroke-width="12"/>
+  <path d="M56 519c54-62 111-111 173-147m516 152c-39-57-88-103-146-139" fill="none" stroke="#819178" stroke-width="7" opacity=".45"/>
+  <!-- left bare hand with separate bent fingers pinning ward -->
+  <path d="M222 318c24-15 50-17 74-7 18 8 26 22 19 35 16-8 31-5 37 7 7 14-5 29-23 34 13 6 18 18 12 29-8 15-26 14-43 3-14-9-26-20-36-33-4 16-12 27-24 31-15 5-27-7-24-22-13 8-28 5-34-8-7-15 7-32 23-40 4-12 10-22 19-29Z" fill="url(#kit003-skin)" stroke="#21171c" stroke-width="8"/>
+  <path d="M229 333c7 22 20 39 39 50m-8-64c8 26 25 47 49 61m-16-61c6 22 19 40 37 52m-104-18c-4 15-2 30 7 43" fill="none" stroke="#6e3a3b" stroke-width="5"/>
+  <path d="M238 315c-2 10 0 20 7 29m28-34c-2 10 0 20 7 30m29-22c-4 10-3 20 3 29" fill="none" stroke="#e0a47c" stroke-width="4"/>
+  <!-- right strapped glove operates magnifier -->
+  <path d="M564 313c28-9 54-4 72 13 14 13 16 28 5 39 18-2 31 6 33 21 2 15-13 25-31 23 10 11 9 24-1 33-12 11-30 4-43-11-11-13-18-27-22-42-10 13-22 20-35 19-16-1-23-17-15-30-16 2-28-7-29-22-1-16 16-26 34-28 8-8 19-13 32-15Z" fill="url(#kit003-glove)" stroke="#1d1c1b" stroke-width="8"/>
+  <path d="M538 329c4 22 14 40 30 55m1-68c2 29 14 54 36 76m-4-61c3 24 13 45 31 61m-95-36c-7 14-8 29-2 44" fill="none" stroke="#4d4a3d" stroke-width="5"/>
+  <path d="M515 333c17 6 35 7 53 2m-44 23c19 7 38 7 57 1" fill="none" stroke="#c0a76e" stroke-width="6"/>
+  <path d="M528 319c15-9 34-13 56-9l14 28-80 19-14-20Z" fill="#313a32" stroke="#1a1e1b" stroke-width="7"/>
+  <path d="m528 318 6 34m22-40 7 34m20-33 8 29" stroke="#b79c62" stroke-width="5"/>
+
+  <!-- magnifier and the only face: warped reflection -->
+  <path d="M603 196 538 315" stroke="#35423e" stroke-width="22"/>
+  <path d="M611 191 548 307" stroke="#9ea985" stroke-width="7" opacity=".6"/>
+  <ellipse cx="649" cy="127" rx="97" ry="85" transform="rotate(11 649 127)" fill="#a8cac0" fill-opacity=".22" stroke="#253634" stroke-width="12"/>
+  <ellipse cx="649" cy="127" rx="80" ry="69" transform="rotate(11 649 127)" fill="url(#kit003-glass)" stroke="#d0ded1" stroke-width="5" opacity=".9"/>
+  <g clip-path="url(#kit003-lens-clip)" filter="url(#kit003-rough)">
+    <path d="M579 78c26-38 80-49 119-20 36 28 44 82 14 119-30 38-90 44-125 8-27-28-31-76-8-107Z" fill="url(#kit003-skin)" stroke="#312027" stroke-width="8"/>
+    <path d="M577 91c31-48 100-57 139-10-38-10-73 2-105 24l-35 2Z" fill="#302b26" stroke="#191818" stroke-width="7"/>
+    <path d="M605 118c13-13 32-13 45 1" fill="none" stroke="#512c31" stroke-width="7"/>
+    <path d="M615 128c8-3 15-1 19 6" stroke="#161718" stroke-width="7"/>
+    <path d="M663 112c-8 23-4 40 13 52l-17 9" fill="none" stroke="#6b373b" stroke-width="7"/>
+    <path d="M607 171c24 14 47 13 69-2" fill="none" stroke="#402329" stroke-width="8"/>
+    <path d="M700 111c18-4 28 9 22 25-5 14-19 20-32 11l3-15-10-8" fill="#99584d" stroke="#43272d" stroke-width="7"/>
+  </g>
+  <path d="M590 92c26-21 57-29 93-22" fill="none" stroke="#f5fff5" stroke-width="8" opacity=".38"/>
+
+  <!-- torch pool, dust, cabinet hardware -->
+  <path d="m76 70 100 40-39 89-100-40Z" fill="#f2d885" opacity=".16"/>
+  <path d="m32 44 68 18-16 56-69-19Z" fill="#48524b" stroke="#1b201e" stroke-width="8"/>
+  <path d="m43 55 40 11-7 27-42-11Z" fill="#d4c879"/>
+  <path d="M89 107 167 73" stroke="#2d3430" stroke-width="15"/>
+  <g fill="#d9c99a" opacity=".45"><circle cx="235" cy="275" r="4"/><circle cx="351" cy="427" r="3"/><circle cx="480" cy="104" r="4"/><circle cx="672" cy="262" r="5"/><circle cx="147" cy="291" r="3"/><circle cx="558" cy="418" r="4"/></g>
+  <g fill="#211b18" stroke="#a47d50" stroke-width="4"><circle cx="104" cy="98" r="13"/><circle cx="738" cy="61" r="13"/><circle cx="761" cy="470" r="13"/><circle cx="111" cy="509" r="13"/></g>
+  <path d="M9 12h782v536H9Z" fill="none" stroke="#101415" stroke-width="14"/>
+  <rect width="800" height="560" fill="url(#kit003-hatch)" opacity=".2"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#kit003-grain)"/>
+</svg>

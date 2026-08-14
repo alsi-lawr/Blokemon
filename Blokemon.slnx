@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Blokemon.CardGen/Blokemon.CardGen.csproj" />
+    <Project Path="src/Blokemon.Core/Blokemon.Core.csproj" />
+    <Project Path="src/Blokemon.PackGen/Blokemon.PackGen.csproj" />
+    <Project Path="src/Blokemon.Sheet/Blokemon.Sheet.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Blokemon.Core.Tests/Blokemon.Core.Tests.csproj" />
+  </Folder>
+</Solution>

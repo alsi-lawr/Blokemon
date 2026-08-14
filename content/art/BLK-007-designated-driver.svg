@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="blk007-title blk007-desc">
+  <title id="blk007-title">BLK-007 Designated Driver non-final comic-vector mock-up</title>
+  <desc id="blk007-desc">In cold side profile at the kerb, a calm driver dangles keys from an outsized foreground hand and guards a clear lime drink while warm blurred friends press against pub glass behind him and an anonymous headlamp waits in rain. Non-final placeholder art.</desc>
+  <defs><linearGradient id="blk007-street" x2="1" y2="1"><stop stop-color="#092f38"/><stop offset="1" stop-color="#151b2d"/></linearGradient><linearGradient id="blk007-window" x2="0" y2="1"><stop stop-color="#d88b43"/><stop offset="1" stop-color="#5b2930"/></linearGradient><filter id="blk007-rain"><feTurbulence seed="7" baseFrequency=".02" numOctaves="2" result="r"/><feDisplacementMap in="SourceGraphic" in2="r" scale="1.4"/></filter></defs>
+  <path fill="url(#blk007-street)" d="M0 0h800v560H0z"/><path fill="#223b40" stroke="#171a21" stroke-width="12" d="M18 21h401v365H18z"/><path fill="url(#blk007-window)" d="M39 42h359v322H39z"/><path stroke="#1a1a20" stroke-width="14" d="M217 42v322M39 201h359"/>
+  <g stroke="#211b21" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#874b42" d="M49 349q8-136 83-160 84 0 102 160z"/><path fill="#b66d50" d="M90 213q-8-69 49-78 57 7 62 74-10 48-55 53-43-6-56-49z"/><path fill="#2c2021" d="M96 171q37-55 79-12 22 18 25 51-49-25-104-39z"/><path fill="#2b1e20" d="M108 213q28 27 60 1-8 40-34 34z"/>
+    <path fill="#6c3b47" d="M214 353q12-128 80-156 81 2 105 157z"/><path fill="#a65f48" d="M261 217q-8-66 48-78 58 8 63 73-12 45-55 51-42-5-56-46z"/><path fill="#332322" d="M268 174q34-52 78-14 23 18 26 52-49-24-104-38z"/><path fill="#281c1e" d="M279 218q29 24 61-1-8 38-34 33z"/>
+    <path fill="#2b454d" d="M302 555q43-142 101-243l151-38q104 87 151 281z"/><path fill="#41636a" d="M332 556q47-129 89-218 61 20 128-39 89 88 127 257z"/>
+    <path fill="#a96850" d="M430 290q-56-52-45-137 7-78 69-106 79-23 128 45 48 70 15 142-28 64-95 88-39 12-72-32z"/>
+    <path fill="#3a2923" d="M389 165q-2-89 65-126 77-27 126 38-59-26-105 7-50 22-86 81z"/><path fill="#283039" d="M402 110q39-67 101-76 55 4 77 41-93-19-178 35z"/>
+    <path fill="#a96850" d="M392 173q-40-12-39 27 7 43 48 45M583 117q35-25 49 9 15 37-29 63"/>
+    <path fill="#f1d7a4" d="M416 154q37-30 74-1-7 38-36 39-27 0-38-38zM518 120q34-25 63 2-5 36-31 37-25 0-32-39z"/><circle cx="458" cy="162" r="8" fill="#201c21"/><circle cx="553" cy="130" r="8" fill="#201c21"/>
+    <path fill="#bd7d5b" d="M505 141q9 54-9 84 34 10 58-17"/><path fill="none" d="M416 129q37-28 76-7M519 95q35-21 65 2M432 211l17 10M566 182l16-17"/>
+    <path fill="#2a1e20" d="M476 249q50 14 89-21-2 51-42 57-31 4-47-36z"/><path fill="#ead8ab" d="M494 251q31 3 54-8l-4 19-40 7z"/>
+    <path fill="#41636a" d="M432 309q-58 33-80 107l-27 118 80 17 57-141M559 288q66 5 99 59l64 106-65 50-95-94"/>
+    <path fill="#a96850" d="M358 392q-55 25-76 73-18 40-1 67 17 24 41 10 21-12 12-42 18 26 40 11 20-15 3-42 21 19 39-1 16-19-7-42 23 12 38-10 13-20-35-39z"/>
+    <path fill="#b7d6cc" d="M276 436l86-10 23 129-114 0z"/><path fill="#b2d95e" d="M290 449l59-7 17 92-78 4z"/><path fill="#e6f4c4" d="M302 458l38-5 6 16-40 5z"/>
+    <path fill="#a96850" d="M666 365q58 4 94 34 34 28 30 57-3 27-27 33-25 5-42-25-2 31-28 30-25-3-31-35-9 28-32 20-24-10-14-41-20 16-37-2-15-18 14-43z"/>
+    <path fill="#d2b669" d="M712 335q22-24 45 0l-13 27-25-1z"/><path fill="none" stroke="#e9d482" stroke-width="7" d="M721 357q-14 31 13 44"/><path fill="#d0c49a" d="M725 389l30 18-12 31-35-18z"/><circle cx="760" cy="422" r="17" fill="none"/>
+    <path fill="#182127" d="M389 504l-47 52h125l24-70zM570 485l34 71h132l-78-81z"/>
+    <path fill="#202a30" d="M630 177q94-28 170 26v188q-89-10-174-49z"/><path fill="#93d5d3" d="M689 197q69-10 111 23v89q-57-27-123-15z" opacity=".65"/><ellipse cx="732" cy="334" rx="85" ry="49" fill="#f5e6a9" opacity=".75"/><ellipse cx="736" cy="337" rx="54" ry="29" fill="#fff8d4"/>
+    <path fill="none" stroke="#a3d2d0" stroke-width="5" d="M18 71l-16 74M87 22L64 104M157 24l-16 78M273 21l-19 91M357 25l-13 73M681 23l-17 82M758 11l-19 94"/>
+    <path fill="none" stroke="#f3d995" stroke-width="5" d="M86 94l26-21M278 93l29-19M403 72l-30-19"/>
+    <!-- True side-profile correction: one watchful eye, jutting nose, underbite and rain-flattened hair. -->
+    <path fill="#a8684f" d="M401 128q21-77 86-94 75-8 112 56l6 55 38 29-35 27q-5 80-65 112-68 29-120-24-45-51-22-161z"/>
+    <path fill="#293139" d="M401 142q12-92 85-115 76-12 111 50-84-24-196 65z"/>
+    <path fill="#a8684f" d="M410 164q-41-18-47 20 0 43 48 52"/>
+    <path fill="#f0dda8" d="M493 129q42-28 76 6-12 39-43 36-28-3-33-42z"/><circle cx="540" cy="141" r="8" fill="#211b20"/>
+    <path fill="none" stroke="#2b2020" stroke-width="12" d="M492 117q40-30 80 5"/>
+    <path fill="#bd7c59" d="M568 142q20 32 70 34l-37 31-43-5"/>
+    <path fill="#2a1f20" d="M545 235q38 10 65-10-4 47-37 52-27 3-28-42z"/><path fill="#efddad" d="M558 241q21 2 36-5l-2 16-29 5z"/>
+    <path fill="none" stroke="#4b3129" stroke-width="5" d="M433 206l20 12M447 235l16 7M528 192l19 10M537 216l18 4"/>
+    <circle cx="724" cy="392" r="25" fill="none" stroke="#d6bd70" stroke-width="8"/><path fill="#d6bd70" d="M742 409l40 39-14 15-14-13-12 12-13-14 11-11-13-13z"/><path fill="none" stroke="#f2dc91" stroke-width="4" d="M741 382q10 5 12 15"/>
+  </g>
+</svg>

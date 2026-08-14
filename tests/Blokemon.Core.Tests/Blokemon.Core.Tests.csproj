@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Blokemon.Core/Blokemon.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="TUnit" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content
+      Include="../../content/authorities/mechanics.json"
+      Link="Authorities/mechanics.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <Content
+      Include="../../content/authorities/public-content.json"
+      Link="Authorities/public-content.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
+</Project>

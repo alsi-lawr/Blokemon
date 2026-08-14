@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b044-title b044-desc">
+  <title id="b044-title">BLK-044 Whitey non-final comic mock-up</title>
+  <desc id="b044-desc">A violently canted close-up shows a pale, lank-haired partygoer clawing a kitchen counter as one knee buckles, one eye rolls and an untouched water glass slides toward an open window. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b044-room" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17272a"/><stop offset=".45" stop-color="#58766e"/><stop offset="1" stop-color="#11151d"/></linearGradient>
+    <radialGradient id="b044-sick" cx="42%" cy="32%" r="75%"><stop stop-color="#d6d6a6"/><stop offset=".5" stop-color="#8caf8e"/><stop offset="1" stop-color="#405e58"/></radialGradient>
+    <pattern id="b044-tile" width="72" height="57" patternUnits="userSpaceOnUse"><rect width="72" height="57" fill="#536d65"/><path d="M0 1h72M0 56h72M1 0v57M71 0v57" stroke="#263b38" stroke-width="5"/><path d="M8 11c18-6 34-4 48 2" fill="none" stroke="#80988b" stroke-width="3" opacity=".4"/></pattern>
+    <filter id="b044-tilt" x="-6%" y="-6%" width="112%" height="112%"><feTurbulence baseFrequency=".018 .055" numOctaves="1" seed="44" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="2"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="#10151a"/>
+  <g transform="rotate(11 400 280)">
+    <rect x="-70" y="-70" width="940" height="700" fill="url(#b044-room)"/>
+    <path d="M-40-10h880v342H-40Z" fill="url(#b044-tile)" stroke="#172522" stroke-width="12"/>
+    <!-- open window and sickly outside air -->
+    <path d="M575 23h211v244H559Z" fill="#173337" stroke="#172025" stroke-width="12"/>
+    <path d="M596 45h163v191H582Z" fill="#5c8f85"/>
+    <path d="M589 233 755 48M588 144l88-96M674 236l83-98" stroke="#bdd3b9" stroke-width="6" opacity=".35"/>
+    <path d="M576 31 758 45l-22 194-156-6Z" fill="none" stroke="#aab9a6" stroke-width="8"/>
+    <path d="M580 34 759 47" stroke="#e5e6c7" stroke-width="5"/>
+    <!-- counter slices frame at brutal diagonal -->
+    <path d="M-77 359c239-58 532-63 925-17v242H-77Z" fill="#20272a" stroke="#111419" stroke-width="14"/>
+    <path d="M-62 377c272-42 553-42 891-11" fill="none" stroke="#73877c" stroke-width="10"/>
+    <path d="M-35 466c249-27 507-24 807 3" fill="none" stroke="#394a48" stroke-width="7"/>
+    <!-- sagging gourd skull huge in close-up -->
+    <path d="M166 40c52-45 134-51 188-7 48 39 60 101 36 153-15 32-12 62-32 91-26 38-76 57-121 43-52-16-80-64-76-113 2-31 19-50 10-77-10-31-23-60-5-90Z" fill="url(#b044-sick)" stroke="#17201f" stroke-width="13" filter="url(#b044-tilt)"/>
+    <!-- wet lank strands -->
+    <path d="M169 49c43-55 137-66 196-4 21 22 31 46 29 72-44-36-90-38-134-19-37 16-70 11-104-3Z" fill="#292a26" stroke="#171817" stroke-width="10"/>
+    <path d="M185 43c17 43 19 82 4 119m46-138c12 45 11 85-3 122m60-133c-4 46-1 83 10 112m45-91c-9 38-7 71 7 98" fill="none" stroke="#626155" stroke-width="7"/>
+    <path d="M167 126c-31-11-52 13-43 43 9 28 38 39 61 19m194-54c31-10 51 14 42 44-9 28-37 39-60 19" fill="#789680" stroke="#192320" stroke-width="9"/>
+    <!-- one rolled iris, one squeezed shut -->
+    <path d="M184 142c25-20 60-16 77 10-9 34-63 35-77-10Z" fill="#e3dfbd" stroke="#1d2522" stroke-width="7"/>
+    <circle cx="229" cy="151" r="10" fill="#16201e"/><circle cx="229" cy="141" r="4" fill="#f1efdb"/>
+    <path d="M302 151c19-15 43-12 58 8m-52 7c17 8 34 8 50-1" fill="none" stroke="#26322e" stroke-width="10" stroke-linecap="round"/>
+    <path d="M187 125c22-15 49-14 70 3m48 1c19-11 40-7 56 9" fill="none" stroke="#27302d" stroke-width="10" stroke-linecap="round"/>
+    <!-- sharp pallid nose and trembling mouth -->
+    <path d="M278 137c-8 25-20 45-36 63-12 13-5 34 13 39 16 5 30-6 44-5 21 2 34-21 21-37-14-17-21-38-42-60Z" fill="#76937f" stroke="#33443e" stroke-width="8"/>
+    <path d="M263 188c11 9 19 21 22 34" fill="none" stroke="#b2c5a4" stroke-width="5"/>
+    <path d="M195 260c18-15 35-7 50 2 17 10 32-11 48-5 15 6 26 17 40 9" fill="none" stroke="#3e3230" stroke-width="9" stroke-linecap="round"/>
+    <path d="M191 284c35 26 83 32 120 12" fill="none" stroke="#536a5e" stroke-width="6"/>
+    <circle cx="181" cy="224" r="7" fill="#567264"/><circle cx="345" cy="234" r="6" fill="#567264"/>
+    <!-- folded collapsing torso -->
+    <path d="M170 306c48-21 112-19 157 10 46 31 70 87 71 153l-318 2c8-69 34-127 90-165Z" fill="#485459" stroke="#151b1d" stroke-width="13"/>
+    <path d="M115 347c71 31 150 34 231 7m-250 59c99 34 195 32 286-6" fill="none" stroke="#72817e" stroke-width="8" opacity=".43"/>
+    <path d="M192 313c2 42-9 85-33 127m105-121c18 44 25 88 20 132" fill="none" stroke="#2c393c" stroke-width="9"/>
+    <!-- left hand claws counter, each finger separate -->
+    <path d="M125 333c-34 25-60 59-78 101-8 19-3 36 11 42 15 6 26-8 34-26l17-36-5 38c-2 17 7 29 20 28 14-1 18-16 19-33l2-37 7 35c3 16 14 25 26 20 13-5 13-20 10-36l-11-51c-6-26-26-45-52-45Z" fill="#8caa8d" stroke="#17201f" stroke-width="10"/>
+    <path d="M109 415c15-6 30-6 45-1m-55 14c15-5 29-4 43 2m-50 12c13-3 26-1 38 4" fill="none" stroke="#536c5c" stroke-width="5"/>
+    <!-- right arm smears across counter -->
+    <path d="M343 329c54 15 102 42 144 78 20 17 21 38 8 51-14 13-33 3-52-13l-128-88Z" fill="#87a388" stroke="#17201f" stroke-width="11"/>
+    <path d="M484 405c24 1 41 12 42 27 1 16-15 22-32 19l-29-5 20 16c13 10 12 24 0 30-12 6-24-4-36-15l-31-28c-15-14-14-34 0-47 14-13 34-12 66 3Z" fill="#91aa8d" stroke="#17201f" stroke-width="9"/>
+    <path d="M466 421c14 5 27 14 37 26m-47-15c13 6 24 14 33 24" fill="none" stroke="#596f5f" stroke-width="5"/>
+    <!-- one buckling knee visible -->
+    <path d="M168 455c-25 22-44 49-57 80m170-78c17 31 30 62 39 94" fill="none" stroke="#293238" stroke-width="39"/>
+    <path d="M80 519c30-5 56 2 77 21-5 11-22 13-44 7l-43-12c-4-7 0-12 10-16Zm203 13c28-9 56-6 77 12-3 10-20 14-43 9l-43-9c-5-7-1-11 9-12Z" fill="#3f3434" stroke="#171719" stroke-width="8"/>
+    <!-- untouched water glass sliding -->
+    <path d="M608 302h82l-13 127h-56Z" fill="#b9d8d3" fill-opacity=".35" stroke="#dceae1" stroke-width="8"/>
+    <path d="M622 374c18 9 37 10 57 2l-3 42-53 0Z" fill="#95cbc6" opacity=".65"/>
+    <ellipse cx="648" cy="305" rx="42" ry="13" fill="none" stroke="#e1ece1" stroke-width="7"/>
+    <path d="M696 348c31-6 60-4 86 7" fill="none" stroke="#758a7f" stroke-width="6"/>
+    <!-- kitchen clutter and draining light -->
+    <path d="M520 402h72l-5 68h-79Z" fill="#b8a876" stroke="#22221f" stroke-width="8"/>
+    <path d="m534 415 35 36m5-38-39 42" stroke="#6d6b54" stroke-width="5"/>
+    <path d="M-2 507c130-28 255-26 379-9m137 9c106-9 211-3 320 20" fill="none" stroke="#627a71" stroke-width="6" opacity=".5"/>
+  </g>
+  <path d="M28 86l48 25m-31-61 38 42m613-39-36 49m70-20-48 34" stroke="#a6c5b5" stroke-width="7" stroke-linecap="round" opacity=".65"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#101419" stroke-width="12"/>
+</svg>

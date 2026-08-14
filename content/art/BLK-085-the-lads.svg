@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b085-title b085-desc">
+  <title id="b085-title">BLK-085 The Lads non-final comic mock-up</title>
+  <desc id="b085-desc">Three friends of sharply different builds charge shoulder-to-shoulder down a tiled corridor, similar trainers landing in formation while three coats fly at separate angles through red and navy streaks. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b085-hall" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111d2f"/><stop offset=".5" stop-color="#283958"/><stop offset="1" stop-color="#0b111d"/></linearGradient>
+    <linearGradient id="b085-red" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#4f1828"/><stop offset=".5" stop-color="#c13f43"/><stop offset="1" stop-color="#4c1526"/></linearGradient>
+    <pattern id="b085-tile" width="72" height="52" patternUnits="userSpaceOnUse"><rect width="72" height="52" fill="#29364a"/><path d="M0 1h72M0 51h72M1 0v52M71 0v52" stroke="#131c2a" stroke-width="5"/><path d="M7 10c18-5 35-4 50 2" fill="none" stroke="#52627a" stroke-width="3" opacity=".4"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b085-hall)"/>
+  <!-- exaggerated vanishing-point corridor -->
+  <path d="M0 0 317 182v202L0 560Zm800 0L484 182v202l316 176Z" fill="url(#b085-tile)" stroke="#101722" stroke-width="10"/>
+  <path d="M317 182h167v202H317Z" fill="#131c2c" stroke="#0c111a" stroke-width="10"/>
+  <path d="M0 63 316 205M0 176l316 70M0 304l316 3M800 63 484 205m316-29-316 70m316 58-316 3" fill="none" stroke="#68768a" stroke-width="6" opacity=".45"/>
+  <path d="M0 241c168-22 285-8 352 43M800 240c-171-20-287-6-353 44" fill="none" stroke="url(#b085-red)" stroke-width="19" opacity=".72"/>
+  <path d="M0 436c173-37 305-39 400-5 97-35 229-31 400 6v123H0Z" fill="#182233" stroke="#0c121c" stroke-width="11"/>
+  <path d="M23 493c133-22 259-18 377 4 119-22 245-18 378 3" fill="none" stroke="#4b5b70" stroke-width="7"/>
+  <!-- left lad: compact square skull, slit eyes, broad nose -->
+  <path d="M153 124c37-34 91-32 126 4 30 31 30 77 10 110-25 42-78 50-116 20-42-32-51-95-20-134Z" fill="#a96851" stroke="#1f171b" stroke-width="10"/>
+  <path d="M155 126c24-38 77-51 115-18" fill="none" stroke="#30272a" stroke-width="12" stroke-dasharray="5 8"/>
+  <path d="M167 166c16-10 35-9 50 2m23 2c13-8 28-5 39 6" fill="none" stroke="#402429" stroke-width="8"/>
+  <path d="M175 179h32m40 4h25" stroke="#ecd9b8" stroke-width="6"/>
+  <path d="M222 171c-9 18-19 31-32 43-10 9-6 25 8 29 14 4 26-5 38-4 16 1 25-15 16-28-9-12-16-23-30-40Z" fill="#975043" stroke="#512b2b" stroke-width="7"/>
+  <path d="M173 242c27-8 57-4 82 11" fill="none" stroke="#4b2529" stroke-width="8"/>
+  <!-- centre lad: tall long skull, dot eyes, broken nose, tall quiff -->
+  <path d="M333 69c39-41 101-45 143-7 36 33 40 84 19 125-24 47-83 61-127 32-49-32-64-108-35-150Z" fill="#bb7658" stroke="#1f171b" stroke-width="11"/>
+  <path d="M332 78c5-41 31-65 67-67l18-39 16 38 35-23-10 42c27 17 42 44 40 79-35-27-72-31-110-17-21 8-40 3-56-13Z" fill="#8b382f" stroke="#171419" stroke-width="9"/>
+  <path d="M345 56c29-15 59-18 91-8m-98 30c36-16 71-18 106-6" fill="none" stroke="#d27454" stroke-width="5"/>
+  <path d="M350 118c19-12 40-10 56 4m26 0c15-9 31-6 42 7" fill="none" stroke="#41252b" stroke-width="8"/>
+  <circle cx="389" cy="136" r="4" fill="#eddabd"/><circle cx="457" cy="141" r="4" fill="#eddabd"/>
+  <path d="M418 124c-9 18-19 31-32 43-11 10-6 26 9 31 15 4 27-6 40-4 17 2 27-16 17-29-10-13-17-24-34-41Z" fill="#a65b49" stroke="#532d2e" stroke-width="7"/>
+  <path d="M365 199c32-10 69-5 97 15-18 24-70 26-104 3" fill="#4a242b" stroke="#25191c" stroke-width="7"/>
+  <!-- right lad: round skull, crescent eyes, upturned nose, curly mop -->
+  <path d="M528 121c38-36 96-36 134 1 33 33 34 80 12 116-26 43-82 52-121 21-44-35-53-99-25-138Z" fill="#b36f55" stroke="#1f171b" stroke-width="10"/>
+  <g fill="#33272c" stroke="#171419" stroke-width="5"><circle cx="540" cy="120" r="20"/><circle cx="566" cy="102" r="22"/><circle cx="596" cy="97" r="23"/><circle cx="626" cy="103" r="22"/><circle cx="652" cy="122" r="20"/></g>
+  <path d="M543 160c16-11 35-10 50 3m24 1c14-9 29-6 40 6" fill="none" stroke="#402429" stroke-width="8"/>
+  <path d="M550 174c13-5 26-2 35 7m40 2c11-5 22-2 29 6" fill="none" stroke="#ead8b7" stroke-width="5"/>
+  <path d="M603 164c-5 14-3 24 7 33 10 9 2 22-10 23-14 1-27-8-31-20" fill="#9e5547" stroke="#522d2c" stroke-width="6"/>
+  <path d="M553 232c29 8 60 8 90-2" fill="none" stroke="#4b2529" stroke-width="8"/>
+  <!-- three bodies, three masses, no common builder -->
+  <path d="M119 276c42-30 107-35 157-10 57 29 83 91 79 174H61c0-77 14-130 58-164Z" fill="#4c4855" stroke="#14151a" stroke-width="12"/>
+  <path d="M128 294c57 27 119 29 184 7m-207 48c80 29 157 29 231 2" fill="none" stroke="#756c7b" stroke-width="7" opacity=".48"/>
+  <path d="M323 239c49-28 120-30 170 0 60 36 83 105 73 195H270c-5-90 8-155 53-195Z" fill="#344a62" stroke="#14151a" stroke-width="12"/>
+  <path d="M334 263c61 28 126 29 194 3m-217 53c84 30 165 28 242-5" fill="none" stroke="#607790" stroke-width="7" opacity=".48"/>
+  <path d="M526 278c40-30 102-35 151-10 55 29 79 90 75 171H468c1-75 16-128 58-161Z" fill="#694051" stroke="#14151a" stroke-width="12"/>
+  <path d="M535 297c54 26 114 27 176 5m-198 49c76 28 150 27 221 1" fill="none" stroke="#8d5b70" stroke-width="7" opacity=".48"/>
+  <!-- shoulders lock; coats fly at separate angles -->
+  <path d="M275 291c34 15 64 24 94 27m118-20c-28 13-57 20-87 22" fill="none" stroke="#ad6a53" stroke-width="28" stroke-linecap="round"/>
+  <path d="M119 289c-52 12-90 39-114 83l33 103 110-56-7-113Z" fill="#632f42" stroke="#17141a" stroke-width="10"/>
+  <path d="M99 327c-31 17-55 41-72 73m112-56c-36 19-65 45-87 79" fill="none" stroke="#a84b58" stroke-width="7"/>
+  <path d="M484 263c37-42 72-71 105-87l51 55-95 109Z" fill="#293f5b" stroke="#17141a" stroke-width="10"/>
+  <path d="M533 287c23-34 49-61 79-81" fill="none" stroke="#53729b" stroke-width="7"/>
+  <path d="M676 286c52 9 91 34 119 76l-26 110-114-48-4-116Z" fill="#5a3147" stroke="#17141a" stroke-width="10"/>
+  <path d="M692 329c32 16 58 39 78 69m-91-50c35 18 63 44 83 78" fill="none" stroke="#984c68" stroke-width="7"/>
+  <!-- three different running gaits and similar unbranded trainers -->
+  <path d="M151 427c-22 29-38 65-47 109m153-106c14 28 31 60 52 96" stroke="#30343c" stroke-width="39"/>
+  <path d="M350 422c-12 34-20 72-22 116m131-116c16 33 28 69 35 108" stroke="#263544" stroke-width="41"/>
+  <path d="M544 428c-16 31-29 66-38 104m142-104c21 29 40 62 58 100" stroke="#412f3b" stroke-width="39"/>
+  <g fill="#e9e3ce" stroke="#15161a" stroke-width="9"><path d="M69 512c34-8 66-2 93 18-3 15-24 20-53 16l-52-8c-7-9-3-18 12-26Z"/><path d="M277 510c31-12 64-9 91 9 1 15-19 22-48 20l-53-4c-9-8-5-17 10-25Z"/><path d="M294 516c32-8 64-3 90 17-3 14-24 19-52 15l-51-7c-7-9-3-17 13-25Z"/><path d="M463 507c31-12 64-9 91 9 1 14-19 21-48 19l-53-4c-9-8-5-16 10-24Z"/><path d="M472 515c32-9 64-4 91 15-3 15-23 20-52 16l-52-7c-7-9-3-17 13-24Z"/><path d="M674 506c31-12 64-9 91 9 1 15-19 22-48 20l-53-4c-9-8-5-17 10-25Z"/></g>
+  <path d="M71 526c27 8 54 9 82 4m128-6c27 7 53 8 79 4m-63 1c26 8 53 9 80 4m90-11c27 7 53 8 79 4m-63 3c26 8 53 9 80 4m115-10c27 7 53 8 79 4" fill="none" stroke="#9c957e" stroke-width="5"/>
+  <!-- speed scratches and flying corridor grit -->
+  <path d="M49 97l54 28m-34-63 44 47m568-21-51 35m87-8-57 26M24 391l52 7m648-5 54-9" stroke="#cf5152" stroke-width="7" stroke-linecap="round" opacity=".68"/>
+  <path d="m89 414 23 9-8 21-23-9Zm619-5 25-7 7 22-25 8Z" fill="#d6a84b" stroke="#21171b" stroke-width="5"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#0b1018" stroke-width="12"/>
+</svg>

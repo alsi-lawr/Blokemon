@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="blk005-title blk005-desc">
+  <title id="blk005-title">BLK-005 Four-Naan Jeremy non-final comic-vector mock-up</title>
+  <desc id="blk005-desc">From a dizzy overhead angle, a determined checked-shirt diner braces a leaning tower of four blistered flatbreads with splayed hands while crowded plates, chilli stains, a sweating jug and other diners orbit the table. Non-final placeholder art.</desc>
+  <defs><radialGradient id="blk005-table"><stop stop-color="#8d3c26"/><stop offset="1" stop-color="#321d25"/></radialGradient><pattern id="blk005-check" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(28)"><path fill="#d3a666" d="M0 0h24v24H0z"/><path d="M0 12h24M12 0v24" stroke="#6b3030" stroke-width="7" opacity=".8"/></pattern><filter id="blk005-crinkle"><feTurbulence baseFrequency=".05" numOctaves="2" seed="5" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="2"/></filter></defs>
+  <path fill="#201b22" d="M0 0h800v560H0z"/><ellipse cx="406" cy="300" rx="380" ry="301" fill="url(#blk005-table)" stroke="#19171d" stroke-width="18"/>
+  <g stroke="#241b1d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <g fill="#e2d39b"><ellipse cx="151" cy="182" rx="112" ry="77" transform="rotate(-21 151 182)"/><ellipse cx="662" cy="179" rx="107" ry="72" transform="rotate(25 662 179)"/><ellipse cx="142" cy="432" rx="111" ry="70" transform="rotate(16 142 432)"/><ellipse cx="668" cy="427" rx="105" ry="68" transform="rotate(-19 668 427)"/></g>
+    <g fill="#d45e2f"><path d="M83 163q67-41 136 4-47 38-128 29z"/><path d="M602 160q61-31 120 5-50 37-119 23z"/><path d="M81 422q64-35 126 5-48 35-116 24z"/><path d="M609 414q61-34 118 2-46 37-110 25z"/></g>
+    <path fill="#bad7d0" d="M642 255q55-20 87 7l15 128q-55 34-108 2z"/><path fill="#dff2e4" d="M658 267q37-12 55 3l11 93q-35 17-69 2z"/><path fill="none" stroke="#fff1cc" stroke-width="5" d="M670 276q7 26 0 69M706 273q-4 35 5 68"/>
+    <path fill="#a9684c" d="M67 36q86 17 166 106l-57 73Q86 162 25 125z"/><path fill="url(#blk005-check)" d="M74 48q75 21 144 96l-45 56Q93 155 38 117z"/>
+    <path fill="#a9684c" d="M733 39q-90 23-162 111l61 70q84-57 144-100z"/><path fill="url(#blk005-check)" d="M724 51q-73 23-137 99l47 54q72-48 128-91z"/>
+    <path fill="#aa6b50" d="M210 126q36-97 130-103 107 4 160 100 24 51-16 95-48 55-141 41-92-14-133-78-16-24 0-55z"/>
+    <path fill="#543223" d="M209 129q32-108 133-116 98 0 151 88-80-52-153-25-65 7-131 53z"/>
+    <path fill="#aa6b50" d="M220 144q-49-23-59 18-5 41 55 58M483 128q49-28 64 12 13 42-51 63"/>
+    <path fill="#f0d7a5" d="M240 137q45-24 81 15-17 36-50 28-27-7-31-43zM383 125q44-25 82 9-13 39-46 35-29-4-36-44z"/><circle cx="279" cy="149" r="9" fill="#221b1d"/><circle cx="426" cy="138" r="9" fill="#221b1d"/>
+    <path fill="#bd7b57" d="M350 134q-2 56-35 88 36 25 77 1"/><path fill="#2c1d1e" d="M287 215q69 35 129 2-23 58-76 51-37-5-53-53z"/><path fill="#eed59d" d="M309 226q43 12 83 2l-11 20-57-1z"/>
+    <path fill="none" d="M244 109q43-21 81 4M383 98q43-21 84 3M245 193l20 13M443 186l22-18"/>
+    <path fill="url(#blk005-check)" d="M200 242q94 25 179 38 97 15 208-43l68 105q-121 98-269 86-144-11-267-89z"/>
+    <path fill="#aa6b50" d="M185 266q-82 21-123 76-30 42-13 75 14 27 39 18 23-10 16-42 16 29 42 16 21-12 8-42 21 24 42 5 17-17-4-44 26 17 43-6 13-20-50-56z"/>
+    <path fill="#aa6b50" d="M595 257q80 11 130 59 38 37 25 73-10 28-37 22-24-6-22-39-12 31-39 22-23-9-14-42-18 27-42 12-19-14-3-45-24 21-44 0-17-18 46-62z"/>
+    <path fill="#dba45e" d="M283 406q-19-45 5-71 40-35 95-12 35-35 85-5 41-11 58 24 14 29-12 62-122 52-231 2z"/>
+    <path fill="#e5b966" d="M273 368q24-51 84-37 42-28 90 1 49-16 76 23l-13 53q-124 43-230 0z"/>
+    <path fill="#efcb78" d="M266 329q27-51 89-32 45-27 91 6 50-14 78 26l-16 49q-125 38-228-1z"/>
+    <path fill="#f1d287" d="M273 287q34-47 91-24 44-21 88 12 48-10 70 31l-18 45q-121 31-222-6z"/>
+    <g fill="#a94c29" stroke-width="4"><path d="M318 285q12-13 27 2-9 14-27-2zM401 299q14-14 31 2-12 14-31-2zM476 318q13-11 24 4-12 10-24-4zM337 343q11-13 26 0-8 13-26 0zM435 358q15-13 27 3-13 13-27-3zM311 391q12-11 24 3-11 11-24-3z"/></g>
+    <path fill="#2c2223" d="M279 434l-24 118h111l30-119zM431 433l29 119h112l-50-131z"/>
+    <path fill="#a9684c" d="M17 218q46-20 83 8l-24 74-77-12zM707 224q43-24 87 3l9 72-81 3z"/><path fill="#a9684c" d="M4 477q46-24 86 1l-9 77H0zM712 477q44-25 87 3l1 75-83 0z"/>
+    <path fill="none" stroke="#f5c877" stroke-width="5" d="M95 94l39 17M678 95l-40 20M50 333l40 13M754 311l-42 17"/>
+    <!-- Foreshortened overhead face: tiny brow, swollen cheeks, clenched jaw and sweat. -->
+    <path fill="#a9694f" d="M210 96q48-65 134-68 101 8 151 80l-19 84q-54 87-147 65-87-25-123-99z"/>
+    <path fill="#4a2e22" d="M211 108q50-87 143-87 92 13 137 71-113-52-280 16z"/>
+    <path fill="#a9694f" d="M215 129q-46-28-60 10-11 41 53 68M487 117q49-29 65 11 14 42-67 70"/>
+    <path fill="#efd8a5" d="M239 119q47-28 89 10-16 39-50 33-31-5-39-43zM377 112q45-24 84 10-15 39-47 34-30-5-37-44z"/><circle cx="289" cy="131" r="8" fill="#211a1d"/><circle cx="426" cy="124" r="8" fill="#211a1d"/>
+    <path fill="#bd7c59" d="M354 125q0 53-33 83 38 27 83 7"/>
+    <path fill="#2c1e20" d="M285 209q72 15 132-2-19 53-70 50-39-3-62-48z"/><path fill="#f1dda9" d="M306 216q46 5 87-3l-11 21-59 0z"/>
+    <path fill="none" stroke="#4b3028" stroke-width="5" d="M246 178l18 12M439 176l21-15"/>
+    <g fill="#cce1c2" stroke="#4d6c62" stroke-width="4"><path d="M207 74q-19 19-5 38 22-10 5-38z"/><path d="M488 67q-17 18-4 36 20-10 4-36z"/><path d="M187 154q-18 18-4 35 19-9 4-35z"/></g>
+  </g>
+</svg>

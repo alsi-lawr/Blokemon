@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="blk009-title blk009-desc">
+  <title id="blk009-title">BLK-009 Parkrun non-final comic-vector mock-up</title>
+  <desc id="blk009-desc">A red-faced exhausted runner charges in full-body three-quarter motion over wet tarmac, one muddy trainer kicked toward the lens and both arms pumping beneath a crooked park gate while flasks, mist and breath trail behind. Non-final placeholder art.</desc>
+  <defs><linearGradient id="blk009-dawn" x2="0" y2="1"><stop stop-color="#273a51"/><stop offset=".6" stop-color="#668b8d"/><stop offset="1" stop-color="#9fb49a"/></linearGradient><linearGradient id="blk009-tarmac" x2="0" y2="1"><stop stop-color="#4f696b"/><stop offset="1" stop-color="#172629"/></linearGradient><pattern id="blk009-puddle" width="64" height="20" patternUnits="userSpaceOnUse"><path d="M0 15q16-9 32 0t32 0" fill="none" stroke="#bdd7d0" stroke-width="3" opacity=".25"/></pattern></defs>
+  <path fill="url(#blk009-dawn)" d="M0 0h800v560H0z"/><path fill="#314b45" d="M0 194q119-54 237-6 147-82 289-13 134-53 274 8v203H0z"/><path fill="#203733" d="M0 241q140-50 277-3 129-58 271-7 122-35 252 10v172H0z"/>
+  <g stroke="#201a20" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#68736e" d="M64 93l39-1 27 279-53 4zM692 83l40 1-21 282-53-5z"/><path fill="none" stroke="#8b9c91" stroke-width="15" d="M99 120q299-71 593-11M106 198q286-60 578-10"/>
+    <path fill="url(#blk009-tarmac)" d="M0 342q393-83 800 0v218H0z"/><path fill="url(#blk009-puddle)" d="M0 341h800v219H0z"/>
+    <path fill="#4c7674" d="M67 247q52-39 103-4l25 119-109 5z"/><path fill="#b9ded0" d="M92 261q26-18 52-2l13 76-61 3z"/>
+    <path fill="#4c7674" d="M645 235q52-40 105-3l26 128-113 5z"/><path fill="#b9ded0" d="M672 251q27-18 53-1l13 82-62 3z"/>
+    <!-- full-body runner on a strong diagonal -->
+    <path fill="#4d7776" d="M338 209q79-34 153 4 77 41 114 127l-88 95-177-68-77-91z"/>
+    <path fill="#659491" d="M362 229q61-22 113 6 61 33 92 96l-63 68-140-54-59-70z"/>
+    <!-- exhausted red face, no cap/grin -->
+    <path fill="#b85f48" d="M350 84q43-53 102-44 69 15 100 81 28 61 3 117-26 55-84 71-60 13-105-35-43-49-42-115 1-43 26-75z"/>
+    <path fill="#56372a" d="M350 88q44-61 105-56 63 12 93 61-72-29-198-5z"/><path fill="#b85f48" d="M362 64q45-39 92-34 48 10 75 42-78-24-167-8z"/><path fill="none" stroke="#56372a" stroke-width="12" d="M368 59l-8-29M399 51l2-35M434 48l8-34M469 54l16-30M500 67l24-21"/>
+    <path fill="#b85f48" d="M335 133q-39-13-42 25 5 43 43 50M550 137q39-16 47 21 5 40-50 51"/>
+    <path fill="#f0dda7" d="M364 130q35-15 64 7-13 24-37 19-21-4-27-26zM462 132q32-13 59 8-12 23-34 19-21-4-25-27z"/><circle cx="402" cy="138" r="6" fill="#211a20"/><circle cx="497" cy="141" r="6" fill="#211a20"/>
+    <path fill="none" stroke="#472b25" stroke-width="13" d="M360 116q38-19 71 3M458 119q35-17 65 5"/>
+    <path fill="#ca7859" d="M443 131l-24 64 32 8-18 25q35 9 62-16"/>
+    <ellipse cx="443" cy="263" rx="38" ry="31" fill="#432824"/><path fill="#a54c4c" d="M419 274q25-17 49 1-25 18-49-1z"/><path fill="#efdbaa" d="M417 247q26 7 51 0l-4 14-42 1z"/>
+    <path fill="none" stroke="#8f493b" stroke-width="5" d="M361 180l18 14M513 185l19-12M371 211l16 7M505 216l17-7"/>
+    <!-- arms pumping in opposite depth planes -->
+    <path fill="#659491" d="M350 249q-66-18-113 21l-90 73 55 73 151-88M527 243q67 11 105 66l68 91-69 57-112-118"/>
+    <path fill="#b85f48" d="M232 268q-56-4-96 23-37 25-44 56-6 26 17 36 23 9 41-17-3 27 20 32 23 4 31-25 5 25 27 16 21-9 11-35 18 14 33-4 13-17-40-82z"/>
+    <path fill="#b85f48" d="M625 303q48 4 84 34 35 30 38 58 2 24-20 31-22 6-37-20 1 27-22 27-23-1-29-28-9 23-29 15-21-9-10-34-19 13-33-3-13-16 12-38z"/>
+    <!-- long legs and foreshortened shoes -->
+    <path fill="#27343a" d="M359 344l-80 141 84 58 111-150zM487 378l60 132 99-32-72-165z"/>
+    <path fill="#8ccfba" d="M281 466q-91 12-145 61-17 16-4 33h203l52-43z"/><path fill="#d7efdf" d="M159 527q72-27 154-8l-28 22H144z"/><path fill="none" stroke="#e8f7e5" stroke-width="6" d="M178 513l86 32M219 491l80 35M151 544h165"/>
+    <path fill="#70aaa0" d="M541 485q74-7 130 35l41 32-159 8-57-44z"/><path fill="#d8ede2" d="M565 505q48-2 87 25l-84 9-42-27z"/><path fill="none" stroke="#e8f5e8" stroke-width="6" d="M573 496l52 39M603 491l58 38"/>
+    <path fill="#d4d6c0" d="M198 302q27-21 52 1l-15 54-57-5z"/><circle cx="217" cy="327" r="13" fill="#20343b"/><path fill="none" stroke="#b9efd5" stroke-width="4" d="M217 327v-10M217 327l9 6"/>
+    <path fill="#eef2e1" d="M567 151q24-22 47 2-15 14-47-2zM582 127q19-18 37 1-12 12-37-1z"/>
+    <path fill="none" stroke="#d9eee7" stroke-width="6" d="M17 61q40-15 78 0M137 77q46-18 91-1M588 61q48-18 96-1M709 47q42-15 78 2"/>
+  </g>
+</svg>

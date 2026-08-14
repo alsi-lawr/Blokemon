@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b033-title b033-desc">
+  <title id="b033-title">BLK-033 Cash Only non-final comic mock-up</title>
+  <desc id="b033-desc">A square-jowled proprietor peers through tiny spectacles, spreading one hand over a coin tray while the other unplugs a blank card reader behind a cluttered green counter. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b033-shop" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17382f"/><stop offset=".62" stop-color="#355949"/><stop offset="1" stop-color="#101e1c"/></linearGradient>
+    <linearGradient id="b033-apron" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d6d1b8"/><stop offset="1" stop-color="#777765"/></linearGradient>
+    <pattern id="b033-shelf" width="65" height="62" patternUnits="userSpaceOnUse"><rect width="65" height="62" fill="#254137"/><path d="M0 58h65" stroke="#101b19" stroke-width="8"/><path d="M8 13h19v38H8Zm31 5h17v33H39Z" fill="#8b7960" stroke="#17211f" stroke-width="4"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b033-shop)"/>
+  <path d="M0 0h800v284H0Z" fill="url(#b033-shelf)" stroke="#101b18" stroke-width="10"/>
+  <path d="M30 249c106-17 202-9 301-2m403-8c22 4 44 8 66 15" fill="none" stroke="#9cad83" stroke-width="5" opacity=".4"/>
+  <!-- bald, square proprietor -->
+  <path d="M238 81c32-45 104-57 162-25 51 28 73 87 57 145-4 16-3 35-10 54-11 31-38 61-77 68-47 8-94-12-119-49-17-25-15-52-28-74-20-34-10-84 15-119Z" fill="#b9795c" stroke="#1d1a19" stroke-width="12"/>
+  <path d="M248 75c42-31 104-34 151-6" fill="none" stroke="#7f5042" stroke-width="9" opacity=".7"/>
+  <path d="M237 118c-21-13-43 3-42 29 1 25 23 41 47 25m207-51c20-15 43 0 44 25 1 24-19 42-43 29" fill="#a96853" stroke="#211a1b" stroke-width="8"/>
+  <path d="M223 133c12-5 22 2 24 13m228-11c-11-4-21 3-23 14" fill="none" stroke="#6c3c34" stroke-width="5"/>
+  <!-- tiny spectacles and dot pupils -->
+  <path d="M256 147c21-14 50-11 65 7-5 25-48 30-65-7Zm104 8c17-16 45-15 60 2-7 24-45 27-60-2Zm-38 3c13-8 25-7 38 1" fill="#d9ded0" stroke="#242323" stroke-width="7"/>
+  <circle cx="294" cy="158" r="4" fill="#111715"/><circle cx="389" cy="162" r="4" fill="#111715"/>
+  <path d="M272 130c18-10 37-9 53 3m43 0c18-8 35-5 49 7" fill="none" stroke="#392522" stroke-width="9" stroke-linecap="round"/>
+  <!-- cauliflower nose and coin-slot mouth -->
+  <path d="M337 147c-5 22-17 38-29 51-12 13-6 34 13 38 16 3 28-8 42-4 18 5 34-11 28-28-5-15-21-16-28-29-7-13-11-24-26-28Z" fill="#a96250" stroke="#4b2c29" stroke-width="8"/>
+  <path d="M329 190c12 6 22 14 26 27m-37 3c14-6 30-5 45 1" fill="none" stroke="#db9271" stroke-width="4"/>
+  <path d="M295 255c32-11 75-7 107 8-24 14-80 15-107-8Z" fill="#54292a" stroke="#281c1b" stroke-width="7"/>
+  <path d="M287 283c20 21 38 32 59 36 26 5 53-7 70-31" fill="none" stroke="#77453b" stroke-width="6"/>
+  <path d="M254 98c10-24 24-35 43-39m118 13c17 9 27 22 30 39" fill="none" stroke="#332a27" stroke-width="11" stroke-linecap="round"/>
+  <!-- barrel torso behind counter -->
+  <path d="M212 311c38-35 96-42 156-31 78 14 126 76 133 161H180c-3-57 3-96 32-130Z" fill="#4b4d45" stroke="#171b18" stroke-width="12"/>
+  <path d="M254 290 300 441h136l-37-155c-43 24-96 25-145 4Z" fill="url(#b033-apron)" stroke="#292d28" stroke-width="8"/>
+  <path d="M282 333c34 12 76 12 114-1m-96 46c29 9 64 8 90-2" fill="none" stroke="#999984" stroke-width="6" opacity=".62"/>
+  <!-- counter, coins and till obscure lower body -->
+  <path d="M0 367c218-22 488-13 800-3v196H0Z" fill="#173029" stroke="#0e1715" stroke-width="13"/>
+  <path d="M0 391c268-18 533-17 800-2" fill="none" stroke="#6c866a" stroke-width="9"/>
+  <path d="M51 421h230l-10 100H40Z" fill="#252a27" stroke="#0e1514" stroke-width="10"/>
+  <path d="M74 439h179v52H69Z" fill="#627065" stroke="#171c1a" stroke-width="7"/>
+  <ellipse cx="115" cy="459" rx="19" ry="8" fill="#d4aa46" stroke="#2c281d" stroke-width="4"/><ellipse cx="161" cy="474" rx="17" ry="7" fill="#b98d36" stroke="#2c281d" stroke-width="4"/><ellipse cx="218" cy="453" rx="14" ry="6" fill="#e2bd58" stroke="#2c281d" stroke-width="4"/>
+  <path d="M497 404h125l28 79-154 4Z" fill="#d8d4c7" stroke="#1c2220" stroke-width="9"/>
+  <path d="M521 421h75l13 36-88 2Z" fill="#68716d" stroke="#222725" stroke-width="5"/>
+  <path d="M620 471c34-3 62 6 89 22" fill="none" stroke="#171b1a" stroke-width="9"/>
+  <path d="M700 492c16 8 24 20 19 30-6 12-22 9-31-4-7-10-3-22 12-26Z" fill="#3b3e3a" stroke="#171b19" stroke-width="6"/>
+  <!-- guarding hand with individually drawn fingers -->
+  <path d="M231 364c-27 17-54 33-81 49-17 10-24 25-16 37 9 13 24 8 40-2l29-18-23 29c-10 13-7 27 5 32 12 5 23-7 33-21l19-28-9 30c-5 16 2 28 15 29 13 1 20-13 24-29l15-61c6-24-6-48-31-47Z" fill="#b87459" stroke="#211a1a" stroke-width="9"/>
+  <path d="M178 421c21 6 39 17 54 33m-30-49c18 7 34 18 47 31m-21-45c16 8 30 20 40 35" fill="none" stroke="#774236" stroke-width="5"/>
+  <!-- unplugging hand -->
+  <path d="M468 347c38 12 72 27 104 44 15 8 30 5 36-7 6-13-5-24-19-31l-42-21 45 7c17 3 28-5 27-18-1-13-14-17-31-18l-62-1c-27 0-51 16-58 45Z" fill="#b87459" stroke="#211a1a" stroke-width="9"/>
+  <path d="M559 346c16-6 33-6 50-1m-67-19c17-5 35-4 53 3m-71-18c16-3 31-1 47 4" fill="none" stroke="#774236" stroke-width="5"/>
+  <path d="M578 384c14 15 26 31 36 49" fill="none" stroke="#151817" stroke-width="7"/>
+  <!-- scuffs, receipt curl, hard paper light -->
+  <path d="M672 176c-21 27-25 58-11 86 10 20 2 39-13 53" fill="none" stroke="#f1eee0" stroke-width="12"/>
+  <path d="M676 178c10 15 13 31 10 49" fill="none" stroke="#a7a99d" stroke-width="4"/>
+  <path d="M22 333c68-15 126-12 190-1m392-10c62-13 116-10 175 4M308 520l43 8m-20-31 54 7" fill="none" stroke="#91a583" stroke-width="5" opacity=".45"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#0f1715" stroke-width="12"/>
+</svg>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b090-title b090-desc">
+  <title id="b090-title">BLK-090 Recovery Meeting non-final comic mock-up</title>
+  <desc id="b090-desc">A quiet salt-and-pepper-haired attendee sits side-three-quarter within a circle of empty chairs, both folded hands warming around a plain mug as biscuits and cream light wait for the next arrival. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b090-room" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#234a57"/><stop offset=".55" stop-color="#487786"/><stop offset="1" stop-color="#172c36"/></linearGradient>
+    <radialGradient id="b090-light" cx="50%" cy="10%" r="72%"><stop stop-color="#fff4cf" stop-opacity=".82"/><stop offset=".46" stop-color="#f0ddb2" stop-opacity=".22"/><stop offset="1" stop-color="#f0ddb2" stop-opacity="0"/></radialGradient>
+    <pattern id="b090-carpet" width="57" height="41" patternUnits="userSpaceOnUse"><rect width="57" height="41" fill="#285260"/><path d="m0 9 57 27M-6 30 19 43M31-4 64 13" stroke="#4e7b86" stroke-width="3" opacity=".5"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b090-room)"/>
+  <ellipse cx="405" cy="107" rx="350" ry="320" fill="url(#b090-light)"/>
+  <path d="M0 0h800v78C649 57 524 86 392 69 245 50 121 88 0 65Z" fill="#19333d" stroke="#10232a" stroke-width="10"/>
+  <path d="M31 101h198v205H24Zm542 0h201v204H565Z" fill="#214551" stroke="#172d34" stroke-width="9"/>
+  <path d="M51 121h158v165H44Zm542 0h161v164H585Z" fill="#56808a"/>
+  <path d="M57 262 203 130M47 205l85-82m469 139 147-132m-154 74 90-83" stroke="#c8d6c5" stroke-width="5" opacity=".3"/>
+  <path d="M0 368c214-35 518-33 800 4v188H0Z" fill="url(#b090-carpet)" stroke="#13272f" stroke-width="11"/>
+  <!-- circle of empty chairs clearly surrounds, not replaces, attendee -->
+  <g stroke="#18252b" stroke-width="10">
+    <path d="M20 315c16-50 58-69 94-40 34 28 39 82 24 131l-29 92H0Z" fill="#68727a"/>
+    <path d="M122 279c27-52 72-62 106-24 30 33 24 83 5 127l-38 80H91Z" fill="#59666e"/>
+    <path d="M578 279c29-53 73-62 106-23 29 34 22 84 2 127l-40 79H544Z" fill="#59666e"/>
+    <path d="M685 315c19-50 61-68 96-38 32 29 36 83 19 131l-32 90H657Z" fill="#68727a"/>
+  </g>
+  <path d="M38 327c26-18 51-18 76 1m31-33c28-18 55-17 81 3m380-4c29-18 56-17 80 4m24 31c26-18 52-17 77 2" fill="none" stroke="#92999d" stroke-width="6"/>
+  <path d="M44 481 24 555m85-73 21 73m45-92-12 92m70-104 22 100m376-99-18 103m74-92 14 92m36-71-19 71m72-70 24 70" stroke="#1b272c" stroke-width="12"/>
+  <!-- soft bean skull and loose salt/pepper waves, side-three-quarter -->
+  <path d="M317 104c41-42 108-46 153-7 40 34 50 88 29 132-25 52-88 70-136 40-53-33-69-119-46-165Z" fill="#b97a60" stroke="#20181a" stroke-width="11"/>
+  <path d="M316 111c13-45 57-70 101-61 43 8 74 44 76 88-41-30-82-34-121-18-22 9-41 6-56-9Z" fill="#484344" stroke="#1a181a" stroke-width="9"/>
+  <path d="M327 91c18-18 39-22 62-11 20-18 44-17 62 2 19-4 35 4 47 22" fill="none" stroke="#aaa394" stroke-width="9" stroke-linecap="round"/>
+  <path d="M328 135c-25-8-43 12-36 37 7 24 31 34 51 18m145-51c25-8 43 12 35 38-7 24-31 34-51 18" fill="#aa6c55" stroke="#24191a" stroke-width="8"/>
+  <!-- small lowered oval eyes and short blunt nose -->
+  <path d="M348 155c17-10 36-8 51 4m30 3c14-8 29-5 40 6" fill="none" stroke="#41282b" stroke-width="8"/>
+  <path d="M356 169c12-5 25-2 34 7-10 10-24 6-34-7Zm80 5c11-5 23-2 31 7-10 9-22 6-31-7Z" fill="#eadabd" stroke="#291b1d" stroke-width="4"/>
+  <path d="M375 174h6m72 7h5" stroke="#141619" stroke-width="5"/>
+  <path d="M408 162c-5 14-7 25-7 36 0 12 11 19 23 17 13-3 18-15 10-25-7-10-11-18-26-28Z" fill="#a86854" stroke="#553234" stroke-width="6"/>
+  <path d="M365 233c26-3 52 3 71 18-14 17-45 19-71 3" fill="#593134" stroke="#2a1b1d" stroke-width="6"/>
+  <path d="M376 249c16 2 31 0 45-5" stroke="#d17c68" stroke-width="4"/>
+  <!-- compact folded seated body opens slightly toward next chair -->
+  <path d="M286 291c50-28 122-29 173 1 61 36 83 105 72 190H226c-4-86 14-150 60-191Z" fill="#4a5861" stroke="#151a1d" stroke-width="12"/>
+  <path d="M295 315c63 27 129 28 198 3m-218 54c85 29 167 28 245-4" fill="none" stroke="#738087" stroke-width="8" opacity=".45"/>
+  <path d="M340 289c-5 48-2 97 10 148m69-146c16 46 22 95 17 146" fill="none" stroke="#303d44" stroke-width="9"/>
+  <path d="M288 319c-48 25-84 58-108 98-13 22-7 41 10 49 18 8 33-8 46-29l78-89Z" fill="#b37559" stroke="#20181a" stroke-width="10"/>
+  <path d="M456 321c45 27 78 62 99 104 11 22 4 41-14 48-18 7-32-10-44-31l-70-94Z" fill="#b37559" stroke="#20181a" stroke-width="10"/>
+  <!-- both folded hands uniquely wrap warm mug -->
+  <path d="M268 407c36-21 72-17 105 12l24 30-38 55-91-25c-27-8-37-29-26-48 6-10 15-18 26-24Z" fill="#c18162" stroke="#20181a" stroke-width="9"/>
+  <path d="M486 410c-35-22-72-19-106 9l-25 29 36 57 92-22c27-7 38-28 28-47-5-11-14-19-25-26Z" fill="#bd7b5e" stroke="#20181a" stroke-width="9"/>
+  <path d="M265 430c23 3 44 12 61 27m-70-9c21 4 39 12 55 25m182-40c-23 3-44 12-62 27m71-9c-21 4-40 13-56 26" fill="none" stroke="#77443b" stroke-width="5"/>
+  <path d="M335 386h128l-13 137H349Z" fill="#ded5b6" stroke="#292321" stroke-width="9"/>
+  <ellipse cx="399" cy="389" rx="65" ry="22" fill="#f0e5c6" stroke="#292321" stroke-width="8"/>
+  <path d="M453 410c54-10 80 10 74 48-5 34-34 49-72 36" fill="none" stroke="#ded5b6" stroke-width="16"/>
+  <path d="M350 445c31 13 64 13 98 0" fill="none" stroke="#b68b5c" stroke-width="7"/>
+  <!-- plain biscuits and quiet steam -->
+  <path d="M104 406c43-20 88-18 134 6l-12 91-139 0Z" fill="#d9d2bd" stroke="#292321" stroke-width="8"/>
+  <g fill="#c79f5b" stroke="#4b3528" stroke-width="5"><circle cx="130" cy="447" r="24"/><circle cx="184" cy="444" r="23"/><circle cx="157" cy="480" r="22"/></g>
+  <g fill="#8f6e46"><circle cx="123" cy="441" r="3"/><circle cx="137" cy="454" r="3"/><circle cx="179" cy="438" r="3"/><circle cx="192" cy="450" r="3"/><circle cx="151" cy="475" r="3"/><circle cx="166" cy="485" r="3"/></g>
+  <path d="M374 374c-17-26-14-48 8-66 17-14 20-32 11-54m35 119c18-25 16-47-5-65-15-13-18-30-9-52" fill="none" stroke="#f6e8c6" stroke-width="8" opacity=".68"/>
+  <!-- carpet scuffs and gentle light scratches -->
+  <path d="M21 519c98-17 190-15 277-4m208 0c88-9 177-5 270 11" fill="none" stroke="#54808a" stroke-width="6"/>
+  <path d="M51 334l48 13m-24-41 38 22m574 14 49-17m-28 42 43-20" stroke="#d7d4ba" stroke-width="6" opacity=".5"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#10232a" stroke-width="12"/>
+</svg>

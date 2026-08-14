@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b129-title b129-desc">
+  <title id="b129-title">BLK-129 Rock Bottom non-final comic mock-up</title>
+  <desc id="b129-desc">A tiny hood-slipped figure sits folded on the lowest ledge of an enormous drained municipal basin, untouched water and coat beside him as cold blue concrete opens toward one pale dawn horizon. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b129-dawn" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e7ddbc"/><stop offset=".2" stop-color="#9ab6bb"/><stop offset=".55" stop-color="#3e6579"/><stop offset="1" stop-color="#172d42"/></linearGradient>
+    <linearGradient id="b129-basin" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#7391a0"/><stop offset=".5" stop-color="#3e6479"/><stop offset="1" stop-color="#17354d"/></linearGradient>
+    <pattern id="b129-concrete" width="107" height="59" patternUnits="userSpaceOnUse"><rect width="107" height="59" fill="#466c7f"/><path d="M7 15c27-7 54-6 79 2M19 45c23-5 44-4 64 2" fill="none" stroke="#6f8e9b" stroke-width="5" opacity=".45"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b129-dawn)"/>
+  <!-- huge empty basin with human kept deliberately small -->
+  <path d="M0 104c173-35 352-38 537-10 92 14 180 11 263-9v475H0Z" fill="url(#b129-concrete)" stroke="#1c3443" stroke-width="11"/>
+  <path d="M0 181c157-34 321-34 491-1 111 22 214 21 309-1M0 277c176-31 349-29 519 6 96 20 190 18 281-4M0 386c212-28 413-24 603 14 71 14 137 14 197 3" fill="none" stroke="#9eb0b1" stroke-width="8" opacity=".42"/>
+  <path d="M0 451c219-27 509-24 800 11v98H0Z" fill="#18394e" stroke="#102839" stroke-width="9"/>
+  <path d="M20 512c136-18 268-15 396-1m93 5c88-5 176-1 268 8" fill="none" stroke="#3b6176" stroke-width="6"/>
+  <!-- empty ladders and drains tell location without signs -->
+  <path d="M93 198v179m57-188v181M94 230h55M94 274h55M94 318h55M94 360h55" stroke="#b0b8b1" stroke-width="10"/>
+  <ellipse cx="687" cy="425" rx="77" ry="28" fill="#122d40" stroke="#0d2130" stroke-width="9"/>
+  <path d="M630 423c38 12 76 12 114 0" stroke="#36566a" stroke-width="7"/>
+  <!-- tiny bean skull and slipped-back hood -->
+  <path d="M339 327c29-26 73-25 101 4 24 25 24 62 6 88-21 31-64 37-94 14-33-25-39-75-13-106Z" fill="#a86e59" stroke="#1c2023" stroke-width="9"/>
+  <path d="M334 337c14-36 53-53 88-35 24 12 38 33 39 58-30-18-58-18-85-8-19 7-33 2-42-15Z" fill="#33475a" stroke="#182631" stroke-width="8"/>
+  <path d="M345 325c19-9 38-10 58-2m-68 23c24-10 47-10 69-2" fill="none" stroke="#637689" stroke-width="5"/>
+  <path d="M337 350c-19-6-32 9-27 28 5 18 22 26 37 15m99-41c19-7 32 8 27 28-5 18-22 26-37 14" fill="#9b6351" stroke="#202427" stroke-width="7"/>
+  <!-- lowered dot eyes, short nose, slack line -->
+  <path d="M352 365c12-8 26-7 37 2m18 2c10-6 21-4 29 4" fill="none" stroke="#3e2a2a" stroke-width="7"/>
+  <circle cx="375" cy="377" r="3" fill="#e3d5ba"/><circle cx="424" cy="380" r="3" fill="#e3d5ba"/>
+  <path d="M398 368c-4 11-6 19-4 27 2 8 11 12 19 9" fill="none" stroke="#74463e" stroke-width="5"/>
+  <path d="M364 418c18 4 37 4 56 0" fill="none" stroke="#4f3332" stroke-width="6"/>
+  <!-- folded figure occupies lowest ledge -->
+  <path d="M313 432c38-23 92-25 132-4 50 26 68 76 57 128H264c-3-55 9-97 49-124Z" fill="#35495a" stroke="#17242c" stroke-width="10"/>
+  <path d="M319 451c49 19 100 20 154 2m-166 41c60 21 118 20 174-3" fill="none" stroke="#617486" stroke-width="6" opacity=".48"/>
+  <path d="M323 450c-26 17-44 38-54 64m181-65c24 17 40 39 48 64" fill="none" stroke="#a56b56" stroke-width="25" stroke-linecap="round"/>
+  <path d="M319 515c-10 13-15 26-15 40m144-41c9 14 14 27 14 41" stroke="#273746" stroke-width="28"/>
+  <!-- folded coat and untouched bottle small but specific -->
+  <path d="M509 450c43-27 94-29 137-6l24 91-184 9-13-52Z" fill="#2a3447" stroke="#17202a" stroke-width="9"/>
+  <path d="M499 471c48-15 96-14 143 4m-145 29c53-14 104-12 151 6" fill="none" stroke="#526078" stroke-width="6"/>
+  <path d="M199 432c19-3 35 6 38 21l-4 93-53 0-2-90c0-14 7-22 21-24Z" fill="#a9d6d2" fill-opacity=".35" stroke="#d4e5dc" stroke-width="7"/>
+  <path d="M189 414h35l5 22-45 0Z" fill="#dce6d8" stroke="#30454c" stroke-width="5"/>
+  <path d="M184 497c16 7 32 7 49 0" fill="none" stroke="#8fc7ca" stroke-width="5"/>
+  <!-- cracks, stains, pale horizon -->
+  <path d="M239 180c27 47 36 99 27 156l-31 80m344-268c-31 49-42 105-33 168l29 105" fill="none" stroke="#315468" stroke-width="7"/>
+  <path d="M270 304l-26 20 12 22-31 29m315-79 28 23-11 24 32 31" fill="none" stroke="#25475c" stroke-width="6"/>
+  <path d="M0 101c174-23 349-21 524 3 94 13 186 10 276-6" fill="none" stroke="#eee2bf" stroke-width="11" opacity=".8"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#12293a" stroke-width="12"/>
+</svg>

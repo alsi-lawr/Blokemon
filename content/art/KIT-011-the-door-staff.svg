@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="kit011-title kit011-desc">
+  <title id="kit011-title">KIT-011 The Door Staff non-final low queue mock-up</title>
+  <desc id="kit011-desc">From below a rain-slick barrier, a broad female door supervisor in hard three-quarter profile fans an opponent's blank cards with one articulated hand and hooks an odd little patron backwards toward a card-shaped chute with the other. Her cauliflower ear, segmented braid, heavy boots, wet queue and layered umbrellas make the bottom-of-deck gag physical. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="k11-night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101b30"/><stop offset=".52" stop-color="#273c4c"/><stop offset="1" stop-color="#090d18"/></linearGradient>
+    <linearGradient id="k11-coat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3c5975"/><stop offset=".42" stop-color="#26374f"/><stop offset="1" stop-color="#111a2a"/></linearGradient>
+    <linearGradient id="k11-skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d9946f"/><stop offset=".55" stop-color="#9d554d"/><stop offset="1" stop-color="#542f3b"/></linearGradient>
+    <linearGradient id="k11-puddle" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#6f919b"/><stop offset="1" stop-color="#18242e"/></linearGradient>
+    <pattern id="k11-rain" width="47" height="43" patternUnits="userSpaceOnUse" patternTransform="rotate(15)"><path d="M5 0v31M25 13v29M41 2v18" stroke="#afd0d5" stroke-width="3" opacity=".42"/></pattern>
+    <filter id="k11-grain"><feTurbulence baseFrequency=".59" numOctaves="3" seed="53" result="n"/><feColorMatrix in="n" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .09 0"/><feBlend in="SourceGraphic" mode="multiply"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#k11-night)"/>
+  <!-- deep wet queue, umbrellas and doorway layers -->
+  <path d="M0 31h207v339H0Z" fill="#090e1a" stroke="#6d4c3e" stroke-width="11"/>
+  <path d="M21 53h163v287H21Z" fill="#171424" stroke="#1f2930" stroke-width="7"/>
+  <path d="M600 81c28-35 77-36 107-2 19 21 24 47 16 76-35-22-74-25-118-8-18-24-20-46-5-66Z" fill="#536476" stroke="#111820" stroke-width="8"/>
+  <path d="M663 143v238" stroke="#212a31" stroke-width="8"/>
+  <path d="M690 167c21-28 61-31 86-5 17 17 22 39 17 65-30-18-63-19-99-3-14-20-16-39-4-57Z" fill="#78576b" stroke="#111820" stroke-width="8"/>
+  <path d="M743 219v181" stroke="#212a31" stroke-width="8"/>
+  <g stroke="#10151d" stroke-width="7">
+    <path d="M568 196c26-23 62-15 79 18 17 34 15 95 7 181l-103 4c-4-91-3-174 17-203Z" fill="#586879"/><path d="M578 154c10-24 39-31 57-13 18 18 14 50-8 62-23 12-58-17-49-49Z" fill="#9d6355"/>
+    <path d="M664 241c23-21 53-14 68 16 15 31 13 82 7 144l-92 2c-3-73-2-137 17-162Z" fill="#4d596b"/><path d="M673 204c8-20 33-26 49-11 15 16 12 43-7 53-20 10-50-16-42-42Z" fill="#b0725a"/>
+    <path d="M741 283c19-17 43-10 56 15 10 22 11 56 3 101l-72 2c-2-55-1-100 13-118Z" fill="#4a6b70"/><path d="M748 252c7-17 27-21 39-8 13 13 10 35-5 43-17 8-41-14-34-35Z" fill="#80514d"/>
+  </g>
+  <path d="M0 387c184-37 423-32 800 21v152H0Z" fill="url(#k11-puddle)" stroke="#0c141a" stroke-width="12"/>
+  <path d="M0 447c192-29 423-20 800 35" stroke="#9ab5bb" stroke-width="7" fill="none" opacity=".5"/>
+  <path d="M8 511c117-21 219-16 307 16m176-30c91-15 189-8 294 20" stroke="#141c23" stroke-width="14" fill="none"/>
+  <!-- receding card-shaped chute at the back of the doorway -->
+  <path d="M31 197h137v185L93 416 28 375Z" fill="#252535" stroke="#0b0d15" stroke-width="10"/>
+  <path d="M50 226h95v129l-53 28-44-31Z" fill="#080a10" stroke="#5a4851" stroke-width="6"/>
+  <path d="M62 248h71v15H62Zm-2 39h76v15H60Zm-2 39h80v15H58Z" fill="#74566c" opacity=".6"/>
+  <!-- giant wet barrier makes the low camera explicit -->
+  <path d="M-40 349C163 309 370 316 581 368c96 24 182 25 259 5" stroke="#171b20" stroke-width="39" fill="none"/>
+  <path d="M-35 341C171 305 376 312 583 363c93 23 179 24 258 4" stroke="#a47a47" stroke-width="13" fill="none"/>
+  <path d="M79 321 46 560m599-207 28 207" stroke="#171b20" stroke-width="25"/>
+  <path d="M81 327 54 538m588-180 23 178" stroke="#9b7449" stroke-width="8"/>
+  <!-- supervisor's broad, forward-thrust coat: asymmetric trapezoid, not a rounded torso -->
+  <path d="M241 202c52-42 137-46 190-11 49 33 79 101 91 205l20 164H180l20-196c8-79 16-132 41-162Z" fill="url(#k11-coat)" stroke="#101520" stroke-width="13"/>
+  <path d="M205 348c96 29 198 24 305-15m-315 92c111 27 220 24 326-11m-335 77c120 24 236 21 348-8" stroke="#67809a" stroke-width="7" fill="none" opacity=".45"/>
+  <path d="M283 239c19 35 30 73 33 114m107-122c-11 43-13 85-6 126" stroke="#101722" stroke-width="8" fill="none"/>
+  <path d="M309 265h105l14 54-117 4Z" fill="#1a2637" stroke="#0e131c" stroke-width="8"/>
+  <path d="M332 285h69" stroke="#8195a9" stroke-width="5"/>
+  <!-- hard three-quarter-profile head, cauliflower ear, no stock hair wedge -->
+  <path d="M277 77c32-39 90-47 132-21 39 25 57 71 43 111-9 28-31 49-66 62-42 16-91-3-112-43-18-35-17-83 3-109Z" fill="url(#k11-skin)" stroke="#21181e" stroke-width="11"/>
+  <path d="M299 66c16-28 51-41 88-32 28 7 48 26 57 56-28-16-54-16-76 1-25-14-48-12-69 5Z" fill="#26252a" stroke="#15161a" stroke-width="8"/>
+  <path d="M335 82c-5-29 8-51 26-64m20 72c3-32 17-53 38-64" stroke="#1c1e22" stroke-width="8" fill="none"/>
+  <!-- visible battered ear on near side -->
+  <path d="M273 119c-28-15-48 4-41 33 7 28 30 44 54 31 13-7 16-22 7-34-12 4-20 0-22-11 8-6 8-12 2-19Z" fill="#a45b53" stroke="#2c1c22" stroke-width="8"/>
+  <path d="M251 137c14-7 25-1 26 12-11 0-17 6-18 17" stroke="#69343e" stroke-width="6" fill="none"/>
+  <path d="M263 116c7-18 22-28 44-28 20 1 36 10 47 28-22-6-44-6-66 2Z" fill="#3d272c" stroke="#21191c" stroke-width="7"/>
+  <path d="M281 119c18-8 36-5 50 9-11 15-26 20-44 13Z" fill="#e6d5b7" stroke="#302025" stroke-width="6"/>
+  <ellipse cx="307" cy="130" rx="6" ry="9" fill="#151719"/>
+  <path d="M346 109c19 6 35 18 48 37l-29 15c-14-13-21-30-19-52Z" fill="#b86b58" stroke="#42252a" stroke-width="8"/>
+  <path d="M381 148c24 0 42 9 53 26-15 9-31 10-48 3Z" fill="#532b34" stroke="#281b21" stroke-width="7"/>
+  <path d="M390 160c10 4 20 5 30 2" stroke="#dcbda6" stroke-width="4"/>
+  <path d="M400 187c14 4 27 2 39-7" stroke="#6d3640" stroke-width="5" fill="none"/>
+  <!-- segmented braid whips back into the rain -->
+  <g fill="#242329" stroke="#111318" stroke-width="6" transform="rotate(-8 407 102)">
+    <ellipse cx="431" cy="86" rx="25" ry="18"/><ellipse cx="461" cy="79" rx="25" ry="17"/><ellipse cx="490" cy="88" rx="24" ry="17"/><ellipse cx="516" cy="105" rx="23" ry="16"/><ellipse cx="538" cy="127" rx="21" ry="15"/><ellipse cx="554" cy="151" rx="18" ry="14"/><ellipse cx="565" cy="175" rx="15" ry="12"/>
+  </g>
+  <path d="M428 74c38-14 72-4 102 28 24 26 40 54 47 86" stroke="#59515a" stroke-width="4" fill="none" opacity=".6"/>
+  <!-- left arm and articulated card-fanning hand -->
+  <path d="M244 271c-54 9-102 44-143 105l-31 45 76 42 37-50c31-42 65-63 102-64" fill="#263a52" stroke="#101520" stroke-width="13"/>
+  <path d="M110 385c-21 7-39 22-49 43-7 15 0 26 12 28 11 2 17-8 23-19-1 13 7 22 19 20 11-2 14-15 15-28 5 11 15 16 25 11 10-5 8-19 5-31 13 4 24-2 28-14 4-15-11-24-27-28Z" fill="url(#k11-skin)" stroke="#21181e" stroke-width="9"/>
+  <path d="M67 440c9-8 19-11 29-8m8 14c7-10 15-14 24-12m11-3c4-10 10-16 19-19m10-9c3-9 9-14 17-16" stroke="#6b3640" stroke-width="4" fill="none"/>
+  <g fill="#d6d0bd" stroke="#2b2528" stroke-width="7"><path d="m59 349-15-92 75-5 6 104Z"/><path d="m81 345 8-95 76 18-21 98Z"/><path d="m105 353 32-88 68 36-47 88Z"/><path d="m128 368 54-77 57 52-65 76Z"/></g>
+  <g fill="none" stroke="#80735f" stroke-width="4"><path d="m63 278 34 22-29 24Z"/><path d="m106 276 31 26-30 19Z"/><path d="m154 298 25 31-33 13Z"/><path d="m188 325 20 28-30 8Z"/></g>
+  <!-- right arm hooks a peculiar small patron by a raised collar -->
+  <path d="M473 269c56 7 101 36 136 86l29 41-67 48-38-43c-27-31-55-47-84-48" fill="#1c2a3e" stroke="#101520" stroke-width="13"/>
+  <path d="M580 363c26-1 51 11 68 32 10 13 6 27-6 31-12 4-21-7-29-16 2 13-5 23-17 23-12 0-15-13-18-25-4 11-13 17-24 12-11-6-8-19-5-31-13 4-24-2-29-15-5-14 9-23 23-29Z" fill="url(#k11-skin)" stroke="#21181e" stroke-width="9"/>
+  <path d="M639 401c-9-5-18-4-27 4m-1 17c-9-6-18-5-26 2m-7-6c-8-4-15-2-22 4m-7-10c-7-1-13 2-18 8" stroke="#6b3640" stroke-width="4" fill="none"/>
+  <!-- odd patron: knobbly, tiny, dragged backwards toward the chute -->
+  <path d="M109 352c20-23 50-22 70 0 19 22 18 55-1 78-18 21-46 22-66 2-21-21-23-58-3-80Z" fill="#bf7d5f" stroke="#21181e" stroke-width="9"/>
+  <path d="M112 353c5-28 25-41 48-31 15 6 24 18 26 36-17-10-34-10-51 1Z" fill="#8a7449" stroke="#211d1e" stroke-width="7"/>
+  <path d="M117 373c11-9 22-9 34 0-8 11-18 14-29 9Z" fill="#e7d6b8" stroke="#302025" stroke-width="5"/>
+  <circle cx="135" cy="377" r="4" fill="#171719"/>
+  <path d="M160 371c13 8 16 19 8 32-7 9-16 10-27 3" fill="#a65f4f" stroke="#3b2328" stroke-width="6"/>
+  <path d="M126 417c13-5 26-2 36 8" stroke="#44272d" stroke-width="6"/>
+  <path d="M97 435c23-19 56-21 80-4 28 19 40 59 37 129H72l5-77c2-23 8-39 20-48Z" fill="#7a633e" stroke="#17171a" stroke-width="10"/>
+  <path d="M84 452c34 13 71 12 111-4m-117 48c43 12 85 10 128-5" stroke="#b0985f" stroke-width="5" fill="none" opacity=".5"/>
+  <path d="m101 477-54-28-21 39 61 42m93-64 53-36 25 38-63 50" fill="#5f4a35" stroke="#17171a" stroke-width="9"/>
+  <path d="M31 476c-14 17-15 35-2 54m206-76c20 11 28 27 25 47" stroke="#d39a6f" stroke-width="15" fill="none" stroke-linecap="round"/>
+  <path d="M617 406c-84 25-175 39-272 40-66 1-129-6-190-21" stroke="#9f594d" stroke-width="9" fill="none" opacity=".42"/>
+  <!-- supervisor boots loom in foreground; queue shoes stay tiny -->
+  <path d="m231 470-38 90h151l-9-93Z" fill="#121821" stroke="#090c11" stroke-width="11"/>
+  <path d="m407 468-13 92h162l-50-101Z" fill="#10161f" stroke="#090c11" stroke-width="11"/>
+  <path d="M201 535c44 10 88 9 132-2m75 3c44 10 89 9 134-4" stroke="#54616a" stroke-width="7"/>
+  <g fill="#222832" stroke="#10141a" stroke-width="6"><path d="m567 413-7 73h43l-7-75Z"/><path d="m654 417-4 68h39l-5-67Z"/><path d="m727 426-2 58h35l-5-57Z"/></g>
+  <!-- rain splashes, litter and tactile hatching -->
+  <rect width="800" height="560" fill="url(#k11-rain)"/>
+  <g fill="#88afb6" opacity=".65"><ellipse cx="22" cy="409" rx="21" ry="5"/><ellipse cx="307" cy="432" rx="29" ry="6"/><ellipse cx="706" cy="452" rx="31" ry="6"/><ellipse cx="475" cy="520" rx="23" ry="5"/></g>
+  <path d="M7 391c19-13 39-14 60-3m248 49c25-13 50-13 75 1m278 15c28-12 55-11 82 3" stroke="#b8d3d6" stroke-width="5" fill="none" opacity=".7"/>
+  <g stroke="#17202a" stroke-width="5" opacity=".66"><path d="m259 372 32 8m62-18 37 6m53 18 34 13m-266 67 38 5m189-4 42 2"/></g>
+  <g fill="#6f6553" stroke="#262527" stroke-width="3"><path d="m277 513 24-9 9 15-22 10Z"/><path d="m598 489 24-7 7 14-21 8Z"/><path d="m700 528 30-7 7 15-27 9Z"/></g>
+  <rect x="6" y="6" width="788" height="548" rx="15" fill="none" stroke="#090e17" stroke-width="12"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#k11-grain)"/>
+</svg>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="kit010-title kit010-desc">
+  <title id="kit010-title">KIT-010 The Guv'nor non-final extreme bar-counter mock-up</title>
+  <desc id="kit010-desc">At extreme counter height, one scarred landlord hand confiscates a sloshing opponent drink while the other slams a glowing replacement toward the near active stool. Only a glowering eye and broken nose survive as a warped reflection in dented brass; wet rings, crumbs, rag, taps and individually bent fingers fill the crop. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="k10-room" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#142b29"/><stop offset=".52" stop-color="#2d4038"/><stop offset="1" stop-color="#10191b"/></linearGradient>
+    <linearGradient id="k10-wood" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#b87943"/><stop offset=".24" stop-color="#74442f"/><stop offset=".7" stop-color="#432b25"/><stop offset="1" stop-color="#211b1b"/></linearGradient>
+    <linearGradient id="k10-brass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0a0"/><stop offset=".2" stop-color="#b88431"/><stop offset=".47" stop-color="#5d4325"/><stop offset=".69" stop-color="#deb65a"/><stop offset="1" stop-color="#4a321f"/></linearGradient>
+    <linearGradient id="k10-skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d49269"/><stop offset=".45" stop-color="#aa5f50"/><stop offset="1" stop-color="#592f37"/></linearGradient>
+    <linearGradient id="k10-ale" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f7d267"/><stop offset=".18" stop-color="#de9a24"/><stop offset=".72" stop-color="#9f4e18"/><stop offset="1" stop-color="#52291b"/></linearGradient>
+    <radialGradient id="k10-charge"><stop stop-color="#fff6b1"/><stop offset=".22" stop-color="#c6e8ba"/><stop offset=".52" stop-color="#55a890" stop-opacity=".72"/><stop offset="1" stop-color="#1b5e62" stop-opacity="0"/></radialGradient>
+    <filter id="k10-grain"><feTurbulence baseFrequency=".62" numOctaves="3" seed="41" result="n"/><feColorMatrix in="n" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .09 0"/><feBlend in="SourceGraphic" mode="multiply"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#k10-room)"/>
+  <!-- optics, shelves and shadowy active/opponent positions -->
+  <path d="M0 84c159-20 313-13 462 18 126 26 238 26 338 1" stroke="#0c1616" stroke-width="24" fill="none"/>
+  <g fill="#3c5c50" stroke="#0f1c1b" stroke-width="6" opacity=".72"><path d="M28 24h53l-8 103H35Z"/><path d="M103 13h43l-5 116h-31Z"/><path d="M169 26h64l-11 108h-43Z"/><path d="M652 15h49l7 114h-41Z"/><path d="M727 29h48l4 95h-39Z"/></g>
+  <g stroke="#9db89f" stroke-width="4" opacity=".35"><path d="M45 45h24m44-6h24m51 18h33m449-15h24m50 14h25"/></g>
+  <path d="M0 181c180-34 359-26 538 24 94 27 181 28 262 7v348H0Z" fill="url(#k10-wood)" stroke="#211719" stroke-width="13"/>
+  <path d="M0 233c207-26 380-10 518 48 97 41 191 47 282 17M0 380c185-27 365-18 540 27 88 23 175 26 260 9M0 489c227-17 491-8 800 29" stroke="#c5864c" stroke-width="7" fill="none" opacity=".5"/>
+  <path d="M78 240c54-18 108-17 162 4m342 106c67-20 129-18 187 7M280 480c87-20 176-17 267 8" stroke="#2a201e" stroke-width="5" fill="none" opacity=".65"/>
+  <!-- dented brass reflection: only a broken nose and one hard eye -->
+  <path d="M326-20h157l-8 114-32 68-7 112-77-2-3-109-28-71Z" fill="url(#k10-brass)" stroke="#281f1c" stroke-width="11"/>
+  <path d="M358 72c18-18 45-21 68-6 14 9 22 22 22 39-18-14-39-17-65-8-13-4-22-12-25-25Z" fill="#43352c" stroke="#231c1b" stroke-width="7"/>
+  <path d="M372 79c17-7 34-3 48 11-12 13-27 17-44 10Z" fill="#d7c5a1" stroke="#241b1c" stroke-width="6"/>
+  <ellipse cx="396" cy="91" rx="7" ry="10" fill="#171719"/>
+  <path d="M431 75c23 11 29 29 18 53l-20 43c-7 15-23 18-35 9-10-8-10-21 1-32l15-14-6-23Z" fill="#805142" stroke="#2e2220" stroke-width="8"/>
+  <path d="M398 170c17 8 31 5 42-7" stroke="#2b1e1e" stroke-width="6" fill="none"/>
+  <path d="M375 206c21-9 43-7 65 5" stroke="#3b2b26" stroke-width="6"/>
+  <path d="M363 231c27 12 51 14 74 7" stroke="#efcf77" stroke-width="4" opacity=".55"/>
+  <path d="M355 267c34-8 62-6 84 5" stroke="#1f1919" stroke-width="12"/>
+  <!-- left forearm snakes across top, scars and wiry hair -->
+  <path d="M-39 37c104-30 218-18 314 33 65 35 115 89 151 163l-112 74c-43-61-91-98-145-111-67-17-137-8-208 26Z" fill="url(#k10-skin)" stroke="#21171b" stroke-width="13"/>
+  <path d="M30 89c72-4 142 15 209 57 41 26 74 58 97 95" stroke="#e0a079" stroke-width="7" fill="none" opacity=".38"/>
+  <path d="m84 102 29 18-24 23m86-7 33 24-27 27m71 1 26 25-25 19" stroke="#6a343c" stroke-width="7" fill="none"/>
+  <g stroke="#332027" stroke-width="4" opacity=".75"><path d="m44 148 18 12m10-19 19 14m80 35 20 12m16-4 19 14m49 36 18 9"/></g>
+  <!-- left hand: pinching and confiscating a tilted glass with separate fingers -->
+  <path d="M296 215c24-13 51-13 74-1 19 10 31 26 35 47l-20 54-41-5-18-42-23 34c-10 15-26 15-35 4-8-10-5-23 4-36Z" fill="url(#k10-skin)" stroke="#21171b" stroke-width="10"/>
+  <path d="M350 233c9-35 29-48 46-36 11 8 10 22 1 39l-14 32m-24-24c12-40 32-56 50-46 12 7 11 23 3 41l-16 38m-28-30c16-36 36-48 51-36 10 8 7 22 0 37l-14 34" fill="url(#k10-skin)" stroke="#21171b" stroke-width="9" stroke-linecap="round"/>
+  <path d="M282 281c11-4 20 0 28 11m47-53c10 4 18 11 23 22m-7-38c10 4 18 12 23 23m-5-34c9 4 15 11 19 21" stroke="#6f3940" stroke-width="4" fill="none"/>
+  <g transform="rotate(-14 281 363)">
+    <path d="M221 280h120l-16 197H239Z" fill="#b99d77" fill-opacity=".22" stroke="#201a1c" stroke-width="10"/>
+    <path d="M230 328h102l-9 140h-84Z" fill="url(#k10-ale)"/>
+    <path d="M230 329c34 17 68 17 102 0" stroke="#f5e5bd" stroke-width="11" fill="none"/>
+    <path d="M259 296c21-9 42-8 63 2" stroke="#e6c88d" stroke-width="6" opacity=".7"/>
+  </g>
+  <path d="M227 308c-31-30-53-54-66-72m181 83c40 8 67 23 82 45" stroke="#efc65e" stroke-width="6" fill="none"/>
+  <g fill="#ddaa3d" stroke="#664120" stroke-width="3"><ellipse cx="176" cy="230" rx="10" ry="17" transform="rotate(-37 176 230)"/><ellipse cx="205" cy="258" rx="8" ry="14" transform="rotate(-20 205 258)"/><ellipse cx="401" cy="349" rx="8" ry="16" transform="rotate(27 401 349)"/></g>
+  <!-- right arm arrives from edge and slams downward; distinct tendon-heavy hand -->
+  <path d="M838 64c-100-20-198 2-278 64-54 42-95 98-124 170l116 58c32-62 72-100 119-116 55-19 111-19 167-1Z" fill="url(#k10-skin)" stroke="#21171b" stroke-width="13"/>
+  <path d="M779 116c-71 1-136 23-194 66-39 29-68 65-87 108" stroke="#e0a079" stroke-width="7" fill="none" opacity=".36"/>
+  <path d="m746 130-30 24 26 21m-103 6-27 29 30 20m-82 13-25 29 31 17" stroke="#6a343c" stroke-width="7" fill="none"/>
+  <g stroke="#332027" stroke-width="4" opacity=".75"><path d="m765 185-19 11m-14-6-19 13m-78 39-20 11m-17-2-17 15m-48 34-17 11"/></g>
+  <!-- heel of hand and four visible knuckles compress around replacement -->
+  <path d="M477 279c11-26 33-44 64-51 27-6 55 0 78 16l-8 70-59 40-67-24Z" fill="url(#k10-skin)" stroke="#21171b" stroke-width="11"/>
+  <path d="M535 257c-4-35 10-55 29-52 14 2 18 16 17 36l-1 50m-21-37c0-39 15-59 35-54 14 4 16 20 13 39l-6 54m-19-41c6-37 22-52 39-44 12 6 11 22 6 38l-14 48m-10-34c9-29 26-39 40-29 10 7 7 21 0 36l-18 37" fill="url(#k10-skin)" stroke="#21171b" stroke-width="9" stroke-linecap="round"/>
+  <path d="M548 227c10 5 17 13 21 24m15-30c11 5 17 14 19 26m9-23c10 6 15 15 16 26m10-10c8 7 11 15 10 25" stroke="#703941" stroke-width="4" fill="none"/>
+  <!-- replacement energy object and slammed spray -->
+  <circle cx="586" cy="392" r="148" fill="url(#k10-charge)"/>
+  <path d="M506 309h133l-13 180H518Z" fill="#8ac1ae" fill-opacity=".23" stroke="#17201f" stroke-width="11"/>
+  <path d="M519 360h107l-5 121h-96Z" fill="#4b9b82" opacity=".88"/>
+  <path d="M520 363c34 16 68 16 104 0" stroke="#e9f0c2" stroke-width="12" fill="none"/>
+  <path d="m546 408 27-30 31 17-4 40-38 12-25-24Z" fill="none" stroke="#d8f4c1" stroke-width="7"/>
+  <path d="M489 477c57-20 111-20 163-1" stroke="#d6f1c0" stroke-width="9" fill="none"/>
+  <path d="M503 338c-38-19-68-21-92-6m228-8c37-24 74-31 112-23m-102 68c29-4 56 4 79 24" stroke="#bfe4bf" stroke-width="6" fill="none"/>
+  <g fill="#8cc7aa" stroke="#2e6e60" stroke-width="3"><ellipse cx="441" cy="330" rx="9" ry="18" transform="rotate(58 441 330)"/><ellipse cx="704" cy="305" rx="8" ry="17" transform="rotate(-48 704 305)"/><ellipse cx="725" cy="388" rx="9" ry="18" transform="rotate(-23 725 388)"/></g>
+  <!-- counter debris, active stool and opponent fingertips -->
+  <ellipse cx="82" cy="446" rx="73" ry="28" fill="none" stroke="#c39864" stroke-width="7" opacity=".48"/>
+  <ellipse cx="742" cy="505" rx="91" ry="28" fill="none" stroke="#c39864" stroke-width="7" opacity=".45"/>
+  <path d="M57 479c25-14 50-15 75-3l-17 41-76 1Z" fill="#49605c" stroke="#1b2222" stroke-width="8"/>
+  <path d="M75 489c17 6 32 5 46-3m-57 17c18 6 35 5 51-2" stroke="#9aa58f" stroke-width="4"/>
+  <path d="M676 486h118v74H650Z" fill="#272327" stroke="#161519" stroke-width="10"/>
+  <path d="M674 509c37-12 75-10 112 5" stroke="#776254" stroke-width="6"/>
+  <path d="M-9 307c26-12 52-8 73 10 12 11 14 24 5 32-9 8-20 3-31-3 8 10 7 20-2 25-10 6-20-2-28-10L-9 345Z" fill="#8a6254" stroke="#21181b" stroke-width="8"/>
+  <g fill="#d3a04a" stroke="#4a3524" stroke-width="3"><path d="m112 352 19-7 9 12-15 11Z"/><path d="m154 398 24-4 5 14-21 7Z"/><circle cx="389" cy="444" r="7"/><path d="m704 450 20-9 10 11-17 13Z"/></g>
+  <path d="M350 518c53-12 104-10 153 7m-221-55c25-8 48-6 70 5" stroke="#1d191a" stroke-width="5" fill="none" opacity=".65"/>
+  <rect x="6" y="6" width="788" height="548" rx="15" fill="none" stroke="#0c1414" stroke-width="12"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#k10-grain)"/>
+</svg>

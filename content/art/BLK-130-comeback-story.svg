@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b130-title b130-desc">
+  <title id="b130-title">BLK-130 Comeback Story non-final comic mock-up</title>
+  <desc id="b130-desc">At water level, a tired triangular-faced swimmer surges through a breaking cobalt wake into hard morning light, worn goggles and determined lift making recovery physical. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b130-pool" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#071429"/><stop offset=".48" stop-color="#123a6a"/><stop offset="1" stop-color="#041022"/></linearGradient>
+    <linearGradient id="b130-cobalt" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8bd9ff"/><stop offset=".4" stop-color="#1d7ed1"/><stop offset="1" stop-color="#113b83"/></linearGradient>
+    <radialGradient id="b130-shaft" cx="50%" cy="0" r="74%"><stop stop-color="#fffbe0" stop-opacity=".9"/><stop offset=".43" stop-color="#9bd7ff" stop-opacity=".25"/><stop offset="1" stop-color="#9bd7ff" stop-opacity="0"/></radialGradient>
+    <filter id="b130-wake" x="-7%" y="-7%" width="114%" height="114%"><feTurbulence baseFrequency=".018 .055" numOctaves="1" seed="130" result="w"/><feDisplacementMap in="SourceGraphic" in2="w" scale="2"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#b130-pool)"/>
+  <ellipse cx="402" cy="90" rx="344" ry="410" fill="url(#b130-shaft)"/>
+  <path d="M0 0h800v78C651 58 525 87 392 69 245 50 122 88 0 65Z" fill="#061021" stroke="#030817" stroke-width="10"/>
+  <path d="M23 98h756v241H15Z" fill="#102c51" stroke="#071428" stroke-width="10"/>
+  <path d="M29 148h744M25 221h750M21 294h754" stroke="#28557d" stroke-width="7"/>
+  <!-- water at camera lens / breaking wake -->
+  <path d="M0 316c104-53 203-47 298 17 67 45 132 42 195-8 91-71 194-73 307-7v242H0Z" fill="url(#b130-cobalt)" stroke="#072455" stroke-width="12" filter="url(#b130-wake)"/>
+  <path d="M0 351c107-51 202-39 287 36 70 62 147 59 230-10 83-68 177-74 283-17M0 426c124-35 242-25 354 28 80 38 169 36 268-6 62-26 121-28 178-6" fill="none" stroke="#a3e8ff" stroke-width="11" opacity=".68"/>
+  <path d="M40 398c35-17 72-16 110 2m481-5c38-17 75-16 112 3" fill="none" stroke="#e2fbff" stroke-width="8"/>
+  <!-- powerful tired shoulders form low triangle -->
+  <path d="M214 337c49-84 113-124 191-120 82 4 146 48 190 132l72 211H121Z" fill="#3d647c" stroke="#0d2435" stroke-width="13"/>
+  <path d="M186 373c128 42 268 43 417 4m-441 75c171 52 338 48 503-13" fill="none" stroke="#6f91a1" stroke-width="9" opacity=".45"/>
+  <!-- triangular swimmer skull, wet backward spikes -->
+  <path d="M314 92c45-42 114-43 158 2 38 38 36 95 9 137-30 47-75 86-121 71-52-17-83-76-74-126 6-34 15-62 28-84Z" fill="#af6d57" stroke="#171820" stroke-width="11"/>
+  <path d="M303 110c14-47 55-74 98-67l19-32 11 36 38-20-8 39 42-7-24 36c19 16 29 36 31 60-41-28-83-31-126-16-35 13-62 3-81-29Z" fill="#202830" stroke="#11161c" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M322 84c29-13 59-15 90-5m-104 31c38-15 74-16 109-4" fill="none" stroke="#566270" stroke-width="6"/>
+  <path d="M302 153c-27-8-46 13-38 40 8 25 34 36 56 18m158-53c27-9 46 12 38 39-8 25-34 36-56 19" fill="#9f604e" stroke="#1c1d24" stroke-width="9"/>
+  <!-- scarred goggles, one determined visible eye -->
+  <path d="M326 151c23-18 58-14 76 8-8 34-64 37-76-8Zm92 10c20-16 49-12 64 10-8 30-54 31-64-10Z" fill="#9bd4df" fill-opacity=".45" stroke="#18232b" stroke-width="8"/>
+  <circle cx="373" cy="164" r="8" fill="#111a22"/>
+  <path d="M403 165c6-4 10-4 16 0" stroke="#2d3a42" stroke-width="7"/>
+  <path d="M337 146l16-19m96 29 22-18M330 170l19 17m109-20 17 19" stroke="#d1e2d9" stroke-width="4" opacity=".65"/>
+  <!-- flattened nose and breath-gritted line -->
+  <path d="M406 164c-9 17-19 30-32 42-10 10-5 26 9 31 14 5 26-5 38-3 16 2 26-15 16-28-9-13-17-24-31-42Z" fill="#985344" stroke="#4e2c2c" stroke-width="7"/>
+  <path d="M348 252c31-5 64 1 90 18" fill="none" stroke="#4a292d" stroke-width="8"/>
+  <path d="M365 266c20 4 40 4 59 0" stroke="#d1c3a4" stroke-width="6"/>
+  <!-- arm drive and individually drawn breaking hands -->
+  <path d="M258 318c-68 22-124 57-168 105-21 23-16 46 3 56 20 10 39-7 59-29l132-98Z" fill="#a76552" stroke="#171820" stroke-width="11"/>
+  <path d="M87 411c-31 11-46 31-38 50 8 19 31 16 52 5l35-18-21 26c-13 16-6 31 10 34 16 3 27-14 39-31l31-48c14-22 4-44-17-53-20-9-44 0-91 35Z" fill="#b57359" stroke="#171820" stroke-width="9"/>
+  <path d="M545 322c65 25 118 63 159 113 20 24 13 46-7 55-20 9-39-9-57-32l-124-104Z" fill="#a76552" stroke="#171820" stroke-width="11"/>
+  <path d="M706 422c30 12 44 32 35 51-9 18-31 14-52 2l-34-19 20 27c12 16 4 31-12 33-16 2-27-15-38-32l-29-49c-13-22-2-44 19-52 21-8 44 2 91 39Z" fill="#b57359" stroke="#171820" stroke-width="9"/>
+  <path d="M68 438c22 2 42 10 59 24m-70-7c21 4 39 12 55 26m615-32c-22 2-42 9-59 23m70-6c-21 3-40 11-56 25" fill="none" stroke="#703f38" stroke-width="5"/>
+  <!-- exploding droplets and no lane marks -->
+  <path d="M164 303l-23-39m59 23-8-49m414 54 21-44m12 67 46-33M68 350l-42-16m69-13-31-38m650 62 44-21m-70-5 33-36" stroke="#b8efff" stroke-width="8" stroke-linecap="round"/>
+  <g fill="#d9f8ff" stroke="#2776a1" stroke-width="4"><path d="M138 252c-8 17-7 31 5 39 13-10 12-24-5-39Z"/><path d="M201 227c-8 16-7 29 5 37 12-10 11-23-5-37Z"/><path d="M632 238c-8 17-7 31 5 39 13-10 12-24-5-39Z"/><path d="M690 279c-8 16-7 29 5 37 12-10 11-23-5-37Z"/></g>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#050c1a" stroke-width="12"/>
+</svg>

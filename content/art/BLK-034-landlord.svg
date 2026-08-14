@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b034-title b034-desc">
+  <title id="b034-title">BLK-034 Landlord non-final comic mock-up</title>
+  <desc id="b034-desc">Seen from the floor corner of a tiny bowed room, a pear-shaped landlord blocks the doorway and thrusts an enormous ring of keys toward the lens while hugging a blank clipboard. Non-final placeholder art.</desc>
+  <defs>
+    <radialGradient id="b034-room" cx="50%" cy="35%" r="82%"><stop stop-color="#3c918e"/><stop offset=".65" stop-color="#1f5a5b"/><stop offset="1" stop-color="#102f35"/></radialGradient>
+    <radialGradient id="b034-gold" cx="50%" cy="20%" r="75%"><stop stop-color="#ffd27b"/><stop offset=".55" stop-color="#9f662e"/><stop offset="1" stop-color="#3c2a24"/></radialGradient>
+    <pattern id="b034-damp" width="72" height="57" patternUnits="userSpaceOnUse"><path d="M5 8c18-9 34-7 52 1M18 30c15-7 32-6 49 3M3 51c20-8 40-8 59 1" fill="none" stroke="#0b3a3d" stroke-width="4" opacity=".38"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b034-room)"/>
+  <!-- wildly bowed tiny room from a floor corner -->
+  <path d="M0 0h800L672 135l-535-3Z" fill="#17494d" stroke="#0d262b" stroke-width="11"/>
+  <path d="M0 0 137 132l-61 428H0Zm800 0-128 135 61 425h67Z" fill="#276a68" stroke="#12373a" stroke-width="10"/>
+  <path d="M76 560 137 132h535l61 428Z" fill="#347f79"/>
+  <path d="M0 0h800v560H0Z" fill="url(#b034-damp)"/>
+  <path d="M70 560 350 395h110l275 165Z" fill="#4e493f" stroke="#211f1f" stroke-width="11"/>
+  <path d="M111 517 357 408m331 111L453 408" stroke="#8d7b57" stroke-width="6" opacity=".5"/>
+  <!-- doorway and ominous hall -->
+  <path d="M252 96h306l47 409H209Z" fill="#2a2728" stroke="#15171a" stroke-width="13"/>
+  <path d="M281 116h246l29 358H243Z" fill="url(#b034-gold)"/>
+  <!-- landlord's doorway-filling pear body -->
+  <path d="M329 272c-58 30-83 100-94 202l329 0c-7-103-39-170-101-201-36-18-96-20-134-1Z" fill="#4d3840" stroke="#19171b" stroke-width="13"/>
+  <path d="M298 337c55 19 133 22 197-1m-219 56c79 24 160 25 242 0" fill="none" stroke="#76505d" stroke-width="7" opacity=".58"/>
+  <path d="M341 272c-22 33-21 66 5 89 33 29 90 27 120-7 23-27 18-58-6-87Z" fill="#d5d0b6" stroke="#282421" stroke-width="9"/>
+  <!-- pear head, tiny crown, huge dewlap -->
+  <path d="M341 117c33-28 84-29 116 3 25 25 26 62 17 94-5 19 6 40-2 61-12 32-41 58-78 56-40-3-72-33-78-69-4-26 8-41 2-63-9-32-1-59 23-82Z" fill="#c88964" stroke="#21191b" stroke-width="11"/>
+  <path d="M343 111c20-25 52-30 75-12-4 19-23 30-52 33l-40 2c2-9 8-17 17-23Z" fill="#40322d" stroke="#201a19" stroke-width="8"/>
+  <path d="M343 113c21-10 41-11 60-3m-70 17c22-8 42-8 59-3m55-18c11 7 18 17 21 30" fill="none" stroke="#74604d" stroke-width="5"/>
+  <path d="M329 153c-20-8-34 9-28 30 6 20 24 27 39 14m125-44c21-8 34 10 27 31-6 19-24 27-39 13" fill="#b7775b" stroke="#251b1d" stroke-width="7"/>
+  <path d="M343 169c14-9 29-7 39 4m32-2c12-8 26-6 35 4" fill="none" stroke="#493027" stroke-width="8" stroke-linecap="round"/>
+  <path d="M349 180c10-4 20-2 27 5-9 9-19 7-27-5Zm71 3c9-5 19-2 25 5-9 8-18 6-25-5Z" fill="#e9d8b8" stroke="#2a1d1d" stroke-width="4"/>
+  <path d="M362 185h5m69 3h4" stroke="#17171a" stroke-width="5"/>
+  <path d="M399 174c2 19 15 28 26 40 9 10 0 25-15 27-19 2-36-7-39-21" fill="#b96f56" stroke="#4f2e2b" stroke-width="7"/>
+  <path d="M358 249c24 10 51 10 78 0-12 19-61 23-78 0Z" fill="#542a2a" stroke="#2c1d1e" stroke-width="6"/>
+  <path d="M396 266c15 2 28 0 40-7" fill="none" stroke="#ead2ac" stroke-width="5"/>
+  <path d="M345 282c10 45 88 58 112 5-19 20-80 20-112-5Z" fill="#ae6b56" stroke="#653d36" stroke-width="5"/>
+  <!-- guarded clipboard -->
+  <path d="M443 301c45 4 78 24 92 61l-25 121-115-26 21-132Z" fill="#b18b53" stroke="#211b1b" stroke-width="10"/>
+  <path d="M438 318 510 335l-21 112-72-17Z" fill="#d7cda9" stroke="#4a3a2c" stroke-width="5"/>
+  <path d="M450 328c15 8 30 12 45 12m-50 20 43 10m-49 16 45 11" fill="none" stroke="#a39777" stroke-width="4"/>
+  <path d="M465 304c11-9 23-9 33 2l-3 21-41-9Z" fill="#6a5038" stroke="#2a211d" stroke-width="6"/>
+  <!-- giant key-ring lunges into foreground, separately drawn keys -->
+  <path d="M326 314c-23 31-45 64-62 98-11 22-5 43 12 51 18 8 33-7 43-28l31-72Z" fill="#c38262" stroke="#21191a" stroke-width="10"/>
+  <path d="M280 414c-27 8-46 25-49 48-3 23 14 38 35 31 19-7 34-28 40-55Z" fill="#c98766" stroke="#21191a" stroke-width="9"/>
+  <path d="M252 432c12 7 22 18 27 32m-8-44c11 6 20 15 26 27" fill="none" stroke="#79483a" stroke-width="5"/>
+  <ellipse cx="239" cy="477" rx="56" ry="49" fill="none" stroke="#d4ab53" stroke-width="12"/>
+  <g fill="url(#b034-gold)" stroke="#3a2b20" stroke-width="6">
+    <path d="M182 481c-21 20-28 43-23 69h33l-3-22 18-6Z"/><path d="M231 498c-6 29 0 48 18 58l23-23-16-14 7-19Z"/>
+    <path d="M276 490c13 26 30 39 52 38l5-32-21-5-2-20Z"/><path d="M205 448c-30 2-49 13-59 32l25 20 13-18 22 3Z"/>
+  </g>
+  <!-- tiny room defects physically narrate -->
+  <path d="M103 179c21 29 30 62 26 100-4 33 10 58 28 73" fill="none" stroke="#a1d2c6" stroke-width="7"/>
+  <path d="M111 181c10 16 14 34 13 54" fill="none" stroke="#e4e2ba" stroke-width="3"/>
+  <path d="M607 239c23 6 40 23 47 50l-10 56-78-4 6-72Z" fill="#1b5051" stroke="#0f292d" stroke-width="8"/>
+  <path d="M586 267c17 11 35 12 54 3m-57 30c20 8 39 7 57-3" fill="none" stroke="#79a59c" stroke-width="5"/>
+  <path d="M89 90l58 15m507-11 66-18M88 369l52-12m508 19 54 19" stroke="#78b3a8" stroke-width="6" opacity=".42"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#0f1b20" stroke-width="12"/>
+</svg>

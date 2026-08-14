@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Blokemon.CardGen</RootNamespace>
+    <AssemblyName>Blokemon.CardGen</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.csproj" />
+    <Content Include="Content\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

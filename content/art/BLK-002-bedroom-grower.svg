@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="blk002-title blk002-desc">
+  <title id="blk002-title">BLK-002 Bedroom Grower non-final comic-vector mock-up</title>
+  <desc id="blk002-desc">A cramped three-quarter view catches a hunched amateur gardener ducking beneath hot lamps as he waters clipped plants, squinting past a bulbous broken nose toward a meter-reader shadow among ducting, cables and a rattling fan. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="blk002-box" x2="1" y2="1"><stop stop-color="#183a31"/><stop offset="1" stop-color="#0a1717"/></linearGradient>
+    <radialGradient id="blk002-hot"><stop stop-color="#ffe895" stop-opacity=".95"/><stop offset="1" stop-color="#e48d3c" stop-opacity="0"/></radialGradient>
+    <pattern id="blk002-scrape" width="19" height="19" patternUnits="userSpaceOnUse" patternTransform="rotate(13)"><path d="M0 3h19M0 16h19" stroke="#bdd47d" stroke-width="2" opacity=".12"/></pattern>
+  </defs>
+  <path fill="url(#blk002-box)" d="M0 0h800v560H0z"/><path fill="url(#blk002-scrape)" d="M0 0h800v560H0z"/><ellipse cx="410" cy="122" rx="272" ry="210" fill="url(#blk002-hot)"/>
+  <g stroke="#20191f" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#82958b" d="M26 46q102-42 200 12l-13 202q-95 43-187-7z"/><circle cx="119" cy="153" r="71" fill="#456c63"/><path fill="none" d="M119 83v139M50 151h138M70 101l98 101M169 102L69 204"/>
+    <path fill="#514d47" d="M584 19l174 13-12 218-182-6z"/><path fill="#283331" d="M609 50l113 8-8 142-117-5z"/><path fill="#d38b43" d="M744 71l43 6-5 186-38-2z"/>
+    <path fill="#b6a76c" d="M292-12h228l-27 48H319z"/><path fill="#ffe681" d="M324 35h164l-23 60H347z"/><path fill="none" d="M301 0l-31 100M510 0l35 104M231 65q-65 27-63 88M572 61q64 25 64 84"/>
+    <path fill="#708c50" d="M16 560q7-126 57-180 46-49 84-4 23 27 17 73 29-55 67-34 40 25 17 145z"/>
+    <path fill="#8cb260" d="M68 456q-57-67-35-107 52 15 67 71-3-70 36-91 36 49-1 105 48-46 82-23-21 61-107 82z"/>
+    <path fill="#6f8a50" d="M634 560q-8-129 43-181 44-44 80-7 35 37 19 94 20-20 42-18v112z"/>
+    <path fill="#91b461" d="M668 458q-48-76-22-110 48 22 56 79 16-64 55-74 24 55-25 108 41-24 68-9v60q-48 13-102-4z"/>
+    <path fill="#22312b" d="M244 548q24-195 85-293 62-78 157-67 102 14 148 106 41 86 29 254z"/>
+    <path fill="#66784a" d="M276 549q23-170 77-257 52-63 124-57 81 8 121 83 37 72 35 231z"/>
+    <!-- fresh three-quarter head: no cap, no smile -->
+    <path fill="#a6654d" d="M398 108q51-54 117-34 70 28 81 105 5 66-42 119-40 45-102 27-59-22-77-88-17-75 23-129z"/>
+    <path fill="#4b3326" d="M402 107l17-31 23 12 18-25 20 20 27-17 10 25 34-6-3 28 34 6-17 21q-79-37-167 9z"/>
+    <path fill="#a6654d" d="M388 157q-45-10-47 31 8 46 56 47M582 173q38-11 44 27 3 40-48 44"/>
+    <path fill="#ead69f" d="M414 151q29-14 53 5-11 23-33 19-18-4-20-24z"/><circle cx="530" cy="170" r="19" fill="#ead69f"/><circle cx="444" cy="159" r="6" fill="#211a20"/><circle cx="535" cy="170" r="6" fill="#211a20"/>
+    <path fill="none" stroke="#39251f" stroke-width="13" d="M410 137q35-22 62 2M504 146q29-14 54 9"/>
+    <path fill="#b77855" d="M491 151q23 24 4 55-11 18 4 24 25-10 38 7-16 30-48 17-31-11-22-36 12-36 24-67z"/>
+    <path fill="none" stroke="#4d3028" stroke-width="5" d="M405 203l20 13M548 213l18-10M421 230l14 5M538 238l16-6"/>
+    <path fill="none" stroke="#412d26" stroke-width="13" d="M431 294q39-12 78 5"/><path fill="none" stroke="#75493b" stroke-width="4" d="M441 307q29-6 56 5"/>
+    <!-- bent shoulders and separately posed arms -->
+    <path fill="#71844f" d="M391 309q-83-2-128 61l-62 91 75 50 112-104zM520 319q78 29 101 105l32 112-87 15-67-130z"/>
+    <path fill="#a6654d" d="M267 367q-64 18-101 68-29 39-18 72 9 29 36 28 25-2 35-34 12 28 37 17 21-11 9-39 19 20 38 1 17-17-4-41 23 11 35-11 10-21-67-61z"/>
+    <path fill="#6e8f92" d="M132 431l87-14 37 130-135 13z"/><path fill="#b8c9be" d="M150 445l55-9 24 89-85 8z"/><path fill="#d7ae64" d="M105 537l168-12 8 35H99z"/>
+    <path fill="#a6654d" d="M588 408q47 17 77 58 28 39 17 68-10 25-34 19-23-7-23-37-12 27-35 17-22-10-11-39-18 19-37 2-18-17 4-41-23 10-35-12-10-21 57-43z"/>
+    <path fill="#61716c" d="M612 341l58-44 47 41-43 119-77-28z"/><path fill="#c2d4ca" d="M657 296q4-48 32-68 31 36 11 77z"/>
+    <path fill="#242523" d="M318 482l-61 78h149l43-86zM499 477l20 83h154l-78-104z"/>
+    <path fill="none" stroke="#d8b66d" stroke-width="5" d="M261 73l-12 402M563 55l14 396M189 289q54-22 103 1M610 282q59-25 119-2"/>
+    <path fill="#111819" d="M735 178q42 13 65 52v134q-53-7-73-64-14-66 8-122z" opacity=".85"/>
+  </g>
+</svg>

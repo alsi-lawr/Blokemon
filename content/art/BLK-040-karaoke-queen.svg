@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b040-title b040-desc">
+  <title id="b040-title">BLK-040 Karaoke Queen non-final comic mock-up</title>
+  <desc id="b040-desc">An elevated room-wide view shows Karaoke Queen full-length beneath a silver spotlight, one arm raised as a varied semicircle of pub-goers leans in to join her chorus. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b040-room" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#25182e"/><stop offset=".5" stop-color="#76354e"/><stop offset="1" stop-color="#1a3340"/></linearGradient>
+    <radialGradient id="b040-spot" cx="50%" cy="0" r="75%"><stop stop-color="#f7f4ec" stop-opacity=".88"/><stop offset=".45" stop-color="#c7d7df" stop-opacity=".28"/><stop offset="1" stop-color="#c7d7df" stop-opacity="0"/></radialGradient>
+    <pattern id="b040-sequin" width="19" height="19" patternUnits="userSpaceOnUse"><circle cx="4" cy="5" r="2.5" fill="#ffd8ef"/><circle cx="14" cy="13" r="2" fill="#f3b3d8"/><path d="m13 1 2 4 4 1-4 2-2 4-2-4-4-2 4-1Z" fill="#fff4dd"/></pattern>
+    <pattern id="b040-floor" width="64" height="49" patternUnits="userSpaceOnUse"><rect width="64" height="49" fill="#34212c"/><path d="M0 24h64M31 0v49" stroke="#764255" stroke-width="4" opacity=".4"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b040-room)"/>
+  <ellipse cx="401" cy="98" rx="305" ry="310" fill="url(#b040-spot)"/>
+  <path d="M0 376c215-31 530-29 800 6v178H0Z" fill="url(#b040-floor)" stroke="#12141a" stroke-width="10"/>
+  <!-- pub architecture and anonymous optics -->
+  <path d="M0 0h800v73C645 53 534 82 400 65 260 47 129 80 0 61Z" fill="#15171e" stroke="#0f1016" stroke-width="9"/>
+  <path d="M29 94h178v196H25Zm568 0h177v199H589Z" fill="#243d43" stroke="#14161d" stroke-width="9"/>
+  <g stroke="#17171b" stroke-width="5"><path d="M49 112h31v84H49Z" fill="#9c7045"/><path d="M92 104h36v92H92Z" fill="#5c7f72"/><path d="M143 117h34v79h-34Z" fill="#894c65"/><path d="M618 109h32v87h-32Z" fill="#7d6d42"/><path d="M665 104h37v92h-37Z" fill="#86506a"/><path d="M718 119h31v77h-31Z" fill="#456b77"/></g>
+  <!-- varied semicircle crowd, all with different skulls/poses -->
+  <g stroke="#17151b" stroke-width="8">
+    <path d="M20 304c18-50 58-66 91-38 30 26 34 75 19 119l-33 88H2Z" fill="#3e5864"/><path d="M43 230c27-21 61-7 66 25 5 28-15 51-42 51-30 0-53-47-24-76Z" fill="#a56c59"/>
+    <path d="M105 332c27-52 71-59 102-21 27 33 19 83-3 125l-45 73H72Z" fill="#6b3e52"/><path d="M138 268c21-25 57-21 70 7 12 26 1 52-24 61-29 11-63-31-46-68Z" fill="#c47d60"/>
+    <path d="M613 326c23-50 64-61 98-28 30 30 26 80 8 124l-37 81h-98Z" fill="#35506a"/><path d="M642 260c22-26 58-23 70 7 11 27-2 53-27 61-29 9-61-33-43-68Z" fill="#9f644f"/>
+    <path d="M704 298c20-44 57-55 87-26l17 177-111 21Z" fill="#6b515f"/><path d="M729 235c21-24 54-19 64 10 10 26-3 50-27 57-28 8-55-36-37-67Z" fill="#bd785e"/>
+  </g>
+  <path d="M38 252c17-15 39-16 58-3m56 39c16-17 39-19 59-6m443-1c17-17 40-18 60-3m35-24c17-16 38-16 57-2" fill="none" stroke="#35222a" stroke-width="7"/>
+  <path d="M58 268c8-4 17-2 22 5m87 25c8-5 17-3 23 4m477-12c8-5 17-3 23 4m53-30c8-4 17-2 23 5" fill="none" stroke="#eadbbd" stroke-width="5"/>
+  <path d="M68 286c11-6 23-3 30 7m72 24c12-7 26-4 33 7m455-15c11-7 24-4 31 7m48-34c11-6 23-3 30 7" fill="none" stroke="#51252d" stroke-width="6"/>
+  <!-- crowd arms/microphones lean inward -->
+  <path d="M96 343c60-6 110 4 154 30m-35-35c28 6 52 18 73 36m421-31c-57-4-108 8-151 34m31-40c-27 9-51 22-70 40" fill="none" stroke="#b8735c" stroke-width="20" stroke-linecap="round"/>
+  <path d="M224 343l42 67m-9-91 53 75m272-75-52 80m96-59-45 70" stroke="#262830" stroke-width="8"/>
+  <ellipse cx="219" cy="338" rx="19" ry="13" transform="rotate(58 219 338)" fill="#5b5f69" stroke="#15171d" stroke-width="5"/><ellipse cx="252" cy="314" rx="19" ry="13" transform="rotate(55 252 314)" fill="#5b5f69" stroke="#15171d" stroke-width="5"/><ellipse cx="586" cy="314" rx="19" ry="13" transform="rotate(-58 586 314)" fill="#5b5f69" stroke="#15171d" stroke-width="5"/><ellipse cx="628" cy="337" rx="19" ry="13" transform="rotate(-55 628 337)" fill="#5b5f69" stroke="#15171d" stroke-width="5"/>
+  <!-- diamond face and huge curl halo -->
+  <path d="M297 67c43-53 139-65 195-13 56-22 112 25 91 82 38 32 22 94-25 107-1 54-63 83-107 56-42 37-111 18-121-35-49-3-71-59-39-98-37-27-33-72 6-99Z" fill="#32202a" stroke="#17141a" stroke-width="11"/>
+  <g fill="#73384e" stroke="#1b151b" stroke-width="6"><circle cx="316" cy="82" r="31"/><circle cx="362" cy="52" r="34"/><circle cx="414" cy="50" r="35"/><circle cx="467" cy="61" r="34"/><circle cx="515" cy="91" r="32"/><circle cx="545" cy="137" r="31"/><circle cx="530" cy="186" r="32"/><circle cx="315" cy="132" r="32"/><circle cx="319" cy="183" r="30"/><circle cx="346" cy="225" r="31"/><circle cx="502" cy="229" r="31"/></g>
+  <path d="M352 104c35-30 92-31 126 2 30 29 28 72 10 106-16 30-40 59-70 62-35 3-64-26-78-57-17-36-20-83 12-113Z" fill="#c77b62" stroke="#20161b" stroke-width="10"/>
+  <path d="M365 138c16-12 35-11 50 1m24 0c15-11 33-9 46 4" fill="none" stroke="#41232b" stroke-width="8" stroke-linecap="round"/>
+  <path d="M373 150c12-7 27-4 35 7-11 12-26 8-35-7Zm72 3c11-7 25-4 33 7-11 11-24 7-33-7Z" fill="#f1d9ba" stroke="#28191d" stroke-width="5"/>
+  <path d="M395 151h7m59 5h7" stroke="#13151a" stroke-width="6"/>
+  <path d="M424 143c-7 17-12 29-23 41-8 10-2 25 12 29 13 3 23-6 34-6" fill="#b66a58" stroke="#542e30" stroke-width="6"/>
+  <!-- no-tooth belting arc -->
+  <path d="M369 218c33-22 76-20 108 4-10 44-76 59-108-4Z" fill="#4a1f2d" stroke="#28181d" stroke-width="8"/>
+  <path d="M386 241c22-13 47-13 69-1-17 24-52 24-69 1Z" fill="#c94361"/>
+  <!-- tall broad full-body and raised/gathering arms -->
+  <path d="M337 271c42-16 102-14 139 11 40 55 43 120 15 181l-180 0c-24-66-15-136 26-192Z" fill="#b03c76" stroke="#19151c" stroke-width="12"/>
+  <path d="M323 276h177v193H312Z" fill="url(#b040-sequin)"/>
+  <path d="M381 273c-8 46-8 97 0 151m42-150c12 43 16 94 11 151" fill="none" stroke="#6f254f" stroke-width="7"/>
+  <path d="M340 294c-42 13-72 43-91 86-10 22-2 41 15 47 18 5 31-11 40-32l60-83Z" fill="#bd745e" stroke="#20161b" stroke-width="10"/>
+  <path d="M468 293c36-23 62-55 76-94 8-23 25-33 42-25 17 8 15 28 8 50-18 56-48 103-91 139Z" fill="#bd745e" stroke="#20161b" stroke-width="10"/>
+  <path d="M249 378c-18 11-26 27-20 41 7 15 23 13 39 4l30-19c15-10 21-26 11-39-10-13-31-6-60 13Zm303-185c-3-24 4-43 20-51 15-8 28 3 27 20l-2 24 12-18c10-14 24-15 32-5 8 11-1 24-12 37l-28 31c-14 16-34 16-47 3-10-10-11-24-2-41Z" fill="#ca8065" stroke="#20161b" stroke-width="8"/>
+  <path d="M566 164c9 11 15 25 18 41m0-53c8 12 12 25 13 39m15-27c4 10 6 21 5 31" fill="none" stroke="#7a4438" stroke-width="5"/>
+  <path d="M351 454c-10 30-14 61-12 93m111-91c11 30 16 60 15 91" fill="none" stroke="#33253a" stroke-width="34"/>
+  <path d="M305 535c26-8 52-5 72 10-3 11-20 15-42 11l-39-7c-5-7-2-12 9-14Zm114 7c25-12 52-12 73 1 0 12-16 16-39 14l-40-5c-6-6-4-9 6-10Z" fill="#30252b" stroke="#17151a" stroke-width="8"/>
+  <!-- centre mic cable and confetti -->
+  <path d="M513 358c5 54 0 95-16 122-23 39-13 65 34 75" fill="none" stroke="#101218" stroke-width="8"/>
+  <path d="m116 162 25 12-10 23-25-12Zm538 52 26-9 8 24-25 9ZM91 497l26 5-5 24-25-6Zm617-21 22-13 12 20-23 14Z" fill="#f2b45e" stroke="#201720" stroke-width="5"/>
+  <path d="M60 405l37 10m605-13 42-15M261 79l22 29m269-7 28-24" stroke="#f2d6e7" stroke-width="6" stroke-linecap="round" opacity=".68"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#101218" stroke-width="12"/>
+</svg>

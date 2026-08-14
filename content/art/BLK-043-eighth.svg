@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b043-title b043-desc">
+  <title id="b043-title">BLK-043 Eighth non-final comic mock-up</title>
+  <desc id="b043-desc">A true overhead view catches a meticulous buyer leaning over pocket scales, both uneven hands calibrating a tiny plain packet amid a folded note, green lighter and scuffed tabletop. Non-final placeholder art.</desc>
+  <defs>
+    <radialGradient id="b043-bulb" cx="50%" cy="50%" r="60%"><stop stop-color="#d9c983"/><stop offset=".42" stop-color="#8a773f"/><stop offset="1" stop-color="#22251b"/></radialGradient>
+    <pattern id="b043-table" width="113" height="61" patternUnits="userSpaceOnUse"><rect width="113" height="61" fill="#313425"/><path d="M0 8c26-9 51-8 76-1s39 5 52-2M0 38c21-6 43-6 65 1 26 9 53 7 82-4" fill="none" stroke="#6e6741" stroke-width="5" opacity=".45"/><path d="M19 0v61m72-61v61" stroke="#202318" stroke-width="3" opacity=".4"/></pattern>
+    <linearGradient id="b043-scale" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d5d2bd"/><stop offset=".5" stop-color="#74796d"/><stop offset="1" stop-color="#292e2b"/></linearGradient>
+  </defs>
+  <rect width="800" height="560" fill="url(#b043-table)"/>
+  <ellipse cx="403" cy="285" rx="382" ry="262" fill="url(#b043-bulb)" opacity=".62"/>
+  <!-- crown and shoulders enter from top: no frontal face -->
+  <path d="M229-18c54 18 103 44 145 77 43-27 92-45 146-55l91 171c-50 26-105 39-164 40-86 1-159-23-220-72Z" fill="#3a3b35" stroke="#171914" stroke-width="12"/>
+  <path d="M256 11c39 22 78 47 116 77m168-52c-39 19-74 40-106 64" fill="none" stroke="#68695e" stroke-width="8"/>
+  <!-- centre-parted crown from overhead -->
+  <path d="M312 17c36-32 94-40 137-17 44 24 63 76 45 120-16 40-58 65-103 61-47-5-83-41-87-86-2-29-9-54 8-78Z" fill="#b97858" stroke="#20181a" stroke-width="11"/>
+  <path d="M312 23c34-41 101-46 145-7 17 15 27 33 30 53-43-19-79-13-112 0-28 11-51 7-74-1Z" fill="#292421" stroke="#171513" stroke-width="9"/>
+  <path d="M397 5c-7 28-8 55-2 81" stroke="#8a6d52" stroke-width="7"/>
+  <path d="M322 37c23-15 47-22 71-22m10-2c24 2 46 11 65 26m-154 22c29-17 55-23 80-20m9 0c25 2 48 10 69 25" fill="none" stroke="#665445" stroke-width="5"/>
+  <!-- only brow, downcast eyes, nose tip and bitten lip visible -->
+  <path d="M338 103c16-10 34-10 50 0m22 1c15-9 32-7 45 4" fill="none" stroke="#402924" stroke-width="8" stroke-linecap="round"/>
+  <ellipse cx="370" cy="116" rx="8" ry="5" fill="#1c1b18"/><ellipse cx="431" cy="118" rx="8" ry="5" fill="#1c1b18"/>
+  <path d="M399 109c-9 9-11 18-5 27 7 8 19 9 27 2" fill="#a6604d" stroke="#53302a" stroke-width="5"/>
+  <path d="M378 151c14-8 32-8 47 1-10 14-33 15-47-1Z" fill="#5a2929" stroke="#2b1d1c" stroke-width="5"/>
+  <path d="M397 150c7 3 14 4 21 3" stroke="#d48b6f" stroke-width="4"/>
+  <!-- scales dead-centre, packet and blank display -->
+  <path d="M285 233c77-18 157-17 236 4l23 168-288 2Z" fill="url(#b043-scale)" stroke="#191d1b" stroke-width="11"/>
+  <path d="M309 256c61-12 124-11 187 3l9 70-207 0Z" fill="#252b28" stroke="#141816" stroke-width="7"/>
+  <path d="M329 274h145l3 35H323Z" fill="#829181" stroke="#171d1a" stroke-width="6"/>
+  <path d="M349 286h41m23 0h42" stroke="#c9d0b5" stroke-width="6" opacity=".45"/>
+  <path d="M346 342c34-12 73-11 108 2l-6 48-106 1Z" fill="#e7dfc0" stroke="#2a2a22" stroke-width="7"/>
+  <path d="M357 351c27 7 53 7 78 0m-77 20c25 6 49 6 73 0" fill="none" stroke="#c1b991" stroke-width="4"/>
+  <!-- left and right hands are separately drawn, asymmetrical -->
+  <path d="M210 171c33 12 62 34 86 65l31 48c10 16 8 32-4 41-13 9-27 1-38-14l-20-28 10 37c5 17-3 30-17 31-14 1-21-14-25-30l-9-39 0 37c0 17-9 29-22 27-14-2-17-17-16-34l3-41-10 31c-5 16-17 23-29 17-12-7-8-22-2-37l21-58c8-24 19-39 41-33Z" fill="#b9785b" stroke="#201719" stroke-width="10"/>
+  <path d="M238 282c15-8 31-11 48-8m-67 14c16-7 31-8 46-4m-60 10c14-5 28-6 41-2" fill="none" stroke="#744136" stroke-width="5"/>
+  <path d="M594 178c-35 10-66 30-92 59l-34 45c-12 15-11 31 1 41 12 10 27 3 39-11l22-27-13 36c-6 17 1 30 15 32 14 2 22-12 27-29l11-38-2 37c-1 17 7 29 21 28 14-1 18-16 18-33v-41l8 32c4 16 16 24 28 19 13-6 9-22 4-38l-18-59c-7-24-14-39-35-33Z" fill="#ac6b54" stroke="#201719" stroke-width="10"/>
+  <path d="M559 284c-15-9-31-12-48-11m67 17c-16-8-31-10-46-7m60 13c-14-6-28-7-41-4" fill="none" stroke="#6e3c34" stroke-width="5"/>
+  <!-- one thumb calibrates, the other steadies table edge -->
+  <path d="M288 298c17-14 34-18 50-11 16 8 14 24 0 36l-30 24-27-24Zm218-2c-16-15-33-20-49-14-16 7-15 23-2 36l28 26 29-22Z" fill="#c17f60" stroke="#201719" stroke-width="8"/>
+  <!-- folded note, green lighter, crumbs and scuffs -->
+  <path d="m78 337 118-27 37 113-129 33Z" fill="#d6c89f" stroke="#241f1b" stroke-width="9"/>
+  <path d="m103 343 73-17 27 76-82 21Z" fill="#e8ddbc" stroke="#887b5d" stroke-width="4"/>
+  <path d="m111 365 74 18m-56-42 31 73" stroke="#b0a37d" stroke-width="4"/>
+  <path d="M621 325c23-7 49 3 58 24l-20 132-76-10 14-121c2-13 9-21 24-25Z" fill="#2a875b" stroke="#17231b" stroke-width="9"/>
+  <path d="M610 339h43l3 25-49 1Z" fill="#d9d3a7" stroke="#243426" stroke-width="5"/>
+  <circle cx="96" cy="201" r="8" fill="#c29c45"/><circle cx="126" cy="239" r="5" fill="#9b7b32"/><circle cx="697" cy="237" r="7" fill="#c29c45"/><circle cx="667" cy="278" r="5" fill="#9b7b32"/>
+  <path d="M35 91c79-18 152-15 220-4m310 3c65-13 129-11 197 2M33 509c117-20 220-17 319-5m100 3c102-10 201-6 313 12" fill="none" stroke="#6f6841" stroke-width="6" opacity=".48"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#151812" stroke-width="12"/>
+</svg>

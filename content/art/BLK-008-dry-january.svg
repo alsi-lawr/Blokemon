@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="blk008-title blk008-desc">
+  <title id="blk008-title">BLK-008 Dry January non-final comic-vector mock-up</title>
+  <desc id="blk008-desc">A miserable long-faced abstainer folds over a cold kitchen island under rain-lit windows, rectangular glasses slipping down his nose and mouth compressed while a plain bottle, crossed calendar blocks, running shoes and cleared empties accuse him. Non-final placeholder art.</desc>
+  <defs><linearGradient id="blk008-rain" x2="0" y2="1"><stop stop-color="#cde5e8"/><stop offset="1" stop-color="#66868c"/></linearGradient><pattern id="blk008-streak" width="34" height="34" patternUnits="userSpaceOnUse" patternTransform="rotate(12)"><path d="M3 0v34M22 0v34" stroke="#effaf5" stroke-width="3" opacity=".3"/></pattern></defs>
+  <path fill="#34484b" d="M0 0h800v560H0z"/><path fill="url(#blk008-rain)" stroke="#1c2226" stroke-width="12" d="M18 18h468v339H18z"/><path fill="url(#blk008-streak)" d="M25 25h454v325H25z"/><path stroke="#526b70" stroke-width="13" d="M251 20v333M20 188h464"/>
+  <g stroke="#211b21" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#e4e2d3" d="M530 25h227v211H530z"/><g fill="#8da9aa" stroke-width="4"><path d="M550 52h42v34h-42zM611 52h42v34h-42zM672 52h42v34h-42zM550 105h42v34h-42zM611 105h42v34h-42zM672 105h42v34h-42zM550 158h42v34h-42zM611 158h42v34h-42zM672 158h42v34h-42z"/></g><path fill="none" stroke="#994141" d="M546 48l50 42M596 48l-49 44M607 101l50 42M657 101l-49 44M668 154l50 43M718 154l-49 44"/>
+    <path fill="#d5cfb8" d="M0 389q181-37 352 1 229-44 448-1v171H0z"/><path fill="#708c8d" d="M0 427q181-29 361 4 218-36 439 1v128H0z"/>
+    <path fill="#d7e4da" d="M50 430l99-9 13 130-121 9z"/><path fill="#bed2cb" d="M174 431l79-2 4 126-94 2z"/><path fill="#dce7df" d="M701 425l69-2 10 133-83 1z"/>
+    <!-- compressed folded body, not a bust -->
+    <path fill="#44575a" d="M204 552q20-165 73-250 44-68 113-79 83-8 143 55 69 77 93 274z"/><path fill="#647877" d="M236 554q23-147 67-223 37-54 92-61 66-4 113 46 59 66 83 238z"/>
+    <!-- long miserable skull, receding wisps, tiny eyes -->
+    <path fill="#a96a51" d="M331 48q39-37 88-28 58 16 83 73 24 58 8 133-15 75-66 119-46 34-87-2-43-40-53-123-12-111 27-172z"/>
+    <path fill="#63503e" d="M335 48q38-45 84-35 48 12 73 47-59-23-157-12z"/><path fill="none" stroke="#63503e" stroke-width="13" d="M337 57q-26 13-33 43M484 65q23 19 26 49"/>
+    <path fill="#a96a51" d="M310 123q-39-12-41 27 6 44 41 49M502 135q36-14 43 23 4 39-43 48"/>
+    <!-- rectangular small glasses -->
+    <path fill="#dfe8d0" d="M329 115q39-15 72 5l-4 47q-39 20-72-7zM420 120q36-14 67 7l-5 45q-36 18-67-8z"/><path fill="none" stroke="#263436" stroke-width="10" d="M319 110q46-25 88 4l-4 58q-47 25-88-8zM411 115q44-23 84 7l-7 56q-44 23-84-8zM405 137l9 1"/>
+    <path fill="#262328" d="M357 136h8v8h-8zM451 140h8v8h-8z"/>
+    <path fill="#ba7a59" d="M407 141q-2 72-28 109l28 12-17 23q31 8 55-17"/>
+    <path fill="none" stroke="#342524" stroke-width="12" d="M358 307q43-12 83 3"/><path fill="none" stroke="#784b40" stroke-width="5" d="M337 211l16 11M473 218l17-7M347 246l15 5M466 250l15-5"/>
+    <!-- arms folded into a single miserable knot -->
+    <path fill="#647877" d="M306 329q-84 24-125 89l-50 83 74 46 111-94M487 319q76 10 119 72l56 82-64 60-125-89"/>
+    <path fill="#a96a51" d="M207 401q83-29 167 18l88 56-39 72-118-51-115 37-36-70z"/><path fill="#a96a51" d="M514 391q-70 9-130 56l-72 58 49 52 88-48 109 30 38-67z"/>
+    <path fill="none" d="M207 445q61-9 118 28M482 432q-55 5-103 42M254 477q34-1 66 15M439 472q33-4 62 8"/>
+    <path fill="#dbe9db" d="M615 315q30-24 57 0l-9 127-64-1z"/><path fill="#b6d2c8" d="M629 333q14-11 28 0l-7 91-38 0z"/><path fill="none" stroke="#f6fff1" stroke-width="5" d="M639 341q4 35-3 67"/>
+    <path fill="#20282b" d="M611 487q35-43 79-15l-35 55-80-4zM684 511q39-35 76-1l-35 49-77-21z"/><path fill="none" stroke="#d9ece0" stroke-width="5" d="M598 510l64-4M672 535l64 8"/>
+    <path fill="#25282c" d="M223 506l-46 54h127l39-61zM490 497l42 63h130l-76-71z"/>
+  </g>
+</svg>

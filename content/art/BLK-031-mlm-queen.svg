@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b031-title b031-desc">
+  <title id="b031-title">BLK-031 MLM Queen non-final comic mock-up</title>
+  <desc id="b031-desc">MLM Queen beams on a nearly empty seminar stage, spreading glittery sleeves around a pyramid of anonymous sample boxes while two vacant chairs face her. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b031-wall" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#422747"/><stop offset=".55" stop-color="#7e3e67"/><stop offset="1" stop-color="#292e39"/></linearGradient>
+    <linearGradient id="b031-jacket" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff8dcc"/><stop offset=".48" stop-color="#ac3f85"/><stop offset="1" stop-color="#542347"/></linearGradient>
+    <pattern id="b031-glitter" width="23" height="19" patternUnits="userSpaceOnUse"><path d="m4 3 2 4 4 2-4 2-2 4-2-4-4-2 4-2Zm15 9 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z" fill="#ffd8a4" opacity=".72"/></pattern>
+    <pattern id="b031-carpet" width="44" height="33" patternUnits="userSpaceOnUse"><rect width="44" height="33" fill="#2d2737"/><path d="M0 8 44 31M-5 22 20 35M23-3 49 11" stroke="#81506a" stroke-width="3" opacity=".48"/></pattern>
+    <filter id="b031-wobble" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence baseFrequency=".012 .04" numOctaves="1" seed="31" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.7"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#b031-wall)"/>
+  <path d="M0 0h800v83C642 65 538 91 388 72 244 54 129 92 0 68Z" fill="#1d202b" stroke="#15131b" stroke-width="10"/>
+  <path d="M54 99 744 91l-20 292L67 369Z" fill="#c8c0c0" stroke="#251c29" stroke-width="11"/>
+  <path d="M91 124h219l-7 178H96Zm427-8h183l-12 176-174 3Z" fill="#73777c" stroke="#43313f" stroke-width="8"/>
+  <path d="M112 153c49 18 101 10 163-6m-157 46c60 8 113 0 153-12m267-30c44 12 87 10 128-5m-132 48c49 9 89 2 126-12" fill="none" stroke="#9ea1a1" stroke-width="6" opacity=".65"/>
+  <path d="M0 363c206-24 455-8 800 0v197H0Z" fill="url(#b031-carpet)" stroke="#1a1620" stroke-width="10"/>
+  <ellipse cx="402" cy="384" rx="227" ry="40" fill="#14121a" opacity=".52"/>
+  <!-- anonymous sample pyramid physically crowds the speaker -->
+  <g stroke="#2b1926" stroke-width="8" stroke-linejoin="round">
+    <path d="m313 384 89-4 5 75-99 2Z" fill="#d58c9f"/><path d="m407 380 91 3 10 74-101-2Z" fill="#9b698c"/>
+    <path d="m344 314 109 1 7 70-123-1Z" fill="#f0b56f"/><path d="m371 254 67 2 9 62-83-1Z" fill="#d87091"/>
+  </g>
+  <g fill="none" stroke="#ffe2bd" stroke-width="5" opacity=".72"><path d="m326 408 60-2m39 4 59 2m-122-72 70 0m-49-60 42 1"/></g>
+  <!-- heart skull and sprayed bouffant -->
+  <path d="M310 145c-2-66 41-110 92-96 44-24 103 13 96 84 37 17 48 59 19 85l-218 4c-35-31-26-64 11-77Z" fill="#4a243b" stroke="#211621" stroke-width="11" filter="url(#b031-wobble)"/>
+  <path d="M325 139c12-50 39-71 75-54 29-24 70 1 78 48-46-22-103-16-153 6Z" fill="#c35e94"/>
+  <path d="M334 130c34-20 73-24 111-12m-95-38c11 11 16 24 15 39m64-51c-8 16-8 30-1 46m43-11c-12 10-19 20-20 33" fill="none" stroke="#f0a5c5" stroke-width="6" stroke-linecap="round"/>
+  <path d="M333 150c11-34 44-49 73-34 27-17 68-3 76 36 7 33-7 55-14 80-8 31-23 62-64 68-38 5-63-22-72-54-6-21-19-35-15-57 3-17 9-24 16-39Z" fill="#d98872" stroke="#2a1821" stroke-width="11"/>
+  <path d="M326 187c-23-8-36 11-27 34 7 19 26 24 39 7m143-41c23-9 37 10 29 32-7 18-24 25-38 10" fill="#c77467" stroke="#2a1821" stroke-width="8"/>
+  <path d="M346 170c18-14 37-10 51 3m35-2c16-10 31-6 42 8" fill="none" stroke="#542235" stroke-width="9" stroke-linecap="round"/>
+  <path d="M350 184c13-7 28-4 37 7-12 11-27 10-37-7Zm89 4c10-7 24-4 31 6-11 10-23 8-31-6Z" fill="#f7dfc3" stroke="#301924" stroke-width="5"/>
+  <path d="M372 190l8 1m78 3 7 0" stroke="#17151b" stroke-width="6" stroke-linecap="round"/>
+  <path d="M413 180c-2 19 5 31 17 41-4 15-26 16-39 6" fill="#d07266" stroke="#612f3d" stroke-width="6"/>
+  <path d="M350 237c28-17 71-13 103 11-9 37-32 53-60 47-27-6-40-27-43-58Z" fill="#72243f" stroke="#301823" stroke-width="8"/>
+  <path d="M365 242c22-7 51-3 72 9-15 17-47 20-70 7Z" fill="#f5dec1"/>
+  <path d="M378 243v17m18-19v21m19-17v14" stroke="#ad8a75" stroke-width="3"/>
+  <path d="M376 277c17-8 34-6 47 5-14 12-32 12-47-5Z" fill="#e05d86"/>
+  <circle cx="329" cy="233" r="5" fill="#642b3f"/><circle cx="469" cy="240" r="4" fill="#642b3f"/>
+  <!-- headset -->
+  <path d="M483 164c25 19 29 53 13 77-11 16-25 20-42 21" fill="none" stroke="#252631" stroke-width="7"/>
+  <circle cx="451" cy="262" r="9" fill="#24232e"/>
+  <!-- top-heavy hourglass body and open arms -->
+  <path d="M337 290c35-14 93-13 130 7 34 50 34 121 8 176l-145 0c-29-60-24-130 7-183Z" fill="url(#b031-jacket)" stroke="#261722" stroke-width="12"/>
+  <path d="M344 301c-53 11-86 42-124 75-18 16-41 8-44-10-3-15 9-28 25-39l108-69Zm116 3c54 7 92 35 133 64 20 14 41 5 42-13 1-16-12-27-29-37l-118-61Z" fill="url(#b031-jacket)" stroke="#261722" stroke-width="11"/>
+  <path d="M183 352c-24-14-45-14-58-1-10 11-5 23 10 25l23 0-23 11c-14 7-13 21 0 25 12 4 28-7 41-18l27-23Z" fill="#d4816e" stroke="#2a1821" stroke-width="8"/>
+  <path d="M626 341c23-15 44-17 58-4 11 10 6 23-9 26l-23 2 24 9c15 6 15 20 2 25-12 5-29-5-42-15l-29-21Z" fill="#d4816e" stroke="#2a1821" stroke-width="8"/>
+  <path d="M304 263h185v211H315Z" fill="url(#b031-glitter)" opacity=".72"/>
+  <path d="M392 296c-11 34-15 73-11 111m29-111c13 36 17 75 11 115" fill="none" stroke="#5a2445" stroke-width="7"/>
+  <path d="M358 462c-8 26-7 49 2 74m82-75c7 25 5 50-5 75" fill="none" stroke="#2b1b2a" stroke-width="34"/>
+  <path d="M325 531c22-10 48-9 67 6 4 12-8 19-28 18h-47c-7-10-4-19 8-24Zm88 5c22-13 48-13 68 0 5 12-7 20-27 20h-47c-8-9-6-16 6-20Z" fill="#2a2029" stroke="#17131a" stroke-width="8"/>
+  <!-- two conspicuously empty chairs -->
+  <path d="M37 420c13-46 58-63 96-34l18 85-108 8Z" fill="#616574" stroke="#171820" stroke-width="10"/>
+  <path d="M68 472 51 554m70-84 25 84m511-84-12 84m89-90 30 88" stroke="#171820" stroke-width="12"/>
+  <path d="M657 396c25-36 69-34 92 5l9 73-116-2Z" fill="#62626c" stroke="#171820" stroke-width="10"/>
+  <path d="M76 402c18-13 36-12 51 3m544 0c19-12 39-8 53 7" fill="none" stroke="#9697a2" stroke-width="6"/>
+  <!-- hand-authored scuffs and light -->
+  <path d="M30 330c44-13 91-13 137-3m476-16c42-13 84-14 127-5M233 505l28 10m-13-30 31 5m274 11 34-7m-21 30 29-12" fill="none" stroke="#d788bd" stroke-width="5" opacity=".45"/>
+  <path d="M107 43l12 18m26-24-3 23m532-22-12 21m-27-27 4 25" stroke="#ffd7a0" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#15121a" stroke-width="12"/>
+</svg>

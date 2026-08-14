@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="blk012-title blk012-desc">
+  <title id="blk012-title">BLK-012 High as a Kite non-final comic-vector mock-up</title>
+  <desc id="blk012-desc">A delighted lanky bloke is nearly lifted sideways across a huge hilltop sky, his open coat, scarf, fingers and startled boots all dragged into the same gale above tiny distant pub lights and tumbling litter. Non-final placeholder art.</desc>
+  <defs><linearGradient id="blk012-sky" x2="1" y2="1"><stop stop-color="#d6e19e"/><stop offset=".55" stop-color="#70998c"/><stop offset="1" stop-color="#2d5260"/></linearGradient><linearGradient id="blk012-hill" x2="0" y2="1"><stop stop-color="#3f6b54"/><stop offset="1" stop-color="#162e2e"/></linearGradient><pattern id="blk012-wind" width="120" height="50" patternUnits="userSpaceOnUse"><path d="M0 25q35-24 72-1t48-3" fill="none" stroke="#f0f2c9" stroke-width="5" opacity=".25"/></pattern><filter id="blk012-gust"><feTurbulence seed="12" baseFrequency=".015" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2"/></filter></defs>
+  <path fill="url(#blk012-sky)" d="M0 0h800v560H0z"/><path fill="url(#blk012-wind)" d="M0 0h800v421H0z"/><path fill="url(#blk012-hill)" d="M0 399q192-97 383-30 199 61 417-9v200H0z"/>
+  <g stroke="#211c22" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#253f3b" d="M15 446q81-41 164-2l13 116H0z"/><path fill="#1f3735" d="M639 423q82-45 161-9v146H621z"/>
+    <path fill="#bd8342" d="M79 421h128v80H79z"/><path fill="#4b3027" d="M91 435h104v53H91z"/><g fill="#f5d77f" stroke-width="3"><path d="M101 447h25v26h-25zM137 447h24v26h-24zM172 447h15v26h-15z"/></g><path fill="#27252a" d="M132 411l81 30-142 0z"/>
+    <path fill="#3e4f58" d="M209 404q82-109 178-165l164 57q63 87 62 177l-167 45-213-39z"/>
+    <path fill="#597078" d="M242 407q72-88 149-139l139 50q52 70 52 135l-139 37-184-33z"/>
+    <path fill="#aa6a50" d="M390 260q-21-42 8-101 32-66 105-66 78 11 104 80 19 61-20 108-37 45-101 42-63-4-96-63z"/>
+    <path fill="#382920" d="M397 165q36-79 108-79 76 11 102 73-57-36-105-18-54-2-105 24z"/><path fill="#232c32" d="M423 114q49-43 102-30 48 17 68 51-82-32-170-21z"/>
+    <path fill="#aa6a50" d="M401 181q-40-20-50 16-7 39 35 56M602 170q42-15 47 22 1 40-58 45"/>
+    <path fill="#f0dba9" d="M421 165q37-22 70 11-12 35-40 31-27-4-30-42zM529 165q36-17 64 15-13 34-40 27-25-6-24-42z"/><circle cx="461" cy="178" r="7" fill="#211c22"/><circle cx="566" cy="179" r="7" fill="#211c22"/>
+    <path fill="#bb7b59" d="M510 176q-13 51-42 77 32 23 67 4"/><path fill="none" d="M423 140q37-20 72 7M529 141q37-14 67 12M414 222l18 14M573 224l21-11"/>
+    <path fill="#2a1f21" d="M445 269q55 29 103 5-15 50-58 45-32-4-45-50z"/><path fill="#f1dcae" d="M465 279q34 9 64 1l-8 17-44-1z"/>
+    <path fill="#597078" d="M400 285q-82-9-145 33l-103 73 53 75 196-92M553 299q70 13 116 69l72 90-68 55-130-117"/>
+    <path fill="#aa6a50" d="M272 308q-59-12-107 9-46 20-63 48-14 24 5 43 19 19 46-2-10 29 13 39 24 10 41-18 0 28 23 27 24-2 24-31 14 20 33 5 17-14 1-38z"/>
+    <path fill="#aa6a50" d="M665 358q48 5 84 39 37 35 38 66 1 27-23 35-24 7-43-21 1 30-25 30-24-1-32-32-8 27-31 20-23-9-13-39-21 16-38-2-15-18 15-44z"/>
+    <path fill="#7d3d45" d="M365 287q-87-91-173-89l28 41q71 21 134 102z"/><path fill="#a35150" d="M206 200q-92-48-172-16 79 16 150 68l59-5z"/><path fill="#ead38b" d="M36 183l25-46 29 45-30 36z"/><path fill="none" stroke="#f5e6ae" stroke-width="5" d="M61 139l-10-47M90 180l31-23"/>
+    <path fill="#26343b" d="M270 426q-67 36-92 96l100 38 93-91z"/><path fill="#394c50" d="M573 424q75 13 128 70l-82 66-114-92z"/><path fill="#c8b48c" d="M175 507q-59 5-83 33l126 20 58-31zM651 495q68 11 90 47l-102 18-57-38z"/><path fill="none" stroke="#ebe3bd" stroke-width="6" d="M121 527l91 15M676 517l-67 24"/>
+    <path fill="#d7cc99" d="M315 99l32-42 36 46-35 40z"/><path fill="none" stroke="#f4f0bd" stroke-width="5" d="M348 58l28-48M382 100l54 3"/>
+    <g fill="#d8d19e" stroke-width="4"><path d="M102 274l35-8-7 25-34 8zM705 247l32-16 4 29-31 14zM53 341l27-6-4 24-28 5zM643 73l33-7-5 28-33 5z"/></g>
+    <path fill="none" stroke="#f4f1c7" stroke-width="6" d="M23 64q126-39 245-6M531 49q119-34 239 3M69 120q89-28 176-3M615 126q75-24 154 1"/>
+    <!-- Recomposition pass: bury the old central avatar and make the bloke a wind-tossed diagonal in a large sky. -->
+    <path fill="url(#blk012-sky)" stroke="none" d="M0 0h800v428q-179 49-330-3-190-62-470 22z"/>
+    <path fill="url(#blk012-wind)" stroke="none" d="M0 0h800v427H0z"/>
+    <path fill="url(#blk012-hill)" stroke="none" d="M0 391q236-86 476-12 155 60 324 4v177H0z"/>
+    <path fill="#bd8342" d="M159 414h104v67H159z"/><path fill="#4b3027" d="M171 426h80v42h-80z"/><g fill="#f5d77f" stroke-width="3"><path d="M180 436h18v21h-18zM207 436h18v21h-18zM234 436h9v21h-9z"/></g><path fill="#27252a" d="M199 404l68 24-119 0z"/>
+    <g transform="rotate(-18 480 275)">
+      <path fill="#4a5f69" d="M334 236q82-49 174-13l81 58-53 118-185-39z"/>
+      <path fill="#687f86" d="M365 247q66-34 129-9l61 46-38 87-147-31z"/>
+      <path fill="#a96850" d="M430 221q-18-33-3-79 16-49 65-55 53 4 75 48 18 42-6 79-22 35-68 38-43 2-63-31z"/>
+      <path fill="#2b2926" d="M428 160q19-62 68-79 54 5 71 44-58-22-139 35z"/>
+      <path fill="#a96850" d="M433 168q-30-14-35 12-2 29 31 37M564 154q31-16 39 11 5 28-42 38"/>
+      <path fill="#f0d9a8" d="M448 157q28-18 52 4-7 27-27 26-20-1-25-30zM521 151q26-15 47 6-7 25-26 23-18-2-21-29z"/><circle cx="478" cy="164" r="5" fill="#211c22"/><circle cx="549" cy="159" r="5" fill="#211c22"/>
+      <path fill="#ba7a58" d="M512 160q-5 39-24 60 25 14 49-5"/><path fill="#2a1f21" d="M470 224q38 19 70 0-10 35-39 32-22-3-31-32z"/><path fill="#f1dcae" d="M484 230q22 5 41 0l-5 12-28 0z"/>
+      <path fill="#687f86" d="M370 255q-73-12-129 18l-75 44 29 62 151-49M530 250q68 5 111 43l80 69-43 59-134-82"/>
+      <path fill="#a96850" d="M245 273q-55-8-90 15-31 19-39 44-7 21 10 33 18 11 35-8-4 23 15 28 20 4 28-20 4 21 23 14 17-7 9-29 16 12 29-3 11-14-20-74z"/>
+      <path fill="#a96850" d="M637 292q50 1 88 27 35 24 40 48 4 22-16 30-20 7-36-16 4 24-16 28-20 3-29-21-3 22-22 18-20-5-15-28-16 13-30-1-12-13 9-34z"/>
+      <path fill="#26343b" d="M356 340l-81 82 68 49 92-98zM505 367l70 100 75-42-92-105z"/><path fill="#c8b48c" d="M273 414q-51 10-68 36l91 28 48-22zM574 454q53 3 74 28l-79 27-47-30z"/>
+    </g>
+    <path fill="#7d3d45" d="M437 202q-98-88-205-58l43 35q80 9 150 75z"/><path fill="#a35150" d="M249 146q-90-45-166-12 75 13 148 58l51-12z"/>
+    <path fill="none" stroke="#f4f1c7" stroke-width="6" d="M210 83q134-40 268-4M543 104q113-34 230-2M279 157q86-28 163-3M598 187q87-29 166-4"/>
+  </g>
+</svg>

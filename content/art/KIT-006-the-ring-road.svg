@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="kit006-title kit006-desc">
+  <title id="kit006-title">KIT-006 The Ring Road non-final comic-vector mock-up</title>
+  <desc id="kit006-desc">From a steep oblique aerial view, wet lanes, battered cars and a flyover coil around a traffic island. A tiny weary road worker seen from behind feeds a glowing energy can into a clanking roundabout machine while a fresh blank card drops from its other side. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="kit006-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#171d2b"/>
+      <stop offset="1" stop-color="#30453e"/>
+    </linearGradient>
+    <linearGradient id="kit006-road" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#60676b"/>
+      <stop offset=".5" stop-color="#30363b"/>
+      <stop offset="1" stop-color="#1f2529"/>
+    </linearGradient>
+    <linearGradient id="kit006-island" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#72805b"/>
+      <stop offset="1" stop-color="#33422f"/>
+    </linearGradient>
+    <radialGradient id="kit006-lamp">
+      <stop stop-color="#ffe38a" stop-opacity=".8"/>
+      <stop offset=".28" stop-color="#e8a842" stop-opacity=".3"/>
+      <stop offset="1" stop-color="#d18634" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="kit006-jacket" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#d5a833"/>
+      <stop offset="1" stop-color="#7d672a"/>
+    </linearGradient>
+    <pattern id="kit006-tarmac" width="43" height="37" patternUnits="userSpaceOnUse">
+      <path d="m1 34 16-4m9-22 11-3M8 15l5-1" stroke="#c1ced0" stroke-width="2" opacity=".11"/>
+      <circle cx="24" cy="25" r="2" fill="#10151a" opacity=".3"/>
+    </pattern>
+    <pattern id="kit006-chevrons" width="72" height="40" patternUnits="userSpaceOnUse">
+      <path d="m-10 36 28-17L-10 2M25 36l28-17L25 2" fill="none" stroke="#d7cf91" stroke-width="6" opacity=".7"/>
+    </pattern>
+    <filter id="kit006-grit">
+      <feTurbulence baseFrequency=".72" numOctaves="2" seed="606" result="noise"/>
+      <feColorMatrix in="noise" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .07 0" result="grain"/>
+      <feBlend in="SourceGraphic" in2="grain" mode="multiply"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#kit006-sky)"/>
+  <path d="M0 0h800v132C664 107 578 111 462 97 324 80 187 92 0 138Z" fill="#243830"/>
+  <path d="M0 57c84-27 177-36 264-25 100 13 177 5 261-5 105-13 191 2 275 37v68C687 104 594 109 474 96 329 80 189 92 0 139Z" fill="#3a5541" stroke="#15231f" stroke-width="8"/>
+  <path d="M0 92c51-15 97-22 142-23m34-3c66-4 125 5 184 8m46 2c63 0 119-13 181-11m42 4c56 5 107 18 171 38" fill="none" stroke="#8b9865" stroke-width="5" opacity=".42"/>
+
+  <!-- Oblique interchange: roads occupy nearly the whole scene. -->
+  <path d="M-92 235C66 109 254 77 432 125c119 31 217 95 348 201 49 39 96 53 142 55" fill="none" stroke="#14191d" stroke-width="172"/>
+  <path d="M-92 235C66 109 254 77 432 125c119 31 217 95 348 201 49 39 96 53 142 55" fill="none" stroke="url(#kit006-road)" stroke-width="147"/>
+  <path d="M-92 235C66 109 254 77 432 125c119 31 217 95 348 201 49 39 96 53 142 55" fill="none" stroke="url(#kit006-tarmac)" stroke-width="145"/>
+  <path d="M-75 215C80 101 251 78 420 118c133 31 230 104 360 207" fill="none" stroke="#d0c98d" stroke-width="6" stroke-dasharray="28 26"/>
+  <path d="M-54 264C91 151 255 126 412 165c122 30 216 95 342 194" fill="none" stroke="#f3eee0" stroke-width="5" stroke-dasharray="21 31" opacity=".8"/>
+  <path d="M-90 490C70 365 210 318 354 325c179 9 269 124 446 183" fill="none" stroke="#15191d" stroke-width="183"/>
+  <path d="M-90 490C70 365 210 318 354 325c179 9 269 124 446 183" fill="none" stroke="url(#kit006-road)" stroke-width="157"/>
+  <path d="M-90 490C70 365 210 318 354 325c179 9 269 124 446 183" fill="none" stroke="url(#kit006-tarmac)" stroke-width="154"/>
+  <path d="M-70 461C64 364 204 325 347 333c174 9 275 119 453 181" fill="none" stroke="#d1c986" stroke-width="6" stroke-dasharray="26 25"/>
+  <path d="M-74 520C78 402 213 365 353 372c164 9 263 109 439 172" fill="none" stroke="#f0eee5" stroke-width="5" stroke-dasharray="20 30" opacity=".75"/>
+
+  <!-- Upper flyover cuts a third spatial direction. -->
+  <path d="M181-52c31 131 39 236 13 330-22 79-18 157 16 262" fill="none" stroke="#12171a" stroke-width="103"/>
+  <path d="M181-52c31 131 39 236 13 330-22 79-18 157 16 262" fill="none" stroke="#485055" stroke-width="82"/>
+  <path d="M181-52c31 131 39 236 13 330-22 79-18 157 16 262" fill="none" stroke="url(#kit006-tarmac)" stroke-width="79"/>
+  <path d="M182-40c28 128 32 227 8 315-21 80-16 164 19 272" fill="none" stroke="#d0c990" stroke-width="5" stroke-dasharray="23 25"/>
+  <path d="M142 7 94 24m99 103-63 7m60 118-70 2m72 119-73-5m83 113-64-10" stroke="#171c1f" stroke-width="12"/>
+  <path d="m105 21 17 522m99-584 22 598" stroke="#12171a" stroke-width="10" opacity=".72"/>
+
+  <!-- Central traffic island, irregular rather than a clean emblem. -->
+  <path d="M305 218c42-33 102-44 158-30 55 14 99 52 121 101 18 41 7 84-26 113-38 34-103 47-162 34-63-14-112-53-126-98-13-42 0-89 35-120Z" fill="#1a201c" stroke="#101315" stroke-width="13"/>
+  <path d="M316 225c39-29 93-38 143-25 49 12 89 45 110 86 17 34 7 71-21 96-34 29-92 41-144 29-55-13-99-47-112-85-12-36-1-76 24-101Z" fill="url(#kit006-island)" stroke="#829064" stroke-width="6"/>
+  <path d="M322 237c37-25 85-30 127-19 44 11 80 39 97 73 14 29 7 56-17 78" fill="none" stroke="#b5bc7b" stroke-width="5" stroke-dasharray="12 17" opacity=".55"/>
+  <path d="M285 253c-26 9-47 21-64 37m350 54c22 10 39 24 51 41" fill="none" stroke="#d7cf91" stroke-width="8"/>
+  <path d="M263 251c-28 6-48 17-64 34l23 43c14-20 34-35 60-44Zm321 79c27 9 47 24 61 45l-27 38c-13-22-32-37-57-48Z" fill="url(#kit006-chevrons)" stroke="#222426" stroke-width="6"/>
+
+  <!-- Clanking roundabout exchange machine. -->
+  <path d="M394 245c2-30 25-50 53-45 28 4 46 30 39 59l-7 27 41 19-15 87-131-17 1-91Z" fill="#5a4a40" stroke="#171619" stroke-width="9"/>
+  <path d="M404 245c4-21 20-33 38-30 18 3 30 20 26 40l-7 33-61-8Z" fill="#86705a" stroke="#262023" stroke-width="6"/>
+  <path d="m380 278 103 14-8 55-104-14Z" fill="#2a3134" stroke="#141719" stroke-width="7"/>
+  <path d="m391 291 32 4-4 27-33-4Zm51 7 29 4-4 26-30-4Z" fill="#0e1416" stroke="#a78346" stroke-width="5"/>
+  <path d="M397 371c-2 23 9 37 29 40m44-31c-3 18-14 29-31 31" fill="none" stroke="#302b28" stroke-width="12"/>
+  <circle cx="424" cy="410" r="15" fill="#6f573c" stroke="#171719" stroke-width="6"/>
+  <circle cx="439" cy="412" r="15" fill="#6f573c" stroke="#171719" stroke-width="6"/>
+  <path d="M428 201 414 175m41 31 18-25" stroke="#18191b" stroke-width="7"/>
+  <path d="M406 174c-4-15 2-27 14-32 13-4 24 5 25 20 1 15-7 25-20 27-12 1-19-3-19-15Z" fill="#e1ab42" stroke="#211d1c" stroke-width="6"/>
+  <circle cx="426" cy="164" r="72" fill="url(#kit006-lamp)"/>
+  <path d="M485 315c30-3 52 4 67 19l-16 41c-17-10-37-13-62-8Z" fill="#687479" stroke="#15181a" stroke-width="7"/>
+  <path d="m497 324 38 5-8 31-39-6Z" fill="#d5cab0" stroke="#282322" stroke-width="5"/>
+
+  <!-- Tiny worker, back-three-quarter: separate crooked anatomy and articulated hands. -->
+  <path d="M322 314c-15 16-24 40-27 71l-6 65 67 20 32-69-5-50c-3-30-20-49-61-37Z" fill="url(#kit006-jacket)" stroke="#171719" stroke-width="8"/>
+  <path d="M316 318c18 12 42 18 66 17m-84 49c24 11 50 15 78 12" fill="none" stroke="#f2dd7c" stroke-width="10"/>
+  <path d="M326 291c-5-20 5-38 23-43 19-6 38 5 43 25 5 20-7 39-28 44l-22 2-17-13Z" fill="#9b6553" stroke="#171619" stroke-width="7"/>
+  <path d="M325 288c-7-24 8-44 30-47 17-2 32 9 37 25-19-7-39-4-61 9Z" fill="#3b322f" stroke="#171619" stroke-width="6"/>
+  <path d="M388 278c14-6 23 10 14 22-5 7-12 8-20 3" fill="#a66d58" stroke="#171619" stroke-width="5"/>
+  <path d="M388 287c5 0 8 3 9 7m-11 9c2 5 6 8 11 9" fill="none" stroke="#4c2d2b" stroke-width="4"/>
+  <path d="M332 328c-24-1-43-13-55-30" fill="none" stroke="#a97d31" stroke-width="18" stroke-linecap="round"/>
+  <path d="M281 300c-8-12-19-18-31-19-8-1-12 6-8 12 3 5 9 5 15 6-6 3-8 9-4 14 4 5 11 2 16-1-3 6-1 12 4 14 6 2 10-5 13-11l16 7 5-10-16-12Z" fill="#a97058" stroke="#171619" stroke-width="5"/>
+  <path d="m223 258 35 3 12 44-43 9-18-29Z" fill="#d4a339" stroke="#29201e" stroke-width="6"/>
+  <path d="m231 267 19 1 7 27-24 5-9-17Z" fill="#f1ca52"/>
+  <path d="M373 342c25 3 44-3 57-19" fill="none" stroke="#a97d31" stroke-width="18" stroke-linecap="round"/>
+  <path d="M423 324c7-13 18-21 31-23 9-1 13 6 10 13-3 6-10 7-16 8 7 2 10 8 6 14-4 6-11 4-17 1 4 6 3 12-3 15-6 3-11-3-14-9l-17 9-6-10 18-14Z" fill="#a97058" stroke="#171619" stroke-width="5"/>
+  <path d="M307 454c-13 25-19 52-19 81m53-70c8 25 19 49 35 71" fill="none" stroke="#43484c" stroke-width="18"/>
+  <path d="m281 529-22 18 51 8m59-24 22 18-51 6" fill="none" stroke="#171719" stroke-width="11" stroke-linecap="round"/>
+  <path d="M316 341c-6 10-11 22-14 34m64-30c5 10 8 21 9 33" fill="none" stroke="#886e2b" stroke-width="4"/>
+
+  <!-- Vehicles are individually drawn and skewed to the road planes. -->
+  <g stroke="#13171a" stroke-width="6" stroke-linejoin="round">
+    <path d="m15 151 69-36 55 13 30 36-92 48-59-15Z" fill="#8e4c45"/>
+    <path d="m60 145 29-15 33 9 15 18-44 23-38-7Z" fill="#a8c5c3"/>
+    <path d="M23 183 6 191m165-49 19-9" fill="none" stroke="#f3c95a" stroke-width="8"/>
+    <path d="m289 101 71-3 42 25 6 37-102 3-39-30Z" fill="#426d7b"/>
+    <path d="m309 108 43-2 26 15 3 17-62 2Z" fill="#a9c5c3"/>
+    <path d="M295 155v15m105-24v15" fill="none" stroke="#ebd878" stroke-width="7"/>
+    <path d="m568 189 54 30 19 48-23 27-79-45-2-47Z" fill="#845e79"/>
+    <path d="m574 205 33 19 12 29-11 13-47-27-2-27Z" fill="#b7c4b8"/>
+    <path d="m548 229-14-8m96 49 15 9" fill="none" stroke="#e9cf73" stroke-width="7"/>
+    <path d="m691 296 65 50 9 49-31 22-81-63 5-44Z" fill="#987541"/>
+    <path d="m700 314 38 30 5 27-15 10-47-37 3-23Z" fill="#b9c6b9"/>
+    <path d="m664 339-14-8m103 55 15 8" fill="none" stroke="#f0d063" stroke-width="7"/>
+    <path d="m17 400 77-34 55 11 27 34-102 45-56-13Z" fill="#547054"/>
+    <path d="m52 398 39-17 32 7 14 17-54 24-35-9Z" fill="#b1c5b5"/>
+    <path d="m27 443-15 7m154-52 17-7" fill="none" stroke="#efcf69" stroke-width="7"/>
+    <path d="m507 435 76 22 32 37-12 35-102-30-26-41Z" fill="#405f7d"/>
+    <path d="m524 448 42 12 20 22-6 17-57-17-15-24Z" fill="#afc1bf"/>
+    <path d="m493 480-16 1m127 34 17 5" fill="none" stroke="#f0d46d" stroke-width="7"/>
+    <path d="m687 483 72 19 34 38-4 20H668l-13-42Z" fill="#784d47"/>
+    <path d="m699 495 40 11 24 27-66-9Z" fill="#aebfba"/>
+  </g>
+
+  <!-- Verge clutter, drainage, cones, puddles and lamp pools. -->
+  <path d="M16 302c34-10 64-10 90-2m535-181c40-4 75 2 107 17M18 536c32-3 59 0 81 9" fill="none" stroke="#718264" stroke-width="8"/>
+  <path d="M73 279c22-8 44-7 65 2l-4 21-72 2Z" fill="#1c2928" stroke="#101517" stroke-width="6"/>
+  <path d="M88 287c15-3 28-2 39 4" stroke="#7f9898" stroke-width="4" opacity=".5"/>
+  <path d="M618 126c26-7 52-3 76 10l-6 22-85-5Z" fill="#1c2928" stroke="#101517" stroke-width="6"/>
+  <g fill="#d98435" stroke="#211b1b" stroke-width="5">
+    <path d="m244 391-13 46h44l-14-46Z"/>
+    <path d="m586 400-12 43h42l-14-43Z"/>
+    <path d="m118 281-10 35h35l-11-35Z"/>
+  </g>
+  <path d="M231 421h42m302 6h39m-505-124h33" stroke="#f5d37b" stroke-width="6"/>
+  <path d="M676 36v103m-10-98 17-7-1 22-16 6" stroke="#1a1d1d" stroke-width="8"/>
+  <circle cx="676" cy="33" r="93" fill="url(#kit006-lamp)"/>
+  <path d="M52 34v91m-9-89 18-5-2 20-16 5" stroke="#1a1d1d" stroke-width="8"/>
+  <circle cx="51" cy="29" r="76" fill="url(#kit006-lamp)" opacity=".55"/>
+  <path d="m726 74 15 22m-44-5 13 20m-86-70 15 23M87 231l14 20m13-43 13 21M35 353l14 21m694 78 15 23M451 78l14 22" stroke="#9cb0b1" stroke-width="4" opacity=".65"/>
+  <path d="M690 107c20 4 37 11 52 23M24 347c30 3 55 11 73 25m505 91c28 3 53 11 73 25" fill="none" stroke="#d8e8e4" stroke-width="3" opacity=".35"/>
+  <rect x="6" y="6" width="788" height="548" rx="16" fill="none" stroke="#0b0f12" stroke-width="12"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#kit006-grit)" pointer-events="none"/>
+</svg>

@@ -1,0 +1,760 @@
+{
+  "version": "blokemon-printing-1.0.0",
+  "collectibles": [
+    {
+      "id": "BLK-001",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-002",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-003",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-004",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-005",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-006",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-007",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-008",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-009",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-010",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-011",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-012",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-013",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-014",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-015",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare"
+    },
+    {
+      "id": "BLK-016",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-017",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare"
+    },
+    {
+      "id": "BLK-018",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-019",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-020",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-021",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-022",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-023",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-024",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-025",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-026",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-027",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-028",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-029",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-030",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-031",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-032",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-033",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-034",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-035",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-036",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-037",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-038",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-039",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-040",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-041",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-042",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-043",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-044",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-045",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-046",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-047",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-048",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-049",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-050",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-051",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare"
+    },
+    {
+      "id": "BLK-052",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-053",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-054",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-055",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-056",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-057",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-058",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-059",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-060",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-061",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-062",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-063",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-064",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-065",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-066",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-067",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-068",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-069",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-070",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-071",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-072",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-073",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-074",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-075",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-076",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-077",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-078",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-079",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-080",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-081",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-082",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-083",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-084",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-085",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-086",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-087",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-088",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-089",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-090",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-091",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-092",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-093",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-094",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-095",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-096",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-097",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-098",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-099",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-100",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-101",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare"
+    },
+    {
+      "id": "BLK-102",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-103",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-104",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-105",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-106",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-107",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-108",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-109",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-110",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-111",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-112",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-113",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-114",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-115",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-116",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-117",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-118",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-119",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-120",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-121",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-122",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-123",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-124",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-125",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare"
+    },
+    {
+      "id": "BLK-126",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-127",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-128",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-129",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-130",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-131",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-132",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-133",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-134",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-135",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-136",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-137",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-138",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-139",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-140",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Common"
+    },
+    {
+      "id": "BLK-141",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-142",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-143",
+      "gen1Set": "Jungle",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-144",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-145",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-146",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-147",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Uncommon"
+    },
+    {
+      "id": "BLK-148",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare"
+    },
+    {
+      "id": "BLK-149",
+      "gen1Set": "Fossil",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-150",
+      "gen1Set": "Base Set",
+      "gen1Rarity": "Rare Holo"
+    },
+    {
+      "id": "BLK-151",
+      "gen1Set": "Wizards Black Star Promos",
+      "gen1Rarity": "Promo"
+    }
+  ]
+}

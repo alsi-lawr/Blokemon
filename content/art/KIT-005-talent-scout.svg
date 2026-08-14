@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="kit005-title kit005-desc">
+  <title id="kit005-title">KIT-005 Talent Scout non-final comic-vector mock-up</title>
+  <desc id="kit005-desc">A tiny sharp elderly scout clings to a lighting ladder at the far left of a deep, crooked audition hall, enormous spectacles and a pointing finger aimed diagonally across eight radically different full-body hopefuls. One angular performer is hauled into a hard spotlight while blank audition cards belonging to the others tumble down a shuffle chute. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="kit005-backdrop" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#161a2a"/><stop offset=".5" stop-color="#4c3044"/><stop offset="1" stop-color="#171a24"/>
+    </linearGradient>
+    <linearGradient id="kit005-boards" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#946550"/><stop offset="1" stop-color="#38252b"/>
+    </linearGradient>
+    <linearGradient id="kit005-skin" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#e0ac84"/><stop offset="1" stop-color="#8a4b48"/>
+    </linearGradient>
+    <radialGradient id="kit005-beam" cx="50%" cy="0" r="90%">
+      <stop stop-color="#fff5b5" stop-opacity=".96"/><stop offset=".45" stop-color="#e9a94f" stop-opacity=".36"/><stop offset="1" stop-color="#aa5e3c" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="kit005-boardgrain" width="37" height="23" patternUnits="userSpaceOnUse">
+      <path d="M-3 20 31 3M11 26 41 11" stroke="#e4a56a" stroke-width="2" opacity=".14"/>
+      <path d="M6 6h9m10 9h6" stroke="#15151b" stroke-width="2" opacity=".3"/>
+    </pattern>
+    <filter id="kit005-grain">
+      <feTurbulence baseFrequency=".7" numOctaves="2" seed="505" result="n"/>
+      <feColorMatrix in="n" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .065 0" result="g"/>
+      <feBlend in="SourceGraphic" in2="g" mode="multiply"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#kit005-backdrop)"/>
+  <path d="M0 74 800 25v307L0 445Z" fill="#242a39" stroke="#0e1118" stroke-width="11"/>
+  <path d="M19 93 772 49l-77 248-628 101Z" fill="#333647" stroke="#71575a" stroke-width="7"/>
+  <path d="M74 108 716 70l-53 198-536 91Z" fill="#202534" stroke="#151721" stroke-width="6"/>
+  <path d="M0 438 800 319v241H0Z" fill="url(#kit005-boards)" stroke="#17151b" stroke-width="11"/>
+  <path d="M0 438 800 319v241H0Z" fill="url(#kit005-boardgrain)"/>
+  <path d="M0 492 800 370M79 560l719-137M108 422 86 560m145-160-9 160m150-184 4 184m147-207 20 207m130-226 42 226" fill="none" stroke="#21191f" stroke-width="5" opacity=".72"/>
+  <path d="M0 55c97 26 166 2 245 15 75 12 123-17 212-4 94 14 152-18 218-8 48 7 87-3 125-17V0H0Z" fill="#8b3043" stroke="#21141d" stroke-width="10"/>
+  <path d="M17 44c73 17 144 2 212 11m40 7c65 4 126-8 184-7m47 4c56-3 105-11 159-8m39 3c50 4 91-5 130-19" fill="none" stroke="#d2736e" stroke-width="5" opacity=".56"/>
+  <path d="m573 56 104 306-213 35 51-322Z" fill="url(#kit005-beam)"/>
+  <path d="M552 56c24-18 61-20 88-4l12 31-104 8Z" fill="#242532" stroke="#0e1016" stroke-width="8"/>
+  <path d="m571 68 7 31m51-35-2 31" stroke="#ffd264" stroke-width="6"/>
+
+  <!-- Scout: tiny, off-axis, full-body and all bone angles, perched on a lighting ladder. -->
+  <path d="M39 60 128 560M100 54 181 560M55 142l75-12M70 239l76-12M85 335l76-12M101 431l74-11M116 527l65-10" fill="none" stroke="#17181e" stroke-width="11"/>
+  <path d="M39 60 128 560M100 54 181 560" fill="none" stroke="#657078" stroke-width="6"/>
+  <g transform="translate(18 96) rotate(-11 116 127)">
+    <path d="M88 121 61 205l11 107m52-184 18 91 49 70" fill="none" stroke="#a85e3d" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="m69 307-19 32 43-11m94-44 27 19-39 5" fill="none" stroke="#17151b" stroke-width="12" stroke-linecap="round"/>
+    <path d="m74 114 17-46 45 10 21 83-30 52-59-32Z" fill="#b67240" stroke="#17151b" stroke-width="8"/>
+    <path d="M91 49 104 8l39 7 25 34-18 49-43 18-28-29Z" fill="url(#kit005-skin)" stroke="#17151b" stroke-width="7"/>
+    <path d="m92 44 8-33 21-17 30 7 14 19-25-7-22 5-21 19Z" fill="#ded2bb" stroke="#17151b" stroke-width="6"/>
+    <path d="M91 58c-14-6-22 11-11 23 7 8 15 8 22 1m56-25c15-8 25 9 14 22-6 8-14 8-22 2" fill="#bd8066" stroke="#17151b" stroke-width="5"/>
+    <path d="m102 58 12-4 9 5m18-2 11 5m-23-2-10 18 17 1m-28 12c11 7 24 4 33-5" fill="none" stroke="#2b1c20" stroke-width="4"/>
+    <ellipse cx="111" cy="61" rx="25" ry="22" fill="#d9eef0" fill-opacity=".35" stroke="#292735" stroke-width="7"/>
+    <ellipse cx="150" cy="62" rx="26" ry="22" fill="#d9eef0" fill-opacity=".35" stroke="#292735" stroke-width="7"/>
+    <path d="M136 62h-2m-45-19-16-8m101 11 17-9" stroke="#292735" stroke-width="6"/>
+    <circle cx="115" cy="63" r="4" fill="#111218"/><circle cx="147" cy="64" r="4" fill="#111218"/>
+    <path d="M74 126c-25 18-43 45-54 81" fill="none" stroke="#a85e3d" stroke-width="16" stroke-linecap="round"/>
+    <path d="M21 197c-13 4-23 13-28 24-3 8 2 14 9 13 6-1 9-8 12-14 0 7 4 12 10 11 6-2 7-9 7-15 4 5 9 6 14 2 5-5 1-11-4-17Z" fill="#b8785d" stroke="#17151b" stroke-width="5"/>
+    <path d="m-19 147 53-10 14 70-57 13Z" fill="#c2a56b" stroke="#211b20" stroke-width="6"/>
+    <path d="m-8 159 35-7m-31 26 38-8m-33 29 30-6" stroke="#684e37" stroke-width="4"/>
+    <path d="M149 126c31 8 58 26 82 54" fill="none" stroke="#a85e3d" stroke-width="16" stroke-linecap="round"/>
+    <path d="M221 167c13-1 26 5 34 15 5 7 0 13-7 13-6 0-10-6-14-11 0 7-4 12-10 11-6-1-8-8-9-14l-26 7-4-11 28-11Z" fill="#b8785d" stroke="#17151b" stroke-width="5"/>
+    <path d="M81 125c16 10 36 14 59 12m-65 29c24 10 49 10 73 2" fill="none" stroke="#d69c62" stroke-width="4" opacity=".6"/>
+  </g>
+
+  <!-- Candidate 1, very far: beanpole in strict side-profile with a broken umbrella silhouette. -->
+  <path d="M248 151c-6-21 4-39 23-43l18 8 11 20-9 23 12 16 8 70-17 74-49 6-4-87 9-62Z" fill="#526979" stroke="#15171d" stroke-width="7"/>
+  <path d="m258 117 16-12 20 9 7 18-22 2 15 10-22 16-18-12Z" fill="#9b6756" stroke="#17161b" stroke-width="6"/>
+  <path d="m270 126 9-3 8 4m-4 6 17 5-16 9m-15 3c8 7 16 8 24 4" fill="none" stroke="#282023" stroke-width="4"/>
+  <path d="M271 112c4-20 27-27 42-11l-4-17c-19-11-41-1-44 18Z" fill="#c3b39d" stroke="#17161b" stroke-width="5"/>
+  <path d="M285 317 272 376m22-60 19 55" stroke="#303846" stroke-width="13"/>
+  <path d="m267 371-18 11h34m26-16 18 9-32 4" stroke="#17151b" stroke-width="9"/>
+  <path d="M304 184c18-20 35-41 49-65m-62 77c-22-16-44-25-64-28" fill="none" stroke="#526979" stroke-width="10"/>
+  <path d="M351 118c-22-29-55-31-80-7 34-11 62-6 80 7Z" fill="#34323a" stroke="#15171d" stroke-width="5"/>
+  <path d="m352 119 9 25" stroke="#34323a" stroke-width="5"/>
+
+  <!-- Candidate 2, far centre: huge triangular pompadour and a concertina body from behind. -->
+  <path d="M372 146c18-24 48-29 71-11l17 39-9 126-84 10-17-118Z" fill="#744e62" stroke="#15151c" stroke-width="8"/>
+  <path d="m374 134 14-40 47-13 28 37-17 44-49 11Z" fill="#ad715d" stroke="#17151b" stroke-width="7"/>
+  <path d="m371 127 9-40 34-25 43 8 18 31-40-12-39 15Z" fill="#24212a" stroke="#141419" stroke-width="7"/>
+  <path d="m399 124 14 8 14-10m-25 17 4 20 20-3" fill="none" stroke="#332024" stroke-width="5"/>
+  <path d="M361 186c32 14 63 14 94 0m-91 34c30 13 60 13 90 0m-85 38c29 11 56 11 81-1" fill="none" stroke="#b77f99" stroke-width="5" opacity=".65"/>
+  <path d="M385 302 371 374m52-75 26 68" stroke="#373443" stroke-width="15"/>
+  <path d="m367 369-22 15h40m59-21 23 10-41 8" stroke="#17151b" stroke-width="10"/>
+
+  <!-- Candidate 3, far right: bent-backed singer whose mouth is the silhouette. -->
+  <path d="M691 131c20-16 45-13 59 7l-1 39c22 18 31 50 24 94l-9 59-75 2-13-89 9-66Z" fill="#64734b" stroke="#15171a" stroke-width="8"/>
+  <path d="m689 124 20-27 36 4 17 27-17 39-37 4-25-23Z" fill="#c68f67" stroke="#17151b" stroke-width="7"/>
+  <path d="m694 119 20-14 25 3 15 14-36 3 29 10-27 10-30-9Z" fill="#5e483f" stroke="#17151b" stroke-width="6"/>
+  <path d="m706 128 11-4 8 5m9 1 10 4m-20 0 24 9-26 8m-14 5c11 9 23 10 34 5" fill="none" stroke="#382327" stroke-width="4"/>
+  <path d="M684 197c-20 11-34 27-43 48m105-51c19 4 35 15 49 32" fill="none" stroke="#64734b" stroke-width="13"/>
+  <path d="M705 328 690 380m43-52 18 48" stroke="#3b4234" stroke-width="14"/>
+  <path d="m687 374-19 11h35m44-14 20 9-37 2" stroke="#17151b" stroke-width="9"/>
+
+  <!-- Candidate 4, middle left: broad back, tiny skull, boxing gloves clasped behind him. -->
+  <path d="m151 296 26-35 40-16 42 19 31 54-12 55 21 74-61 15-60-14-46-42 8-65Z" fill="#3e6670" stroke="#15171d" stroke-width="9" stroke-linejoin="round"/>
+  <path d="m190 267 7-42 37-19 35 21 2 45-35 27-36-10Z" fill="#8f5d50" stroke="#17151b" stroke-width="7"/>
+  <path d="m194 245 17-31 33-13 29 19-20 4-23 10-35 27Z" fill="#c7b8a1" stroke="#17151b" stroke-width="6"/>
+  <path d="M162 299c37 26 83 31 132 12m-155 51c54 23 109 24 162 2" fill="none" stroke="#77a2a4" stroke-width="6" opacity=".6"/>
+  <path d="M186 398c17 21 40 30 67 25" fill="none" stroke="#31515a" stroke-width="18"/>
+  <path d="M245 412c12-10 27-12 39-5 10 6 14 17 10 28-4 10-15 10-22 5 2 9-4 16-12 15-8-1-10-10-10-18-7 5-15 4-19-3-5-8 3-17 14-22Z" fill="#9f6a55" stroke="#17151b" stroke-width="6"/>
+
+  <!-- Candidate 5, selected: angular marionette-like performer in full-body three-quarter action. -->
+  <path d="M517 209 539 166l43-5 29 34-14 52-39 28-38-21Z" fill="#6f4a3e" stroke="#17151b" stroke-width="8"/>
+  <path d="m523 203 19-37 31-14 34 23-35 3-21 13Z" fill="#dfc78d" stroke="#17151b" stroke-width="7"/>
+  <path d="m539 208 14-7 11 5m18-5 12 5m-27 0-10 27 20 4m-36 9c16 10 32 8 45-4" fill="none" stroke="#20171a" stroke-width="5"/>
+  <path d="m510 270 44-24 59 32-14 42 21 32-36 30 19 42-72 9-44-31 10-48-25-30Z" fill="#d1933e" stroke="#17151b" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M503 282c-31-22-54-55-67-98m165 107c45-9 77 5 96 44" fill="none" stroke="#d1933e" stroke-width="24" stroke-linecap="round"/>
+  <path d="M440 190c-15-8-25-22-27-37-1-10 8-16 16-11 7 4 6 13 7 21 4-8 11-11 17-7 7 4 4 13 2 21 6-5 13-5 17 1 4 7-2 14-9 19Z" fill="#744b40" stroke="#17151b" stroke-width="6"/>
+  <path d="M670 363c17-3 33 3 44 15 7 8 3 17-5 19-7 2-13-4-18-10 2 8-2 15-9 16-7 0-10-7-12-14-2 7-8 11-14 8-7-3-5-12-3-20Z" fill="#744b40" stroke="#17151b" stroke-width="6"/>
+  <path d="M522 422c-20 27-40 49-62 66l-43 19m160-87c19 22 38 38 58 48l43-13" fill="none" stroke="#323747" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m424 499-40 26 68-7m219-69 44-4-29 31" fill="none" stroke="#17151b" stroke-width="13" stroke-linecap="round"/>
+  <path d="M496 324c36 17 72 16 107-3m-111 45c37 14 73 12 107-6" fill="none" stroke="#f1bd5f" stroke-width="5" opacity=".65"/>
+
+  <!-- Candidate 6, middle right: crawling contortionist, face almost on the boards. -->
+  <path d="M632 378c-2-34 20-59 53-62 35-3 65 23 69 60l-4 53-99 12Z" fill="#754557" stroke="#15151c" stroke-width="9"/>
+  <path d="m688 404 41 26 51 58m-104-65-51 31-40 62" fill="none" stroke="#754557" stroke-width="22" stroke-linecap="round"/>
+  <path d="M726 428c15-6 31-3 42 8 7 7 4 16-4 18-7 2-12-4-17-9 1 8-3 14-10 14-7 0-9-8-11-15-3 6-8 10-14 7-6-3-4-11-2-18Z" fill="#9d6556" stroke="#17151b" stroke-width="6"/>
+  <path d="m630 444-47 30-30-4 8-25 38-30Z" fill="#a56b59" stroke="#17151b" stroke-width="7"/>
+  <path d="m553 452-10-15 8-15 25-10 20 9-11 7 17 5-19 9-10 18Z" fill="#a56b59" stroke="#17151b" stroke-width="6"/>
+  <path d="m552 438 12-5 8 4m-7 4 15 5-15 5m-11 4c8 5 16 4 22-1" fill="none" stroke="#312025" stroke-width="4"/>
+  <path d="m548 421 9-25 29-13 24 13-14 14-22 2Z" fill="#26242c" stroke="#17151b" stroke-width="6"/>
+
+  <!-- Candidate 7, foreground left crop: floor-angle accordion player with one square jaw. -->
+  <path d="M0 459c41-36 88-49 132-35 39 12 66 47 74 104l5 32H0Z" fill="#4c5775" stroke="#15151c" stroke-width="10"/>
+  <path d="M37 431 22 390l25-39 47-7 31 32-7 46-35 27Z" fill="#c1846a" stroke="#17151b" stroke-width="8"/>
+  <path d="m28 390 17-38 38-19 37 17-22 3-31 17Z" fill="#b04d45" stroke="#17151b" stroke-width="7"/>
+  <path d="m43 391 14-8 12 4m22-3 14 7m-31-3 2 25 20 1m-54 9c20 10 40 9 56-3" fill="none" stroke="#2f1d22" stroke-width="5"/>
+  <path d="M121 448c38 8 70 24 96 49" fill="none" stroke="#4c5775" stroke-width="24"/>
+  <path d="m177 483 98-21 18 66-102 25Z" fill="#9d6b42" stroke="#17151b" stroke-width="8"/>
+  <path d="m190 484 72-15m-68 32 73-16m-69 33 73-16m-70 33 73-17" stroke="#e0b36c" stroke-width="5"/>
+
+  <!-- Candidate 8, foreground right crop: giant pleated skirt, crooked knee and profile above the frame edge. -->
+  <path d="M684 443c31-28 68-33 98-12l18 23v106H632l22-89Z" fill="#3f7062" stroke="#15171b" stroke-width="10"/>
+  <path d="m718 421 3-42 36-25 36 17 7 41-29 32-35-2Z" fill="#96604f" stroke="#17151b" stroke-width="7"/>
+  <path d="m720 391 18-31 31-15 28 14-35 7 29 11-29 10-39 22Z" fill="#27222a" stroke="#17151b" stroke-width="7"/>
+  <path d="m741 390 13-6 11 6m14 1 13 6m-25-4 22 11-25 8m-21 12c14 8 28 8 40 0" fill="none" stroke="#2d1d21" stroke-width="5"/>
+  <path d="M650 478c48 12 96 13 144 2m-151 37c52 11 103 11 154-2" fill="none" stroke="#70a693" stroke-width="6" opacity=".6"/>
+
+  <!-- Eight blank audition cards spiral through a shuffle chute, clear of faces. -->
+  <path d="M285 497c87-41 180-48 280-20 76 21 137 18 185-10" fill="none" stroke="#1b1920" stroke-width="58" stroke-linecap="round"/>
+  <path d="M285 497c87-41 180-48 280-20 76 21 137 18 185-10" fill="none" stroke="#826143" stroke-width="45" stroke-linecap="round"/>
+  <g fill="#dacda7" stroke="#251e23" stroke-width="5">
+    <path d="m274 461 47-22 26 56-48 24Z"/>
+    <path d="m344 444 52-13 15 61-54 14Z"/>
+    <path d="m416 439 54-4 5 62-55 5Z"/>
+    <path d="m489 444 54 6-7 62-55-7Z"/>
+    <path d="m560 459 52 15-18 60-53-16Z"/>
+    <path d="m626 466 50 20-24 57-51-22Z"/>
+    <path d="m687 456 49 14-18 59-50-16Z"/>
+    <path d="m740 423 48 3-4 61-49-4Z"/>
+  </g>
+  <g fill="#6e7882" opacity=".9">
+    <path d="m285 466 26-12 9 20-27 13Z"/><path d="m353 449 29-7 5 22-30 8Z"/>
+    <path d="m425 447 30-2 1 23-30 2Z"/><path d="m498 454 29 3-2 23-30-4Z"/>
+    <path d="m568 470 28 8-7 22-28-9Z"/><path d="m635 478 27 11-9 21-28-12Z"/>
+    <path d="m696 467 27 8-7 22-28-9Z"/><path d="m748 434 27 2-2 22-27-2Z"/>
+  </g>
+  <path d="M728 486c24 7 47 6 68-3v77H714Z" fill="#232129" stroke="#121318" stroke-width="8"/>
+  <path d="M729 503c23 8 45 8 67 1m-66 22c22 7 44 7 66 0" fill="none" stroke="#9b744e" stroke-width="5"/>
+
+  <path d="M212 124c11-6 24-8 36-5m86 212c12-7 25-9 38-6m94-195c15-5 29-4 42 1m142 219c13-5 26-5 39-1" fill="none" stroke="#efc071" stroke-width="3" opacity=".42"/>
+  <path d="m219 96 12 22m104-44 15 23m132-44 13 23m207 25 15 24M17 369l16 21m276 6 15 21" stroke="#d9aa6b" stroke-width="4" opacity=".4"/>
+  <rect x="6" y="6" width="788" height="548" rx="16" fill="none" stroke="#0b0d13" stroke-width="12"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#kit005-grain)" pointer-events="none"/>
+</svg>

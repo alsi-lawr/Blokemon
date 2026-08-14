@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b082-title b082-desc">
+  <title id="b082-title">BLK-082 Three-Pint Hero non-final comic mock-up</title>
+  <desc id="b082-desc">Beneath a banquette, a broad mutton-chopped regular crawls heroically through dust by pocket-torch light, reaching enormous foreground keys while three empty plain glasses stand above. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b082-tunnel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#171419"/><stop offset=".52" stop-color="#503324"/><stop offset="1" stop-color="#102233"/></linearGradient>
+    <radialGradient id="b082-torch" cx="52%" cy="48%" r="42%"><stop stop-color="#bcecff" stop-opacity=".92"/><stop offset=".4" stop-color="#4aa7d6" stop-opacity=".27"/><stop offset="1" stop-color="#4aa7d6" stop-opacity="0"/></radialGradient>
+    <pattern id="b082-carpet" width="57" height="39" patternUnits="userSpaceOnUse"><rect width="57" height="39" fill="#35231e"/><path d="m0 7 57 26M-6 28 18 40M31-4 64 13" stroke="#7b4d30" stroke-width="3" opacity=".48"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b082-tunnel)"/>
+  <circle cx="429" cy="302" r="305" fill="url(#b082-torch)"/>
+  <!-- massive banquette creates low tunnel -->
+  <path d="M-20 0h840v178C625 147 177 151-20 190Z" fill="#653c36" stroke="#160f13" stroke-width="14"/>
+  <path d="M0 31c186-19 589-18 800 2M0 91c217-18 569-18 800 1M0 147c217-17 574-18 800 0" fill="none" stroke="#986050" stroke-width="8" opacity=".55"/>
+  <path d="M56 164 8 530m728-366 58 369" stroke="#1c181a" stroke-width="22"/>
+  <path d="M0 406c242-49 529-42 800 5v149H0Z" fill="url(#b082-carpet)" stroke="#151116" stroke-width="11"/>
+  <!-- three empty glasses above, no brand -->
+  <g fill="#dce0d6" fill-opacity=".25" stroke="#dedfce" stroke-width="7"><path d="M116 66h92l-12 109h-66Z"/><path d="M331 52h99l-13 123h-72Z"/><path d="M577 63h94l-12 111h-68Z"/></g>
+  <path d="M126 131c24 8 47 8 70 0m146-10c25 9 50 9 76 0m169 10c24 8 48 8 72 0" fill="none" stroke="#bf7435" stroke-width="7" opacity=".6"/>
+  <!-- toad skull, bald dome and huge mutton chops -->
+  <path d="M286 184c47-41 125-43 174-3 44 36 53 96 27 143-29 52-96 69-147 40-56-32-78-119-54-180Z" fill="#b66f54" stroke="#1e1519" stroke-width="12"/>
+  <path d="M303 181c35-36 98-44 141-15" fill="none" stroke="#d29470" stroke-width="6"/>
+  <path d="M291 227c-28-8-47 14-38 42 8 26 35 36 57 17m166-56c28-10 48 11 41 39-7 26-32 38-55 22" fill="#a7604d" stroke="#22171b" stroke-width="9"/>
+  <path d="M300 210c-11 36-7 77 13 119l43-15-8-100Zm148 2c14 36 13 76-4 119l-45-13 1-102Z" fill="#3f302e" stroke="#1b1718" stroke-width="8"/>
+  <path d="M301 226c10 28 12 55 6 82m143-80c-8 28-8 55 0 81" fill="none" stroke="#796059" stroke-width="5"/>
+  <!-- torch-lit asymmetrical eyes and flattened nose -->
+  <path d="M325 238c20-16 48-13 64 6-9 27-50 28-64-6Z" fill="#d9e8d8" stroke="#26181d" stroke-width="7"/>
+  <ellipse cx="363" cy="244" rx="8" ry="11" fill="#13202a"/>
+  <path d="M415 243c16-12 38-9 50 7-8 22-39 22-50-7Z" fill="#ecdbba" stroke="#26181d" stroke-width="6"/>
+  <circle cx="444" cy="249" r="6" fill="#14171b"/>
+  <path d="M326 222c18-12 40-12 58 1m38 2c16-9 34-7 48 5" fill="none" stroke="#40242a" stroke-width="9"/>
+  <path d="M397 235c-11 16-22 29-35 42-11 10-5 27 10 32 15 5 27-5 40-4 17 2 27-16 17-29-10-14-17-24-32-41Z" fill="#a45647" stroke="#542a2e" stroke-width="8"/>
+  <path d="M370 282c13 5 24 14 29 27" fill="none" stroke="#e08d68" stroke-width="5"/>
+  <!-- triumphant snaggle smirk -->
+  <path d="M320 326c39-10 83-5 119 17-22 31-91 34-130 5" fill="#4c2429" stroke="#25181c" stroke-width="8"/>
+  <path d="m383 335 19 5-10 16-20-6Z" fill="#e1cdaa"/>
+  <!-- thick prone belly fills tunnel -->
+  <path d="M226 371c75-38 179-44 264-13 91 33 152 99 183 195H96c19-87 52-145 130-182Z" fill="#3f5163" stroke="#111820" stroke-width="13"/>
+  <path d="M176 402c111 32 232 35 354 6m-391 64c152 41 310 41 471-4" fill="none" stroke="#6a7d8a" stroke-width="8" opacity=".46"/>
+  <path d="M284 362c2 52-11 104-39 158m168-163c25 51 38 104 38 159" fill="none" stroke="#263845" stroke-width="10"/>
+  <!-- crawling limbs and giant reaching hand -->
+  <path d="M239 394c-57 20-107 49-151 88-20 18-20 39-5 51 16 12 35 1 54-15l135-91Z" fill="#a96852" stroke="#1e1519" stroke-width="11"/>
+  <path d="M90 475c-29 5-46 20-44 38 2 19 23 22 44 17l34-9-23 20c-14 13-10 28 5 33 14 5 27-8 40-21l33-36c15-17 11-39-7-50-18-11-41-7-82 8Z" fill="#b87558" stroke="#1e1519" stroke-width="9"/>
+  <path d="M480 388c59 14 111 42 156 81 21 18 22 39 6 52-16 13-36 2-55-14l-139-85Z" fill="#a96852" stroke="#1e1519" stroke-width="11"/>
+  <path d="M632 460c29 2 47 16 47 35 0 18-20 23-42 20l-35-6 25 18c15 12 12 27-2 34-14 6-28-6-42-18l-36-33c-17-15-14-38 3-50 17-12 40-10 82 0Z" fill="#b87558" stroke="#1e1519" stroke-width="9"/>
+  <path d="M67 496c21 2 40 9 57 21m-68-5c20 3 38 10 53 23m551-54c-21 4-40 13-56 26m67-10c-20 5-37 13-52 25" fill="none" stroke="#714036" stroke-width="5"/>
+  <!-- pocket torch casts active beam -->
+  <path d="M453 336c20-10 42-5 53 12l46 78-59 28-48-74c-11-17-8-33 8-44Z" fill="#313841" stroke="#14191e" stroke-width="9"/>
+  <path d="M491 348c15 2 27 11 34 27l-39 18c-8-17-6-31 5-45Z" fill="#a7dbec" stroke="#24323b" stroke-width="6"/>
+  <path d="M525 373 744 232l55 99-262 85Z" fill="#7bd6f2" opacity=".16"/>
+  <!-- foreground keys/coins make the quest epic -->
+  <path d="M16 411c79-24 155-22 229 5l-19 143H-4Z" fill="#251a19" stroke="#110e11" stroke-width="10"/>
+  <g fill="#d5a943" stroke="#32251f" stroke-width="6"><ellipse cx="58" cy="461" rx="26" ry="13"/><ellipse cx="191" cy="491" rx="23" ry="11"/></g>
+  <ellipse cx="119" cy="469" rx="39" ry="35" fill="none" stroke="#c0ad79" stroke-width="9"/>
+  <path d="m146 470 72-36 15 18-54 42 20 26-22 15-33-34" fill="#a69c7c" stroke="#292722" stroke-width="7"/>
+  <path d="M239 524c107-19 214-18 321 4m71-9c50-5 100-2 151 9" fill="none" stroke="#765036" stroke-width="6"/>
+  <circle cx="266" cy="453" r="6" fill="#c5a85d"/><circle cx="299" cy="485" r="5" fill="#92723e"/><circle cx="729" cy="470" r="7" fill="#b99651"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#0c0d11" stroke-width="12"/>
+</svg>

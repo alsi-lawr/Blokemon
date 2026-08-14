@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b036-title b036-desc">
+  <title id="b036-title">BLK-036 Second Wind non-final comic mock-up</title>
+  <desc id="b036-desc">A rangy dancer pivots away from the exit in back three-quarter view, pointing both hands toward a newly lit side room while tired companions and a loose jacket trail behind. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b036-dawn" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#20193f"/><stop offset=".5" stop-color="#45316f"/><stop offset="1" stop-color="#8b678a"/></linearGradient>
+    <linearGradient id="b036-door" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e6fff0"/><stop offset=".4" stop-color="#55d8df"/><stop offset="1" stop-color="#256d91"/></linearGradient>
+    <linearGradient id="b036-jacket" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7f4d87"/><stop offset="1" stop-color="#302444"/></linearGradient>
+    <pattern id="b036-floor" width="58" height="39" patternUnits="userSpaceOnUse" patternTransform="skewX(-18)"><rect width="58" height="39" fill="#1a1b2d"/><path d="M0 1h58M1 0v39" stroke="#726086" stroke-width="3" opacity=".35"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b036-dawn)"/>
+  <path d="M0 356c218-37 510-31 800 2v202H0Z" fill="url(#b036-floor)" stroke="#111522" stroke-width="10"/>
+  <!-- exit being abandoned on left, fresh side room right -->
+  <path d="M18 91h166l-5 270H12Z" fill="#242535" stroke="#10131c" stroke-width="11"/>
+  <path d="M40 119h118l-4 211H34Z" fill="#6f6d72"/>
+  <path d="M638 39h172v353H617Z" fill="#152f47" stroke="#101622" stroke-width="12"/>
+  <path d="M671 64h129v298H640Z" fill="url(#b036-door)"/>
+  <path d="M642 334c47-58 99-97 158-119" fill="none" stroke="#d5fff0" stroke-width="12" opacity=".38"/>
+  <path d="M629 362c59-25 115-34 171-26" fill="none" stroke="#7ef2e4" stroke-width="8"/>
+  <!-- trailing exhausted group, all different silhouettes -->
+  <path d="M64 326c15-45 48-62 79-44 31 18 41 63 29 111l-25 118H38Z" fill="#51465c" stroke="#171620" stroke-width="9"/>
+  <path d="M89 237c24-25 63-15 72 19 7 29-11 57-40 59-32 2-52-39-32-78Z" fill="#a96d5b" stroke="#201922" stroke-width="8"/>
+  <path d="M88 245c17-26 50-29 69-5-24-6-45-1-67 14Z" fill="#23242c"/>
+  <path d="M188 338c25-48 67-57 98-25 27 27 26 75 10 119l-40 102H160Z" fill="#31536a" stroke="#171620" stroke-width="9"/>
+  <path d="M216 275c16-31 56-36 76-9 18 24 7 57-22 67-31 10-70-19-54-58Z" fill="#c18365" stroke="#201922" stroke-width="8"/>
+  <path d="M210 286c16-27 45-39 73-24l12 19c-26-6-50 2-77 19Z" fill="#6b4a37"/>
+  <!-- revived dancer's long back-facing skull -->
+  <path d="M333 126c36-39 91-45 130-14 32 25 42 66 31 103-7 22 2 43-11 65-15 25-46 43-78 38-39-5-68-35-72-72-2-23 9-37 3-56-7-23-17-41-3-64Z" fill="#c98062" stroke="#201823" stroke-width="11"/>
+  <path d="M328 136c8-47 40-72 79-68l18-31 13 34 28-29 1 39 35-18-13 43c15 13 23 31 23 54-30-25-58-30-89-20-33 11-65 10-95-4Z" fill="#30283a" stroke="#191621" stroke-width="9"/>
+  <path d="M347 111c30-14 59-15 87-5m-95 25c34-12 66-12 97-2m26-35c14 12 23 26 27 43" fill="none" stroke="#786177" stroke-width="5"/>
+  <!-- only side face visible as he pivots -->
+  <path d="M457 156c23-2 39 19 31 43-7 23-31 32-50 17" fill="#b96f59" stroke="#251a22" stroke-width="8"/>
+  <path d="M465 170c-10 0-18 7-20 17" fill="none" stroke="#744038" stroke-width="5"/>
+  <path d="M414 172c14-7 30-3 40 8" fill="none" stroke="#412733" stroke-width="9" stroke-linecap="round"/>
+  <path d="M420 185c12-5 25-1 31 9-10 11-24 7-31-9Z" fill="#f2dec0" stroke="#251b22" stroke-width="5"/>
+  <path d="M439 190h7" stroke="#14161c" stroke-width="6"/>
+  <path d="M462 197c-8 17-5 29 7 40-9 13-29 11-38 1" fill="#b96a56" stroke="#54302f" stroke-width="6"/>
+  <path d="M414 250c17-2 34 4 47 18-10 24-39 27-55 8" fill="#4c2530" stroke="#271b22" stroke-width="7"/>
+  <path d="M420 265c11 0 22 3 31 9" stroke="#e8d2aa" stroke-width="6"/>
+  <!-- rangy pivoting torso -->
+  <path d="M329 295c44-16 94-13 132 14 25 53 32 109 18 168l-171 0c-15-64-7-127 21-182Z" fill="#394e77" stroke="#151925" stroke-width="12"/>
+  <path d="M340 315c41 26 84 33 129 22m-154 47c57 20 111 20 163 0" fill="none" stroke="#6f84b3" stroke-width="7" opacity=".5"/>
+  <path d="M337 309c-44 7-86-3-126-27-20-12-39-9-48 7-9 16 3 31 22 42 54 31 101 47 141 44Z" fill="#bd765e" stroke="#201823" stroke-width="10"/>
+  <path d="M454 316c46-4 87-21 122-51 18-15 38-15 49 0 11 14 1 32-16 47-48 41-96 66-145 70Z" fill="#bd765e" stroke="#201823" stroke-width="10"/>
+  <!-- both pointing hands, individually drawn -->
+  <path d="M190 273c-23-12-44-9-52 5-8 14 6 25 22 31l28 10-21 2c-17 2-25 13-19 25 6 12 22 9 38 5l43-13c18-6 28-24 19-42Z" fill="#c78266" stroke="#201823" stroke-width="8"/>
+  <path d="M581 258c21-16 42-17 52-4 10 12-1 27-15 35l-26 15 21-2c17-1 27 9 23 22-4 12-21 12-37 11l-45-6c-20-3-32-19-27-38Z" fill="#c78266" stroke="#201823" stroke-width="8"/>
+  <path d="M154 294c19 3 36 10 51 22m-44-35c19 4 35 11 48 22m417-29c-18 6-34 16-47 29m39-41c-18 7-33 17-45 29" fill="none" stroke="#7b453a" stroke-width="5"/>
+  <!-- loose jacket flaps behind -->
+  <path d="M314 326c-45 8-78 33-99 75l31 93 99-47-10-109Z" fill="url(#b036-jacket)" stroke="#171522" stroke-width="10"/>
+  <path d="M241 395c28 5 54 19 76 42m-58-69c27 8 50 22 70 43" fill="none" stroke="#93689d" stroke-width="6"/>
+  <!-- twisted full-body legs and water bottle -->
+  <path d="M345 460c-17 31-30 61-37 91m123-89c18 33 35 61 56 88" fill="none" stroke="#26334e" stroke-width="35"/>
+  <path d="M279 531c28-9 54-5 75 12-2 13-19 17-43 13l-41-8c-5-8-2-14 9-17Zm177 9c27-13 54-12 77 4 1 12-15 17-39 14l-43-5c-6-7-4-11 5-13Z" fill="#332c34" stroke="#17151d" stroke-width="8"/>
+  <path d="M535 373c20-3 36 6 39 23l-6 69-48-2-4-66c-1-13 5-21 19-24Z" fill="#89dfe0" stroke="#1d3540" stroke-width="7" opacity=".9"/>
+  <path d="M531 353h25l3 24-32 0Z" fill="#d7f7e7" stroke="#1d3540" stroke-width="6"/>
+  <path d="M526 410c14 7 27 8 41 2" fill="none" stroke="#e6ffff" stroke-width="5"/>
+  <!-- directional floor light and action scratches -->
+  <path d="m504 547 296-165M598 556 800 430" stroke="#6ff1e5" stroke-width="9" opacity=".24"/>
+  <path d="M26 198l37 7m-22-38 33 21m496-122 22 29m22-48 5 37" stroke="#a8f0e7" stroke-width="6" stroke-linecap="round" opacity=".63"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#10131e" stroke-width="12"/>
+</svg>

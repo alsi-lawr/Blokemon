@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="blk004-title blk004-desc">
+  <title id="blk004-title">BLK-004 Dave Lister non-final comic-vector mock-up</title>
+  <desc id="blk004-desc">A lanky off-axis sci-fi slob folds across a rain-streaked takeaway counter, narrow tired face, wild hair, stubble and an overbite hovering above the last vindaloo while long arms guard the tray and reach through clutter for a spoon. Non-final placeholder art.</desc>
+  <defs><linearGradient id="blk004-charcoal" x2="1" y2="1"><stop stop-color="#1b252b"/><stop offset="1" stop-color="#351b22"/></linearGradient><radialGradient id="blk004-curry"><stop stop-color="#ffbd54"/><stop offset="1" stop-color="#cf4b23" stop-opacity="0"/></radialGradient><pattern id="blk004-tile" width="66" height="44" patternUnits="userSpaceOnUse"><path fill="#283238" d="M0 0h63v41H0z"/><path d="M5 35L56 7" stroke="#617075" stroke-width="3" opacity=".23"/></pattern></defs>
+  <path fill="url(#blk004-charcoal)" d="M0 0h800v560H0z"/><path fill="url(#blk004-tile)" d="M0 0h800v355H0z"/><ellipse cx="433" cy="287" rx="335" ry="271" fill="url(#blk004-curry)" opacity=".46"/>
+  <g stroke="#21191e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#13191d" d="M24 28h213v188H24z"/><path fill="#52666a" d="M44 48h173v147H44z"/><path fill="none" stroke="#b6d1cb" stroke-width="5" d="M61 52l-13 132M99 50L84 184M148 51l-12 129M199 50l-17 133"/>
+    <path fill="#34302d" d="M270 29h214v104H270zM516 28h253v105H516z"/><path fill="#624738" d="M290 48h174v65H290zM536 47h213v66H536z"/><path fill="none" stroke="#dc9643" stroke-width="5" d="M307 69h137M307 92h84M554 69h176M554 92h115"/>
+    <path fill="#7b472b" d="M0 354q183-43 347-4 235-46 453 4v206H0z"/><path fill="#d2a55d" d="M0 391q184-36 355 1 224-41 445 1v167H0z"/>
+    <path fill="#aeb7ae" d="M65 346l220-11 24 106-247 12z"/><path fill="#687277" d="M83 357l181-9 20 75-207 10z"/><path fill="#dc702a" d="M96 369q73-26 167 4l8 38-184 9z"/><path fill="none" stroke="#f4c673" stroke-width="5" d="M107 382q67-18 147 4"/>
+    <!-- diagonal lanky body -->
+    <path fill="#7e2d31" d="M123 553q74-190 189-292 87-77 185-54 106 26 171 139 52 91 72 207z"/><path fill="#b33632" d="M163 554q71-168 166-257 72-63 151-46 89 21 145 116 48 82 73 187z"/>
+    <!-- narrow, tired, off-axis face -->
+    <path fill="#a66850" d="M365 53q46-46 103-35 62 18 91 75 28 58 8 125-20 67-75 101-51 27-93-9-45-40-55-112-10-91 21-145z"/>
+    <path fill="#403027" d="M360 80l12-45 27 9 14-31 25 20 22-28 17 29 32-15 6 32 32-4-8 29 34 12-17 24q-94-45-196 14z"/>
+    <path fill="#a66850" d="M353 123q-39-13-40 25 7 43 44 49M556 133q37-17 47 18 8 38-46 52"/>
+    <path fill="#ead8a5" d="M379 120q34-14 62 7-14 22-38 16-19-5-24-23zM481 129q29-11 54 9-13 20-34 15-18-4-20-24z"/><circle cx="416" cy="128" r="6" fill="#211a1f"/><circle cx="514" cy="137" r="6" fill="#211a1f"/>
+    <path fill="none" stroke="#3b2823" stroke-width="12" d="M376 107q36-18 69 2M478 116q32-15 60 4"/>
+    <path fill="#b87856" d="M459 122q4 58-27 96l20 9-13 24q38 7 68-22"/>
+    <path fill="none" stroke="#493028" stroke-width="5" d="M374 166l18 13M527 177l18-11M386 194l15 6M516 204l17-7M395 222l12 6M508 230l15-5"/>
+    <path fill="#2d2020" d="M425 254q40-5 68 15-5 39-33 41-31 0-35-56z"/><path fill="#f0dbaa" d="M438 254l25 3-2 27-23-4zM465 258l20 6-4 24-19-6z"/><path fill="#a54f4c" d="M442 295q18-10 35 2-18 11-35-2z"/>
+    <!-- absurdly long arms across the counter -->
+    <path fill="#b33632" d="M339 288q-101 16-174 87L50 487l64 67 169-112 95-72M515 281q84 10 143 76l104 111-56 79-161-120"/>
+    <path fill="#a66850" d="M174 368q-70 2-124 40-47 33-51 73-2 32 27 39 28 5 45-32 4 34 31 33 28-2 36-39 9 30 34 22 26-9 17-42 20 18 40-3 18-20-4-52z"/>
+    <path fill="#a66850" d="M653 350q55 9 96 46 42 39 39 73-2 29-28 34-26 4-41-29-5 32-31 29-26-4-31-37-10 28-34 18-24-10-12-42-21 17-39-2-16-19 15-45z"/>
+    <path fill="#c5c3b5" d="M49 447l198-5-13 109H29z"/><path fill="#e67829" d="M69 461q78-25 157 3l-8 69H51z"/>
+    <path fill="#c2c7ba" d="M599 445l169-6 23 111-202 3z"/><path fill="#707b79" d="M614 457l139-5 16 80-165 2z"/>
+    <path fill="#d8cdb0" d="M553 388l51-19 28 39-55 25z"/>
+    <path fill="none" stroke="#f4e4b9" stroke-width="5" d="M99 438q-18-45 16-82 28-31 3-68M148 441q-18-33 14-69 27-31 1-61M613 430q17-38-10-72"/>
+    <path fill="#292527" d="M162 500l-67 60h166l61-84zM551 470l49 90h173l-106-105z"/>
+    <path fill="#4e5f61" d="M679 143q63-23 121 5v185q-58-15-116-2z"/><circle cx="744" cy="227" r="51" fill="#1b252a"/><circle cx="744" cy="227" r="32" fill="none" stroke="#d17f3c"/>
+  </g>
+</svg>

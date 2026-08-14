@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="kit004-title kit004-desc">
+  <title id="kit004-title">KIT-004 The Chauffeur non-final comic-vector mock-up</title>
+  <desc id="kit004-desc">Seen from the open car’s wet footwell, a long-legged older chauffeur bends full-length between the looming door and kerb. One articulated hand holds the door while the other shields a hulking passenger’s head, clearing a bright luggage-free exit route through hard rain. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="kit004-night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2a4053"/><stop offset=".48" stop-color="#172837"/><stop offset="1" stop-color="#08121b"/></linearGradient>
+    <linearGradient id="kit004-door" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#788c91"/><stop offset=".32" stop-color="#435a66"/><stop offset=".72" stop-color="#23323c"/><stop offset="1" stop-color="#111a22"/></linearGradient>
+    <linearGradient id="kit004-coat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#38434a"/><stop offset=".52" stop-color="#202a30"/><stop offset="1" stop-color="#0d1419"/></linearGradient>
+    <radialGradient id="kit004-skin" cx="33%" cy="28%" r="82%"><stop stop-color="#d49d78"/><stop offset=".54" stop-color="#99594d"/><stop offset="1" stop-color="#512d36"/></radialGradient>
+    <linearGradient id="kit004-road" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#516066"/><stop offset=".52" stop-color="#2c3a40"/><stop offset="1" stop-color="#121c22"/></linearGradient>
+    <radialGradient id="kit004-lamp" cx="50%" cy="50%" r="50%"><stop stop-color="#f7d27c" stop-opacity=".9"/><stop offset=".35" stop-color="#d7944c" stop-opacity=".28"/><stop offset="1" stop-color="#d7944c" stop-opacity="0"/></radialGradient>
+    <pattern id="kit004-rain" width="48" height="55" patternUnits="userSpaceOnUse" patternTransform="rotate(13)"><path d="M8 -4v34M31 18v44" stroke="#d4e9eb" stroke-width="3" opacity=".48"/><path d="M19 8v17M44 39v18" stroke="#8eb3bb" stroke-width="2" opacity=".34"/></pattern>
+    <pattern id="kit004-hatch" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(-19)"><path d="M0 3h14M0 10h14" stroke="#0b1115" stroke-width="2" opacity=".27"/></pattern>
+    <filter id="kit004-rough" x="-8%" y="-8%" width="116%" height="116%"><feTurbulence type="turbulence" baseFrequency=".016 .05" numOctaves="2" seed="404" result="w"/><feDisplacementMap in="SourceGraphic" in2="w" scale="2"/></filter>
+    <filter id="kit004-grain" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".71" numOctaves="2" seed="44" result="n"/><feColorMatrix in="n" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .08 0"/><feBlend in="SourceGraphic" mode="multiply"/></filter>
+    <clipPath id="kit004-road-clip"><path d="M164 363c197-18 409-2 636 49v148H116Z"/></clipPath>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#kit004-night)"/>
+  <circle cx="705" cy="72" r="174" fill="url(#kit004-lamp)"/>
+
+  <!-- anonymous wet terrace, kept distant so the low figure silhouette reads -->
+  <g stroke="#0d1720" stroke-width="8">
+    <path d="M93 40 212 16l24 255H84Z" fill="#344b5a"/><path d="m211 17 140 8 7 249-122-3Z" fill="#293e4d"/>
+    <path d="m350 25 137-7 11 265-140-9Z" fill="#3b4853"/><path d="m487 18 137 20 17 258-143-13Z" fill="#273e4b"/>
+    <path d="m624 38 176-16v294l-159-20Z" fill="#344b52"/>
+  </g>
+  <g fill="#d5ad68" opacity=".42" stroke="#101921" stroke-width="6">
+    <path d="M123 72h50v69h-50Z"/><path d="M256 62h54v75h-54Z"/><path d="M392 69h49v74h-49Z"/><path d="M530 76h52v76h-52Z"/><path d="M685 66h56v79h-56Z"/>
+  </g>
+  <path d="M85 261c180-19 347-10 501 19 78 15 149 18 214 9" fill="none" stroke="#75898a" stroke-width="9" opacity=".4"/>
+  <path d="M120 354c203-16 429 3 680 55v151H103Z" fill="url(#kit004-road)" stroke="#111a20" stroke-width="11"/>
+  <path d="M118 391c204-13 421 8 651 61" fill="none" stroke="#b4b4a3" stroke-width="14" opacity=".46"/>
+  <path d="M130 424c198-10 409 13 636 67" fill="none" stroke="#162128" stroke-width="8"/>
+
+  <!-- near open door and footwell form an aggressive asymmetrical crop -->
+  <path d="M-46 18 319 71l-37 349L-31 508Z" fill="url(#kit004-door)" stroke="#070e14" stroke-width="16" filter="url(#kit004-rough)"/>
+  <path d="M12 66 270 98l-27 263L-14 417Z" fill="#75939b" fill-opacity=".42" stroke="#13242f" stroke-width="10"/>
+  <path d="M43 103 229 125l-19 188L12 354Z" fill="#b0c8ca" fill-opacity=".24" stroke="#223a45" stroke-width="7"/>
+  <path d="M285 70c26 100 22 220-13 349" fill="none" stroke="#a6b5b0" stroke-width="8" opacity=".42"/>
+  <path d="M-25 461c111-35 218-59 319-70l4 169H-25Z" fill="#101820" stroke="#070d12" stroke-width="12"/>
+  <path d="M15 487c88-21 169-34 244-38M0 529c97-20 187-30 270-29" fill="none" stroke="#3d4b51" stroke-width="7"/>
+  <path d="M244 161c23-6 40 1 50 21l-10 45-42 5Z" fill="#19242b" stroke="#0d1419" stroke-width="8"/>
+  <path d="M251 174c12-2 22 1 29 10" stroke="#abbab5" stroke-width="5"/>
+
+  <!-- passenger is a huge compressed interior mass, not a second host portrait -->
+  <path d="M93 204c43-55 110-76 173-52 51 20 78 67 72 129l-13 133-211 42-88-74c-4-67 18-131 67-178Z" fill="#514151" stroke="#17151a" stroke-width="12" filter="url(#kit004-rough)"/>
+  <path d="M104 213c49-40 102-51 156-33 43 14 68 42 76 84-59-28-118-22-176 18l-92 63-43-5c6-51 32-94 79-127Z" fill="#6a5362"/>
+  <path d="M57 318c79 26 164 26 254-1m-277 67c90 22 182 19 275-9" fill="none" stroke="#9a7c91" stroke-width="7" opacity=".36"/>
+  <path d="M151 142c29-25 75-23 100 7 25 30 21 77-10 103-31 26-80 21-102-11-21-31-15-75 12-99Z" fill="#81584f" stroke="#21191d" stroke-width="9"/>
+  <path d="M142 159c32-36 83-31 109 6-37-8-70 2-98 29Z" fill="#29272a" stroke="#171719" stroke-width="7"/>
+  <path d="M149 198c13-12 30-12 42-1m27-2c10-7 22-5 30 3" fill="none" stroke="#46282d" stroke-width="6"/>
+  <path d="M162 207c8-2 14 0 18 5m47-7 13 2" stroke="#151619" stroke-width="5"/>
+  <path d="M203 199c-7 18-6 33 4 43 10 8 23 7 34-2" fill="none" stroke="#5b3437" stroke-width="6"/>
+  <path d="M159 246c24 9 48 8 73-4" fill="none" stroke="#382228" stroke-width="7"/>
+  <path d="M247 197c15-3 24 8 19 22-4 13-18 19-29 10l4-11-8-10" fill="#764740" stroke="#3e252b" stroke-width="6"/>
+
+  <!-- chauffeur is deliberately smaller-headed and full-length in the open route -->
+  <path d="M481 218c29-22 68-27 96-10 32 19 46 58 43 116l-9 115-132 2-16-115c-8-52-3-87 18-108Z" fill="url(#kit004-coat)" stroke="#0d1317" stroke-width="10" filter="url(#kit004-rough)"/>
+  <path d="M490 224c20 27 33 58 39 93l26-109 35 23-33 112-39 4-51-85Z" fill="#334047" stroke="#11171b" stroke-width="7"/>
+  <path d="m523 216 13 34 22-40 22 19-30 38-23 2-22-34Z" fill="#d5c6af" stroke="#2a2524" stroke-width="6"/>
+  <path d="m533 256 11 3-2 62-15 23-11-24Z" fill="#713a41" stroke="#302025" stroke-width="5"/>
+  <path d="M475 314c42 14 87 15 136 3m-139 54c46 13 91 13 136 0m-131 42c42 10 84 9 126-2" fill="none" stroke="#68767d" stroke-width="6" opacity=".4"/>
+
+  <!-- long mismatched legs create full-body vertical rhythm -->
+  <path d="M487 414c4 48-4 95-23 141h75l42-139Z" fill="#1c252b" stroke="#0c1115" stroke-width="9"/>
+  <path d="M566 414c14 49 34 97 60 146h104c-26-61-56-112-91-153Z" fill="#172127" stroke="#0c1115" stroke-width="9"/>
+  <path d="M449 537c28-8 62-6 101 8l-5 15H429c-5-9 2-18 20-23Zm166-1c38-5 81 3 130 24H605c-8-9-5-17 10-24Z" fill="#090c0f" stroke="#040607" stroke-width="6"/>
+  <path d="M486 456c24 10 46 11 67 3m-77 38c21 8 42 9 62 3m57-46c25 8 50 8 74 0m-55 42c25 7 49 7 73 0" fill="none" stroke="#536169" stroke-width="6" opacity=".48"/>
+
+  <!-- angular older head in three-quarter profile; no cap -->
+  <path d="M483 72c23-30 64-39 96-19 28 18 41 55 30 89l19 14-22 15c-12 34-40 55-70 49-29-5-47-29-50-62l-19-19 17-12c-6-21-6-39-1-55Z" fill="url(#kit004-skin)" stroke="#21171b" stroke-width="9" filter="url(#kit004-rough)"/>
+  <!-- receding hairline with side comb, explicitly not a forehead wedge -->
+  <path d="M484 73c22-31 62-41 94-23 16 9 28 21 35 37-27-15-53-14-77-2-15 8-30 9-44 3l-9 22Z" fill="#615a50" stroke="#252322" stroke-width="7"/>
+  <path d="M506 62c14-7 30-10 47-8m-43 17c12-6 25-9 38-9m27-5c12 7 22 16 29 27" fill="none" stroke="#aca28d" stroke-width="5"/>
+  <path d="M490 87c-10 13-13 28-8 44m115-59c13 12 20 27 20 43" fill="none" stroke="#7e7568" stroke-width="5"/>
+  <path d="M499 117c13-11 30-10 41 1" fill="none" stroke="#552d31" stroke-width="7"/>
+  <path d="M510 127c8-3 15 0 19 6" stroke="#161719" stroke-width="6"/>
+  <path d="M548 116c-9 19-8 34 2 44l20 3-13 12" fill="none" stroke="#6b393a" stroke-width="6"/>
+  <path d="M590 123c20 1 34 10 33 21-1 12-17 19-35 17l-14-10 8-10Z" fill="#a66050" stroke="#522f32" stroke-width="7"/>
+  <path d="M545 170c17-11 34-10 48 2 11-8 23-8 37-1-10 17-26 21-38 8-17 15-35 12-47-9Z" fill="#40302b" stroke="#211b1b" stroke-width="6"/>
+  <path d="M530 194c19 7 38 6 57-2" fill="none" stroke="#42252a" stroke-width="7"/>
+  <path d="M477 133c-16-2-26 11-20 26 6 14 22 18 34 8l-6-12 9-11" fill="#915049" stroke="#45272d" stroke-width="7"/>
+  <path d="M475 144c-7 3-10 8-7 15" fill="none" stroke="#61343a" stroke-width="4"/>
+  <path d="M501 159c4 16 3 30-3 44m17-42c4 15 4 29-1 43" fill="none" stroke="#724b43" stroke-width="5"/>
+
+  <!-- door-holding arm reaches steeply left; hand has five uneven digits -->
+  <path d="M492 244c-58-40-115-74-171-103" fill="none" stroke="#1d272d" stroke-width="34" stroke-linecap="round"/>
+  <path d="M332 122c-15-12-33-17-50-11-13 4-17 15-10 25-14-3-25 4-27 16-2 12 10 21 25 21-9 8-9 18-1 26 9 10 24 5 36-7 10-9 17-20 21-33 7 12 16 18 27 18 13 0 19-13 13-24 13 3 23-4 25-17 2-13-12-23-26-25-8-5-19-2-33 11Z" fill="url(#kit004-skin)" stroke="#21171b" stroke-width="7"/>
+  <path d="M347 119c-5 18-16 32-31 43m2-51c-6 21-19 38-38 50m7-48c-5 18-15 32-29 43m91-13c4 13 2 25-6 36" fill="none" stroke="#6d393b" stroke-width="5"/>
+  <path d="M343 107c2 9 1 17-3 24m-22-28c3 9 2 18-4 26m-24-19c4 8 3 17-2 25" fill="none" stroke="#dfa37c" stroke-width="4"/>
+  <path d="M278 114c-16-4-27-2-36 5l-7 41c10 8 22 9 34 3" fill="#ddd8ca" stroke="#272829" stroke-width="7"/>
+  <path d="M245 126c7 9 15 15 26 18" fill="none" stroke="#858986" stroke-width="5"/>
+
+  <!-- shielding arm bends down over passenger; distinct fan of fingers -->
+  <path d="M484 278c-53-13-103-13-150 0" fill="none" stroke="#202a30" stroke-width="36" stroke-linecap="round"/>
+  <path d="M344 253c-17-7-34-5-49 5-12 8-12 20-2 28-15 1-23 9-21 22 2 13 16 19 30 14-7 10-4 21 6 27 12 7 26-1 35-15 8-11 12-23 13-37 10 10 21 14 31 10 13-5 15-19 5-28 14-2 22-12 19-25-3-13-19-18-33-15-9-3-20 1-34 14Z" fill="url(#kit004-skin)" stroke="#21171b" stroke-width="7"/>
+  <path d="M353 254c-1 19-8 36-20 50m-7-48c-2 23-12 43-28 59m1-48c0 19-6 35-17 49m76-35c8 11 10 24 6 36" fill="none" stroke="#6d393b" stroke-width="5"/>
+  <path d="M346 243c5 8 6 16 3 25m-27-20c5 8 5 17 1 26m-27-12c5 7 6 15 3 23" fill="none" stroke="#dfa37c" stroke-width="4"/>
+
+  <!-- bright cleared route and pushed-aside wet luggage -->
+  <path d="M333 343c95-9 195 4 299 38 55 18 111 25 168 21v72c-66 6-129-2-191-23-90-30-186-42-288-34Z" fill="#d7bb73" opacity=".14"/>
+  <path d="M321 375c110 1 217 22 322 62m-300-24c98 5 193 25 284 60" fill="none" stroke="#d5ddcf" stroke-width="7" opacity=".34"/>
+  <path d="M697 321h91l22 108-128-3Z" fill="#6b4f3b" stroke="#211a1b" stroke-width="9"/>
+  <path d="M716 321c3-43 50-52 64-4" fill="none" stroke="#b49264" stroke-width="9"/>
+  <path d="M705 347c24 9 49 10 75 3m-71 34c24 8 49 8 74 0" fill="none" stroke="#9a7650" stroke-width="5"/>
+  <path d="M642 423c22-10 43-10 63 0l-7 34-64 3-10-21Z" fill="#49372c" stroke="#1c1817" stroke-width="7"/>
+  <path d="M666 418c2-19 14-30 34-34" fill="none" stroke="#9a7d59" stroke-width="7"/>
+  <g clip-path="url(#kit004-road-clip)" opacity=".3">
+    <path d="M176 445c88 18 170 18 247 1m100 38c102 18 194 14 277-11" fill="none" stroke="#7ec1c8" stroke-width="8"/>
+    <path d="M479 431c7 36 8 71 3 106m88-95c-3 35-1 68 8 99" stroke="#d2aa6d" stroke-width="7"/>
+    <path d="M190 501c71-15 137-14 198 4" stroke="#c2d6d5" stroke-width="5"/>
+  </g>
+  <path d="M744 18v288" stroke="#111921" stroke-width="15"/>
+  <path d="M713 29c14-28 50-39 77-22 24 16 30 51 12 74-19 25-60 25-79-1-12-16-15-34-10-51Z" fill="#dfbd6d" stroke="#3b3329" stroke-width="8" opacity=".72"/>
+
+  <rect width="800" height="560" fill="url(#kit004-rain)"/>
+  <rect width="800" height="560" fill="url(#kit004-hatch)" opacity=".14"/>
+  <path d="M9 12h782v536H9Z" fill="none" stroke="#080e13" stroke-width="14"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#kit004-grain)"/>
+</svg>

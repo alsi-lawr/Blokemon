@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="title desc">
+  <title id="title">BLK-149 Gazza non-final comic-vector prototype</title>
+  <desc id="desc">A wholly fictional bald, broad pub regular lunges across a crowded bar mid-overshare, grinning through a battered nose while spraying crisps and startling a cropped listener. Busy optics, stools, tiles, condensation and comic physical action create a gross, specific non-final placeholder scene.</desc>
+  <defs>
+    <linearGradient id="barNight" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#32172a"/>
+      <stop offset=".45" stop-color="#633037"/>
+      <stop offset="1" stop-color="#13242a"/>
+    </linearGradient>
+    <linearGradient id="tiles" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#36504b"/>
+      <stop offset="1" stop-color="#172d2c"/>
+    </linearGradient>
+    <linearGradient id="barTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ae6b36"/>
+      <stop offset=".34" stop-color="#6c3626"/>
+      <stop offset="1" stop-color="#26171a"/>
+    </linearGradient>
+    <linearGradient id="trackie" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8f3150"/>
+      <stop offset=".55" stop-color="#5b2141"/>
+      <stop offset="1" stop-color="#281730"/>
+    </linearGradient>
+    <radialGradient id="scalp" cx="40%" cy="25%" r="80%">
+      <stop offset="0" stop-color="#efa674"/>
+      <stop offset=".45" stop-color="#c6614b"/>
+      <stop offset="1" stop-color="#713339"/>
+    </radialGradient>
+    <radialGradient id="redNose" cx="35%" cy="25%" r="75%">
+      <stop offset="0" stop-color="#f18b6a"/>
+      <stop offset=".65" stop-color="#bb4344"/>
+      <stop offset="1" stop-color="#67252f"/>
+    </radialGradient>
+    <radialGradient id="neon" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffb56c" stop-opacity=".8"/>
+      <stop offset=".4" stop-color="#f45e74" stop-opacity=".25"/>
+      <stop offset="1" stop-color="#f45e74" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="tileGrid" width="72" height="56" patternUnits="userSpaceOnUse">
+      <rect width="72" height="56" fill="url(#tiles)"/>
+      <path d="M0 1h72M0 55h72M1 0v56M71 0v56" fill="none" stroke="#74917c" stroke-width="4" opacity=".34"/>
+      <path d="M7 9c16-7 31-4 46-1M17 40c13-4 28-3 41 1" fill="none" stroke="#9bb19a" stroke-width="3" opacity=".16"/>
+    </pattern>
+    <pattern id="scuff" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(-22)">
+      <path d="M0 3h18M0 12h18" stroke="#1a111b" stroke-width="2" opacity=".27"/>
+    </pattern>
+    <filter id="dirty" x="-6%" y="-6%" width="112%" height="112%">
+      <feTurbulence type="fractalNoise" baseFrequency=".32" numOctaves="3" seed="73" result="dirt"/>
+      <feColorMatrix in="dirt" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .1 0"/>
+      <feBlend in="SourceGraphic" mode="multiply"/>
+    </filter>
+    <filter id="jag" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="turbulence" baseFrequency=".02 .06" numOctaves="1" seed="61" result="shake"/>
+      <feDisplacementMap in="SourceGraphic" in2="shake" scale="1.8"/>
+    </filter>
+    <clipPath id="jacketClip">
+      <path d="M431 342c52-34 129-39 192-6 73 38 131 118 177 224H297c14-85 57-169 134-218Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#barNight)"/>
+  <ellipse cx="631" cy="82" rx="225" ry="170" fill="url(#neon)"/>
+
+  <!-- crowded bar environment, skewed for a lunging camera -->
+  <path d="M0 0h800v278L0 345Z" fill="url(#tileGrid)" stroke="#10191d" stroke-width="9"/>
+  <path d="M0 68 800 6M0 193l800-65M0 302l800-63" stroke="#9ab391" stroke-width="5" opacity=".25"/>
+  <path d="M45 0v282M221 0v267M384 0v250M573 0v236M742 0v221" stroke="#101a1e" stroke-width="7" opacity=".7"/>
+  <path d="M18 34c115-24 237-28 356-14 118 14 260 3 408-19" fill="none" stroke="#261722" stroke-width="16"/>
+
+  <!-- shelves and anonymous bottles/optics -->
+  <path d="M21 101c172-20 346-26 527-18l3 21c-194 0-367 6-526 26Z" fill="#553126" stroke="#1a1518" stroke-width="8"/>
+  <g stroke="#17171d" stroke-width="5" stroke-linejoin="round">
+    <path d="m48 44 37-3 8 58-45 5Z" fill="#b98a4b"/><path d="m106 34 28-2 11 67-38 3Z" fill="#426c58"/>
+    <path d="m160 39 34-2 3 59-40 3Z" fill="#7b4250"/><path d="m218 25 34 1 7 68-45 1Z" fill="#a37735"/>
+    <path d="m285 37 31 2 2 51-38 1Z" fill="#315f67"/><path d="m342 21 39 3-5 64-44 1Z" fill="#7e4d2e"/>
+    <path d="m407 34 31 4-3 49-37-1Z" fill="#9a7747"/><path d="m459 20 38 4-2 62-45-1Z" fill="#3e6b52"/>
+    <path d="m520 30 31 2 1 50-38 1Z" fill="#7d3f4c"/>
+  </g>
+  <g fill="none" stroke="#ded2a7" stroke-width="5" opacity=".6">
+    <path d="M56 58h26M114 48h20M168 54h21M225 43h25M291 52h20M350 39h20M416 49h18M468 38h25M526 45h19"/>
+  </g>
+  <path d="M110 122v59l-21 18m118-87v61l-22 22m124-91v58l-22 21m129-87v58l-25 21" fill="none" stroke="#cbc7ac" stroke-width="9"/>
+  <path d="M88 198c19 14 43 13 61-3M184 194c21 17 47 16 66-3M286 181c21 17 48 16 68-3M389 173c22 18 50 17 69-4" fill="none" stroke="#b65050" stroke-width="8"/>
+
+  <!-- stools and peripheral punters -->
+  <path d="M52 245c23-67 69-91 112-60 34 24 34 75 10 126l-36 68H27Z" fill="#314354" stroke="#17151b" stroke-width="9"/>
+  <path d="M101 162c-34 7-47 52-24 78 20 22 60 12 70-19 9-29-8-68-46-59Z" fill="#8b5748" stroke="#17151b" stroke-width="8"/>
+  <path d="M79 175c20-27 48-27 66-4-23-6-45 3-68 16Z" fill="#232025"/>
+  <path d="M680 221c26-61 72-75 110-41l18 130-119 19Z" fill="#4c394a" stroke="#17151b" stroke-width="9"/>
+  <path d="M746 159c-32 2-49 41-31 68 16 24 52 23 69-1 17-26 4-70-38-67Z" fill="#a26750" stroke="#17151b" stroke-width="8"/>
+  <path d="M718 180c18-28 50-34 74-10l1 23c-25-12-48-8-74 2Z" fill="#41332d"/>
+  <path d="M34 336h116l-11 42H43Z" fill="#6b3a32" stroke="#17151b" stroke-width="9"/>
+  <path d="M70 377 58 528m60-151 31 151m579-210 18 202m27-210-4 205" stroke="#20171b" stroke-width="12"/>
+
+  <!-- bar slab cutting through foreground -->
+  <path d="M-18 319c188-18 376-14 818-94v145C527 395 274 423-11 445Z" fill="url(#barTop)" stroke="#1b1115" stroke-width="12"/>
+  <path d="M0 337c213-18 430-20 800-91" fill="none" stroke="#e0a45d" stroke-width="8" opacity=".5"/>
+  <path d="M0 418c276-22 544-57 800-89v231H0Z" fill="#231820" stroke="#110d12" stroke-width="9"/>
+  <path d="M0 442c215-16 430-39 800-93" fill="none" stroke="#783b35" stroke-width="7"/>
+  <path d="M22 471c126-22 273-12 402-37m99-16c81-13 158-23 255-49" fill="none" stroke="#6b3a36" stroke-width="5" opacity=".55"/>
+
+  <!-- horrified listener cropped at left -->
+  <path d="M-25 330c26-54 76-72 121-42 32 21 48 63 41 112l-20 160H-28Z" fill="#4d765d" stroke="#151419" stroke-width="11"/>
+  <path d="M14 249c37-22 82 8 84 51 1 28-17 54-43 57-33 4-65-22-61-57 2-20 4-40 20-51Z" fill="#d99a72" stroke="#21161a" stroke-width="9"/>
+  <path d="M8 250c22-28 67-26 86 1l-1 25c-30-15-57-12-91 5Z" fill="#592f36" stroke="#21161a" stroke-width="7"/>
+  <path d="M16 292c11-10 24-8 31 4m18-3c12-8 24-5 29 5" fill="none" stroke="#422127" stroke-width="7"/>
+  <path d="M36 305c5-3 12-2 15 3m23 1c6-3 13-1 16 4" fill="none" stroke="#f1ddbd" stroke-width="5"/>
+  <path d="M50 323c12-7 27-5 36 6-9 16-27 15-36-6Z" fill="#491f28" stroke="#2b181d" stroke-width="6"/>
+  <path d="M112 372c13-27 28-49 45-63 13-11 28-12 37-2 9 11 3 25-10 38l-36 38Z" fill="#d99169" stroke="#21161a" stroke-width="9"/>
+
+  <!-- Gazza's massive lunging torso, diagonal and asymmetric -->
+  <path d="M431 342c52-34 129-39 192-6 73 38 131 118 177 224H297c14-85 57-169 134-218Z" fill="url(#trackie)" stroke="#17121a" stroke-width="13" stroke-linejoin="round"/>
+  <g clip-path="url(#jacketClip)">
+    <rect x="285" y="297" width="530" height="263" fill="url(#scuff)"/>
+    <path d="M411 360c76 47 144 62 245 44m-290 29c108 51 214 57 345 20" fill="none" stroke="#c75b6a" stroke-width="9" opacity=".36"/>
+    <path d="M533 323 493 552m65-229 67 237" stroke="#241727" stroke-width="10"/>
+    <path d="M498 350c29 16 60 20 93 13" fill="none" stroke="#d08b72" stroke-width="8"/>
+  </g>
+  <path d="M433 357c30 21 62 30 99 26l-22 76-109-25Z" fill="#392039" stroke="#17121a" stroke-width="8"/>
+  <path d="m570 346 48 4 39 66-93 17Z" fill="#6e294b" stroke="#17121a" stroke-width="8"/>
+
+  <!-- fictional bald head: squashed, dented, and not a real-person likeness -->
+  <path d="M350 102c43-56 129-65 190-31 45 26 64 68 50 111-6 18-19 30-21 50-2 26-14 54-37 75-24 22-58 31-91 21-36-11-55-36-82-46-32-11-54-37-48-67 4-21 18-34 21-56 3-20 5-39 18-57Z" fill="url(#scalp)" stroke="#21151b" stroke-width="12" stroke-linejoin="round" filter="url(#jag)"/>
+  <path d="M329 151c-31-2-52 26-41 56 10 27 39 37 62 17l9-38Z" fill="#b75146" stroke="#21151b" stroke-width="10"/>
+  <path d="M305 173c17-12 30-3 33 12-13-8-23-3-27 12" fill="none" stroke="#6f3338" stroke-width="6"/>
+  <path d="M565 168c29-10 51 12 48 39-3 28-31 45-56 28l-8-36Z" fill="#c35c4b" stroke="#21151b" stroke-width="10"/>
+  <path d="M578 186c-15-9-27 1-29 15 12-7 22-3 27 10" fill="none" stroke="#74343a" stroke-width="6"/>
+  <path d="M372 91c30-27 80-38 125-24 42 12 74 44 84 83-26-22-49-28-70-24-45 9-82 2-122-8Z" fill="#9c594b" opacity=".45"/>
+  <path d="M386 88c35-19 77-22 112-8m-132 25c43-20 86-22 125-10m-141 31c39-15 78-17 113-9" fill="none" stroke="#f0a77d" stroke-width="5" opacity=".58" stroke-linecap="round"/>
+  <path d="M343 142c23-20 53-18 74 2" fill="none" stroke="#3c2024" stroke-width="12" stroke-linecap="round"/>
+  <path d="M478 135c22-14 50-7 64 15" fill="none" stroke="#3c2024" stroke-width="11" stroke-linecap="round"/>
+  <path d="M350 158c17-13 41-9 53 7-8 23-43 22-53-7Z" fill="#f5e4c6" stroke="#23161b" stroke-width="6"/>
+  <ellipse cx="378" cy="163" rx="8" ry="11" fill="#121317"/>
+  <path d="M486 157c16-8 35-2 42 12-12 19-39 11-42-12Z" fill="#f5e4c6" stroke="#23161b" stroke-width="6"/>
+  <ellipse cx="508" cy="164" rx="6" ry="9" fill="#121317"/>
+
+  <!-- absurd battered nose and bump -->
+  <path d="M435 145c-5 23-17 41-30 55-14 16-7 38 13 44 16 5 30-3 44-2 25 3 43-18 30-38-8-12-22-15-27-28-6-16-10-29-30-31Z" fill="url(#redNose)" stroke="#432127" stroke-width="9"/>
+  <path d="M430 172c7 15 17 24 33 29m-48 7c14-5 28-3 38 5" fill="none" stroke="#f1a177" stroke-width="5" stroke-linecap="round"/>
+  <path d="M449 144c11-17 26-23 41-17 11 5 13 17 6 26-12 15-31 14-47-9Z" fill="#a83942" stroke="#432127" stroke-width="7"/>
+  <path d="M464 135c7 0 13 3 16 8" fill="none" stroke="#f6ad7f" stroke-width="4"/>
+
+  <!-- manic, gross grin with individual teeth -->
+  <path d="M359 237c35-19 93-16 142 13-8 50-45 76-89 66-33-8-51-35-53-79Z" fill="#3b1720" stroke="#21151b" stroke-width="10"/>
+  <path d="M373 241c29-10 74-7 111 13-9 25-35 39-63 34-24-4-41-19-48-47Z" fill="#efe0b9" stroke="#4b2929" stroke-width="5"/>
+  <path d="M397 239l-1 41m29-40-1 47m31-41-4 34" stroke="#9b715e" stroke-width="4"/>
+  <path d="M411 286c23-5 47 2 60 14-19 23-54 22-76-5Z" fill="#b74455"/>
+  <path d="M373 266c25 9 55 11 84 5" fill="none" stroke="#432127" stroke-width="5"/>
+  <path d="M341 211l-16 10m21 4-14 14m174-21 19 12m-25 2 17 17" stroke="#71333a" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="348" cy="190" r="5" fill="#663039"/><circle cx="369" cy="211" r="4" fill="#663039"/><circle cx="524" cy="205" r="4" fill="#663039"/><circle cx="497" cy="228" r="5" fill="#663039"/>
+  <path d="M399 80c-12-22-4-37 7-47m48 36c-1-18 10-30 21-37m41 54c10-16 23-21 35-20" fill="none" stroke="#d4dde0" stroke-width="5" opacity=".66" stroke-linecap="round"/>
+  <path d="M403 53c-8 15-7 28 5 36 13-10 12-24-5-36Zm75-25c-8 16-7 29 6 37 12-11 10-25-6-37Z" fill="#9fd1d4" stroke="#224047" stroke-width="4"/>
+
+  <!-- physical oversharing action: arm hooks listener, other hand explodes toward camera -->
+  <path d="M417 353c-52 0-99-16-139-36-22-11-41-9-51 7-10 16 2 33 23 45 48 29 103 57 161 65Z" fill="#bd5948" stroke="#21151b" stroke-width="11"/>
+  <path d="M259 324c-18-16-36-17-50-5-14 13-7 31 11 43l33 18c16 8 30 5 37-8 7-15-7-34-31-48Z" fill="#c76b51" stroke="#21151b" stroke-width="9"/>
+  <path d="M226 327c-15-8-28-7-35 3-8 12 3 22 18 30m32-36c-12-11-26-13-35-5m50 10c-8-11-19-16-29-13" fill="none" stroke="#7a3434" stroke-width="5" stroke-linecap="round"/>
+
+  <path d="M583 359c23-43 42-83 58-119 8-18 23-24 35-16 12 8 8 24 2 40l-12 31 25-35c10-14 24-17 34-7 10 10 3 24-8 38l-22 29 31-25c14-11 29-11 37 0 8 12-2 24-16 35l-33 25 35-14c16-6 30-1 34 12 4 14-10 22-25 29l-62 24c-28 11-56 6-75-13-18-18-20-40-8-64Z" fill="#ca6d51" stroke="#21151b" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M666 295c15 4 27 12 39 23m-10 2c15 4 28 12 39 23m-23 5c15 2 29 8 42 17m-161 8c18 5 35 13 49 25" fill="none" stroke="#7e3937" stroke-width="5" stroke-linecap="round"/>
+  <path d="M641 239c7-17 21-25 35-19" fill="none" stroke="#ed9d72" stroke-width="5"/>
+
+  <!-- bar mess integrated into gag -->
+  <path d="M519 403c25-19 67-12 79 12 9 19-16 36-47 36-30 0-56-13-50-29 3-8 8-14 18-19Z" fill="#d5b35c" stroke="#24161a" stroke-width="7"/>
+  <path d="m527 404 9-36 55 9 1 37" fill="#b14343" stroke="#24161a" stroke-width="7"/>
+  <path d="m536 385 13 19m4-16 8 22m9-18 5 19" stroke="#f0cb6c" stroke-width="7" stroke-linecap="round"/>
+  <path d="m465 405 25-17 17 20-23 17Zm139-17 26-13 12 22-26 14Zm-84 74 28-2 2 24-28 5Z" fill="#e8be5e" stroke="#26171a" stroke-width="5"/>
+  <path d="M116 432c31-19 65-17 93 0l-8 65-74 5Z" fill="#d2a53c" stroke="#20151a" stroke-width="8"/>
+  <path d="M127 443c23 7 48 6 72-2" fill="none" stroke="#f6dc8e" stroke-width="7"/>
+  <path d="M209 447c27-9 55-6 74 8 9 7 9 21-3 26-23 10-59 9-81-2-14-7-7-27 10-32Z" fill="#ded7b5" stroke="#20151a" stroke-width="7"/>
+  <path d="M220 451c20 8 39 8 54 3" fill="none" stroke="#a5553e" stroke-width="6"/>
+  <path d="M276 392c19-14 51-12 67 4l-8 57-55 4Z" fill="#c87b2d" stroke="#20151a" stroke-width="8"/>
+  <path d="M287 404c14 5 29 5 43 0" fill="none" stroke="#f0e0a8" stroke-width="7"/>
+  <path d="M290 392c2-14 10-23 22-28m1 28c2-13 10-22 21-27" fill="none" stroke="#e6e0c8" stroke-width="6"/>
+
+  <!-- spit/sweat/action marks without readable text -->
+  <path d="M536 252c20-6 37-1 51 14m-29-35c15-4 27-1 38 7" fill="none" stroke="#d4e3d2" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="586" cy="271" r="6" fill="#d4e3d2"/><circle cx="602" cy="280" r="4" fill="#d4e3d2"/>
+  <path d="M730 110l26-26m-7 50 37-17M650 123l9-36" stroke="#ffb069" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+  <path d="M18 521c93-19 177-13 261-31m376-39c50-8 89-19 138-40" fill="none" stroke="#9a5243" stroke-width="5" opacity=".55"/>
+
+  <rect x="6" y="6" width="788" height="548" rx="17" fill="none" stroke="#0d0d13" stroke-width="12"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#dirty)" pointer-events="none"/>
+</svg>

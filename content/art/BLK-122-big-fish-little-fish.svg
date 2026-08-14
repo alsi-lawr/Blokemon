@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b122-title b122-desc">
+  <title id="b122-title">BLK-122 Big Fish Little Fish non-final comic mock-up</title>
+  <desc id="b122-desc">A fork-quiffed rave veteran stands beneath one violet club light, amused octagonal face steady while unequal white-gloved hands measure two precise invisible boxes around a striped shirt. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b122-dark" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#15141a"/><stop offset=".5" stop-color="#4d4261"/><stop offset="1" stop-color="#0d0f15"/></linearGradient>
+    <radialGradient id="b122-violet" cx="50%" cy="18%" r="66%"><stop stop-color="#b86cff" stop-opacity=".85"/><stop offset=".45" stop-color="#6e3a94" stop-opacity=".25"/><stop offset="1" stop-color="#6e3a94" stop-opacity="0"/></radialGradient>
+    <pattern id="b122-shirt" width="31" height="31" patternUnits="userSpaceOnUse"><rect width="31" height="31" fill="#d8d5c6"/><path d="M0 6h31M0 18h31M0 29h31" stroke="#37343f" stroke-width="5"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b122-dark)"/>
+  <ellipse cx="402" cy="127" rx="315" ry="303" fill="url(#b122-violet)"/>
+  <path d="M0 0h800v68C646 49 525 78 393 61 247 42 123 80 0 57Z" fill="#0b0d12" stroke="#08090d" stroke-width="9"/>
+  <path d="M317 39h171l-14 51H329Z" fill="#d4d0d5" stroke="#15131a" stroke-width="9"/>
+  <g fill="#5a5167"><circle cx="346" cy="65" r="11"/><circle cx="384" cy="64" r="11"/><circle cx="423" cy="64" r="11"/><circle cx="461" cy="65" r="11"/></g>
+  <path d="M0 397c206-32 510-30 800 4v159H0Z" fill="#1f2028" stroke="#101116" stroke-width="10"/>
+  <path d="M26 467c135-23 267-20 394-1m77 7c91-7 181-3 278 10" fill="none" stroke="#44414d" stroke-width="6"/>
+  <!-- squat octagonal skull, shaved sides and forked violet quiff -->
+  <path d="M315 92 365 60h83l45 38 16 72-26 72-58 39h-80l-54-42-20-71Z" fill="#b86f57" stroke="#20161b" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M307 111c10-40 37-61 72-61l11-54 28 43 38-49-2 61c28 10 47 31 54 62-38-27-78-29-120-14-31 11-58 5-81-18Z" fill="#62347d" stroke="#17131a" stroke-width="10"/>
+  <path d="M326 83c25-13 50-17 76-10m-86 30c33-14 65-17 96-8m43-18c18 8 31 21 40 39" fill="none" stroke="#a271bd" stroke-width="6"/>
+  <path d="M301 142c-27-8-46 13-38 40 8 26 34 36 56 18m174-55c27-9 46 12 38 39-8 25-34 36-56 19" fill="#a85f4d" stroke="#24181c" stroke-width="9"/>
+  <!-- one crescent, one dot eye -->
+  <path d="M333 156c19-14 42-12 59 5m34 3c15-10 32-7 44 6" fill="none" stroke="#3f242a" stroke-width="9"/>
+  <path d="M341 170c13-6 28-2 37 8m57 0c12-5 24-2 32 7" fill="none" stroke="#ebd9b9" stroke-width="6"/>
+  <circle cx="453" cy="183" r="5" fill="#ece0c6"/>
+  <!-- tiny saddle nose and sideways smirk -->
+  <path d="M405 165c-7 14-11 25-11 36 0 12 11 20 24 18 13-3 18-15 10-25-7-10-11-18-23-29Z" fill="#a35a4b" stroke="#522d30" stroke-width="6"/>
+  <path d="M349 231c31-3 62 5 83 22 18 14 34 13 49 4" fill="none" stroke="#4d262d" stroke-width="8" stroke-linecap="round"/>
+  <path d="M365 246c23 5 44 5 64 0" stroke="#cf7069" stroke-width="4"/>
+  <!-- striped medium stance -->
+  <path d="M291 280c58-31 139-32 197 1 64 36 91 106 83 195H226c-5-91 15-157 65-196Z" fill="url(#b122-shirt)" stroke="#16151a" stroke-width="12"/>
+  <path d="M303 301c65 28 134 29 207 3m-231 55c90 31 178 29 262-5" fill="none" stroke="#f1ece0" stroke-width="6" opacity=".34"/>
+  <!-- rubbery arms make unequal invisible boxes -->
+  <path d="M297 308c-62 2-116 19-163 51-22 15-25 36-11 50 14 14 34 5 55-8l143-58Z" fill="#af6751" stroke="#20161b" stroke-width="10"/>
+  <path d="M490 306c60 7 111 29 153 65 20 17 21 38 5 51-16 13-35 2-54-13l-130-68Z" fill="#af6751" stroke="#20161b" stroke-width="10"/>
+  <!-- left glove forms a wide box -->
+  <path d="M130 331c-29-1-48 11-50 30-2 19 17 25 39 22l36-5-25 17c-16 11-13 27 1 34 14 7 29-5 44-16l37-30c18-14 17-37 1-52-16-15-39-16-83 0Z" fill="#f0ede2" stroke="#202027" stroke-width="9"/>
+  <path d="M90 339c21 4 39 13 54 26m-63-9c20 5 37 14 51 28m40-39c8 14 10 29 6 44" fill="none" stroke="#9c9b96" stroke-width="5"/>
+  <!-- right glove makes smaller precise box -->
+  <path d="M650 348c26 4 41 19 39 37-3 18-22 20-42 14l-31-10 20 20c13 13 8 28-7 33-15 4-27-10-39-23l-30-38c-14-17-9-38 9-49 17-10 38-6 81 16Z" fill="#f0ede2" stroke="#202027" stroke-width="9"/>
+  <path d="M669 361c-20 2-38 9-54 21m63-4c-19 3-36 10-50 22m-36-52c-8 14-10 29-6 44" fill="none" stroke="#9c9b96" stroke-width="5"/>
+  <!-- invisible-box gesture guide accents, not text -->
+  <path d="M101 297h139v104M560 299h123v91" fill="none" stroke="#bd78e3" stroke-width="7" stroke-dasharray="22 15" opacity=".66"/>
+  <path d="M319 467c-8 29-11 58-9 88m161-88c9 29 12 58 10 88" stroke="#292a31" stroke-width="39"/>
+  <path d="M280 533c29-8 57-4 79 13-2 11-20 15-44 11l-44-7c-6-8-2-13 9-17Zm158 8c28-12 57-10 80 7 0 12-18 17-43 14l-44-6c-7-7-4-11 7-15Z" fill="#3e332f" stroke="#171519" stroke-width="8"/>
+  <path d="M48 444l52 13m-30-40 43 18m580 15 56-18" stroke="#9e72b6" stroke-width="6" opacity=".55"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#0b0c11" stroke-width="12"/>
+</svg>

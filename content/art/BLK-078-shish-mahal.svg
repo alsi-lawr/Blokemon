@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b078-title b078-desc">
+  <title id="b078-title">BLK-078 Shish Mahal non-final comic mock-up</title>
+  <desc id="b078-desc">A legendary silver-haired host twists between two packed tables with a vast copper tray held high, his white jacket and saffron dishes cutting through a dark red dining room. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b078-room" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2a111b"/><stop offset=".5" stop-color="#771f29"/><stop offset="1" stop-color="#1c1b26"/></linearGradient>
+    <linearGradient id="b078-copper" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffd077"/><stop offset=".42" stop-color="#bd642f"/><stop offset="1" stop-color="#4b2823"/></linearGradient>
+    <linearGradient id="b078-jacket" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f1ead2"/><stop offset=".55" stop-color="#bdb6a8"/><stop offset="1" stop-color="#706b68"/></linearGradient>
+    <pattern id="b078-wall" width="93" height="51" patternUnits="userSpaceOnUse"><rect width="93" height="51" fill="#55202a"/><path d="M0 2h93M0 49h93M46 2v23M0 27h93M20 27v22M78 27v22" stroke="#2e171e" stroke-width="4"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b078-room)"/>
+  <path d="M0 0h800v309H0Z" fill="url(#b078-wall)"/>
+  <path d="M0 58c174-28 346-21 517-2 101 11 193 4 283-13" fill="none" stroke="#1b1118" stroke-width="18"/>
+  <g fill="#e09a43" stroke="#27171b" stroke-width="8"><path d="M42 28h119l19 55H25Z"/><path d="M312 17h154l18 59H291Z"/><path d="M635 27h128l17 55H616Z"/></g>
+  <!-- packed left table with varied diner silhouettes -->
+  <path d="M-30 365c122-37 245-35 372 5l28 129H-30Z" fill="#402124" stroke="#180f13" stroke-width="11"/>
+  <path d="M6 323c16-47 51-62 83-34 29 25 30 72 15 112l-26 66H-15Z" fill="#3d5662" stroke="#16151a" stroke-width="8"/>
+  <path d="M29 259c24-23 60-12 67 20 6 28-12 52-39 54-30 2-56-43-28-74Z" fill="#a86c55" stroke="#20171a" stroke-width="7"/>
+  <path d="M103 325c25-53 68-62 101-26 29 32 23 79 4 121l-38 74H72Z" fill="#684052" stroke="#16151a" stroke-width="8"/>
+  <path d="M135 263c22-26 59-22 71 8 11 27-2 54-28 62-29 9-61-34-43-70Z" fill="#c27c5e" stroke="#20171a" stroke-width="7"/>
+  <path d="M218 337c19-43 54-55 84-28 28 25 31 68 18 105l-25 72H195Z" fill="#314852" stroke="#16151a" stroke-width="8"/>
+  <path d="M237 282c20-22 53-15 61 14 8 25-8 48-32 52-28 4-53-38-29-66Z" fill="#96604e" stroke="#20171a" stroke-width="7"/>
+  <!-- packed right table, different heads/poses -->
+  <path d="M489 372c113-43 227-41 341 1v126H469Z" fill="#3c2023" stroke="#180f13" stroke-width="11"/>
+  <path d="M515 329c24-50 64-60 95-28 27 29 24 75 7 115l-33 75h-94Z" fill="#44556a" stroke="#16151a" stroke-width="8"/>
+  <path d="M544 268c22-24 57-18 67 12 9 26-6 51-31 57-28 7-55-37-36-69Z" fill="#a96854" stroke="#20171a" stroke-width="7"/>
+  <path d="M621 324c29-54 73-59 103-19 25 34 17 80-5 119l-43 71h-91Z" fill="#6c3c4f" stroke="#16151a" stroke-width="8"/>
+  <path d="M656 260c22-27 59-25 72 4 12 26 0 53-25 63-29 11-64-31-47-67Z" fill="#c47e60" stroke="#20171a" stroke-width="7"/>
+  <path d="M727 335c20-45 56-56 86-27l12 181-112 4Z" fill="#344e59" stroke="#16151a" stroke-width="8"/>
+  <path d="M749 273c18-22 49-17 58 10 8 24-5 47-28 53-26 7-49-35-30-63Z" fill="#915e4e" stroke="#20171a" stroke-width="7"/>
+  <!-- huge copper tray arcs across top, physically balanced -->
+  <path d="M180 104c126-54 306-59 444-8 45 16 51 49 16 67-105 53-364 59-475 10-41-18-29-49 15-69Z" fill="url(#b078-copper)" stroke="#261619" stroke-width="12"/>
+  <ellipse cx="402" cy="127" rx="219" ry="48" fill="#6b3327" stroke="#ecad56" stroke-width="7"/>
+  <g fill="url(#b078-copper)" stroke="#2b1919" stroke-width="7"><ellipse cx="263" cy="118" rx="58" ry="30"/><ellipse cx="387" cy="104" rx="66" ry="32"/><ellipse cx="527" cy="119" rx="61" ry="31"/></g>
+  <path d="M225 114c29-12 59-12 90 1m21-12c35-13 69-13 104 0m34 10c33-11 65-10 96 2" fill="none" stroke="#ffd685" stroke-width="6" opacity=".65"/>
+  <path d="M253 92c-13-28-10-51 10-70m128 52c-11-27-6-48 14-65m116 79c-11-24-8-45 10-62" fill="none" stroke="#f4d4ac" stroke-width="8" opacity=".62"/>
+  <!-- host in twisting back-three-quarter motion -->
+  <path d="M335 185c35-34 91-36 128-3 32 28 37 71 21 108-10 23-6 43-22 63-22 27-64 37-98 20-39-20-56-63-47-103 5-24 18-41 10-62-4-10-2-17 8-23Z" fill="#b87356" stroke="#1d1618" stroke-width="11"/>
+  <!-- swept silver pompadour -->
+  <path d="M328 205c4-48 33-78 72-78 33-20 80 3 88 43 4 19 0 35-10 50-30-26-64-32-100-19-18 7-35 8-50 4Z" fill="#d7d0bb" stroke="#1c181a" stroke-width="9"/>
+  <path d="M341 182c29-23 62-30 100-20m-105 39c38-24 77-29 116-14m-67-50c19 1 36 9 49 23" fill="none" stroke="#77756d" stroke-width="6"/>
+  <path d="M469 218c24 0 40 20 35 43-5 23-28 34-49 21" fill="#a8654f" stroke="#24191a" stroke-width="8"/>
+  <path d="M475 232c-11 0-19 7-22 18" fill="none" stroke="#6d3b32" stroke-width="5"/>
+  <path d="M407 231c15-8 32-5 43 8" fill="none" stroke="#3d2327" stroke-width="9"/>
+  <path d="M413 243c12-5 25-1 32 8-11 10-24 6-32-8Z" fill="#edd9b8" stroke="#281a1c" stroke-width="5"/>
+  <path d="M433 248h7" stroke="#121519" stroke-width="6"/>
+  <path d="M455 239c-4 17 2 28 15 37-8 13-27 13-37 2" fill="#a05a48" stroke="#552e2c" stroke-width="6"/>
+  <!-- open square shout, lower teeth only -->
+  <path d="M404 302c24-8 52-3 73 14-8 31-50 42-76 13Z" fill="#4b2028" stroke="#26191b" stroke-width="7"/>
+  <path d="M419 329c14-6 30-7 45-2l-4 11-38 1Z" fill="#e3d0a7"/>
+  <path d="M304 355c45-28 111-30 158-2 53 31 78 92 71 171l-287-1c-2-77 14-134 58-168Z" fill="url(#b078-jacket)" stroke="#171719" stroke-width="12"/>
+  <path d="M309 371c54 24 113 25 174 2m-195 49c79 28 156 27 230-3" fill="none" stroke="#eae0c7" stroke-width="7" opacity=".55"/>
+  <path d="M348 350c-7 44-6 91 4 140m68-137c16 47 20 94 13 141" fill="none" stroke="#76706a" stroke-width="8"/>
+  <!-- one arm bears tray, one sweeps diners aside -->
+  <path d="M331 369c-40-52-65-104-75-157-5-26 7-44 27-45 20-1 30 19 35 44l45 139Z" fill="#b87356" stroke="#1d1618" stroke-width="10"/>
+  <path d="M265 176c-17-7-32-3-38 10-6 13 6 23 20 28l24 7-16 7c-13 5-14 18-3 24 11 7 24-2 36-10l26-19c15-11 17-29 4-41-12-11-28-12-53-6Z" fill="#c17d5d" stroke="#1d1618" stroke-width="8"/>
+  <path d="M459 375c44-9 82-32 114-66 17-18 37-19 50-6 13 14 4 33-12 50-43 45-89 74-139 84Z" fill="#b87356" stroke="#1d1618" stroke-width="10"/>
+  <path d="M583 302c20-10 39-8 48 5 9 13-4 24-19 31l-24 10 20 3c16 2 23 14 17 25-7 11-22 7-37 2l-39-14c-19-7-27-26-17-42 10-16 27-23 51-20Z" fill="#c17d5d" stroke="#1d1618" stroke-width="8"/>
+  <path d="M247 197c18 5 34 14 47 27m-55-13c16 5 31 13 43 24m334 93c-19 4-35 12-49 24m56-9c-18 4-33 11-46 22" fill="none" stroke="#794439" stroke-width="5"/>
+  <!-- crossed full-body legs complete pivot -->
+  <path d="M335 503c-20 16-36 33-48 52m153-50c19 15 39 31 61 48" fill="none" stroke="#332f31" stroke-width="37"/>
+  <path d="M254 536c25-6 50-2 70 13-2 10-17 13-38 9l-41-7c-5-7-1-12 9-15Zm213 1c27-6 51 0 70 16-4 9-19 11-39 6l-40-10c-4-6-1-10 9-12Z" fill="#3f302b" stroke="#171519" stroke-width="8"/>
+  <!-- flying saffron arcs and dining mess -->
+  <path d="M176 414c38-21 77-22 116-4m223 2c43-21 85-21 127 0" fill="none" stroke="#f0b34d" stroke-width="9" opacity=".65"/>
+  <path d="m91 425 28 12-11 25-28-12Zm622 2 29-9 8 26-29 9ZM167 495l26 4-4 23-26-4Zm481-3 23-12 11 21-23 13Z" fill="#e9b24e" stroke="#251719" stroke-width="5"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#110e12" stroke-width="12"/>
+</svg>

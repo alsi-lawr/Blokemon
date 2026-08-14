@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Blokemon.Sheet</RootNamespace>
+    <AssemblyName>Blokemon.Sheet</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Blokemon.CardGen/Blokemon.CardGen.csproj" />
+    <ProjectReference Include="../Blokemon.PackGen/Blokemon.PackGen.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="blk011-title blk011-desc">
+  <title id="blk011-title">BLK-011 Couch Lock non-final comic-vector mock-up</title>
+  <desc id="blk011-desc">A drooping side-profile silhouette has been swallowed almost horizontally by a collapsed settee and a mound of equipment, one limp arm missing the remote while a huge socked foot, blanket, cold bowl and heavy curtains close over him. Non-final placeholder art.</desc>
+  <defs><linearGradient id="blk011-dusk" x2="1" y2="1"><stop stop-color="#37283f"/><stop offset="1" stop-color="#141a25"/></linearGradient><pattern id="blk011-upholstery" width="36" height="36" patternUnits="userSpaceOnUse"><path fill="#6a4b40" d="M0 0h36v36H0z"/><path d="M0 18h36M18 0v36" stroke="#a37356" stroke-width="3" opacity=".24"/></pattern></defs>
+  <path fill="url(#blk011-dusk)" d="M0 0h800v560H0z"/><path fill="#251f30" stroke="#171820" stroke-width="12" d="M18 15h207v344H18zM575 15h207v344H575z"/><path fill="#553047" d="M35 29h173v315H35zM592 29h173v315H592z"/><path fill="none" stroke="#82556e" stroke-width="7" d="M50 45q59 54 140 13M608 46q61 49 139 9M45 116q69 48 152 0M603 118q68 45 151-4"/>
+  <g stroke="#211a20" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="url(#blk011-upholstery)" d="M43 268q97-67 205-24 158-57 321 4 109-48 190 25l26 287H17z"/>
+    <path fill="#795646" d="M49 289q98-55 201-15l7 195-197 12zM263 273q145-48 293 5l-4 193-288-3zM568 280q101-47 183 8l22 185-208-7z"/>
+    <!-- long blanket/body mound, almost all silhouette -->
+    <path fill="#34423a" d="M82 488q58-155 188-190 139-38 291 55 96 59 162 147l-17 60H59z"/><path fill="#65775f" d="M111 478q56-128 167-156 121-29 256 54 79 49 142 126l-16 38H91z"/>
+    <path fill="#b5b5a0" d="M110 369q112-41 218 6l-28 128-183 7z"/><path fill="#75806d" d="M133 388q82-29 167 5l-21 92-140 7z"/>
+    <path fill="#c6b9a2" d="M511 348q111-32 198 19l-18 106-162 1z"/><path fill="#79665e" d="M535 368q80-22 151 17l-13 72-120 0z"/>
+    <!-- drooping profile points toward the unreachable remote -->
+    <path fill="#a96950" d="M265 159q44-62 104-62 66 6 104 55 36 46 31 105-5 61-51 102-43 34-99 17-57-19-86-74-26-54-20-100 3-27 17-43z"/>
+    <path fill="#443128" d="M267 166q35-76 105-77 67 8 98 48-89-23-203 29z"/><path fill="none" stroke="#443128" stroke-width="13" d="M282 138q-29 8-41 36M441 126q29 14 43 37"/>
+    <path fill="#a96950" d="M257 208q-40-10-42 28 6 41 43 45"/>
+    <path fill="#ede0ac" d="M286 188q38-22 70 7-10 35-36 32-25-2-34-39z"/><circle cx="328" cy="200" r="7" fill="#211a20"/><path fill="none" stroke="#352723" stroke-width="13" d="M284 178q39-24 75 2"/>
+    <path fill="#bd7c59" d="M280 211q-21 35-62 50l38 21 47-13"/>
+    <path fill="#302321" d="M274 295q43 12 77-12-4 46-36 51-27 3-41-39z"/><path fill="none" stroke="#ead8aa" stroke-width="5" d="M292 304q22 4 41-3"/>
+    <path fill="none" stroke="#75493d" stroke-width="5" d="M384 176q36 16 54 48M393 204q31 14 42 36M383 286l17-7M373 314l17-9"/>
+    <!-- only one limp arm emerges from the sofa -->
+    <path fill="#65775f" d="M379 329q96-10 174 53l103 86-62 76-144-85-93-38z"/>
+    <path fill="#a96950" d="M576 394q61-3 109 26 43 27 50 59 5 29-20 42-25 11-48-17 8 29-18 38-25 7-38-24-4 28-28 23-24-6-19-35-19 19-38 3-17-16 8-42z"/>
+    <path fill="#d8b987" d="M38 480l144-6 13 86H24z"/><path fill="#7f5540" d="M51 491l116-5 8 57H40z"/>
+    <path fill="#d3b583" d="M644 459l119-4 20 105H632z"/><path fill="#705344" d="M658 472l91-3 13 74h-100z"/>
+    <path fill="#273037" d="M682 510l73-16 11 32-77 19z"/><g fill="#81908c" stroke-width="4"><circle cx="708" cy="516" r="6"/><circle cx="730" cy="511" r="6"/><path d="M705 531h35"/></g>
+    <path fill="#202829" d="M459 425q109-43 199 15l-65 120H377z"/><path fill="#d7d5b1" d="M485 452q68-27 122 9l-36 67H439z"/><path fill="#eeead0" d="M503 471q42-14 76 8l-19 36h-82z"/>
+    <path fill="#aeb4a0" d="M103 360q-4-75 43-99 47 33 31 103z"/><path fill="#d9d8bd" d="M122 352q-3-51 24-69 26 25 16 70z"/><path fill="none" stroke="#ece8c8" stroke-width="5" d="M129 298l29 35M120 324l39 18"/>
+    <!-- huge foreground foot reinforces side silhouette -->
+    <path fill="#273032" d="M48 405q89-33 158 17l-19 138H20z"/><path fill="#d6d2b2" d="M72 431q58-19 104 15l-13 88H52z"/><path fill="none" stroke="#ece9c9" stroke-width="6" d="M77 464l89 11M75 492l86 12M93 438l-5 91"/>
+    <g fill="#b5884f" stroke-width="4"><path d="M294 478l17 7-10 17-18-8zM339 459l15 6-7 16-17-7zM380 490l18 6-8 17-18-7zM739 399l16 6-8 16-17-7z"/></g>
+  </g>
+</svg>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b133-title b133-desc">
+  <title id="b133-title">BLK-133 Apprentice non-final comic mock-up</title>
+  <desc id="b133-desc">From floor level, a ginger-mopped young worker strides diagonally through a half-finished room while a paint roller, cable reel, lunch bag and mismatched tools pull his lank body in competing directions. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b133-room" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a9b8b2"/><stop offset=".5" stop-color="#6f8da0"/><stop offset="1" stop-color="#394e62"/></linearGradient>
+    <linearGradient id="b133-blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5e83aa"/><stop offset=".5" stop-color="#365b84"/><stop offset="1" stop-color="#203b5e"/></linearGradient>
+    <pattern id="b133-floor" width="83" height="47" patternUnits="userSpaceOnUse"><rect width="83" height="47" fill="#8c6c43"/><path d="M5 14c21-6 42-5 62 2M17 37c18-4 35-3 52 2" fill="none" stroke="#5a452f" stroke-width="4"/><circle cx="10" cy="31" r="3" fill="#d0a55f"/><circle cx="66" cy="27" r="3" fill="#c59754"/></pattern>
+    <filter id="b133-jolt" x="-6%" y="-6%" width="112%" height="112%"><feTurbulence baseFrequency=".017 .055" numOctaves="1" seed="133" result="j"/><feDisplacementMap in="SourceGraphic" in2="j" scale="1.7"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#b133-room)"/>
+  <!-- half-finished room: bare studs, plaster gaps, cables -->
+  <path d="M0 0h800v352H0Z" fill="#869a9d"/>
+  <path d="M47 0v351m132-351v351m441-351v351m132-351v351" stroke="#33495a" stroke-width="17"/>
+  <path d="M52 45h122m-122 97h122m-122 99h122m449-193h124m-124 99h124m-124 98h124" stroke="#506878" stroke-width="9"/>
+  <path d="M203 32h384v285H194Z" fill="#bec5bd" stroke="#596d72" stroke-width="10"/>
+  <path d="M222 54h154v238H214Zm182 0h157v238H396Z" fill="#aeb8b1" stroke="#788583" stroke-width="7"/>
+  <path d="M240 82c37-11 72-10 105 3m89-2c34-10 67-9 98 3M232 176c42-10 82-9 120 3m78-2c40-10 78-9 113 3" fill="none" stroke="#d9d7c4" stroke-width="6" opacity=".62"/>
+  <path d="M0 359c213-36 511-33 800 5v196H0Z" fill="url(#b133-floor)" stroke="#3a3024" stroke-width="11"/>
+  <!-- triangular young skull and huge loose ginger mop -->
+  <path d="M306 82c43-40 108-41 151 1 37 36 39 89 14 131-28 48-72 89-118 76-52-15-83-73-75-122 5-33 14-63 28-86Z" fill="#c0795d" stroke="#201719" stroke-width="11" filter="url(#b133-jolt)"/>
+  <g fill="#a94e2e" stroke="#1d1718" stroke-width="6"><circle cx="304" cy="90" r="30"/><circle cx="333" cy="62" r="32"/><circle cx="370" cy="49" r="34"/><circle cx="409" cy="55" r="34"/><circle cx="444" cy="73" r="32"/><circle cx="469" cy="102" r="30"/><circle cx="474" cy="137" r="28"/><circle cx="290" cy="126" r="29"/></g>
+  <path d="M318 89c26-18 54-25 84-20m-100 44c36-21 73-26 111-15m24-27c16 12 27 27 34 45" fill="none" stroke="#d98152" stroke-width="6"/>
+  <path d="M291 137c-27-8-46 13-38 40 8 26 34 36 56 18m155-53c27-9 46 12 38 39-8 25-34 36-56 19" fill="#ae6a54" stroke="#24191a" stroke-width="9"/>
+  <!-- wide dot eyes, freckles, button nose, worried underbite -->
+  <path d="M326 151c19-12 40-10 56 4m32 3c15-10 32-7 44 6" fill="none" stroke="#40252a" stroke-width="9"/>
+  <circle cx="365" cy="171" r="7" fill="#f0debd"/><circle cx="442" cy="174" r="7" fill="#f0debd"/>
+  <path d="M402 157c-5 14-7 25-5 36 2 11 13 18 25 14 12-4 16-17 7-26-8-9-15-16-27-24Z" fill="#ad5c4c" stroke="#552d30" stroke-width="6"/>
+  <circle cx="333" cy="207" r="4" fill="#8b463e"/><circle cx="349" cy="214" r="4" fill="#8b463e"/><circle cx="458" cy="215" r="4" fill="#8b463e"/><circle cx="474" cy="208" r="4" fill="#8b463e"/>
+  <path d="M346 239c29-8 63-4 89 14-9 27-52 35-89 12Z" fill="#4b2429" stroke="#25181b" stroke-width="7"/>
+  <path d="m395 246 17 6-9 14-18-6Z" fill="#e0cca8"/>
+  <!-- lank full-body diagonal stride -->
+  <path d="M272 289c52-29 127-31 182-2 68 36 96 108 88 199H204c-4-92 18-159 68-197Z" fill="url(#b133-blue)" stroke="#131820" stroke-width="12"/>
+  <path d="M284 313c66 28 137 29 211 3m-235 56c91 31 179 29 264-6" fill="none" stroke="#6f91b0" stroke-width="8" opacity=".48"/>
+  <path d="M326 288c-5 50-2 101 12 155m75-153c19 49 25 100 19 152" fill="none" stroke="#23446a" stroke-width="9"/>
+  <path d="M275 310c-55 22-100 53-134 95-17 21-12 42 5 51 18 10 35-6 51-26l105-91Z" fill="#b37056" stroke="#201719" stroke-width="10"/>
+  <path d="M454 311c52 26 94 61 124 104 15 22 9 42-9 51-18 8-35-8-49-29l-94-99Z" fill="#b37056" stroke="#201719" stroke-width="10"/>
+  <path d="M143 393c-26 10-39 27-33 45 6 18 26 15 45 6l30-15-18 23c-11 14-5 28 9 31 14 3 24-12 34-27l26-42c11-19 2-39-17-47-18-8-39 0-76 26Z" fill="#c07a5c" stroke="#201719" stroke-width="9"/>
+  <path d="M577 402c25 11 37 28 30 46-7 17-26 14-45 5l-29-16 17 23c10 14 4 28-10 30-14 2-24-12-33-27l-24-42c-10-19-1-39 18-46 18-7 39 1 76 27Z" fill="#c07a5c" stroke="#201719" stroke-width="9"/>
+  <!-- mismatched kit pulls physical body in opposite directions -->
+  <path d="M132 380 65 203" stroke="#8e5c37" stroke-width="14"/>
+  <path d="M45 181h95l12 62H32Z" fill="#d8c7a0" stroke="#30251f" stroke-width="9"/>
+  <path d="M59 198h66m-61 20h71" stroke="#a58c66" stroke-width="5"/>
+  <path d="M572 392c73-19 135-15 188 13l-13 137-170-6Z" fill="#414951" stroke="#171b1f" stroke-width="10"/>
+  <circle cx="640" cy="469" r="61" fill="#25303a" stroke="#11161a" stroke-width="9"/>
+  <circle cx="640" cy="469" r="33" fill="#6b7478"/>
+  <path d="M643 407c68-76 101-132 101-168" fill="none" stroke="#262b2e" stroke-width="13"/>
+  <path d="M730 218c17-5 31 3 35 17l-5 59-48-1-2-55c0-11 7-18 20-20Z" fill="#c7c1a8" stroke="#25251f" stroke-width="7"/>
+  <!-- paint roller across top, lunch bag across lower left -->
+  <path d="M100 110h181v45H98Z" fill="#e7e0ca" stroke="#313236" stroke-width="9"/>
+  <path d="M281 131c58 24 89 65 91 123" fill="none" stroke="#41454a" stroke-width="12"/>
+  <path d="M34 431h155l18 117H12Z" fill="#b08349" stroke="#2d211d" stroke-width="10"/>
+  <path d="M62 429c6-34 25-51 56-51 30 0 50 18 58 53" fill="none" stroke="#4a3529" stroke-width="9"/>
+  <!-- running legs and sawdust motion -->
+  <path d="M300 473c-25 23-46 49-63 78m192-77c26 21 54 44 84 69" stroke="#273c5b" stroke-width="41"/>
+  <path d="M205 531c31-7 60-2 83 17-3 12-22 16-48 11l-46-8c-6-8-2-14 11-20Zm274 0c31-10 61-7 85 11 0 12-19 18-45 15l-47-6c-7-8-4-13 7-20Z" fill="#e6dfcb" stroke="#17171a" stroke-width="9"/>
+  <path d="M229 502l-39-18m65 6-22-36m280 53 42-14m-55-3 31-30" stroke="#e1ad56" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="90" cy="514" r="6" fill="#d6a052"/><circle cx="262" cy="534" r="5" fill="#d6a052"/><circle cx="554" cy="520" r="7" fill="#d6a052"/><circle cx="698" cy="536" r="5" fill="#d6a052"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#1b2832" stroke-width="12"/>
+</svg>

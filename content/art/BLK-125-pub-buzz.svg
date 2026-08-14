@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b125-title b125-desc">
+  <title id="b125-title">BLK-125 Pub Buzz non-final comic mock-up</title>
+  <desc id="b125-desc">An extreme tabletop crop catches a yellow-mohawked drinker drumming three different fingers in quick succession, alert triangular eyes already seeking a reply beside one anonymous half-pint. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b125-pub" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3a1c19"/><stop offset=".5" stop-color="#8a4b22"/><stop offset="1" stop-color="#20161a"/></linearGradient>
+    <linearGradient id="b125-amber" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff0a1"/><stop offset=".24" stop-color="#eaa834"/><stop offset="1" stop-color="#7a351d"/></linearGradient>
+    <pattern id="b125-table" width="91" height="51" patternUnits="userSpaceOnUse"><rect width="91" height="51" fill="#5a2f21"/><path d="M0 9c29-8 58-7 87 2M11 39c25-6 49-5 72 2" fill="none" stroke="#9a5931" stroke-width="5" opacity=".52"/></pattern>
+    <filter id="b125-beat" x="-7%" y="-7%" width="114%" height="114%"><feTurbulence baseFrequency=".025 .07" numOctaves="1" seed="125" result="b"/><feDisplacementMap in="SourceGraphic" in2="b" scale="1.6"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#b125-pub)"/>
+  <path d="M0 0h800v92C648 70 526 100 392 81 245 61 122 99 0 76Z" fill="#231517" stroke="#130f12" stroke-width="10"/>
+  <path d="M30 114h217v198H24Z" fill="#2c3734" stroke="#ab7243" stroke-width="9"/>
+  <path d="M50 133h177v159H44Z" fill="#5f3028"/>
+  <path d="M57 270 219 143M47 211l94-78M131 294l103-87" stroke="#ca854c" stroke-width="5" opacity=".32"/>
+  <!-- round cheek-shelf head, bald sides and narrow yellow mohawk -->
+  <path d="M306 89c43-39 109-39 151 3 37 36 37 88 12 130-29 48-91 59-135 27-49-36-60-116-28-160Z" fill="#bd7457" stroke="#21161a" stroke-width="11" filter="url(#b125-beat)"/>
+  <path d="M320 102c18-43 68-61 109-40" fill="none" stroke="#d18b6a" stroke-width="6"/>
+  <path d="M341 91c5-41 22-69 50-84l12 66 29-53-2 80Z" fill="#e2be35" stroke="#231c18" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M314 127c-26-9-45 12-37 39 8 25 33 36 54 18m133-53c26-9 45 12 37 39-8 25-33 36-54 18" fill="#ac654f" stroke="#24181b" stroke-width="8"/>
+  <!-- alert triangular eyes and red button nose -->
+  <path d="M338 144c19-12 40-10 56 4m27 2c15-9 31-6 43 6" fill="none" stroke="#402429" stroke-width="9"/>
+  <path d="m345 160 38-1-17 23Zm84 3 30 1-17 19Z" fill="#efddbb" stroke="#281a1d" stroke-width="5"/>
+  <circle cx="368" cy="169" r="4" fill="#141619"/><circle cx="444" cy="172" r="4" fill="#141619"/>
+  <path d="M404 153c-5 14-7 25-5 36 2 11 13 18 25 14 12-4 16-17 7-26-8-9-15-16-27-24Z" fill="#b64e43" stroke="#57282d" stroke-width="6"/>
+  <!-- tiny popping O, no grin -->
+  <ellipse cx="396" cy="232" rx="18" ry="21" fill="#50212b" stroke="#28191d" stroke-width="7"/>
+  <path d="M319 207l-18 11m21 6-15 15m145-10 19 11m-23 5 16 14" stroke="#803842" stroke-width="5"/>
+  <!-- rolled-sleeve torso behind table -->
+  <path d="M279 264c51-28 123-30 176-2 64 34 91 100 84 184H220c-4-84 15-146 59-182Z" fill="#4a5060" stroke="#15161b" stroke-width="12"/>
+  <path d="M289 287c63 27 129 28 198 3m-219 53c85 30 166 28 245-5" fill="none" stroke="#737887" stroke-width="7" opacity=".48"/>
+  <path d="M327 265c-7 45-4 93 9 142m73-143c17 45 23 92 17 141" fill="none" stroke="#303744" stroke-width="9"/>
+  <!-- tabletop fills foreground -->
+  <path d="M-30 342c225-50 506-46 860 11v207H-30Z" fill="url(#b125-table)" stroke="#160f11" stroke-width="13"/>
+  <path d="M-10 374c253-36 520-32 810 14" fill="none" stroke="#ba7137" stroke-width="9"/>
+  <!-- arms feed into three separately posed striking hands -->
+  <path d="M282 291c-55 19-99 49-133 91-17 21-12 42 5 51 18 10 35-6 51-26l105-89Z" fill="#b16a51" stroke="#21161a" stroke-width="10"/>
+  <path d="M448 294c51 24 91 58 121 102 15 22 9 42-9 51-18 8-35-8-49-29l-91-96Z" fill="#b16a51" stroke="#21161a" stroke-width="10"/>
+  <!-- first palm flat slap -->
+  <path d="M121 371c-31 10-45 30-36 49 9 19 31 14 51 3l34-19-20 29c-11 16-4 31 11 33 15 2 25-14 35-31l28-48c13-22 2-43-20-50-20-6-43 4-83 34Z" fill="#c0785b" stroke="#21161a" stroke-width="9"/>
+  <!-- second hand: two fingers drumming -->
+  <path d="M318 355c-18-27-43-35-62-21-18 14-7 35 11 51l25 22-36-15c-18-8-34 0-35 15-1 16 16 24 34 31l48 18c24 9 47-4 52-27 5-22-8-43-37-74Z" fill="#c67d5e" stroke="#21161a" stroke-width="9"/>
+  <path d="M268 356c11 20 26 36 46 49m-65-30c12 18 27 33 46 45" fill="none" stroke="#793f37" stroke-width="5"/>
+  <!-- third hand: knuckle tap on right -->
+  <path d="M577 381c25 8 39 25 34 42-5 18-25 16-44 8l-31-13 20 22c12 13 7 27-7 31-14 4-25-10-36-23l-29-37c-13-17-6-37 12-47 17-9 38-4 81 17Z" fill="#bf7559" stroke="#21161a" stroke-width="9"/>
+  <path d="M594 399c-20 2-38 9-54 21m63-4c-19 3-36 10-50 22" fill="none" stroke="#743d36" stroke-width="5"/>
+  <!-- three beat impact accents, no written sound -->
+  <path d="M76 444l-41-13m53 39-48 4m272-12-21 40m45-33 4 47m243-61 39-25m-24 54 48-2" stroke="#f4d238" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="113" cy="449" r="10" fill="#ffd742"/><circle cx="326" cy="474" r="9" fill="#ffd742"/><circle cx="575" cy="462" r="10" fill="#ffd742"/>
+  <!-- anonymous half-pint interacts with table rhythm -->
+  <path d="M658 328h104l-13 177h-77Z" fill="#f2d57b" fill-opacity=".24" stroke="#e4dfca" stroke-width="9"/>
+  <path d="M673 379h76l-8 114h-59Z" fill="url(#b125-amber)"/>
+  <ellipse cx="710" cy="329" rx="52" ry="17" fill="none" stroke="#e7e2cf" stroke-width="8"/>
+  <path d="M676 387c23 8 47 8 72 0" stroke="#ffe99a" stroke-width="7"/>
+  <path d="M29 519c109-18 214-15 315-2m137 3c98-8 194-4 293 8" fill="none" stroke="#8c4e2f" stroke-width="6"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#120e10" stroke-width="12"/>
+</svg>

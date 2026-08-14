@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="blk013-title blk013-desc">
+  <title id="blk013-title">BLK-013 Soap Bar non-final comic-vector mock-up</title>
+  <desc id="blk013-desc">Two huge suspicious hands thrust an ancient little wrapped block toward the lens under a hard car-park lamp; only the owner's narrowed eyes remain above it while a torn carrier, folded ticket, bollards and watching shadows make the exchange feel dubious. Non-final placeholder art.</desc>
+  <defs><linearGradient id="blk013-night" x2="1" y2="1"><stop stop-color="#1c3c37"/><stop offset="1" stop-color="#101719"/></linearGradient><radialGradient id="blk013-lamp"><stop stop-color="#ffd37a" stop-opacity=".9"/><stop offset="1" stop-color="#d7782b" stop-opacity="0"/></radialGradient><pattern id="blk013-asphalt" width="43" height="29" patternUnits="userSpaceOnUse"><path d="M3 7l8 3M28 5l9 7M14 23l11-4M36 24l5-2" stroke="#899077" stroke-width="3" opacity=".2"/></pattern></defs>
+  <path fill="url(#blk013-night)" d="M0 0h800v560H0z"/><path fill="#273630" d="M0 293q393-57 800 0v267H0z"/><path fill="url(#blk013-asphalt)" d="M0 282h800v278H0z"/><ellipse cx="398" cy="243" rx="340" ry="310" fill="url(#blk013-lamp)"/>
+  <g stroke="#211a1e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#4e5650" d="M77 34h27l18 276H82z"/><path fill="#c89042" d="M33 23h117l20 90H18z"/><path fill="#ffe4a0" d="M55 37h74l12 54H39z"/>
+    <path fill="#25272a" d="M589 559q4-184 54-266l105-23 52 289z"/><path fill="#182123" d="M19 559q-6-175 36-256l104-28 73 284z"/><path fill="#171d1f" d="M653 294q19-87 78-82 61 15 60 110-49-40-138-28zM53 309q9-88 70-92 63 7 73 99-54-33-143-7z"/>
+    <path fill="#343a34" d="M212 556q-8-210 43-337l260-17q83 130 87 354z"/><path fill="#465246" d="M239 558q-2-195 37-307 91 33 221-21 69 131 78 328z"/>
+    <path fill="#a96a51" d="M280 220q-20-53 4-126 26-77 106-86 85 2 120 80 27 69-17 124-39 51-111 53-68 1-102-45z"/>
+    <path fill="#2f2520" d="M283 111q30-87 108-110 83 4 118 71-62-31-112-10-61 5-114 49z"/><path fill="#23292a" d="M309 56q49-53 105-53 58 11 84 52-102-25-189 1z"/>
+    <path fill="#a96a51" d="M287 128q-44-17-49 23 1 44 47 54M509 112q44-21 54 18 7 42-56 56"/>
+    <path fill="#efe0ad" d="M309 110q42-29 82 2-10 40-43 39-31-2-39-41zM438 103q41-24 76 7-10 40-42 38-29-1-34-45z"/><circle cx="355" cy="119" r="8" fill="#211b1f"/><circle cx="478" cy="115" r="8" fill="#211b1f"/>
+    <path fill="#bd7e5a" d="M415 111q-7 58-36 89 37 20 74-5"/><path fill="none" d="M308 79q43-31 86 1M438 74q42-23 79 3M310 169l22 14M487 170l24-17"/>
+    <path fill="#2b2020" d="M350 220q61 12 110-20-5 45-50 51-36 4-60-31z"/>
+    <path fill="#465246" d="M275 244q-72 25-119 96l-57 101 75 43 108-113M504 233q73 19 116 80l69 98-71 54-113-101"/>
+    <path fill="#a96a51" d="M257 309q-96 29-148 91-38 46-27 87 10 35 42 34 32-2 44-47 13 39 45 27 29-12 17-52 19 29 45 10 24-18 0-50 28 15 44-13 15-25-62-77z"/>
+    <path fill="#a96a51" d="M536 294q93 21 150 80 43 44 36 85-6 36-37 39-33 2-49-41-9 40-42 32-31-9-24-50-16 32-44 17-26-15-7-50-26 19-46-7-17-23 63-105z"/>
+    <path fill="#806d52" d="M274 345q127-78 263-8l13 141q-134 78-282 8z"/><path fill="#b09b73" d="M304 360q102-55 205-5l10 98q-108 55-219 6z"/><path fill="#5e5040" d="M324 377q84-38 164-3l8 61q-84 39-171 7z"/><path fill="none" stroke="#d4bd82" stroke-width="5" d="M330 386q78-30 151-1M329 412q80-29 157-2"/>
+    <path fill="#6e755f" d="M37 397q57-51 118-12l-19 159H21z"/><path fill="none" stroke="#b8b98a" stroke-width="6" d="M52 414q46 31 85-3M49 448q40 27 83-2"/><path fill="#d7c68f" d="M625 418l128-29 22 113-143 31z"/><path fill="#8f7a54" d="M648 428l83-19 12 62-90 20z"/><path fill="none" stroke="#d8c795" stroke-width="4" d="M662 440l55-13M666 459l57-14"/>
+    <path fill="#c49c5f" d="M227 519l33-33 39 45-27 28h-46z"/><path fill="#25302e" d="M547 504l55-30 61 73-27 12h-74z"/>
+    <path fill="none" stroke="#f1d699" stroke-width="5" d="M95 113l-13 95M119 116l-2 74M619 87q51-33 102-7M632 118q44-28 91-4"/>
+    <!-- Hands-first correction: the parcel and wary grip eclipse the body; only unequal eyes survive above. -->
+    <path fill="#26332d" d="M206 89q90-102 203-91 116 15 181 114l-34 188H239z"/>
+    <path fill="#a96a51" d="M276 80q49-68 129-65 86 9 125 82l-10 96q-23 65-112 67-91-6-126-69z"/>
+    <path fill="#2e2520" d="M280 98q39-88 126-93 86 14 120 70-102-36-246 23z"/>
+    <path fill="#eee0ad" d="M306 103q42-30 84 2-11 42-45 40-31-2-39-42zM437 94q42-24 78 8-11 40-43 38-30-2-35-46z"/><circle cx="353" cy="113" r="8" fill="#211b1f"/><circle cx="479" cy="107" r="8" fill="#211b1f"/><path fill="none" stroke="#2c211f" stroke-width="15" d="M304 87q44-32 89 2M435 78q44-25 82 5"/>
+    <path fill="#a96a51" d="M53 308q112-72 224 1l77 74-98 156H60q-44-46-7-231z"/><path fill="#a96a51" d="M745 296q-108-69-216 7l-76 80 105 156h181q45-48 6-243z"/>
+    <path fill="none" d="M91 365q86-49 161 2M78 418q85-48 171 2M709 355q-78-42-154 9M724 408q-86-45-165 6M125 458q54-30 108 2M675 451q-55-29-106 3"/>
+    <path fill="#806d52" d="M235 281q162-86 331-3l25 180q-168 96-365 8z"/><path fill="#b09b73" d="M270 303q133-59 260-5l19 133q-139 67-282 6z"/><path fill="#5e5040" d="M303 325q105-38 198-3l13 88q-105 44-210 4z"/>
+    <path fill="none" stroke="#d4bd82" stroke-width="6" d="M310 339q94-30 183-2M307 369q99-30 192-1M307 399q102-29 197-1"/>
+    <path fill="#c3aa79" d="M271 302l77 39-44 73-38-8zM530 298l-72 42 56 69 38-15z"/><path fill="#756246" d="M349 307l108-13 15 133-128 6z"/><path fill="#b69b6c" d="M371 304l39 125 34-4-37-126z"/>
+    <path fill="none" stroke="#e2ce98" stroke-width="5" d="M282 316l48 24M514 315l-43 24M359 330l98-12M355 402l106-11"/><path fill="#d8c18b" d="M258 286l33-20 16 43-31 19zM541 286l37-17 9 44-37 16z"/>
+    <path fill="none" stroke="#4d3029" stroke-width="6" d="M126 334l30 18M158 317l29 22M196 308l25 24M669 328l-30 20M633 313l-27 23M597 304l-26 25"/>
+  </g>
+</svg>

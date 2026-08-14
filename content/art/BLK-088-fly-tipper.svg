@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b088-title b088-desc">
+  <title id="b088-title">BLK-088 Fly Tipper non-final comic mock-up</title>
+  <desc id="b088-desc">In a wide night lay-by, a crooked back-three-quarter figure personally wrestles an impossible armchair from open white van doors, glancing behind as one lonely cone catches the headlamps. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b088-night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#171526"/><stop offset=".55" stop-color="#4a2f52"/><stop offset="1" stop-color="#11121d"/></linearGradient>
+    <radialGradient id="b088-headlamp" cx="82%" cy="61%" r="55%"><stop stop-color="#fff7d1" stop-opacity=".92"/><stop offset=".38" stop-color="#d7dbe6" stop-opacity=".25"/><stop offset="1" stop-color="#d7dbe6" stop-opacity="0"/></radialGradient>
+    <pattern id="b088-road" width="89" height="47" patternUnits="userSpaceOnUse"><rect width="89" height="47" fill="#29292f"/><path d="M7 13c21-6 42-5 62 2M18 36c18-4 35-3 52 2" fill="none" stroke="#4a4850" stroke-width="4" opacity=".5"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b088-night)"/>
+  <circle cx="676" cy="347" r="322" fill="url(#b088-headlamp)"/>
+  <path d="M0 340c215-38 526-34 800 6v214H0Z" fill="url(#b088-road)" stroke="#101116" stroke-width="11"/>
+  <path d="M0 412c165-26 332-27 500-5m95 18c65 6 133 15 205 27" fill="none" stroke="#605d64" stroke-width="7"/>
+  <path d="M0 279c114-39 235-50 363-33 84 11 157 8 219-8" fill="none" stroke="#241f2e" stroke-width="29"/>
+  <!-- open unmarked white van doors frame the offence -->
+  <path d="M430 67h349v326H412Z" fill="#d8d9d2" stroke="#17191c" stroke-width="13"/>
+  <path d="M447 84h143l-17 272H430Z" fill="#f0eee0" stroke="#25272a" stroke-width="9"/>
+  <path d="M605 84h156l22 273-184 1Z" fill="#ebeadd" stroke="#25272a" stroke-width="9"/>
+  <path d="M463 112h100v201H448Zm161 0h113l16 202-136 0Z" fill="#26303a" stroke="#171c20" stroke-width="7"/>
+  <path d="M480 133h67m95 1h78M473 281h74m104 0h87" stroke="#4f5a62" stroke-width="6"/>
+  <circle cx="558" cy="221" r="8" fill="#7b7b72"/><circle cx="630" cy="222" r="8" fill="#7b7b72"/>
+  <!-- crooked back-three-quarter body wrestling object -->
+  <path d="M244 186c38-34 95-33 132 4 32 31 32 78 12 114-24 43-78 55-118 27-45-32-55-101-26-145Z" fill="#ad6951" stroke="#201619" stroke-width="11"/>
+  <!-- bare crown, greasy rat-tail -->
+  <path d="M248 190c32-31 79-38 116-16" fill="none" stroke="#d18d6c" stroke-width="6"/>
+  <path d="M263 172c18-22 45-31 72-23" fill="none" stroke="#30282a" stroke-width="10" stroke-dasharray="3 13" stroke-linecap="round"/>
+  <path d="M287 142c17-4 35-2 51 5m-66 18c22-6 44-4 64 4" fill="none" stroke="#755f5c" stroke-width="4" stroke-dasharray="2 10"/>
+  <path d="M251 181c-20 29-25 62-13 100l-25 79 38 16 31-104Z" fill="#30282a" stroke="#181518" stroke-width="8"/>
+  <path d="M228 258c-23-8-40 11-34 35 6 23 28 33 48 18m137-51c24-8 41 11 34 36-7 23-29 33-49 17" fill="#9e5e4b" stroke="#24181a" stroke-width="8"/>
+  <!-- one backward eye, long flattened nose, guilty underbite -->
+  <path d="M315 264c16-10 35-8 49 5" fill="none" stroke="#3e2428" stroke-width="9"/>
+  <path d="M322 278c12-5 25-2 34 7-10 11-24 7-34-7Z" fill="#ead8b8" stroke="#28191c" stroke-width="5"/>
+  <path d="M343 283h7" stroke="#131519" stroke-width="6"/>
+  <path d="M361 267c-8 19-17 32-30 44-10 9-5 25 9 30 14 4 26-6 38-4 16 1 25-16 15-28-10-12-17-23-32-42Z" fill="#994f43" stroke="#512a2b" stroke-width="7"/>
+  <path d="M319 351c23-4 47 2 64 17-13 19-43 20-64 4" fill="#4c2529" stroke="#25181b" stroke-width="7"/>
+  <path d="m349 356 16 5-8 13-17-5Z" fill="#dec9a6"/>
+  <path d="M196 346c49-31 121-36 174-7 59 31 87 98 83 183H137c0-80 14-140 59-176Z" fill="#48505a" stroke="#15171b" stroke-width="12"/>
+  <path d="M206 371c61 27 128 28 198 3m-221 54c87 31 171 29 251-5" fill="none" stroke="#707883" stroke-width="8" opacity=".46"/>
+  <!-- impossible chair blocks torso and physically drives gag -->
+  <path d="M48 316c113-74 238-90 374-47 85 27 148 80 190 158l-55 111H84L20 430Z" fill="#76526e" stroke="#1b141b" stroke-width="13"/>
+  <path d="M74 337c101-54 207-65 318-34 70 20 125 58 166 115" fill="none" stroke="#a67596" stroke-width="9"/>
+  <path d="M82 404c118-42 264-42 436 0" fill="none" stroke="#4d3449" stroke-width="12"/>
+  <path d="M84 430 42 552m494-117 51 117" stroke="#211822" stroke-width="17"/>
+  <path d="M49 371c-38-22-66-18-84 11l35 82 91-39Z" fill="#76526e" stroke="#1b141b" stroke-width="11"/>
+  <path d="M564 380c44-28 82-25 115 9l-22 96-108-46Z" fill="#76526e" stroke="#1b141b" stroke-width="11"/>
+  <!-- separately drawn gripping hands around chair edges -->
+  <path d="M195 363c-50 19-89 48-118 88-15 21-10 41 7 50 17 9 34-6 49-26l91-82Z" fill="#a96851" stroke="#201619" stroke-width="10"/>
+  <path d="M81 441c-27 9-40 27-34 44 6 18 26 15 45 6l30-16-18 23c-11 14-5 28 9 31 14 3 24-12 34-27l25-42c11-19 2-39-17-47-18-8-39 0-74 28Z" fill="#b57457" stroke="#201619" stroke-width="9"/>
+  <path d="M385 357c49 19 90 48 121 86 16 20 12 41-5 51-17 10-35-5-51-24l-94-81Z" fill="#a96851" stroke="#201619" stroke-width="10"/>
+  <path d="M502 433c27 8 41 25 36 43-5 18-25 16-45 8l-31-14 19 22c12 14 6 28-8 31-14 3-25-11-35-26l-27-41c-12-19-4-39 15-48 18-8 39-1 76 25Z" fill="#b57457" stroke="#201619" stroke-width="9"/>
+  <path d="M64 462c20 2 38 10 54 22m-65-5c19 3 36 10 51 23m416-48c-20 3-38 11-53 24m64-7c-19 4-36 11-50 23" fill="none" stroke="#704038" stroke-width="5"/>
+  <!-- splayed legs/boots prove full-body responsibility -->
+  <path d="M182 497c-22 19-41 38-57 58m228-59c23 18 47 37 72 57" stroke="#343940" stroke-width="38"/>
+  <path d="M94 535c28-8 56-4 79 13-2 11-19 15-43 11l-44-7c-6-8-3-13 8-17Zm298 2c28-10 56-7 79 10 0 12-17 16-41 13l-45-6c-7-7-4-12 7-17Z" fill="#3f3029" stroke="#171519" stroke-width="8"/>
+  <!-- lone cone and roadside debris -->
+  <path d="M675 341h52l30 151H638Z" fill="#e36f2f" stroke="#24191c" stroke-width="9"/>
+  <path d="M662 389h78l11 43h-99Z" fill="#eadbb0" stroke="#5c4a36" stroke-width="6"/>
+  <path d="M620 493h164l7 48H608Z" fill="#39373a" stroke="#17161a" stroke-width="8"/>
+  <path d="M15 490l56 12m-31-39 45 18m638-216 45-27" stroke="#9f849d" stroke-width="6" opacity=".5"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#0d0e15" stroke-width="12"/>
+</svg>

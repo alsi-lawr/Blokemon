@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="kit008-title kit008-desc">
+  <title id="kit008-title">KIT-008 The Optimist non-final comic gutter rescue mock-up</title>
+  <desc id="kit008-desc">At rain-gutter level, a soaked, lanky hopeful lies almost horizontal beneath a bench, flipping a coin while stretching articulated fingers toward a discarded glowing energy token. His open buck-toothed plea, buckled clothes, wet pavement clutter and distant waiting bench make the recovery mechanic a physical joke. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="k8-sky" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#182c3c"/><stop offset=".56" stop-color="#365260"/><stop offset="1" stop-color="#12212c"/></linearGradient>
+    <linearGradient id="k8-road" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#45535a"/><stop offset="1" stop-color="#151d24"/></linearGradient>
+    <linearGradient id="k8-coat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d39437"/><stop offset=".48" stop-color="#89542e"/><stop offset="1" stop-color="#3d2c2d"/></linearGradient>
+    <linearGradient id="k8-skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e0a57c"/><stop offset=".6" stop-color="#a65b4e"/><stop offset="1" stop-color="#593238"/></linearGradient>
+    <radialGradient id="k8-token"><stop stop-color="#fff1a0"/><stop offset=".25" stop-color="#e6bd38"/><stop offset=".66" stop-color="#a86d20"/><stop offset="1" stop-color="#4c321f"/></radialGradient>
+    <pattern id="k8-rain" width="44" height="49" patternUnits="userSpaceOnUse" patternTransform="rotate(13)"><path d="M7 0v29M27 15v28M40 3v15" stroke="#b4d4d8" stroke-width="3" opacity=".3"/></pattern>
+    <filter id="k8-grit"><feTurbulence baseFrequency=".58" numOctaves="3" seed="18" result="n"/><feColorMatrix in="n" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .09 0"/><feBlend in="SourceGraphic" mode="multiply"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#k8-sky)"/>
+  <!-- high background: terraces and the waiting bench -->
+  <path d="M0 43 99 31l8 197H0Zm112-9 130 13-10 180-124 1Zm547 6 141-12v207H650Z" fill="#18262c" stroke="#0d171d" stroke-width="8"/>
+  <g fill="#b99c5d" opacity=".34"><path d="M21 78h34v45H21zM66 73h25v32H66zM140 83h35v41h-35zM187 87h28v54h-28zM690 69h34v50h-34zM738 62h38v58h-38z"/></g>
+  <path d="M574 121h187l-9 31-169 4Z" fill="#584b3f" stroke="#201d1d" stroke-width="8"/>
+  <path d="M604 153 588 324m135-171 20 167M579 238h180" stroke="#292622" stroke-width="14" fill="none"/>
+  <path d="M584 248c37-7 74-6 111 3m-109 16c39-7 80-5 121 4" stroke="#977959" stroke-width="5" opacity=".55"/>
+  <path d="M679 160c24-24 63-10 67 26 4 34-8 82-16 126h-74c-5-49-8-121 23-152Z" fill="#526269" stroke="#172027" stroke-width="8" opacity=".72"/>
+  <ellipse cx="705" cy="140" rx="25" ry="31" fill="#755b51" opacity=".72"/>
+  <!-- pavement and enormous gutter foreground -->
+  <path d="M0 207c193-17 365-3 520 32 112 25 204 27 280 16v305H0Z" fill="url(#k8-road)" stroke="#10171c" stroke-width="11"/>
+  <path d="M0 376c136-21 255-17 357 14 150 45 284 59 443 24v146H0Z" fill="#17242a" stroke="#0d1519" stroke-width="12"/>
+  <path d="M0 401c145-18 259-9 353 24 145 51 294 55 447 19" stroke="#70848a" stroke-width="7" fill="none"/>
+  <path d="M0 454c105-29 210-25 315 13 149 54 301 57 485 15" stroke="#0b1115" stroke-width="24" fill="none" opacity=".75"/>
+  <g fill="#746852" stroke="#252423" stroke-width="4"><path d="m43 326 31-10 11 17-28 15Z"/><path d="m112 375 24-15 18 15-17 20Z"/><path d="m694 351 39-6 7 17-34 9Z"/><path d="m637 454 25-14 18 11-11 20Z"/></g>
+  <path d="M22 279c20-17 46-17 64 1-22 4-42 4-64-1Zm722 34c15-10 31-8 45 6-16 4-30 2-45-6Z" fill="#8aa1a1" opacity=".55"/>
+  <!-- near-horizontal body, built as one skewed, buckled silhouette -->
+  <path d="M655 304c-62-11-127-5-193 11-87 21-165 27-238 8l-52 96c104 41 230 36 362 4 66-16 119-19 171-10l19-62Z" fill="url(#k8-coat)" stroke="#20191a" stroke-width="12"/>
+  <path d="M366 324c-22 28-29 61-21 99m57-109c-18 32-21 66-10 101m96-103c-7 28-5 58 7 89" stroke="#efbc62" stroke-width="6" fill="none" opacity=".42"/>
+  <path d="m610 414 83-4 75 72-46 50-109-58Z" fill="#354a5a" stroke="#171c23" stroke-width="11"/>
+  <path d="M681 467c19 6 38 17 57 34m-87-68c11 19 13 38 7 57" stroke="#708aa0" stroke-width="6" fill="none"/>
+  <path d="m719 516 61-8 20 27-4 25h-98Z" fill="#272222" stroke="#111417" stroke-width="9"/>
+  <path d="M713 533c23 8 47 9 71 2" stroke="#918477" stroke-width="5"/>
+  <!-- a narrow side-on skull close to the gutter, with ropey wet hair -->
+  <path d="M195 304c-24-42-66-64-106-47-31 13-50 49-43 87 6 37 36 65 77 65 33 0 63-22 86-60 12-19 3-34-14-45Z" fill="url(#k8-skin)" stroke="#21181c" stroke-width="11"/>
+  <path d="M53 304c-4-34 14-60 46-72 29-11 63 1 84 28-25-6-39 4-45 21-13-15-30-17-51-7-8 19-19 29-34 30Z" fill="#42413a" stroke="#17191a" stroke-width="8"/>
+  <path d="M74 249c-8-25 2-43 15-57m13 50c-1-28 14-47 31-61m11 73c14-24 16-44 5-61" stroke="#252725" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M67 327c8-16 22-24 40-21 15 3 24 13 26 29-17-11-38-13-66-8Z" fill="#f1dfbf" stroke="#2b2020" stroke-width="7"/>
+  <ellipse cx="103" cy="325" rx="7" ry="10" fill="#1c1b1c"/>
+  <path d="M129 320c23-13 49-9 67 8-17 3-28 10-34 20-13-8-24-17-33-28Z" fill="#bd7058" stroke="#472a30" stroke-width="8"/>
+  <path d="M151 329c11 8 18 16 21 25" stroke="#5b3035" stroke-width="5"/>
+  <path d="M91 367c13-17 31-20 52-8 15 9 22 24 17 42-16-9-30-9-43 0-22-1-32-13-26-34Z" fill="#512c34" stroke="#251a1f" stroke-width="8"/>
+  <path d="M111 359v22h18l5-24" fill="#eadbb7" stroke="#372426" stroke-width="5"/>
+  <path d="M108 390c16-7 30-5 43 6" stroke="#d36e73" stroke-width="5"/>
+  <path d="M52 348c-16-8-25-1-23 15 2 15 14 25 27 19" fill="#a85f51" stroke="#2a1c20" stroke-width="7"/>
+  <path d="M38 356c8 0 13 5 14 14" stroke="#63343b" stroke-width="4"/>
+  <!-- reaching arm and five separated fingers skimming the water -->
+  <path d="M252 346c-45 18-79 46-103 82l-47 65 47 29 62-53c34-29 66-44 102-48" fill="#9e5a37" stroke="#21181a" stroke-width="11"/>
+  <path d="M122 478c-29-9-60-2-86 20-12 10-11 22-1 27 10 5 19-2 29-10-6 10-3 20 7 23 10 4 18-5 26-14-4 11 2 20 12 21 10 1 16-9 22-20 1 12 9 18 19 16 11-3 13-15 14-28l-18-30Z" fill="url(#k8-skin)" stroke="#21181b" stroke-width="8"/>
+  <path d="M37 506c13-6 25-5 34 2m5 17c9-8 18-10 28-5m9 12c6-8 13-11 22-9m8 7c2-8 7-13 15-15" stroke="#713b3f" stroke-width="4" fill="none"/>
+  <!-- discarded energy token in gutter and coin in flight -->
+  <ellipse cx="38" cy="526" rx="76" ry="19" fill="#91c4c5" opacity=".25"/>
+  <circle cx="48" cy="503" r="38" fill="url(#k8-token)" stroke="#37271d" stroke-width="8"/>
+  <path d="m33 504 13-17 16 6 2 21-20 8Z" fill="none" stroke="#fff1a0" stroke-width="5"/>
+  <path d="M51 467c-9-10-17-17-24-22m45 28c3-13 9-23 18-31" stroke="#f3d86a" stroke-width="5"/>
+  <ellipse cx="327" cy="172" rx="17" ry="45" transform="rotate(-23 327 172)" fill="#deb64a" stroke="#3b2d21" stroke-width="7"/>
+  <path d="M316 137c14 14 24 31 30 52" stroke="#fff0a0" stroke-width="4"/>
+  <path d="M292 205c-11-19-11-37-2-56m80 49c12-18 15-36 10-55" stroke="#d6c975" stroke-width="5" fill="none" opacity=".8"/>
+  <!-- rain, gutter flow, scuffs and close crop -->
+  <rect width="800" height="560" fill="url(#k8-rain)"/>
+  <path d="M181 440c62 22 125 29 190 20m23 28c71 17 141 19 210 4M9 431c34-8 61-7 81 2" stroke="#9ab3b5" stroke-width="5" fill="none" opacity=".5"/>
+  <g stroke="#24292a" stroke-width="4" opacity=".65"><path d="m269 366 34 11m137-42 37 9m77 50 39 4m-401 67 24 11m-66-145 21-8"/></g>
+  <rect x="6" y="6" width="788" height="548" rx="15" fill="none" stroke="#0c1419" stroke-width="12"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#k8-grit)"/>
+</svg>

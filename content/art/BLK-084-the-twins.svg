@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b084-title b084-desc">
+  <title id="b084-title">BLK-084 The Twins non-final comic mock-up</title>
+  <desc id="b084-desc">Two closely matched but visibly different locals lean into opposite sides of a narrow cream-split booth, one pursing and one crunching as their unequal hands converge on one shared crisp bowl. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b084-booth" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#431c2d"/><stop offset=".5" stop-color="#7b2e45"/><stop offset="1" stop-color="#2a1724"/></linearGradient>
+    <linearGradient id="b084-coat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#565f68"/><stop offset=".55" stop-color="#343c45"/><stop offset="1" stop-color="#1c2329"/></linearGradient>
+    <pattern id="b084-seat" width="61" height="43" patternUnits="userSpaceOnUse"><rect width="61" height="43" fill="#672840"/><path d="M0 21h61M30 0v43" stroke="#9a4860" stroke-width="4"/><circle cx="30" cy="21" r="3" fill="#bd6d7c"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b084-booth)"/>
+  <path d="M0 0h800v560H0Z" fill="#1b151d"/>
+  <path d="M0 0h371v560H0Zm429 0h371v560H429Z" fill="url(#b084-booth)"/>
+  <path d="M371 0h58v560h-58Z" fill="#e7ddbd" stroke="#27201f" stroke-width="9"/>
+  <path d="M0 304h800v256H0Z" fill="url(#b084-seat)" stroke="#1a1218" stroke-width="11"/>
+  <path d="M0 384c131-26 254-23 371 6m58 0c119-29 243-31 371-5" fill="none" stroke="#311820" stroke-width="11"/>
+  <!-- left twin: round skull, centre-part curtains -->
+  <path d="M94 97c41-40 104-40 145 0 35 34 36 86 12 125-27 44-84 56-126 27-47-33-58-108-31-152Z" fill="#b87157" stroke="#201619" stroke-width="11"/>
+  <path d="M94 102c25-45 87-62 133-26 18 14 30 33 33 54-33-20-62-20-88-8-30 14-56 11-82-2Z" fill="#c09a61" stroke="#171418" stroke-width="9"/>
+  <path d="M169 76c-6 30-5 58 4 84" stroke="#6f513a" stroke-width="7"/>
+  <path d="M103 97c24-13 46-17 66-12m10 0c22 3 42 11 59 25" fill="none" stroke="#ead18c" stroke-width="5"/>
+  <path d="M103 141c-25-8-42 12-35 37 7 24 30 34 50 18m126-53c24-9 42 11 35 36-7 23-30 34-50 19" fill="#a76751" stroke="#24181a" stroke-width="8"/>
+  <path d="M120 158c15-9 32-8 46 3m29 2c13-8 27-5 37 5" fill="none" stroke="#402529" stroke-width="8"/>
+  <path d="M128 172c11-5 23-2 31 7-10 9-23 6-31-7Zm74 3c10-5 21-2 28 6-9 9-20 6-28-6Z" fill="#ead8b7" stroke="#281a1c" stroke-width="4"/>
+  <path d="M147 177h6m68 6h5" stroke="#131519" stroke-width="5"/>
+  <path d="M174 165c-6 14-10 25-11 36-1 12 10 20 22 18 13-2 19-15 12-25-7-10-10-19-23-29Z" fill="#a35a48" stroke="#522c2c" stroke-width="6"/>
+  <path d="M132 229c22-4 46 1 63 14-13 16-42 17-63 2" fill="#51272c" stroke="#27191c" stroke-width="6"/>
+  <!-- right twin: narrow skull, widow's peak, lidded eye -->
+  <path d="M563 91c37-42 95-47 136-12 36 31 42 83 23 124-23 49-79 68-124 43-50-28-66-108-35-155Z" fill="#ba7256" stroke="#201619" stroke-width="11"/>
+  <path d="M563 96c19-46 72-67 115-42l22-21 7 37c19 14 31 33 33 56-31-20-59-21-85-11-33 13-64 8-92-19Z" fill="#211c25" stroke="#171418" stroke-width="9"/>
+  <path d="M581 82c29-11 57-10 84 4m-91 19c33-10 65-8 95 7" fill="none" stroke="#6f535b" stroke-width="5"/>
+  <path d="M564 140c-24-8-41 12-34 37 7 23 30 33 49 17m131-51c24-8 41 12 34 36-7 23-29 33-49 18" fill="#a66550" stroke="#24181a" stroke-width="8"/>
+  <path d="M588 158c14-9 31-8 44 3m31 2c13-8 27-5 37 5" fill="none" stroke="#402529" stroke-width="8"/>
+  <path d="M595 173c11-5 23-2 31 7-10 9-22 6-31-7Zm75 2c10-5 21-2 28 6-9 9-20 6-28-6Z" fill="#ead8b7" stroke="#281a1c" stroke-width="4"/>
+  <path d="M615 178h6m68 5h5" stroke="#131519" stroke-width="5"/>
+  <path d="M648 162c-8 18-18 31-31 43-10 9-6 24 7 29 14 5 25-4 37-3 15 1 24-15 15-27-9-13-16-24-28-42Z" fill="#a35a48" stroke="#522c2c" stroke-width="7"/>
+  <!-- right mouth open chewing, no repeated smile -->
+  <path d="M604 236c24-8 53-5 75 11-8 27-47 35-75 12Z" fill="#4a2228" stroke="#27191c" stroke-width="7"/>
+  <path d="m641 241 15 5-8 13-16-5Z" fill="#e2cda7"/>
+  <!-- matching coats, different body/gesture -->
+  <path d="M77 270c47-28 115-31 166-3 54 29 79 91 74 169H29c2-76 11-130 48-166Z" fill="url(#b084-coat)" stroke="#14171b" stroke-width="12"/>
+  <path d="M88 292c57 26 117 27 180 3m-201 50c78 28 153 26 224-4" fill="none" stroke="#6f7880" stroke-width="7" opacity=".5"/>
+  <path d="M556 267c47-27 113-29 161-1 51 30 72 91 67 168H492c1-77 18-132 64-167Z" fill="url(#b084-coat)" stroke="#14171b" stroke-width="12"/>
+  <path d="M565 290c56 26 115 27 177 3m-196 51c76 28 150 26 219-4" fill="none" stroke="#6f7880" stroke-width="7" opacity=".5"/>
+  <!-- asymmetric hands converge on shared bowl -->
+  <path d="M235 302c58 29 105 67 141 114 17 22 12 42-5 52-18 10-35-6-52-27l-108-106Z" fill="#b66f55" stroke="#201619" stroke-width="10"/>
+  <path d="M370 405c27 12 39 30 32 48-7 18-28 14-47 4l-31-17 18 25c10 15 4 29-11 31-15 2-24-13-34-29l-23-42c-11-20-1-40 19-47 19-7 41 1 77 27Z" fill="#c17a5c" stroke="#201619" stroke-width="9"/>
+  <path d="M559 302c-58 29-105 67-141 114-17 22-12 42 5 52 18 10 35-6 52-27l108-106Z" fill="#b66f55" stroke="#201619" stroke-width="10"/>
+  <path d="M424 405c-27 12-39 30-32 48 7 18 28 14 47 4l31-17-18 25c-10 15-4 29 11 31 15 2 24-13 34-29l23-42c11-20 1-40-19-47-19-7-41 1-77 27Z" fill="#c17a5c" stroke="#201619" stroke-width="9"/>
+  <path d="M381 427c-18 5-34 14-48 27m79-26c17 6 32 15 45 28" fill="none" stroke="#783f37" stroke-width="5"/>
+  <!-- shared bowl precisely on cream line -->
+  <ellipse cx="400" cy="477" rx="105" ry="45" fill="#e2c576" stroke="#25191b" stroke-width="9"/>
+  <path d="M308 475c25 57 151 61 184 0" fill="#b56e35" stroke="#25191b" stroke-width="8"/>
+  <path d="m334 451 28 14 15-26 24 24 19-29 18 31 30-18 10 31" fill="none" stroke="#f3cf68" stroke-width="13" stroke-linecap="round"/>
+  <!-- booth wear and individual off-hands -->
+  <path d="M69 427c46-12 82-4 108 23m554-22c-47-11-83-2-108 25" fill="none" stroke="#bd6b7d" stroke-width="7"/>
+  <path d="M48 507l54 12m-31-39 45 18m631 4-53 14m29-42-43 21" stroke="#a54b63" stroke-width="6" opacity=".55"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#100d12" stroke-width="12"/>
+</svg>

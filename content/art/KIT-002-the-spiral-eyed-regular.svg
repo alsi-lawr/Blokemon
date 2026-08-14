@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="kit002-title kit002-desc">
+  <title id="kit002-title">KIT-002 The Spiral-Eyed Regular non-final comic-vector mock-up</title>
+  <desc id="kit002-desc">An ancient pub regular sags sideways across a crushed corner chair, his enormous crossed leg, crooked table and walking stick barring the bright rival venue behind him. A lumpy liver-spotted half-profile carries one milky cataract and one thick spiral lens while a bony claw guards his drink. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="kit002-room" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#47685b"/><stop offset=".5" stop-color="#233e39"/><stop offset="1" stop-color="#111f23"/></linearGradient>
+    <linearGradient id="kit002-door" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f3d56c"/><stop offset=".38" stop-color="#b66d48"/><stop offset="1" stop-color="#34313c"/></linearGradient>
+    <radialGradient id="kit002-skin" cx="32%" cy="28%" r="84%"><stop stop-color="#d19a76"/><stop offset=".54" stop-color="#98594f"/><stop offset="1" stop-color="#512e38"/></radialGradient>
+    <linearGradient id="kit002-cardigan" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#827459"/><stop offset=".48" stop-color="#4c4c3f"/><stop offset="1" stop-color="#252d2b"/></linearGradient>
+    <linearGradient id="kit002-trouser" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4f5148"/><stop offset=".65" stop-color="#2c3432"/><stop offset="1" stop-color="#171d1e"/></linearGradient>
+    <linearGradient id="kit002-wood" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a36d43"/><stop offset="1" stop-color="#422b24"/></linearGradient>
+    <radialGradient id="kit002-drink" cx="40%" cy="18%" r="82%"><stop stop-color="#f4d272"/><stop offset=".54" stop-color="#a4612d"/><stop offset="1" stop-color="#4b2824"/></radialGradient>
+    <pattern id="kit002-wallpaper" width="76" height="68" patternUnits="userSpaceOnUse"><path d="M38 4c-11 17-11 34 0 52 11-18 11-35 0-52Zm0 18C20 14 8 20 4 37c17 3 28-2 34-15Zm0 0c18-8 30-2 34 15-17 3-28-2-34-15Z" fill="#879978" opacity=".17"/><path d="M0 66h76" stroke="#192d2c" stroke-width="4"/></pattern>
+    <pattern id="kit002-carpet" width="57" height="43" patternUnits="userSpaceOnUse"><path d="m0 21 28-18 29 18-29 19Z" fill="#754846" opacity=".3"/><path d="M0 21h57M28 3v37" stroke="#b0805b" stroke-width="3" opacity=".2"/></pattern>
+    <filter id="kit002-rough" x="-8%" y="-8%" width="116%" height="116%"><feTurbulence type="turbulence" baseFrequency=".018 .05" numOctaves="2" seed="202" result="w"/><feDisplacementMap in="SourceGraphic" in2="w" scale="2"/></filter>
+    <filter id="kit002-grain" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".7" numOctaves="2" seed="22" result="n"/><feColorMatrix in="n" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .08 0"/><feBlend in="SourceGraphic" mode="multiply"/></filter>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#kit002-room)"/>
+  <rect width="800" height="366" fill="url(#kit002-wallpaper)"/>
+  <path d="M0 356c226-20 493-13 800 19v185H0Z" fill="#382b30" stroke="#15161a" stroke-width="10"/>
+  <path d="M0 365h800v195H0Z" fill="url(#kit002-carpet)"/>
+
+  <!-- rival venue glows behind the blockade -->
+  <path d="M624 28h176v421H605Z" fill="url(#kit002-door)" stroke="#12181d" stroke-width="13"/>
+  <path d="M653 78c33-28 78-30 118-4l17 74H627Z" fill="#efdda0" stroke="#6a493d" stroke-width="8"/>
+  <path d="M644 146h133v207H644Z" fill="#54747a" stroke="#25282e" stroke-width="8"/>
+  <path d="M654 157h49v185h-49Zm62 0h50v185h-50Z" fill="#a3c4bc" opacity=".38"/>
+  <g fill="#30343a" stroke="#17191c" stroke-width="6"><path d="M649 347c4-45 21-70 49-73 31-3 51 24 58 70Z"/><path d="M606 366c2-35 16-55 39-57 23-2 39 17 44 53Z"/></g>
+  <path d="M608 28v425" stroke="#2a1d1d" stroke-width="25"/>
+  <path d="M622 364c46-13 105-9 178 12" stroke="#f0bb68" stroke-width="12" opacity=".35"/>
+
+  <!-- compressed corner history: frame, shelf, bottles and nicotine stains -->
+  <path d="M20 52h184v174H20Z" fill="#1c3432" stroke="#a28759" stroke-width="9"/>
+  <path d="M37 69h151v138H37Z" fill="#698478" opacity=".2" stroke="#151d1d" stroke-width="6"/>
+  <path d="M55 185c20-44 48-68 80-66 31 2 50 28 56 69" fill="#2e4641" stroke="#192321" stroke-width="8"/>
+  <path d="M78 138c19-22 43-25 65-10m-54 43c29-16 57-11 83 16" fill="none" stroke="#aea27d" stroke-width="5" opacity=".42"/>
+  <path d="M0 244h219l5 33H0Z" fill="url(#kit002-wood)" stroke="#211819" stroke-width="8"/>
+  <g fill="#65503a" stroke="#201b1b" stroke-width="5"><path d="M23 194h32l8 50H16Z"/><path d="M79 211h28l4 33H74Z"/><path d="M132 188h34l9 56h-50Z"/><path d="M182 207h26l5 37h-37Z"/></g>
+  <path d="M31 209h22m35 13h17m36-19h21m27 16h17" stroke="#ceb073" stroke-width="4" opacity=".48"/>
+  <path d="M9 286c48-11 97-6 145 16l-18 34c-47-16-91-20-132-9Z" fill="#683f34" stroke="#21191a" stroke-width="8"/>
+  <path d="M35 326c-7 56-7 111 1 165m88-151c0 42 8 84 23 126" fill="none" stroke="#342321" stroke-width="13"/>
+
+  <!-- old body is a sideways collapsed zigzag, not a centered capsule -->
+  <path d="M70 548c-16-69-5-137 31-204 27-50 63-82 109-94 49-12 99 4 139 44 42 43 63 101 55 174l-12 92H65Z" fill="url(#kit002-cardigan)" stroke="#171a19" stroke-width="12" filter="url(#kit002-rough)"/>
+  <path d="M109 326c45 15 92 18 143 9m-170 61c85 23 172 18 261-14M69 470c94 23 195 15 302-23" fill="none" stroke="#ae9b72" stroke-width="7" opacity=".34"/>
+  <path d="M185 251c14 39 31 73 51 104l54-86 30 24-65 91-38-5-69-93Z" fill="#65473a" stroke="#231d1d" stroke-width="8"/>
+  <path d="M242 355c5 68 9 136 10 204" fill="none" stroke="#272a25" stroke-width="8"/>
+  <g fill="#ae956b" stroke="#302b25" stroke-width="4"><circle cx="245" cy="389" r="7"/><circle cx="248" cy="430" r="7"/><circle cx="250" cy="473" r="7"/></g>
+
+  <!-- crushed chair behind sagging body -->
+  <path d="M36 314c70-17 128-7 175 31l-23 41c-49-27-99-33-150-18Z" fill="#6b4535" stroke="#21191a" stroke-width="9"/>
+  <path d="M67 366c-5 54-2 108 10 161m102-148c4 51 15 102 34 152" fill="none" stroke="#392622" stroke-width="14"/>
+  <path d="M91 425c30-14 62-14 97-1l-4 88-96 9Z" fill="#51352f" stroke="#21191a" stroke-width="8"/>
+
+  <!-- unmistakably lumpy bald half-profile, facing the door -->
+  <path d="M126 76c28-37 79-51 126-39 35 9 65 34 75 68l31 10-10 25c22 9 39 23 41 39 2 15-13 28-40 34-9 37-34 68-68 80-42 14-87-4-110-43l-34-13 13-26c-30-38-40-92-24-135Z" fill="url(#kit002-skin)" stroke="#21171b" stroke-width="11" filter="url(#kit002-rough)"/>
+  <!-- bald crown, a few sideburn wisps only -->
+  <path d="M128 78c28-39 81-56 129-41 28 9 51 27 66 50-43-19-84-17-121 4-22 13-44 14-67 4l-12 30Z" fill="#918778" stroke="#292724" stroke-width="7"/>
+  <path d="M151 67c29-18 61-25 96-20m-85 5c27-11 55-14 84-8" fill="none" stroke="#b8af9b" stroke-width="5" opacity=".55"/>
+  <path d="M138 114c-17 20-21 44-13 72m202-77c16 15 25 34 28 57" fill="none" stroke="#847969" stroke-width="6"/>
+  <path d="M134 132c-13 14-18 30-15 48m10-31c-8 13-10 27-6 42m209-57c12 13 18 27 17 43m-12-28c8 13 10 26 7 39" fill="none" stroke="#6f6555" stroke-width="4"/>
+  <g fill="#71423f" opacity=".85"><circle cx="180" cy="61" r="5"/><circle cx="211" cy="51" r="4"/><circle cx="240" cy="57" r="6"/><circle cx="271" cy="72" r="4"/><circle cx="153" cy="91" r="4"/></g>
+
+  <!-- large near spiral lens and smaller far cataract are unequal -->
+  <path d="M158 119c14-21 45-28 68-14 24 14 31 45 16 68-15 23-47 29-69 13-22-15-28-45-15-67Z" fill="#c7d3bc" fill-opacity=".28" stroke="#272429" stroke-width="9"/>
+  <path d="M196 143c13-17 34 0 25 17-9 18-38 13-42-8-5-27 27-45 52-29 27 17 23 59-5 74" fill="none" stroke="#eadcac" stroke-width="7"/>
+  <path d="M246 139c15-12 31-12 46 1" fill="none" stroke="#542d31" stroke-width="8"/>
+  <path d="M260 151c10-10 25-9 34 2-7 15-24 20-36 7Z" fill="#d9d9c6" stroke="#3d292d" stroke-width="6"/>
+  <circle cx="276" cy="155" r="6" fill="#a9b4a7"/>
+  <path d="M244 151h10" stroke="#28252a" stroke-width="7"/>
+  <!-- short battered nose, not a long stock triangle -->
+  <path d="M297 144c24 3 43 12 52 25 7 10-1 21-18 25-18 4-36-2-46-14l9-16Z" fill="#a75f51" stroke="#532f34" stroke-width="8"/>
+  <path d="M310 163c8 8 17 11 28 10" fill="none" stroke="#dfa27d" stroke-width="4"/>
+  <path d="M249 166c-9 21-8 38 4 49 11 10 28 8 40-4" fill="none" stroke="#6d393b" stroke-width="7"/>
+  <!-- pursed territorial mouth, explicitly no grin -->
+  <path d="M300 220c19-7 36-5 50 7-11 15-29 19-48 10" fill="#4a252c" stroke="#2b191d" stroke-width="7"/>
+  <path d="M305 228c13 3 25 2 36-3" fill="none" stroke="#bd7769" stroke-width="4"/>
+  <path d="M133 174c-19-3-31 12-25 30 6 17 25 24 39 12l-5-16 12-11" fill="#925149" stroke="#45272d" stroke-width="8"/>
+  <path d="M127 189c-8 2-11 9-8 17" fill="none" stroke="#60343a" stroke-width="4"/>
+  <path d="M166 220c6 18 7 35 2 50m18-47c5 18 5 35 0 51" fill="none" stroke="#72594b" stroke-width="5"/>
+
+  <!-- bony guarding arm and individually bent claw fingers -->
+  <path d="M333 324c61-31 113-44 159-38" fill="none" stroke="#47483d" stroke-width="48" stroke-linecap="round"/>
+  <path d="M477 265c15-13 34-18 51-14 16 4 21 17 13 29 16-6 30-1 34 12 5 14-8 27-25 31 13 4 18 15 13 27-7 15-25 16-42 6-15-8-27-20-37-34-5 15-14 25-27 28-16 3-26-11-21-26-15 6-28 0-33-14-5-16 12-30 30-35 5-10 12-17 20-20Z" fill="url(#kit002-skin)" stroke="#21171b" stroke-width="8"/>
+  <path d="M484 268c5 22 17 41 35 55m-1-66c5 27 20 49 43 65m-11-57c4 22 15 40 31 52m-102-18c-5 15-3 30 5 43" fill="none" stroke="#6d393b" stroke-width="5"/>
+  <path d="M490 253c-1 10 1 20 7 29m28-24c-2 10 1 20 7 29m24-16c-4 10-3 19 3 27" fill="none" stroke="#dda17b" stroke-width="4"/>
+  <!-- guarded drink dominates near hand -->
+  <path d="M494 292c26-12 53-12 81-1l-11 144h-78Z" fill="url(#kit002-drink)" stroke="#262121" stroke-width="9"/>
+  <path d="M500 305c21 9 44 9 69 0M491 400c23 8 47 8 70-1" fill="none" stroke="#f1d79a" stroke-width="6" opacity=".72"/>
+  <path d="M510 323c-9 31-10 64-3 99" stroke="#ffe4a2" stroke-width="5" opacity=".42"/>
+
+  <!-- enormous crossed leg makes the territorial stadium block physical -->
+  <path d="M326 402c84-21 173-16 258 13 74 26 141 33 216 22v123H371c-32-35-58-77-69-112-8-24 1-39 24-46Z" fill="url(#kit002-trouser)" stroke="#171b1b" stroke-width="12" filter="url(#kit002-rough)"/>
+  <path d="M369 421c72 21 143 29 214 24m-244 32c105 25 212 31 322 17m-287 39c113 14 220 12 322-5" fill="none" stroke="#808677" stroke-width="7" opacity=".4"/>
+  <path d="M669 422c49-5 93 4 131 26v112H656c-20-44-15-91 13-138Z" fill="#272727" stroke="#121416" stroke-width="10"/>
+  <path d="M696 442c31 8 59 23 83 47m-94-12c34 6 66 19 96 39m-103-3c35 3 69 14 101 33" fill="none" stroke="#59564e" stroke-width="6"/>
+  <path d="M300 439c-29 31-52 70-69 117H110c18-59 50-107 96-142Z" fill="#383d38" stroke="#171b1b" stroke-width="10"/>
+
+  <!-- table and stick wedge still more territory into the entrance -->
+  <path d="M424 366c59-11 117-8 174 9l-16 38c-56-12-111-12-165 2Z" fill="url(#kit002-wood)" stroke="#21191a" stroke-width="9"/>
+  <path d="M453 409c-5 43-4 86 4 130m101-123c0 38 7 76 22 113" fill="none" stroke="#382521" stroke-width="14"/>
+  <path d="M380 271c25-63 61-94 110-93 28 0 52 10 72 28" fill="none" stroke="#4c3528" stroke-width="15"/>
+  <path d="M378 272c22-20 47-22 73-5" fill="none" stroke="#b28f5e" stroke-width="10"/>
+  <path d="M582 396c54-16 108-16 164 2l-8 38c-50-12-100-10-150 5Z" fill="#704834" stroke="#21191a" stroke-width="8"/>
+  <path d="M615 431c-1 30 3 59 12 88m82-85c3 27 10 53 21 77" fill="none" stroke="#3a2622" stroke-width="12"/>
+
+  <!-- stare-shadow crowds the rival entrance without readable signage -->
+  <path d="M290 132c104-19 207 11 311 90l-12 86c-93-84-188-119-284-104Z" fill="#111c1c" opacity=".38"/>
+  <path d="M307 145c85 13 169 49 250 108m-245-82c79 17 154 50 224 101" fill="none" stroke="#d8ca87" stroke-width="5" opacity=".28"/>
+  <path d="M643 293c17-10 35-12 54-5m8-8c15-8 30-7 46 1" fill="none" stroke="#ead9a0" stroke-width="5" opacity=".48"/>
+  <path d="M9 12h782v536H9Z" fill="none" stroke="#101617" stroke-width="14"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#kit002-grain)"/>
+</svg>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b041-title b041-desc">
+  <title id="b041-title">BLK-041 Balaclava non-final comic mock-up</title>
+  <desc id="b041-desc">A small full-body figure freezes mid-step beneath a blank security camera, dark face covering and hunched coat failing to disguise bright battered trainers under a cold street light. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b041-night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071826"/><stop offset=".55" stop-color="#17374a"/><stop offset="1" stop-color="#080e17"/></linearGradient>
+    <radialGradient id="b041-lamp" cx="50%" cy="0" r="82%"><stop stop-color="#d9f2ff" stop-opacity=".95"/><stop offset=".4" stop-color="#7ab9d8" stop-opacity=".22"/><stop offset="1" stop-color="#7ab9d8" stop-opacity="0"/></radialGradient>
+    <pattern id="b041-shutter" width="800" height="28" patternUnits="userSpaceOnUse"><rect width="800" height="28" fill="#22303a"/><path d="M0 25h800" stroke="#0e171e" stroke-width="7"/><path d="M0 6h800" stroke="#526170" stroke-width="3" opacity=".38"/></pattern>
+    <pattern id="b041-coat" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(-18)"><path d="M0 2h14M0 9h14" stroke="#101821" stroke-width="2" opacity=".42"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b041-night)"/>
+  <path d="M0 61h800v379H0Z" fill="url(#b041-shutter)" stroke="#0b131a" stroke-width="10"/>
+  <ellipse cx="466" cy="112" rx="250" ry="365" fill="url(#b041-lamp)"/>
+  <!-- long-lens compressed pipes, bins and wet street -->
+  <path d="M41 31v380m78-391v393m560-382v378m76-395v398" stroke="#111922" stroke-width="18"/>
+  <path d="M49 102h62m573 24h64M49 269h64m571 21h65" stroke="#526b78" stroke-width="7"/>
+  <path d="M0 412c230-34 527-29 800 7v141H0Z" fill="#141b23" stroke="#091017" stroke-width="10"/>
+  <path d="M34 476c137-23 281-22 420-4m82 8c81-8 154-7 239 4" fill="none" stroke="#47616f" stroke-width="7" opacity=".55"/>
+  <path d="M78 348h122l20 124-164 0Z" fill="#1c262d" stroke="#0c1319" stroke-width="10"/>
+  <path d="M94 368h90m-82 30h88m-82 31h88" stroke="#40515a" stroke-width="6"/>
+  <path d="M643 355h119l23 118-156 1Z" fill="#25272c" stroke="#0c1319" stroke-width="10"/>
+  <path d="M660 375h86m-81 31h88m-81 30h88" stroke="#4e5057" stroke-width="6"/>
+  <!-- blank security camera physically looms above -->
+  <path d="M459 44c36-7 69 4 91 31l-24 55-116-17 9-55Z" fill="#a9b4b5" stroke="#10171e" stroke-width="10"/>
+  <path d="m429 70 93 14-9 24-88-13Z" fill="#596a70" stroke="#1a2429" stroke-width="6"/>
+  <circle cx="496" cy="91" r="13" fill="#152936" stroke="#0d151b" stroke-width="5"/>
+  <path d="m544 79 79-34 13 19-96 53" fill="#6b7779" stroke="#10171e" stroke-width="8"/>
+  <!-- small compact figure, not an upper-body portrait -->
+  <path d="M356 219c25-31 66-37 95-10 24 23 28 56 19 84-7 23 3 44-12 64-17 23-53 31-78 14-29-19-35-56-29-88 4-23-8-42 5-64Z" fill="#252935" stroke="#0f131a" stroke-width="10"/>
+  <!-- face completely covered; only rectangular human eyes -->
+  <path d="M366 226c26-25 65-26 90 2 18 20 21 50 14 73l-118-3c-3-25-4-51 14-72Z" fill="#252935" stroke="#0f131a" stroke-width="8"/>
+  <path d="M370 257c21-11 42-10 61 1l29-2-2 38-92 1Z" fill="#10151d" stroke="#080d13" stroke-width="6"/>
+  <path d="M378 269c12-7 26-6 37 2-9 10-24 9-37-2Zm50 2c9-6 19-5 27 1-7 9-17 8-27-1Z" fill="#c28a68" stroke="#0d1015" stroke-width="4"/>
+  <path d="M394 271h5m46 2h4" stroke="#12141a" stroke-width="5"/>
+  <path d="M375 241c14-8 29-9 43-4m17-2c10 1 19 5 26 12" fill="none" stroke="#515866" stroke-width="5"/>
+  <path d="M359 316c23-11 71-10 94 7 28 42 34 93 17 137l-135 0c-17-49-9-104 24-144Z" fill="#1e2b39" stroke="#0e141b" stroke-width="11"/>
+  <path d="M339 321h139v144H334Z" fill="url(#b041-coat)"/>
+  <path d="M353 342c33 15 73 16 107 3m-116 39c44 16 86 15 125-2" fill="none" stroke="#3d5363" stroke-width="6"/>
+  <!-- hunched elbows and mitten-like but individually shaped hands -->
+  <path d="M352 337c-37 15-59 41-68 80-5 21 5 37 21 40 17 3 27-13 32-33l36-75Zm104 3c34 18 56 47 63 85 4 21-7 36-23 38-17 2-26-15-30-35l-31-77Z" fill="#1e2b39" stroke="#0e141b" stroke-width="10"/>
+  <path d="M287 410c-16 8-23 22-17 35 6 13 21 10 34 2l20-14c14-9 16-23 7-32-10-10-25-4-44 9Zm224 8c15 9 21 23 14 36-7 12-21 8-34-1l-19-15c-13-10-14-24-4-33 10-9 25-2 43 13Z" fill="#9d6955" stroke="#10141a" stroke-width="8"/>
+  <!-- toes turned inward, bright recognisable trainers -->
+  <path d="M367 451c-12 25-18 54-18 89m82-88c10 28 14 56 12 88" fill="none" stroke="#171d29" stroke-width="31"/>
+  <path d="M316 518c24-8 48-4 68 11l-5 27-76-2c-8-13-3-27 13-36Zm99 10c24-15 49-14 70 0 8 12 4 25-10 30l-75-3c-3-11 3-20 15-27Z" fill="#e85a3b" stroke="#10131a" stroke-width="9"/>
+  <path d="m317 529 58 13m45-5 57 9" stroke="#f5e7c5" stroke-width="7"/>
+  <path d="m324 515 10-18m17 22 7-22m70 26 5-21m19 22 10-20" stroke="#e85a3b" stroke-width="7"/>
+  <!-- cold rain, surveillance scratches, reflections -->
+  <path d="M248 81l-15 49m51-77-12 38m339-16-15 48m49-78-12 42M296 179l-10 36m315-44-12 41" stroke="#a8d5e6" stroke-width="6" stroke-linecap="round" opacity=".65"/>
+  <path d="M349 541c24 6 48 6 72 0" fill="none" stroke="#e96245" stroke-width="9" opacity=".55"/>
+  <path d="M264 467l45 11m-28-32 35 17m203-5 47-12m-30 35 40-17" stroke="#5e7885" stroke-width="5" opacity=".52"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#080e15" stroke-width="12"/>
+</svg>

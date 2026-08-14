@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b126-title b126-desc">
+  <title id="b126-title">BLK-126 Mr Vesta non-final comic mock-up</title>
+  <desc id="b126-desc">A dignified bald older diner cups both steady hands around a glowing enamel curry warmer, white ear tufts and solemn moustache catching candle-brass reflections before the food does. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b126-room" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2c1214"/><stop offset=".55" stop-color="#6e281f"/><stop offset="1" stop-color="#160f12"/></linearGradient>
+    <radialGradient id="b126-glow" cx="50%" cy="50%" r="50%"><stop stop-color="#ffd874" stop-opacity=".95"/><stop offset=".4" stop-color="#e45b2c" stop-opacity=".4"/><stop offset="1" stop-color="#e45b2c" stop-opacity="0"/></radialGradient>
+    <linearGradient id="b126-brass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe28b"/><stop offset=".35" stop-color="#b87a31"/><stop offset=".7" stop-color="#e2b65a"/><stop offset="1" stop-color="#5d321f"/></linearGradient>
+    <pattern id="b126-wall" width="83" height="49" patternUnits="userSpaceOnUse"><rect width="83" height="49" fill="#4a1f20"/><path d="M0 2h83M0 47h83M41 2v21M0 25h83M18 25v22M70 25v22" stroke="#281519" stroke-width="4"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b126-room)"/>
+  <path d="M0 0h800v315H0Z" fill="url(#b126-wall)"/>
+  <circle cx="408" cy="367" r="292" fill="url(#b126-glow)"/>
+  <path d="M31 58h221v222H24Z" fill="#251a1c" stroke="#b4793b" stroke-width="9"/>
+  <path d="M51 78h181v182H44Z" fill="#65271f"/>
+  <path d="M56 238 225 86M47 175l98-97M132 261l106-91" stroke="#d99c50" stroke-width="5" opacity=".3"/>
+  <!-- candles and blank crockery layer the intimate room -->
+  <path d="M82 259h32l7 124H74Z" fill="#e3d6ad" stroke="#2c201c" stroke-width="7"/>
+  <path d="M84 249c-8-18-4-32 11-42 15 10 19 24 9 42Z" fill="#ffc861" stroke="#6f3b24" stroke-width="5"/>
+  <path d="M690 244h35l8 136H680Z" fill="#e3d6ad" stroke="#2c201c" stroke-width="7"/>
+  <path d="M693 233c-8-18-4-33 12-43 15 11 18 26 8 43Z" fill="#ffc861" stroke="#6f3b24" stroke-width="5"/>
+  <path d="M0 362c230-42 515-39 800 6v192H0Z" fill="#3b1f1b" stroke="#160f11" stroke-width="11"/>
+  <path d="M0 392c247-31 513-27 800 15" fill="none" stroke="#9b5530" stroke-width="9"/>
+  <!-- soft pear skull and polished bald dome -->
+  <path d="M317 72c44-40 111-40 153 3 36 37 34 91 10 133-29 50-94 64-140 30-51-38-59-121-23-166Z" fill="#b87559" stroke="#211719" stroke-width="11"/>
+  <path d="M323 80c31-34 85-43 124-15" fill="none" stroke="#d99570" stroke-width="7"/>
+  <!-- white ear tufts make silhouette, not a dark cap -->
+  <path d="M320 102c-26 8-45 30-54 65l54 17 35-79Z" fill="#ddd5bf" stroke="#211a1a" stroke-width="8"/>
+  <path d="M472 105c29 8 49 31 58 68l-58 16-34-81Z" fill="#ddd5bf" stroke="#211a1a" stroke-width="8"/>
+  <path d="M281 130c17 2 31 11 41 27m190-20c-17 2-31 11-41 27" fill="none" stroke="#8f8779" stroke-width="6"/>
+  <path d="M317 121c-27-8-46 13-38 40 8 26 34 36 56 18m143-54c27-9 46 12 38 39-8 25-34 36-56 19" fill="#a96551" stroke="#25191b" stroke-width="9"/>
+  <!-- lowered oval eyes and broad flat nose -->
+  <path d="M343 143c18-11 38-9 54 4m29 3c15-9 31-6 43 6" fill="none" stroke="#40262a" stroke-width="8"/>
+  <path d="M351 159c12-5 26-2 35 7-10 10-24 7-35-7Zm82 4c11-5 23-2 31 7-10 9-22 6-31-7Z" fill="#ead9ba" stroke="#281a1c" stroke-width="4"/>
+  <path d="M371 164h6m72 7h5" stroke="#131619" stroke-width="5"/>
+  <path d="M405 149c-10 18-21 31-34 43-11 10-6 27 9 32 15 5 27-5 40-3 17 2 27-16 17-29-10-13-17-24-32-43Z" fill="#a35b49" stroke="#532e2e" stroke-width="7"/>
+  <!-- neat moustache completely changes mouth treatment -->
+  <path d="M354 229c20-17 43-17 65-2 21-15 44-12 63 7-18 25-43 27-64 8-22 17-45 13-64-13Z" fill="#473332" stroke="#24191a" stroke-width="7"/>
+  <path d="M384 256c23 7 46 7 68-1" fill="none" stroke="#6e3a36" stroke-width="5"/>
+  <!-- dignified barrel body seated behind warmer -->
+  <path d="M276 267c56-31 137-33 195-1 72 38 104 113 99 208H195c1-92 24-161 81-207Z" fill="#4b3434" stroke="#171416" stroke-width="12"/>
+  <path d="M286 291c70 29 144 30 222 3m-246 57c96 34 188 31 277-6" fill="none" stroke="#76524a" stroke-width="8" opacity=".5"/>
+  <!-- both hands shelter glowing dish instead of generic open pose -->
+  <path d="M284 300c-58 24-104 57-139 101-18 22-13 43 5 53 18 10 36-6 53-27l111-95Z" fill="#af6d54" stroke="#211719" stroke-width="10"/>
+  <path d="M468 300c57 24 103 58 138 102 18 22 13 43-5 53-18 10-36-6-53-27l-110-96Z" fill="#af6d54" stroke="#211719" stroke-width="10"/>
+  <path d="M151 392c-28 10-41 28-34 46 7 18 27 15 47 5l32-16-19 24c-11 15-5 29 10 32 15 3 25-12 36-28l28-44c12-20 3-40-16-49-19-8-41 0-84 30Z" fill="#bd795b" stroke="#211719" stroke-width="9"/>
+  <path d="M600 393c28 10 41 28 34 46-7 18-27 15-47 5l-32-16 19 24c11 15 5 29-10 32-15 3-25-12-36-28l-28-44c-12-20-3-40 16-49 19-8 41 0 84 30Z" fill="#bd795b" stroke="#211719" stroke-width="9"/>
+  <path d="M132 416c21 2 40 10 57 23m-68-6c20 3 38 11 54 24m444-40c-21 2-40 10-57 23m68-6c-20 3-38 11-54 24" fill="none" stroke="#734139" stroke-width="5"/>
+  <!-- enamel warmer and glowing dish physically occupy centre -->
+  <path d="M224 381c115-45 233-45 354 0l-31 163H252Z" fill="#d7c8a6" stroke="#2b201c" stroke-width="11"/>
+  <ellipse cx="401" cy="383" rx="177" ry="58" fill="url(#b126-brass)" stroke="#2b201c" stroke-width="10"/>
+  <ellipse cx="401" cy="377" rx="126" ry="38" fill="#8e2e20" stroke="#f0b757" stroke-width="8"/>
+  <path d="M289 377c74-30 148-30 223 0m-236 67c83 26 167 27 252 1" fill="none" stroke="#f2d28a" stroke-width="7" opacity=".55"/>
+  <path d="M282 457h239m-213 34h187" stroke="#9b8c68" stroke-width="6"/>
+  <!-- steam and brass scratches -->
+  <path d="M338 349c-17-28-14-52 9-72 18-16 21-35 11-60m92 131c18-27 15-51-8-71-17-15-20-34-10-58" fill="none" stroke="#f6ddb6" stroke-width="9" opacity=".72"/>
+  <path d="M47 501c89-18 177-15 263-3m187 4c89-9 181-5 276 8" fill="none" stroke="#8f4c2c" stroke-width="6"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#110d0f" stroke-width="12"/>
+</svg>

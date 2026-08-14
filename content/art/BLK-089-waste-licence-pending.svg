@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b089-title b089-desc">
+  <title id="b089-title">BLK-089 Waste Licence Pending non-final comic mock-up</title>
+  <desc id="b089-desc">A broad full-body operator spreads both arms across a warehouse entrance, tiny spectacles, blank dangling lanyard and high-vis vest blocking access to stacked anonymous drums. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b089-yard" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#26382d"/><stop offset=".5" stop-color="#60704b"/><stop offset="1" stop-color="#17241f"/></linearGradient>
+    <linearGradient id="b089-hi" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4dd55"/><stop offset=".5" stop-color="#c4b23a"/><stop offset="1" stop-color="#716926"/></linearGradient>
+    <pattern id="b089-door" width="800" height="31" patternUnits="userSpaceOnUse"><rect width="800" height="31" fill="#35423d"/><path d="M0 27h800" stroke="#17221f" stroke-width="7"/><path d="M0 6h800" stroke="#66736c" stroke-width="3" opacity=".45"/></pattern>
+    <pattern id="b089-vest" width="34" height="26" patternUnits="userSpaceOnUse"><path d="M0 13h34M17 0v26" stroke="#fff4a4" stroke-width="4" opacity=".7"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b089-yard)"/>
+  <!-- broad warehouse geometry, anonymous blank surfaces -->
+  <path d="M38 34h724v456H28Z" fill="#24312e" stroke="#111816" stroke-width="13"/>
+  <path d="M78 72h644v390H62Z" fill="url(#b089-door)" stroke="#131d1a" stroke-width="10"/>
+  <path d="M0 438c211-32 521-29 800 6v116H0Z" fill="#2c312c" stroke="#151916" stroke-width="10"/>
+  <path d="M23 498c129-20 258-18 386 2m75 5c102-7 199-3 294 8" fill="none" stroke="#596154" stroke-width="6"/>
+  <!-- stacked anonymous drums physically flank, never replace operator -->
+  <g stroke="#18201d" stroke-width="8">
+    <path d="M19 192h132l16 126-162 0Z" fill="#52615b"/><ellipse cx="84" cy="193" rx="66" ry="21" fill="#6d7a73"/>
+    <path d="M29 310h143l17 130H13Z" fill="#44594c"/><ellipse cx="100" cy="311" rx="72" ry="22" fill="#687867"/>
+    <path d="M644 190h137l16 128-166 0Z" fill="#59605e"/><ellipse cx="712" cy="191" rx="68" ry="21" fill="#777d7a"/>
+    <path d="M623 308h157l19 132H606Z" fill="#4a594b"/><ellipse cx="701" cy="309" rx="79" ry="23" fill="#6a7664"/>
+  </g>
+  <path d="M23 237c47 13 94 13 141 0m-130 114c49 13 99 13 149 0m454-116c51 13 102 13 153 0m-176 119c59 13 118 13 177 0" fill="none" stroke="#a2a087" stroke-width="6" opacity=".48"/>
+  <!-- trapezoid skull and shaved horseshoe with one tuft -->
+  <path d="M324 92c42-39 105-41 147-1 36 34 37 85 14 125-27 45-87 56-129 26-48-35-60-109-32-150Z" fill="#b16c53" stroke="#201619" stroke-width="11"/>
+  <path d="M328 95c29-34 84-44 124-16" fill="none" stroke="#30282a" stroke-width="13" stroke-dasharray="5 12"/>
+  <path d="M344 78c6-32 23-46 50-44l8 53" fill="#32292b" stroke="#191518" stroke-width="8"/>
+  <path d="M331 130c-25-8-43 12-35 38 7 24 31 34 51 18m132-53c25-9 43 11 35 37-7 24-31 34-51 19" fill="#a15f4b" stroke="#24181a" stroke-width="8"/>
+  <!-- tiny bureaucratic spectacles and dot eyes -->
+  <path d="M351 145c20-13 47-10 61 7-5 23-45 27-61-7Zm76 8c17-14 41-11 53 6-6 21-40 23-53-6Zm-14 3c5-4 9-4 14 0" fill="#dbe0ce" stroke="#252521" stroke-width="6"/>
+  <circle cx="388" cy="156" r="4" fill="#121714"/><circle cx="460" cy="161" r="4" fill="#121714"/>
+  <path d="M352 130c17-10 37-9 53 3m29 1c15-8 31-5 42 6" fill="none" stroke="#3d2527" stroke-width="8"/>
+  <!-- cauliflower nose, pinched mouth no teeth -->
+  <path d="M416 145c-8 19-19 33-32 46-11 10-6 27 9 32 14 5 26-4 38-2 17 2 28-15 18-29-9-13-17-25-33-47Z" fill="#9d5546" stroke="#512b2c" stroke-width="8"/>
+  <path d="M393 188c12 5 21 13 25 25" fill="none" stroke="#de8665" stroke-width="5"/>
+  <path d="M361 237c28-7 60-3 84 13" fill="none" stroke="#4b292a" stroke-width="8" stroke-linecap="round"/>
+  <!-- broad rectangular full body, yellow vest and dangling blank lanyard -->
+  <path d="M279 266c56-31 136-32 194-1 72 38 105 116 104 215H189c3-96 26-167 90-214Z" fill="#3e4842" stroke="#151a17" stroke-width="13"/>
+  <path d="M251 289c82 31 170 33 262 4m-292 62c112 37 221 35 326-5" fill="none" stroke="#616b64" stroke-width="8" opacity=".45"/>
+  <path d="M285 268c-25 59-31 128-18 207m202-207c29 60 39 129 30 207" fill="url(#b089-hi)" stroke="#3b3d27" stroke-width="10"/>
+  <path d="M262 317h250v166H248Z" fill="url(#b089-vest)" opacity=".75"/>
+  <path d="M301 359h174" stroke="#fff1a0" stroke-width="14" opacity=".75"/>
+  <path d="M359 272c-8 50-8 100 0 151m63-151c10 49 11 99 3 151" fill="none" stroke="#52552f" stroke-width="8"/>
+  <path d="M376 275c16 31 25 64 26 99" fill="none" stroke="#252b28" stroke-width="6"/>
+  <path d="m383 364 57 5-4 74-64-6Z" fill="#d8d5bd" stroke="#252822" stroke-width="7"/>
+  <path d="M390 379h38m-40 18h33m-35 18h29" stroke="#a7a48c" stroke-width="4"/>
+  <!-- arms spread to block doors, hands individually drawn -->
+  <path d="M286 287c-70 11-132 35-187 72-24 17-26 39-11 53 16 14 37 3 59-12l157-72Z" fill="#a86650" stroke="#201619" stroke-width="11"/>
+  <path d="M96 347c-29 1-48 14-49 33-1 19 19 24 41 20l35-7-24 19c-15 12-11 28 4 34 15 6 28-7 42-19l37-34c17-16 14-39-4-52-18-12-41-11-82 6Z" fill="#b37356" stroke="#201619" stroke-width="9"/>
+  <path d="M471 287c70 11 132 35 187 72 24 17 26 39 11 53-16 14-37 3-59-12l-157-72Z" fill="#a86650" stroke="#201619" stroke-width="11"/>
+  <path d="M661 347c29 1 48 14 49 33 1 19-19 24-41 20l-35-7 24 19c15 12 11 28-4 34-15 6-28-7-42-19l-37-34c-17-16-14-39 4-52 18-12 41-11 82 6Z" fill="#b37356" stroke="#201619" stroke-width="9"/>
+  <path d="M67 368c21 2 40 9 56 22m-67-5c20 3 38 10 53 23m581-40c-21 2-40 9-56 22m67-5c-20 3-38 10-53 23" fill="none" stroke="#704037" stroke-width="5"/>
+  <!-- full legs and plain work boots -->
+  <path d="M293 468c-8 29-11 58-9 88m178-88c9 29 13 58 12 88" stroke="#343b37" stroke-width="45"/>
+  <path d="M244 531c33-9 66-5 92 14-2 12-22 17-50 13l-49-7c-7-9-4-15 7-20Zm184 10c32-13 66-11 93 7 0 13-20 18-48 15l-50-6c-8-8-5-12 5-16Z" fill="#3e3229" stroke="#171518" stroke-width="9"/>
+  <!-- legal-pad yellow light and sludge stains -->
+  <path d="M27 95l55 16m-31-47 43 27m615-14-42 33m75-13-52 31" stroke="#dfd269" stroke-width="7" stroke-linecap="round" opacity=".62"/>
+  <path d="M82 466c35-16 67-16 96 1m448-3c34-15 65-14 94 3" fill="none" stroke="#7b855e" stroke-width="7"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#0e1512" stroke-width="12"/>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="blk014-title blk014-desc">
+  <title id="blk014-title">BLK-014 Cheese non-final comic-vector mock-up</title>
+  <desc id="blk014-desc">A broad sleepy obsessive appears to melt across the quiet end of the bar, heavy drooping eyes and slack cheeks hovering over a pungent wrapped cheese parcel while knitted sleeves, a tiny knife, wax folds and curling aroma sink with him. Non-final placeholder art.</desc>
+  <defs><linearGradient id="blk014-bar" x2="1" y2="1"><stop stop-color="#3a4e2e"/><stop offset="1" stop-color="#17251f"/></linearGradient><radialGradient id="blk014-glow"><stop stop-color="#ffe98d"/><stop offset="1" stop-color="#c18d3d"/></radialGradient><pattern id="blk014-knit" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M0 9q4-8 9 0t9 0M0 16q4-8 9 0t9 0" fill="none" stroke="#d4b679" stroke-width="3" opacity=".45"/></pattern></defs>
+  <path fill="url(#blk014-bar)" d="M0 0h800v560H0z"/><path fill="#20322d" d="M0 0h800v280Q590 246 404 269 207 239 0 280z"/>
+  <g stroke="#211a1e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#30282b" d="M37 48h153v260H37zM610 42h149v266H610z"/><path fill="#50624c" d="M55 66h117v224H55zM628 60h113v230H628z"/><path fill="none" stroke="#8c9d72" stroke-width="5" d="M71 80l84 77M155 82l-83 83M644 75l79 72M724 76l-78 81"/>
+    <path fill="#70503a" d="M0 365q191-42 380 1 217-47 420 4v190H0z"/><path fill="#b3844e" d="M0 400q192-35 386 3 211-40 414 4v153H0z"/>
+    <!-- broad body collapsed across the bar -->
+    <path fill="#526046" d="M112 550q24-187 110-278 75-79 187-78 119 4 197 94 74 87 89 262z"/><path fill="#6b7953" d="M151 551q27-166 99-244 62-63 157-62 98 3 164 76 65 73 84 230z"/>
+    <!-- wide bald-on-top sleepy skull, side curls, no cap -->
+    <path fill="#a96850" d="M245 78q66-60 161-55 106 8 158 74 46 59 36 136-10 77-74 126-64 44-143 30-85-16-136-85-43-63-34-138 5-50 32-88z"/>
+    <path fill="#8a643e" d="M259 75q61-66 151-64 92 7 142 58-113-31-293 6z"/>
+    <path fill="none" stroke="#6c4c36" stroke-width="18" d="M247 102q-41 22-48 67M231 153q-35 28-32 68M562 97q42 19 52 62M580 146q39 26 38 66"/>
+    <path fill="#a96850" d="M225 151q-49-18-58 26-4 48 51 61M591 143q50-22 64 21 11 47-61 66"/>
+    <!-- drooping lids rather than almond eyes -->
+    <path fill="#eddfaa" d="M276 151q51-25 98 9-17 43-55 37-35-5-43-46zM435 151q49-22 91 12-16 41-53 35-34-5-38-47z"/><path fill="none" stroke="#342421" stroke-width="15" d="M277 165q47 28 95-1M437 166q43 26 88-1"/>
+    <path fill="#bb7b58" d="M407 163q-1 73-33 111 43 21 82-10"/>
+    <path fill="#3b2925" d="M337 302q69 8 126-8-9 40-59 48-44 3-67-40z"/><path fill="none" stroke="#d6ad84" stroke-width="6" d="M365 313q38 5 70-2"/>
+    <path fill="none" stroke="#7d4c3e" stroke-width="5" d="M273 225l24 14M532 228l24-13M288 258l19 7M519 260l20-5"/>
+    <!-- sleeves and torso visibly slump onto counter -->
+    <path fill="#6b7953" d="M262 319q-104 18-165 91L30 503l94 49 150-113M534 316q101 20 162 89l77 87-83 61-160-117"/>
+    <path fill="url(#blk014-knit)" d="M80 398q91-13 164 46l-35 112H33zM564 388q90-6 161 55l-25 113H526z"/>
+    <path fill="#a96850" d="M210 402q-60 14-98 56-31 35-23 66 7 28 34 29 26 0 39-33 10 29 35 19 22-10 11-39 16 21 36 4 18-16-2-39 21 12 35-9 13-19-16-38z"/>
+    <path fill="#a96850" d="M592 391q55 9 96 45 41 36 41 68 0 28-25 36-24 8-44-21 2 31-24 31-25 0-33-31-8 27-31 20-24-8-14-38-22 16-39-2-16-18 14-45z"/>
+    <path fill="#ded2ad" d="M235 395q92-69 202-26 75-31 133 27l-50 146H232z"/><path fill="#f1e4bd" d="M271 401q71-45 156-13 58-22 103 17l-33 111H266z"/>
+    <path fill="url(#blk014-glow)" d="M326 414q77-31 146 5l-12 76-130 4z"/><path fill="#e5ba55" d="M348 427q50-18 98 3l-7 47-87 4z"/><g fill="#9f7337" stroke-width="4"><circle cx="373" cy="445" r="7"/><circle cx="417" cy="452" r="6"/><circle cx="393" cy="472" r="5"/></g>
+    <path fill="#c6c0a8" d="M542 472l110-28 15 27-109 37z"/><path fill="#745540" d="M648 442l72-21 11 29-68 23z"/>
+    <path fill="none" stroke="#dfe3ae" stroke-width="7" d="M351 383q-34-43 2-73 27-26 1-59M405 379q-25-42 12-72 31-25 7-58M458 387q-18-40 16-67"/>
+    <g fill="#d6b65e" stroke-width="3"><path d="M366 350l12 4-6 13-12-5zM416 343l12 3-5 13-12-4zM390 367l11 4-5 12-11-4z"/></g>
+  </g>
+</svg>

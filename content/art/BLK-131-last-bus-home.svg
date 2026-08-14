@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b131-title b131-desc">
+  <title id="b131-title">BLK-131 Last Bus Home non-final comic mock-up</title>
+  <desc id="b131-desc">From behind, a broad grey-afroed helper bears a lank tired friend toward warm open bus doors, their joined weight and distorted reflections moving across a midnight wet kerb. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b131-night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071426"/><stop offset=".55" stop-color="#173652"/><stop offset="1" stop-color="#090c17"/></linearGradient>
+    <linearGradient id="b131-warm" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0a2"/><stop offset=".45" stop-color="#e8933e"/><stop offset="1" stop-color="#6e351f"/></linearGradient>
+    <pattern id="b131-road" width="91" height="48" patternUnits="userSpaceOnUse"><rect width="91" height="48" fill="#182333"/><path d="M7 14c23-6 44-5 65 2M19 38c19-4 36-3 53 2" fill="none" stroke="#34495d" stroke-width="4" opacity=".55"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b131-night)"/>
+  <!-- anonymous bus is warm destination, not subject -->
+  <path d="M389 17h411v430H371Z" fill="#263f58" stroke="#0c1520" stroke-width="13"/>
+  <path d="M419 42h352v84H408Z" fill="#1e3044" stroke="#0e1925" stroke-width="9"/>
+  <path d="M445 65h291v39H438Z" fill="#b59d63" opacity=".45"/>
+  <path d="M437 146h163v281H415Z" fill="url(#b131-warm)" stroke="#171820" stroke-width="10"/>
+  <path d="M623 146h147v281H601Z" fill="#173044" stroke="#171820" stroke-width="10"/>
+  <path d="M648 170h98v214H626Z" fill="#54798b"/>
+  <path d="M655 361 740 180M642 273l55-103" stroke="#bdd0bf" stroke-width="6" opacity=".3"/>
+  <circle cx="618" cy="279" r="9" fill="#a5a28c"/>
+  <path d="M0 393c217-40 510-36 800 5v162H0Z" fill="url(#b131-road)" stroke="#09111a" stroke-width="11"/>
+  <path d="M0 431c144-28 287-27 429-5m79 11c93-5 189 3 292 25" fill="none" stroke="#53708a" stroke-width="8" opacity=".6"/>
+  <!-- helper's broad rear skull and dense grey afro halo -->
+  <g fill="#6c6d69" stroke="#16171a" stroke-width="6"><circle cx="231" cy="145" r="31"/><circle cx="263" cy="119" r="33"/><circle cx="302" cy="111" r="35"/><circle cx="341" cy="122" r="33"/><circle cx="370" cy="151" r="31"/><circle cx="374" cy="188" r="29"/><circle cx="224" cy="184" r="30"/></g>
+  <path d="M245 154c35-33 91-35 127-3 31 27 38 69 22 104-19 43-69 60-109 37-45-26-60-93-40-138Z" fill="#a96853" stroke="#1d1719" stroke-width="10"/>
+  <!-- mostly rear view, one cauliflower ear/nose glimpse -->
+  <path d="M247 176c-23-8-40 10-35 34 6 23 28 34 48 19" fill="#9a5e4c" stroke="#22181a" stroke-width="8"/>
+  <path d="M229 188c11-4 21 2 25 14" fill="none" stroke="#653a32" stroke-width="5"/>
+  <path d="M368 177c23 0 39 19 34 42-5 22-28 33-48 20" fill="#9a5e4c" stroke="#22181a" stroke-width="8"/>
+  <path d="M373 191c-11 0-19 7-22 18" fill="none" stroke="#653a32" stroke-width="5"/>
+  <!-- broad helper back dominates -->
+  <path d="M173 285c64-37 155-39 220-2 81 45 116 134 109 247H64c3-110 33-192 109-245Z" fill="#3b5068" stroke="#121820" stroke-width="13"/>
+  <path d="M187 315c81 34 168 35 258 4m-289 66c113 40 221 38 325-7" fill="none" stroke="#657b91" stroke-width="8" opacity=".5"/>
+  <path d="M241 282c-6 58-1 117 16 179m92-177c22 57 31 117 25 177" fill="none" stroke="#243b53" stroke-width="10"/>
+  <!-- tired friend slumps across helper, lank and visibly different -->
+  <path d="M344 168c31-35 83-41 119-10 32 27 39 72 18 106-23 39-75 49-111 22-41-31-50-88-26-118Z" fill="#bd795e" stroke="#1f171a" stroke-width="10"/>
+  <path d="M345 171c19-37 68-54 105-27 16 12 27 29 30 48-29-16-55-16-79-6-23 10-42 5-56-15Z" fill="#4d3037" stroke="#191519" stroke-width="8"/>
+  <path d="M354 160c25-11 50-11 75 0m-82 21c29-11 57-11 84 0" fill="none" stroke="#8c5d67" stroke-width="5"/>
+  <path d="M454 190c22 0 37 18 32 39-5 21-27 31-46 19" fill="#ad6d56" stroke="#24191a" stroke-width="7"/>
+  <path d="M399 194c14-9 30-7 42 4" fill="none" stroke="#40262a" stroke-width="8"/>
+  <path d="M406 207h27" stroke="#ead9ba" stroke-width="5"/>
+  <path d="M438 200c-5 13-2 23 8 32-8 11-24 11-33 1" fill="#a35e4c" stroke="#532f2e" stroke-width="5"/>
+  <path d="M399 255c18-3 36 2 49 14" fill="none" stroke="#4f2b2d" stroke-width="7"/>
+  <path d="M368 277c45-20 102-18 141 10 44 32 61 91 50 161l-216-2c-4-67 4-126 25-169Z" fill="#704455" stroke="#161419" stroke-width="11"/>
+  <path d="M379 299c50 21 100 22 151 3m-162 45c61 23 120 22 177-4" fill="none" stroke="#95627a" stroke-width="7" opacity=".45"/>
+  <!-- joined weight: helper arm hooks friend, friend hangs naturally -->
+  <path d="M197 310c67-6 127-27 178-62 23-16 45-11 54 7 9 19-8 35-31 50-66 43-132 67-197 71Z" fill="#a76852" stroke="#1d1719" stroke-width="11"/>
+  <path d="M386 253c-24-7-45 0-52 15-7 16 8 27 26 32l30 7-23 7c-17 5-20 20-8 29 12 9 28-2 43-12l37-25c17-12 18-33 4-47-13-13-33-16-57-6Z" fill="#b57458" stroke="#1d1719" stroke-width="9"/>
+  <path d="M458 310c43 31 76 69 97 114 11 23 3 43-16 49-19 6-33-12-44-34l-68-102Z" fill="#ae6d55" stroke="#1f171a" stroke-width="10"/>
+  <path d="M548 415c24 12 35 30 28 47-8 17-27 13-45 3l-29-17 17 24c10 15 3 28-11 30-14 2-24-13-33-28l-23-42c-10-19 0-38 18-45 18-7 38 1 78 28Z" fill="#bc795c" stroke="#1f171a" stroke-width="8"/>
+  <!-- four legs show assisted full-body motion -->
+  <path d="M175 493c-18 19-34 39-48 61m195-62c20 18 42 38 66 59" stroke="#293b50" stroke-width="43"/>
+  <path d="M406 428c-8 35-11 72-8 111m108-106c17 31 35 63 56 96" stroke="#503644" stroke-width="34"/>
+  <path d="M95 532c32-9 64-5 90 13-2 12-22 17-49 13l-49-7c-7-9-3-15 8-19Zm259 6c31-12 63-10 89 8 0 12-19 17-46 14l-49-6c-8-8-4-12 6-16Zm8-13c27-8 54-4 76 12-2 11-19 15-42 11l-43-7c-6-7-3-12 9-16Zm167-8c28-10 55-7 78 10 0 11-17 16-41 13l-44-6c-7-7-4-11 7-17Z" fill="#42342f" stroke="#171519" stroke-width="8"/>
+  <!-- joined wet reflections and rain -->
+  <path d="M129 487c67 24 131 29 193 15m70 6c64 14 122 11 174-8" fill="none" stroke="#507fa0" stroke-width="12" opacity=".42"/>
+  <path d="M47 105l-14 46m55-74-12 39m622-31-14 43m55-68-13 41M36 362l53 11m574 3 73-15" stroke="#9fc8d0" stroke-width="6" stroke-linecap="round" opacity=".62"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#07101a" stroke-width="12"/>
+</svg>

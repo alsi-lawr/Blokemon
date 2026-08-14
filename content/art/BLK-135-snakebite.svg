@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b135-title b135-desc">
+  <title id="b135-title">BLK-135 Snakebite non-final comic mock-up</title>
+  <desc id="b135-desc">A jagged black-haired drinker cuts a direct full-body path through a packed violet pub, raised purple-gold glass leading as varied people part through sharp yellow perspective lines. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b135-pub" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1e152b"/><stop offset=".5" stop-color="#5a287a"/><stop offset="1" stop-color="#181528"/></linearGradient>
+    <linearGradient id="b135-glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f5cd47"/><stop offset=".45" stop-color="#7f307b"/><stop offset="1" stop-color="#36192e"/></linearGradient>
+    <linearGradient id="b135-leather" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4b4c58"/><stop offset=".5" stop-color="#262933"/><stop offset="1" stop-color="#141720"/></linearGradient>
+    <pattern id="b135-carpet" width="57" height="41" patternUnits="userSpaceOnUse"><rect width="57" height="41" fill="#251a31"/><path d="m0 9 57 27M-6 30 19 43M31-4 64 13" stroke="#5f386f" stroke-width="3" opacity=".5"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b135-pub)"/>
+  <!-- long central perspective pub -->
+  <path d="M0 0 321 176v214L0 560Zm800 0L479 176v214l321 170Z" fill="#25192f" stroke="#100d16" stroke-width="10"/>
+  <path d="M321 176h158v214H321Z" fill="#171220" stroke="#0c0a10" stroke-width="9"/>
+  <path d="M0 71 320 204M0 186l320 60M0 312l320 5M800 71 480 204m320-18-320 60m320 66-320 5" fill="none" stroke="#79528d" stroke-width="6" opacity=".48"/>
+  <path d="M0 395c211-34 514-32 800 4v161H0Z" fill="url(#b135-carpet)" stroke="#110e16" stroke-width="10"/>
+  <!-- anonymous bar optics and pumps stay environment -->
+  <path d="M22 43h202v197H16Zm554 0h204v197H568Z" fill="#30243a" stroke="#17131d" stroke-width="9"/>
+  <g stroke="#17151b" stroke-width="5"><path d="M43 63h31v83H43Z" fill="#9a6d45"/><path d="M88 55h35v91H88Z" fill="#54746c"/><path d="M139 67h34v79h-34Z" fill="#854f68"/><path d="M592 61h33v85h-33Z" fill="#897149"/><path d="M639 55h37v91h-37Z" fill="#7c516b"/><path d="M693 68h34v78h-34Z" fill="#4d7078"/></g>
+  <!-- crowd parts in perspective, varied builds and faces -->
+  <g stroke="#17141a" stroke-width="8">
+    <path d="M11 282c22-53 65-68 99-32 31 32 28 83 9 128l-37 82H-16Z" fill="#4c5369"/><path d="M40 218c24-26 62-21 74 11 11 28-3 55-30 63-30 9-63-38-44-74Z" fill="#a96b55"/>
+    <path d="M109 309c23-49 62-62 94-30 29 28 28 76 12 118l-31 78H82Z" fill="#6a3f54"/><path d="M136 251c21-23 56-17 66 13 9 26-5 51-30 58-28 8-57-36-36-71Z" fill="#c0785c"/>
+    <path d="M602 303c24-49 64-61 95-28 28 29 26 77 9 118l-33 77H571Z" fill="#3f566c"/><path d="M630 245c21-23 56-17 66 13 9 26-5 51-30 58-28 8-57-36-36-71Z" fill="#a66853"/>
+    <path d="M700 280c23-53 66-67 100-30l17 202-128 14Z" fill="#694052"/><path d="M731 216c24-26 61-20 73 11 11 28-3 55-29 63-30 9-63-37-44-74Z" fill="#bd785d"/>
+  </g>
+  <path d="M42 225c19-18 45-20 66-5m39 39c18-16 41-16 59-1m435-7c18-16 42-16 60 0m40-37c19-18 44-19 65-4" fill="none" stroke="#35252c" stroke-width="8"/>
+  <path d="M89 329c73 0 133 18 181 54m443-55c-73 2-133 22-180 58" fill="none" stroke="#b46e58" stroke-width="24" stroke-linecap="round"/>
+  <!-- jagged lightning skull and black three-point shag -->
+  <path d="M324 91c42-40 107-41 150 0 37 36 39 89 14 131-28 48-91 61-137 29-51-36-61-117-27-160Z" fill="#b66e54" stroke="#201619" stroke-width="11"/>
+  <path d="M319 100c8-43 36-67 75-68l14-44 18 39 38-29-8 47 44-11-27 39 25 25c-37-23-75-24-113-11-28 10-50 4-66-18Z" fill="#211d27" stroke="#151219" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M334 78c27-12 55-14 84-7m-94 29c34-13 67-14 100-3" fill="none" stroke="#57505e" stroke-width="5"/>
+  <path d="M321 133c-27-8-46 13-38 40 8 26 34 36 56 18m145-54c27-9 46 12 38 39-8 25-34 36-56 19" fill="#a45f4b" stroke="#24181a" stroke-width="9"/>
+  <!-- narrow rectangle eyes, broken short nose, taut side mouth -->
+  <path d="M346 149c18-12 39-10 55 4m31 3c15-10 32-7 44 6" fill="none" stroke="#402529" stroke-width="9"/>
+  <path d="M353 164h37v17h-37Zm87 3h31v17h-31Z" fill="#ead9b8" stroke="#281a1d" stroke-width="5"/>
+  <path d="M411 154c-7 15-11 26-10 37 1 12 13 19 25 15 13-4 17-18 8-27-8-9-15-16-23-25Z" fill="#9c5546" stroke="#522d2e" stroke-width="6"/>
+  <path d="M354 230c30-5 61 1 86 17 17 11 33 10 47 1" fill="none" stroke="#4d272c" stroke-width="8"/>
+  <!-- sharp rangy full body, leather action -->
+  <path d="M286 268c55-30 134-32 191-1 70 38 101 113 94 209H207c-4-96 20-167 79-208Z" fill="url(#b135-leather)" stroke="#12151b" stroke-width="12"/>
+  <path d="M298 294c69 29 142 30 219 3m-244 57c95 33 186 31 274-6" fill="none" stroke="#60636f" stroke-width="8" opacity=".5"/>
+  <path d="M337 267c-5 52-1 105 14 160m80-158c20 51 27 104 21 159" fill="none" stroke="#191f29" stroke-width="9"/>
+  <path d="M287 292c-58 18-106 46-145 85-19 19-17 40-1 52 17 12 35 0 54-17l117-87Z" fill="#a96650" stroke="#201619" stroke-width="10"/>
+  <path d="M474 291c47-34 80-75 99-123 10-24 29-33 45-22 16 11 11 31 1 54-24 57-62 103-113 140Z" fill="#a96650" stroke="#201619" stroke-width="10"/>
+  <path d="M141 367c-27 5-43 21-40 39 3 18 23 20 43 14l33-10-22 21c-13 13-9 28 6 32 15 5 27-10 39-23l32-40c14-18 8-39-10-49-18-10-39-6-81 16Z" fill="#b67457" stroke="#201619" stroke-width="9"/>
+  <!-- raised glass leads path and is physically gripped -->
+  <path d="M571 156c-2-27 9-46 29-51 19-5 31 10 28 30l-5 32 16-25c10-16 26-19 36-7 10 12 0 27-12 42l-34 40c-16 19-40 19-54 3-13-15-14-33-4-64Z" fill="#b67457" stroke="#201619" stroke-width="9"/>
+  <path d="M590 120c11 18 15 37 12 57m15-61c9 19 11 38 7 57m24-35c3 14 1 29-5 42" fill="none" stroke="#704038" stroke-width="5"/>
+  <path d="M581 31h94l-12 125h-68Z" fill="#f3d477" fill-opacity=".3" stroke="#ebe5d2" stroke-width="8"/>
+  <path d="M596 77h67l-7 68h-52Z" fill="url(#b135-glass)"/>
+  <ellipse cx="628" cy="32" rx="47" ry="15" fill="none" stroke="#ebe5d2" stroke-width="7"/>
+  <path d="M599 82c19 8 40 8 62 0" stroke="#f5cf48" stroke-width="6"/>
+  <!-- full stride and people part around it -->
+  <path d="M308 465c-21 26-39 55-53 88m190-87c23 25 49 52 78 80" stroke="#202731" stroke-width="42"/>
+  <path d="M219 530c31-8 61-3 85 16-3 12-22 16-49 12l-47-8c-6-8-2-14 11-20Zm270 0c31-10 61-7 85 11 0 12-19 18-45 15l-47-6c-7-8-4-13 7-20Z" fill="#3f302c" stroke="#171519" stroke-width="9"/>
+  <!-- yellow path accents, violet scuffs -->
+  <path d="M129 390 320 320m-167 115 168-72m349 20-188-69m164 112-167-65" stroke="#f1d043" stroke-width="8" stroke-linecap="round" opacity=".65"/>
+  <path d="M43 485l55 13m-31-43 45 20m576 11 71-18" stroke="#a45bc2" stroke-width="7" opacity=".6"/>
+  <path d="m101 442 25 10-9 23-25-10Zm588 3 27-8 7 24-27 8Z" fill="#e3b63e" stroke="#21161b" stroke-width="5"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#0e0b12" stroke-width="12"/>
+</svg>

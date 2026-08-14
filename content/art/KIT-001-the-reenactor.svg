@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="kit001-title kit001-desc">
+  <title id="kit001-title">KIT-001 The Reenactor non-final comic-vector mock-up</title>
+  <desc id="kit001-desc">A battered hobbyist reenactor braces side-on in driving rain, physically interposing a deeply dented homemade shield between an incoming battle line and a smaller figure. His hooked profile, broken teeth, strapped glove, muddy kit and collapsing camp make the damage-reduction gag explicit. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="kit001-sky" x1="0" y1="0" x2="0.9" y2="1">
+      <stop stop-color="#697a78"/><stop offset="0.48" stop-color="#354d4b"/><stop offset="1" stop-color="#172627"/>
+    </linearGradient>
+    <linearGradient id="kit001-mud" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#79603d"/><stop offset="0.52" stop-color="#48382b"/><stop offset="1" stop-color="#211b1b"/>
+    </linearGradient>
+    <radialGradient id="kit001-skin" cx="35%" cy="28%" r="82%">
+      <stop stop-color="#dfa275"/><stop offset="0.55" stop-color="#a65f4d"/><stop offset="1" stop-color="#5d3335"/>
+    </radialGradient>
+    <linearGradient id="kit001-shield" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#b6aa88"/><stop offset="0.32" stop-color="#6f786e"/><stop offset="0.7" stop-color="#353e3b"/><stop offset="1" stop-color="#161e20"/>
+    </linearGradient>
+    <linearGradient id="kit001-cloth" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#725646"/><stop offset="0.55" stop-color="#423b36"/><stop offset="1" stop-color="#262728"/>
+    </linearGradient>
+    <pattern id="kit001-rain" width="47" height="54" patternUnits="userSpaceOnUse" patternTransform="rotate(17)">
+      <path d="M8 -8v34M30 16v46" stroke="#d4e4df" stroke-width="3" opacity=".42"/>
+      <path d="M18 7v16M43 35v21" stroke="#9fbab5" stroke-width="2" opacity=".28"/>
+    </pattern>
+    <pattern id="kit001-mail" width="25" height="18" patternUnits="userSpaceOnUse">
+      <path d="M1 2c0 15 12 15 12 0M13 2c0 15 12 15 12 0" fill="none" stroke="#c1c0aa" stroke-width="3" opacity=".55"/>
+    </pattern>
+    <filter id="kit001-rough" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="turbulence" baseFrequency=".016 .055" numOctaves="2" seed="101" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="2.1"/>
+    </filter>
+    <filter id="kit001-grain" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="11" result="noise"/>
+      <feColorMatrix in="noise" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .08 0"/>
+      <feBlend in="SourceGraphic" mode="multiply"/>
+    </filter>
+    <clipPath id="kit001-shield-clip"><path d="M74 180C129 129 240 117 313 155c77 40 104 129 87 223-16 91-86 161-176 169-85 7-162-43-193-127-30-83-15-184 43-240Z"/></clipPath>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#kit001-sky)"/>
+  <path d="M0 260C115 225 205 246 305 229c127-22 242-12 495 22v309H0Z" fill="url(#kit001-mud)" stroke="#171c1b" stroke-width="9"/>
+
+  <!-- distant battle line, sagging camp and weather -->
+  <path d="M0 113c115-28 219-20 318 2 119 26 228 18 482-13" fill="none" stroke="#243735" stroke-width="19" opacity=".75"/>
+  <path d="m26 230 76-92 98 93Z" fill="#8f8060" stroke="#2b2c28" stroke-width="8"/>
+  <path d="M102 138v99M66 188h79" stroke="#3e3127" stroke-width="8"/>
+  <path d="m704 237 41-117 45 112Z" fill="#6e6552" stroke="#272b29" stroke-width="8"/>
+  <path d="M746 120v124" stroke="#332c26" stroke-width="7"/>
+  <g fill="#202c2c" stroke="#121918" stroke-width="6" opacity=".92">
+    <path d="M7 243c8-57 31-86 67-87 34 0 54 31 58 83Z"/>
+    <path d="M666 241c4-56 26-91 63-94 39-3 62 33 64 90Z"/>
+    <path d="M600 237c4-39 20-64 46-68 25-4 45 17 50 63Z"/>
+  </g>
+  <path d="M23 165c10-15 27-22 48-20m611 8c13-16 33-22 54-17" fill="none" stroke="#191e1d" stroke-width="9"/>
+  <g fill="#d07047" stroke="#342a24" stroke-width="5">
+    <path d="m30 237 24-11 17 12-18 15Z"/><path d="m624 237 22-13 18 13-19 16Z"/><path d="m752 235 21-12 18 12-17 16Z"/>
+  </g>
+  <path d="M629 245c-8-26 27-31 20-58-3-13-17-19-6-37m-15 83c-25-23 7-38-8-64" fill="none" stroke="#b8afa0" stroke-width="8" opacity=".45"/>
+
+  <!-- protected stand-in crouches behind the shield -->
+  <path d="M315 349c41-47 99-49 137-12 31 30 39 93 12 142l-55 75H296c-20-66-13-156 19-205Z" fill="#526653" stroke="#19241e" stroke-width="10"/>
+  <path d="M347 310c28-22 67-12 80 21 12 30-7 66-39 73-28 7-57-13-59-43-2-22 5-39 18-51Z" fill="#a16b55" stroke="#211b1c" stroke-width="9"/>
+  <path d="M342 316c23-23 59-14 76 10-26-8-51-2-75 12Z" fill="#3d3027" stroke="#1b1918" stroke-width="7"/>
+  <path d="M349 351c8-6 16-7 24-2m25 5 13 2m-41 21c18 8 33 7 45-3" fill="none" stroke="#322226" stroke-width="6"/>
+  <path d="M330 409c38 16 75 15 112-4M327 449c41 13 79 12 116-4" fill="none" stroke="#82937b" stroke-width="6" opacity=".55"/>
+
+  <!-- side-on reenactor: bent spine, mismatched legs and patched kit -->
+  <path d="M502 220c54 16 100 60 125 125 18 46 15 108-7 173l-122 21-92-62c14-70 20-128 7-190 20-36 47-58 89-67Z" fill="url(#kit001-cloth)" stroke="#1c1c1e" stroke-width="11" filter="url(#kit001-rough)"/>
+  <path d="M452 252c40-21 96-15 139 14l-26 143-125-16Z" fill="url(#kit001-mail)" stroke="#303534" stroke-width="8"/>
+  <path d="M498 404c-9 48-25 91-48 134l74 16 50-116Z" fill="#604b39" stroke="#211e1c" stroke-width="10"/>
+  <path d="M583 408c15 39 32 83 45 134l88 12c-9-66-22-120-47-164Z" fill="#46382f" stroke="#211e1d" stroke-width="10"/>
+  <path d="M429 526c27-7 64-1 98 17l-9 15H397c-10-10 7-25 32-32Zm195 8c33-5 78 2 106 20l-5 6H604c-9-10-1-21 20-26Z" fill="#171a1a" stroke="#0e1010" stroke-width="7"/>
+  <path d="M591 292c50-12 105 1 148 39l-35 48c-38-25-75-35-112-30Z" fill="#6d5942" stroke="#25221e" stroke-width="10"/>
+  <path d="M611 308c26 1 52 10 76 27M605 327c27 1 52 10 76 27" stroke="#bd9b68" stroke-width="5" opacity=".58"/>
+
+  <!-- weathered hooked profile, not a frontal stock head -->
+  <path d="M476 79c24-29 65-32 96-9 25 18 35 49 30 78l28 17-34 21c-7 40-31 67-62 69-24 2-43-13-55-39l-29-4 18-24c-18-42-13-83 8-109Z" fill="url(#kit001-skin)" stroke="#21171a" stroke-width="10" filter="url(#kit001-rough)"/>
+  <path d="M476 80c20-34 66-42 98-17 12 10 21 22 26 37-20-12-39-9-52-23-10 16-28 20-50 13l-24 26-9-20Z" fill="#4b392b" stroke="#1c1917" stroke-width="8"/>
+  <path d="M486 70c-8 13-7 23 2 31m19-39c-9 15-7 28 3 38m18-40c-6 13-4 24 7 33" fill="none" stroke="#756049" stroke-width="6"/>
+  <path d="M541 111c15-10 31-7 41 5" fill="none" stroke="#5a302e" stroke-width="8"/>
+  <path d="M557 126c10-2 17 2 20 10" stroke="#171719" stroke-width="8" stroke-linecap="round"/>
+  <path d="M592 132c27 4 45 16 44 29-1 13-21 21-47 19l-13-14 11-10Z" fill="#b86e53" stroke="#512e2e" stroke-width="8"/>
+  <path d="M590 143c7 7 18 11 31 11" fill="none" stroke="#e1a17c" stroke-width="4"/>
+  <path d="M577 187c20 3 32 13 34 27-13 16-33 18-51 5" fill="#4a2428" stroke="#2b171c" stroke-width="7"/>
+  <path d="m568 194 11 2-3 12 15 1 4-12 9 6" fill="#e4d7b3" stroke="#493937" stroke-width="3"/>
+  <path d="M522 131c-14 8-19 21-13 34 6 14 20 19 32 13" fill="none" stroke="#6e3a37" stroke-width="6"/>
+  <path d="M490 154c-15-2-24 9-21 23 3 13 17 22 30 15l-5-16 12-8" fill="#9b5a4b" stroke="#42282a" stroke-width="7"/>
+  <path d="M495 169c-8 0-12 5-11 13" fill="none" stroke="#5d3434" stroke-width="4"/>
+  <g fill="#6e3b39" opacity=".7"><circle cx="520" cy="105" r="4"/><circle cx="536" cy="93" r="3"/><circle cx="510" cy="185" r="4"/><circle cx="551" cy="224" r="3"/></g>
+
+  <!-- separately articulated shield arm and strapped glove -->
+  <path d="M489 269c-50 16-91 50-121 98" fill="none" stroke="#4b4037" stroke-width="49" stroke-linecap="round"/>
+  <path d="M391 342c-31 0-54 13-68 39-8 15-3 28 9 31 9 2 17-5 24-16-1 17 4 28 15 30 12 2 18-11 21-27 3 15 11 23 22 21 12-3 13-18 11-33 7 12 17 16 27 9 10-8 2-23-7-35-9-13-21-19-34-19Z" fill="#6c553e" stroke="#211b1b" stroke-width="8"/>
+  <path d="M338 365c18 7 37 8 56 3m-43 22c18 7 38 8 58 1" fill="none" stroke="#c39b66" stroke-width="6"/>
+  <path d="M326 350c20-11 48-15 76-8l14 23-85 17Z" fill="#2f332f" stroke="#1b1d1c" stroke-width="7"/>
+  <path d="M339 346l-2 32m27-38-1 34m28-29-1 23" stroke="#b59a68" stroke-width="5"/>
+
+  <!-- huge battered shield is the physical damage block -->
+  <path d="M74 180C129 129 240 117 313 155c77 40 104 129 87 223-16 91-86 161-176 169-85 7-162-43-193-127-30-83-15-184 43-240Z" fill="url(#kit001-shield)" stroke="#151b1c" stroke-width="14" filter="url(#kit001-rough)"/>
+  <g clip-path="url(#kit001-shield-clip)" fill="none">
+    <path d="M-8 271c134-78 268-84 405-27M-1 401c126-62 259-60 401-3" stroke="#c6c09f" stroke-width="13" opacity=".28"/>
+    <path d="M72 181c36 68 55 158 54 269M198 137c-17 107-10 229 23 365M325 170c-59 103-74 217-45 342" stroke="#141d1e" stroke-width="6" opacity=".5"/>
+    <path d="M90 251c54 18 84 13 121-23m-43 169c58-35 107-31 159 8M75 456c46-21 77-18 111 4" stroke="#d9d0a8" stroke-width="7" opacity=".38"/>
+    <path d="m239 262 54-31-24 59 55 19-66 10-13 68-20-57-65 21 52-53-33-43Z" stroke="#101617" stroke-width="8" opacity=".72"/>
+    <ellipse cx="250" cy="312" rx="43" ry="29" transform="rotate(-23 250 312)" stroke="#e4dbc0" stroke-width="8" opacity=".34"/>
+  </g>
+  <path d="M53 373c23 9 38 26 45 50m173-270c31 11 52 28 65 52" fill="none" stroke="#e1d9ba" stroke-width="5" opacity=".48"/>
+  <path d="M206 298c21-22 54-18 66 8 12 25-5 57-35 61-27 3-51-21-44-47 2-9 6-16 13-22Z" fill="#5d5a4c" stroke="#171c1c" stroke-width="10"/>
+  <path d="M214 315c17-10 34-7 45 8m-49 17c18 8 34 9 48 2" fill="none" stroke="#a9a384" stroke-width="6"/>
+
+  <!-- arrows visibly stopped or deflected by the shield -->
+  <g stroke="#3b2c23" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 217 103 270"/><path d="m102 270-27-2 12-22" fill="#bf8650"/>
+    <path d="M-5 326 84 342"/><path d="m84 342-24 10 6-25" fill="#bf8650"/>
+    <path d="M22 505 104 466"/><path d="m104 466-16 22-12-23" fill="#bf8650"/>
+    <path d="M783 270 693 302"/><path d="m693 302 18-21 10 25" fill="#c08b52"/>
+  </g>
+  <path d="M104 270c-13 8-22 17-29 29m9 43c-14 5-25 12-34 23m54 101c-13-2-26 0-38 5" fill="none" stroke="#d9e2d9" stroke-width="6" opacity=".7"/>
+
+  <!-- mud, rope, discarded helmet, rain and edge crop -->
+  <path d="M425 514c-75-24-149-16-222 22M563 492c70-22 141-17 217 20M6 470c63-24 114-19 159 11" fill="none" stroke="#9d7650" stroke-width="13" opacity=".35"/>
+  <g fill="#191d1d" opacity=".75"><ellipse cx="68" cy="528" rx="45" ry="12"/><ellipse cx="348" cy="532" rx="59" ry="13"/><ellipse cx="686" cy="525" rx="72" ry="14"/></g>
+  <path d="M686 447c13-30 61-35 80-9l-5 43-78-2Z" fill="#68716a" stroke="#202523" stroke-width="8"/>
+  <path d="M681 448c31 13 61 11 89-5M722 417v58" fill="none" stroke="#b0ae96" stroke-width="6"/>
+  <path d="M559 519c42-28 87-28 136 0" fill="none" stroke="#a88a59" stroke-width="7"/>
+  <rect width="800" height="560" fill="url(#kit001-rain)"/>
+  <path d="M10 12h780v536H10Z" fill="none" stroke="#101617" stroke-width="14"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#kit001-grain)"/>
+</svg>

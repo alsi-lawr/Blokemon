@@ -1,0 +1,17 @@
+**/bin/
+**/obj/
+/artifacts/
+/out/
+TestResults/
+*.binlog
+*.nupkg
+*.snupkg
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.swp
+*~
+.DS_Store
+.agent-workspace/

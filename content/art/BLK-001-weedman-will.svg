@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="title desc">
+  <title id="title">BLK-001 Weedman Will non-final comic-vector prototype</title>
+  <desc id="desc">A wary, rain-soaked pub-awning regular leans through a cramped smoking shelter and offers a hand-rolled cigarette over a chipped enamel tray. Brick, leaking gutter, smoke, wet coats and clutter make the scene deliberately specific. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#122c2b"/>
+      <stop offset="0.52" stop-color="#1d4a3b"/>
+      <stop offset="1" stop-color="#08191b"/>
+    </linearGradient>
+    <linearGradient id="awning" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b5a64f"/>
+      <stop offset="0.48" stop-color="#5b622f"/>
+      <stop offset="1" stop-color="#26351f"/>
+    </linearGradient>
+    <linearGradient id="parka" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#687344"/>
+      <stop offset="0.55" stop-color="#344c38"/>
+      <stop offset="1" stop-color="#182c27"/>
+    </linearGradient>
+    <radialGradient id="face" cx="42%" cy="32%" r="76%">
+      <stop offset="0" stop-color="#e4a47b"/>
+      <stop offset="0.58" stop-color="#b96851"/>
+      <stop offset="1" stop-color="#673a37"/>
+    </radialGradient>
+    <radialGradient id="lamp" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffd27a" stop-opacity=".9"/>
+      <stop offset="0.42" stop-color="#f19d4d" stop-opacity=".32"/>
+      <stop offset="1" stop-color="#f19d4d" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="brick" width="88" height="48" patternUnits="userSpaceOnUse">
+      <rect width="88" height="48" fill="#713f36"/>
+      <path d="M0 2h88M0 46h88M43 2v20M0 24h88M14 24v22M80 24v22" fill="none" stroke="#3a2826" stroke-width="5"/>
+      <path d="M4 8c16-6 26-2 38 1M50 30c12-5 23-3 32 2" fill="none" stroke="#a6604c" stroke-width="3" opacity=".48"/>
+    </pattern>
+    <pattern id="hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(14)">
+      <path d="M0 2h12M0 8h12" stroke="#17201a" stroke-width="2" opacity=".34"/>
+    </pattern>
+    <filter id="paper" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="2" seed="17" result="grain"/>
+      <feColorMatrix in="grain" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .11 0"/>
+      <feBlend in="SourceGraphic" mode="multiply"/>
+    </filter>
+    <filter id="rough" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="turbulence" baseFrequency=".018 .05" numOctaves="1" seed="9" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="1.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <clipPath id="coatClip">
+      <path d="M392 356C424 320 481 310 548 326c60 14 120 64 160 138l-8 96H282c18-68 56-155 110-204Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#night)"/>
+  <circle cx="690" cy="87" r="156" fill="url(#lamp)"/>
+
+  <!-- cramped pub exterior and awning -->
+  <path d="M0 0h800v91c-79-12-150-2-217 1-112 5-210-15-324-6C168 93 80 111 0 99Z" fill="#171c18" stroke="#080d0c" stroke-width="9"/>
+  <path d="M-10 29C127 14 260 39 392 25s264 15 420 0l-3 96c-126-16-219 8-346-3-144-12-279 13-471-5Z" fill="url(#awning)" stroke="#111810" stroke-width="8"/>
+  <path d="M10 70c92-22 164 11 257-5 99-17 192 10 280-3 87-13 166-3 248-13" fill="none" stroke="#dad082" stroke-width="10" opacity=".42"/>
+  <path d="M20 112c38-3 40 24 77 10 30-12 61 13 96-1 44-17 69 15 115-1 34-12 70 13 107 0 45-16 73 17 113-2 33-15 67 12 106-1 51-17 83 11 176-4" fill="none" stroke="#232d1e" stroke-width="15"/>
+  <path d="M115 106c3 31-8 40-2 66m253-58c-7 34 8 49-3 72m318-74c-2 24-16 42-9 68" fill="none" stroke="#9ec6b2" stroke-width="6" stroke-linecap="round"/>
+  <path d="M111 168c-12 14-13 28 2 31 13-2 15-15 2-30M669 178c-11 15-11 28 3 29 13-3 14-16 1-29" fill="#b9d9c4" stroke="#182f2b" stroke-width="4"/>
+
+  <path d="M0 111h247v338H0Z" fill="url(#brick)" stroke="#241b1b" stroke-width="8"/>
+  <path d="M28 152h169v233L28 371Z" fill="#102e2d" stroke="#d0b66e" stroke-width="9"/>
+  <path d="M42 166h141v189L42 345Z" fill="#173f3a"/>
+  <path d="M46 342 178 178M45 249l91-78M96 354l85-101" stroke="#9ac4ae" stroke-width="5" opacity=".25"/>
+  <path d="M32 407c51-20 105-10 161-3" stroke="#251c1a" stroke-width="10"/>
+  <path d="M0 436c79-12 134 5 224-13 75-14 120-3 169 14v123H0Z" fill="#132624"/>
+  <path d="M5 475c80-19 151-4 220-18 64-13 118-11 191 7" fill="none" stroke="#477166" stroke-width="4" opacity=".48"/>
+
+  <!-- hanging coat and shelter clutter -->
+  <path d="M228 177c34 12 59 33 68 69l-21 144-77-2 5-129c2-34 8-61 25-82Z" fill="#342c31" stroke="#171317" stroke-width="8"/>
+  <path d="M232 188c-16 27-21 58-20 96m50-73c12 49-1 100-4 160" fill="none" stroke="#6d555b" stroke-width="5"/>
+  <path d="m268 204 25-27 24 24-15 18Z" fill="#a19261" stroke="#171317" stroke-width="6"/>
+  <path d="M272 177c-2-26 25-40 44-24 12 10 4 33-3 47" fill="none" stroke="#25201f" stroke-width="8"/>
+
+  <!-- Will's hunched silhouette -->
+  <path d="M392 356C424 320 481 310 548 326c60 14 120 64 160 138l-8 96H282c18-68 56-155 110-204Z" fill="url(#parka)" stroke="#111817" stroke-width="12" stroke-linejoin="round"/>
+  <g clip-path="url(#coatClip)">
+    <rect x="274" y="309" width="444" height="251" fill="url(#hatch)"/>
+    <path d="M375 354c67 54 105 82 132 206M597 343c-54 64-69 113-78 217" fill="none" stroke="#8b9460" stroke-width="8" opacity=".38"/>
+    <path d="M333 474c42-24 70-24 109-11M583 457c38-11 74-3 111 26" fill="none" stroke="#172820" stroke-width="12"/>
+    <path d="m438 406 33 18-16 118-43-7Z" fill="#263a31" stroke="#172019" stroke-width="5"/>
+  </g>
+  <path d="M447 331c-13 38-1 73 33 91 42 22 91 4 115-32l-28-71Z" fill="#758051" stroke="#111817" stroke-width="9"/>
+  <path d="M456 340c11 25 39 38 61 32 22-5 39-25 46-50" fill="none" stroke="#b6ad64" stroke-width="6"/>
+
+  <!-- irregular wary head -->
+  <path d="M424 190c22-47 74-63 119-50 45 14 78 58 75 107-1 20-12 34-11 54 1 32-17 64-42 77-31 16-83 2-109-21-16-15-20-37-39-48-22-14-26-44-12-61 9-11 13-34 19-58Z" fill="url(#face)" stroke="#231a1c" stroke-width="11" stroke-linejoin="round" filter="url(#rough)"/>
+  <path d="M421 230c-23-4-39 12-38 34 1 26 21 44 48 37l9-31Z" fill="#a85f4c" stroke="#231a1c" stroke-width="9"/>
+  <path d="M395 258c13-9 23-1 25 11-9-7-17-4-20 8" fill="none" stroke="#603936" stroke-width="5"/>
+  <path d="M450 175c27-31 71-43 109-21 24 14 38 37 42 62-23-20-50-23-81-13-28 9-50 9-79-1Z" fill="#2a2521" stroke="#181615" stroke-width="8"/>
+  <path d="M463 177c17-13 37-18 55-15m-67 28c19-11 39-16 62-15m60 14c-12-10-26-16-42-18" fill="none" stroke="#6b5b43" stroke-width="5" stroke-linecap="round"/>
+  <path d="M449 226c16-15 40-17 57-3" fill="none" stroke="#392521" stroke-width="10" stroke-linecap="round"/>
+  <path d="M534 222c15-6 30 1 37 13" fill="none" stroke="#392521" stroke-width="9" stroke-linecap="round"/>
+  <path d="M456 240c12-9 30-7 37 3-4 18-27 21-37-3Z" fill="#f3e2bf" stroke="#2b2020" stroke-width="5"/>
+  <ellipse cx="477" cy="244" rx="5" ry="8" fill="#121818"/>
+  <path d="M536 243c9-5 21-2 25 5-5 13-20 13-25-5Z" fill="#efd9b7" stroke="#2b2020" stroke-width="5"/>
+  <ellipse cx="550" cy="247" rx="4" ry="7" fill="#121818"/>
+  <path d="M515 235c-2 20 8 30 23 35 15 6 15 24-4 29-17 5-35-2-44-11" fill="#bd7055" stroke="#3b2725" stroke-width="7" stroke-linecap="round"/>
+  <path d="M513 257c8 0 15 5 16 11" fill="none" stroke="#e6ae81" stroke-width="4"/>
+  <path d="M468 315c22-12 50-10 75 4-12 32-59 35-75-4Z" fill="#472426" stroke="#2a1b1c" stroke-width="7"/>
+  <path d="M481 320c12-2 32 0 45 7l-7 10-31-2Z" fill="#e3d5a6"/>
+  <path d="M482 343c13-7 30-6 41 0-12 12-31 13-41 0Z" fill="#9b3e4b"/>
+  <path d="M455 282l-14 9m14 2-12 13m105-5 15 7m-8-20 15 2M474 304l-8 2m92 25 11 5" stroke="#4a2c2a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M438 212c5-9 13-16 25-19m114 30c9 5 15 14 19 24" fill="none" stroke="#d98763" stroke-width="4" opacity=".65"/>
+  <circle cx="450" cy="271" r="4" fill="#50302c"/><circle cx="461" cy="292" r="3" fill="#50302c"/><circle cx="558" cy="283" r="3" fill="#50302c"/><circle cx="539" cy="307" r="3" fill="#50302c"/>
+
+  <!-- enamel tray foreground -->
+  <path d="M-22 495c96-45 222-52 329-17 35 12 52 37 27 58-63 29-271 37-358-3Z" fill="#e1d6aa" stroke="#192b2a" stroke-width="11"/>
+  <path d="M-9 502c92-31 235-35 318-7-32 27-242 41-316 14Z" fill="#396b61" stroke="#173a37" stroke-width="6"/>
+  <path d="M29 499c21-8 46-9 69-4m25 10c38-9 78-8 112 0" fill="none" stroke="#a9c7ab" stroke-width="4" opacity=".5"/>
+  <path d="M70 487l34 4m-19-14 39 9m74 0 26-10m-6 19 30-8" stroke="#4d3629" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- huge offered hand, individually articulated -->
+  <path d="M404 410c-49 8-100 22-138 42-20 10-32 28-20 43 11 14 34 8 53-2l43-22c-19 16-19 34-6 41 12 7 29-3 45-18l24-21c-11 18-5 34 8 38 15 4 26-10 39-27l17-25c-1 17 8 29 20 27 18-3 19-27 20-43 3-42-37-49-65-39Z" fill="#c7785d" stroke="#261c1d" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M299 492c17-13 33-24 51-30m31 32c15-16 28-29 39-43m32 33c9-14 17-29 22-43" fill="none" stroke="#7b443d" stroke-width="5" stroke-linecap="round"/>
+  <path d="M257 458c39-26 82-44 130-55" fill="none" stroke="#d99b78" stroke-width="5"/>
+  <path d="M247 443c63-11 101-9 139 2" fill="none" stroke="#281e1d" stroke-width="12" stroke-linecap="round"/>
+  <path d="M235 437c8-9 18-15 30-14l95 10-5 23-102-2c-16 0-24-8-18-17Z" fill="#d7bd85" stroke="#241d1a" stroke-width="6"/>
+  <path d="M237 439c-7-2-12 5-11 13 2 9 13 13 22 6" fill="#e07d42" stroke="#3a2119" stroke-width="5"/>
+  <path d="M275 435c20 5 42 7 67 7" stroke="#7d6a45" stroke-width="3" stroke-dasharray="5 5"/>
+
+  <!-- smoke and rain foreground -->
+  <path d="M221 425c-33-29 19-42-5-72-19-23 13-39 4-65" fill="none" stroke="#dce5c9" stroke-width="9" opacity=".58" stroke-linecap="round"/>
+  <path d="M229 423c-10-24 21-33 7-55" fill="none" stroke="#f0e8cf" stroke-width="4" opacity=".78"/>
+  <path d="M17 126 2 187m73-57-16 67m186-70-19 77m426-76-24 91m94-96-18 67" stroke="#b8ddcf" stroke-width="5" opacity=".47" stroke-linecap="round"/>
+  <path d="M18 542c65-20 130-3 191-18 53-13 93-5 136 9m233-2c63-19 128-7 213-28" fill="none" stroke="#8ec2b6" stroke-width="5" opacity=".34"/>
+
+  <!-- ink scuffs -->
+  <g fill="none" stroke="#101817" stroke-linecap="round" opacity=".55">
+    <path d="M620 384l28 18m-36-6 19 23M370 376l-18 31m5-43-22 17" stroke-width="5"/>
+    <path d="M737 307c-22 17-30 43-25 69m27-58 22 25" stroke-width="4"/>
+  </g>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#0d1514" stroke-width="12"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#paper)" pointer-events="none"/>
+</svg>

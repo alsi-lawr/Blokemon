@@ -1,0 +1,1167 @@
+/*
+  The card print contract. This is the card design itself, owned by the generator and
+  embedded into every emitted card, rather than a stylesheet the output links to.
+  The typeface declarations are not here. A card names its families and the page it is
+  embedded into provides them, the same way any component relies on a page's web fonts.
+*/
+/* Reusable late-Gen-1 card coordinate and print contract. */
+:root {
+  --blokemon-card-w: 750px;
+  --blokemon-card-h: 1050px;
+  --blokemon-outer-border: 25px;
+  --blokemon-inner-x: 25px;
+  --blokemon-inner-y: 25px;
+  --blokemon-inner-w: 700px;
+  --blokemon-inner-h: 999px;
+  --blokemon-header-y: 40px;
+  --blokemon-header-h: 65px;
+  --blokemon-art-frame-x: 64px;
+  --blokemon-art-frame-y: 109px;
+  --blokemon-art-frame-w: 621px;
+  --blokemon-art-frame-h: 449px;
+  --blokemon-art-x: 79px;
+  --blokemon-art-y: 123px;
+  --blokemon-art-w: 590px;
+  --blokemon-art-h: 416px;
+  --blokemon-meta-y: 563px;
+  --blokemon-meta-h: 36px;
+  --blokemon-rules-x: 42px;
+  --blokemon-rules-y: 606px;
+  --blokemon-rules-w: 664px;
+  --blokemon-rules-h: 261px;
+  --blokemon-energy-x: 42px;
+  --blokemon-copy-x: 110px;
+  --blokemon-damage-x: 608px;
+  --blokemon-footer-y: 868px;
+  --blokemon-stat-y: 874px;
+  --blokemon-stat-h: 66px;
+  --blokemon-flavour-y: 948px;
+  --blokemon-flavour-h: 47px;
+  --blokemon-legal-y: 997px;
+  --blokemon-legal-h: 28px;
+  --blokemon-card-scale: 1;
+
+  --blokemon-face: "Gillius ADF", sans-serif;
+  --blokemon-numeric-face: "Jost", sans-serif;
+}
+
+/*
+  Type theme hook. Every card carries data-card-type derived from its own card data, so a new type
+  is a token block rather than a second card implementation. A theme owns only print colour and
+  atmosphere; it never moves a canonical coordinate, changes mechanics hierarchy or covers artwork.
+
+  --tt-haze / --tt-cream   readable near-white centre the text sits on
+  --tt-mid / --tt-deep     field colour and darkest edge
+  --tt-glow                warm accent bloom
+  --tt-smoke-hi/mid        dense and thin themed smoke used by the field plume layers
+  --tt-lift                bright break in the smoke, the airbrushed highlight
+  --tt-ink                 thin printed rule ink
+  --tt-pip / --tt-pip-rim  Attack Energy disc
+  --tt-icon                main type disc
+  --tt-frame-hi/lo         art frame and strip cardstock
+  --tt-flavour-rule        flavour box hairline
+*/
+.blokemon-gym-card {
+  --tt-haze: #fbf8ea;
+  --tt-cream: #efe9cd;
+  --tt-mid: #bdb797;
+  --tt-deep: #8d886b;
+  --tt-edge: rgba(72, 70, 46, .34);
+  --tt-glow: rgba(214, 176, 96, .46);
+  --tt-smoke-hi: rgba(108, 110, 82, .62);
+  --tt-smoke-mid: rgba(126, 128, 96, .38);
+  --tt-lift: rgba(252, 248, 228, .66);
+  --tt-ink: #1f2410;
+  --tt-pip: #b9b391;
+  --tt-pip-rim: #6d684c;
+  --tt-icon: #b3ad8c;
+  --tt-frame-hi: #ffec92;
+  --tt-frame-lo: #dcb038;
+  --tt-flavour-rule: rgba(122, 92, 44, .8);
+  --blokemon-lead-label: #1f3f8c;
+  --blokemon-lead-name: #a2331b;
+}
+
+/* Blazed: layered sage/olive smoke plumes over hazy cream with a muted amber bloom. */
+.blokemon-gym-card[data-card-type="Blazed"] {
+  --tt-haze: #fdfae4;
+  --tt-cream: #f3f1ac;
+  --tt-mid: #b3ca5a;
+  --tt-deep: #4f7620;
+  --tt-edge: rgba(64, 92, 14, .44);
+  --tt-glow: rgba(233, 150, 24, .68);
+  --tt-smoke-hi: rgba(86, 126, 26, .84);
+  --tt-smoke-mid: rgba(152, 182, 68, .58);
+  --tt-lift: rgba(255, 252, 220, .80);
+  --tt-pip: #93a95c;
+  --tt-pip-rim: #4d5a2c;
+  --tt-icon: #8fa955;
+  --tt-frame-hi: #eccd6d;
+  --tt-frame-lo: #b8963c;
+  --tt-flavour-rule: rgba(150, 82, 30, .85);
+}
+
+/* Curry: turmeric, orange and brick marbling under an oily curry sheen. */
+.blokemon-gym-card[data-card-type="Curry"] {
+  --tt-haze: #fdf6e4;
+  --tt-cream: #fbe3b4;
+  --tt-mid: #eb9a48;
+  --tt-deep: #b5451e;
+  --tt-edge: rgba(150,58,10,.44);
+  --tt-glow: rgba(250,194,68,.62);
+  --tt-smoke-hi: rgba(184,70,24,.74);
+  --tt-smoke-mid: rgba(232,140,60,.52);
+  --tt-lift: rgba(255,250,228,.78);
+  --tt-pip: #e08a3c;
+  --tt-pip-rim: #8a3a12;
+  --tt-icon: #dd7a34;
+  --tt-flavour-rule: rgba(150,52,20,.85);
+}
+/* Sober: cool morning blue and steel with a clean pale wash. */
+.blokemon-gym-card[data-card-type="Sober"] {
+  --tt-haze: #f2fafe;
+  --tt-cream: #d6ebf8;
+  --tt-mid: #7cb2d7;
+  --tt-deep: #33668d;
+  --tt-edge: rgba(18,62,98,.44);
+  --tt-glow: rgba(142,208,234,.55);
+  --tt-smoke-hi: rgba(42,106,154,.72);
+  --tt-smoke-mid: rgba(120,176,214,.50);
+  --tt-lift: rgba(250,254,255,.80);
+  --tt-pip: #6aa5cc;
+  --tt-pip-rim: #2b5a80;
+  --tt-icon: #6aa5cc;
+  --tt-flavour-rule: rgba(28,82,122,.85);
+}
+/* Beer: warm amber and foam over a golden pour. */
+.blokemon-gym-card[data-card-type="Beer"] {
+  --tt-haze: #fffbe2;
+  --tt-cream: #fbeeae;
+  --tt-mid: #eac63f;
+  --tt-deep: #a97d0e;
+  --tt-edge: rgba(120,86,6,.46);
+  --tt-glow: rgba(255,228,116,.60);
+  --tt-smoke-hi: rgba(176,128,14,.70);
+  --tt-smoke-mid: rgba(238,204,84,.52);
+  --tt-lift: rgba(255,253,232,.80);
+  --tt-pip: #edc63f;
+  --tt-pip-rim: #8d6708;
+  --tt-icon: #eabf34;
+  --tt-flavour-rule: rgba(140,100,12,.85);
+}
+/* Geeked: violet haze and magenta bloom. */
+.blokemon-gym-card[data-card-type="Geeked"] {
+  --tt-haze: #fbf4fd;
+  --tt-cream: #ecd9f3;
+  --tt-mid: #b085c6;
+  --tt-deep: #6a3888;
+  --tt-edge: rgba(72,26,102,.44);
+  --tt-glow: rgba(226,148,214,.55);
+  --tt-smoke-hi: rgba(100,48,128,.72);
+  --tt-smoke-mid: rgba(172,124,196,.50);
+  --tt-lift: rgba(253,248,255,.80);
+  --tt-pip: #a87ac2;
+  --tt-pip-rim: #5d3078;
+  --tt-icon: #a87ac2;
+  --tt-flavour-rule: rgba(94,42,122,.85);
+}
+/* Lairy: punch-impact bursts and ink shock lines in bruised crimson and cobalt. */
+.blokemon-gym-card[data-card-type="Lairy"] {
+  --tt-haze: #fdf2ef;
+  --tt-cream: #f5d7cf;
+  --tt-mid: #ca6b59;
+  --tt-deep: #872724;
+  --tt-edge: rgba(96,20,20,.46);
+  --tt-glow: rgba(64,88,176,.50);
+  --tt-smoke-hi: rgba(122,28,30,.74);
+  --tt-smoke-mid: rgba(196,92,74,.50);
+  --tt-lift: rgba(255,248,244,.78);
+  --tt-pip: #c4573f;
+  --tt-pip-rim: #7c2418;
+  --tt-icon: #c4573f;
+  --tt-flavour-rule: rgba(138,38,30,.85);
+}
+/* Dodgy: slate green-black murk with a low sodium glow. */
+.blokemon-gym-card[data-card-type="Dodgy"] {
+  --tt-haze: #f2f3ed;
+  --tt-cream: #d7dad0;
+  --tt-mid: #7a8276;
+  --tt-deep: #313a34;
+  --tt-edge: rgba(20,28,22,.48);
+  --tt-glow: rgba(154,170,118,.44);
+  --tt-smoke-hi: rgba(34,44,38,.74);
+  --tt-smoke-mid: rgba(96,106,94,.52);
+  --tt-lift: rgba(248,250,242,.74);
+  --tt-pip: #6f7a6c;
+  --tt-pip-rim: #2b332d;
+  --tt-icon: #6f7a6c;
+  --tt-flavour-rule: rgba(46,56,48,.85);
+}
+/* Local: warm neutral cream and dust, the plain-clothes field. */
+.blokemon-gym-card[data-card-type="Local"] {
+  --tt-haze: #fdfaef;
+  --tt-cream: #ede5d0;
+  --tt-mid: #c1b7a0;
+  --tt-deep: #877c65;
+  --tt-edge: rgba(74,64,42,.40);
+  --tt-glow: rgba(216,188,130,.48);
+  --tt-smoke-hi: rgba(122,110,86,.62);
+  --tt-smoke-mid: rgba(178,166,142,.46);
+  --tt-lift: rgba(255,252,242,.78);
+  --tt-pip: #bdb298;
+  --tt-pip-rim: #6f6650;
+  --tt-icon: #bdb298;
+  --tt-flavour-rule: rgba(118,98,64,.80);
+}
+/* Legend: deep bronze and regal gold. */
+.blokemon-gym-card[data-card-type="Legend"] {
+  --tt-haze: #fdf8e6;
+  --tt-cream: #f1e2b2;
+  --tt-mid: #c7a340;
+  --tt-deep: #795911;
+  --tt-edge: rgba(88,62,8,.46);
+  --tt-glow: rgba(255,222,122,.58);
+  --tt-smoke-hi: rgba(108,78,12,.72);
+  --tt-smoke-mid: rgba(196,164,72,.50);
+  --tt-lift: rgba(255,252,234,.80);
+  --tt-pip: #cfae4e;
+  --tt-pip-rim: #7a5a10;
+  --tt-icon: #cfae4e;
+  --tt-flavour-rule: rgba(118,86,16,.85);
+}
+
+/*
+  A card is embedded into pages the generator does not control, and host rules on bare element
+  selectors cascade straight into it. Everything the design sets is re-declared below, so the reset
+  only has to neutralise what a host might set on a p, h2, b, small or img.
+*/
+.blokemon-gym-card,
+.blokemon-gym-card *,
+.blokemon-gym-card *::before,
+.blokemon-gym-card *::after {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  min-width: 0;
+  max-height: none;
+  min-height: 0;
+  float: none;
+  text-indent: 0;
+  text-transform: none;
+  text-decoration: none;
+  list-style: none;
+  font: inherit;
+  letter-spacing: normal;
+  word-spacing: normal;
+  vertical-align: baseline;
+}
+
+/*
+  The card's ambient shadow falls outside its own 750 by 1050 face, and a foreignObject clips to its
+  own box, so the face sits inside a slightly larger one with exactly the room the shadow needs:
+  13px either side, 4px above and 22px below, rounded up.
+*/
+.blokemon-card-bleed {
+  position: relative;
+  width: 778px;
+  height: 1080px;
+  padding: 6px 14px 24px;
+}
+
+.blokemon-card-scale {
+  position: relative;
+  width: calc(var(--blokemon-card-w) * var(--blokemon-card-scale));
+  height: calc(var(--blokemon-card-h) * var(--blokemon-card-scale));
+  flex: 0 0 auto;
+}
+
+/*
+  Shallow printed cardstock. The measured 750 x 1050 face is the card authority: the bevel is a
+  1.5 px inset highlight on the yellow border, the paper thickness is 2 px of warm edge under the
+  silhouette, and the lift is one soft low-opacity ambient shadow. No side slab, offset silhouette,
+  raised nested plate, perspective or foil sweep.
+*/
+.blokemon-gym-card {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: var(--blokemon-card-w);
+  height: var(--blokemon-card-h);
+  transform: scale(var(--blokemon-card-scale));
+  transform-origin: 0 0;
+  border: 0;
+  outline: 1px solid rgba(44, 36, 16, .85);
+  outline-offset: -1px;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(122, 94, 26, .06) 0 .7px, rgba(255, 255, 255, 0) 1.2px) 0 0 / 4px 4px,
+    linear-gradient(178deg, #f9da5c 0%, #f5d452 46%, #f0cd47 78%, #e8c33d 100%);
+  color: #16120a;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 252, 226, .85),
+    inset 1.5px 0 0 rgba(255, 250, 220, .50),
+    inset -1.5px 0 0 rgba(146, 110, 26, .45),
+    inset 0 -2px 0 rgba(132, 100, 24, .55),
+    0 1px 0 rgba(150, 118, 42, .95),
+    0 2px 0 rgba(104, 80, 28, .70),
+    0 3px 2px rgba(52, 42, 18, .26),
+    0 9px 18px -5px rgba(38, 32, 14, .28);
+  font-family: var(--blokemon-face);
+  line-height: 1.15;
+  contain: layout style;
+}
+
+.blokemon-gym-card,
+.blokemon-gym-card * { box-sizing: border-box; }
+
+/*
+  Printed inner field. Layer order top to bottom: halftone dot screen, paper fibre grain, drifting
+  smoke plumes, warm amber bloom, readable haze over the header/rules bands, then the base wash.
+*/
+.blokemon-gym-card .printed-inner-field {
+  position: absolute;
+  left: var(--blokemon-inner-x);
+  top: var(--blokemon-inner-y);
+  width: var(--blokemon-inner-w);
+  height: var(--blokemon-inner-h);
+  border: 2px solid var(--tt-ink);
+  border-radius: 11px;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(52, 62, 20, .07) 0 .7px, rgba(255, 255, 255, 0) 1.15px),
+    radial-gradient(circle at 3px 5px, rgba(70, 82, 26, .04) 0 1.3px, rgba(255, 255, 255, 0) 2.1px),
+    radial-gradient(circle at 9px 4px, rgba(255, 252, 216, .10) 0 1.7px, rgba(255, 255, 255, 0) 2.6px),
+    radial-gradient(19% 8% at 34% 12%, var(--tt-lift) 0%, rgba(255, 255, 255, 0) 76%),
+    radial-gradient(15% 5% at 26% 61%, var(--tt-lift) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(38% 16% at 6% 5%, var(--tt-smoke-hi) 0%, var(--tt-smoke-mid) 44%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(30% 12% at 40% 2%, var(--tt-glow) 0%, rgba(255, 255, 255, 0) 74%),
+    radial-gradient(36% 17% at 94% 6%, var(--tt-smoke-hi) 0%, var(--tt-smoke-mid) 46%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(23% 18% at 1% 23%, var(--tt-smoke-hi) 0%, var(--tt-smoke-mid) 48%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(9% 20% at 1% 33%, var(--tt-smoke-hi) 0%, rgba(255, 255, 255, 0) 74%),
+    radial-gradient(9% 20% at 99% 36%, var(--tt-smoke-hi) 0%, rgba(255, 255, 255, 0) 74%),
+    radial-gradient(40% 5% at 50% 9%, var(--tt-smoke-hi) 0%, rgba(255, 255, 255, 0) 76%),
+    radial-gradient(44% 5% at 48% 53%, var(--tt-smoke-hi) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(21% 16% at 100% 27%, var(--tt-smoke-hi) 0%, var(--tt-smoke-mid) 48%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(19% 14% at 2% 45%, var(--tt-glow) 0%, rgba(255, 255, 255, 0) 76%),
+    radial-gradient(20% 15% at 99% 47%, var(--tt-smoke-hi) 0%, var(--tt-smoke-mid) 50%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(34% 8% at 46% 56%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 80%),
+    radial-gradient(24% 6% at 13% 60%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(21% 5% at 69% 62%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(27% 7% at 35% 71%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(22% 6% at 84% 67%, var(--tt-glow) 0%, rgba(255, 255, 255, 0) 76%),
+    radial-gradient(29% 7% at 19% 84%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(25% 6% at 66% 87%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(27% 16% at 2% 70%, var(--tt-smoke-hi) 0%, var(--tt-smoke-mid) 46%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(26% 17% at 99% 71%, var(--tt-smoke-hi) 0%, var(--tt-smoke-mid) 46%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(29% 10% at 54% 78%, var(--tt-glow) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(31% 13% at 12% 94%, var(--tt-smoke-hi) 0%, var(--tt-smoke-mid) 46%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(27% 10% at 48% 99%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(33% 14% at 88% 95%, var(--tt-smoke-hi) 0%, var(--tt-smoke-mid) 46%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(50% 11% at 50% 5%, rgba(255, 253, 228, .66) 0%, rgba(255, 255, 255, 0) 82%),
+    radial-gradient(52% 14% at 48% 68%, rgba(255, 253, 226, .40) 0%, rgba(255, 255, 255, 0) 80%),
+    radial-gradient(80% 60% at 50% 45%, rgba(255, 255, 255, 0) 64%, var(--tt-edge) 100%),
+    radial-gradient(82% 58% at 50% 44%, var(--tt-haze) 0%, var(--tt-haze) 24%, var(--tt-cream) 52%, var(--tt-mid) 82%, var(--tt-deep) 100%);
+  background-size: 4px 4px, 11px 9px, 17px 13px, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto;
+}
+
+/* Thin printed inset rule, the period double-line inside the coloured field. */
+/* Second smoke pass: broad low-contrast drift so the field reads as moving air, not one gradient. */
+.blokemon-gym-card .printed-inner-field::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 9px;
+  background-image:
+    radial-gradient(31% 6% at 30% 13%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 76%),
+    radial-gradient(23% 5% at 62% 20%, var(--tt-smoke-hi) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(27% 5% at 14% 35%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(19% 6% at 86% 32%, var(--tt-smoke-hi) 0%, rgba(255, 255, 255, 0) 76%),
+    radial-gradient(34% 5% at 44% 51%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 80%),
+    radial-gradient(21% 5% at 82% 63%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(26% 5% at 20% 74%, var(--tt-smoke-hi) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(30% 6% at 60% 89%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(18% 7% at 10% 93%, var(--tt-smoke-hi) 0%, rgba(255, 255, 255, 0) 78%);
+  opacity: .78;
+  pointer-events: none;
+}
+
+.blokemon-gym-card .classification {
+  position: absolute;
+  left: 64px;
+  top: 34px;
+  z-index: 4;
+  font: 700 13px/14px var(--blokemon-face);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #2a2410;
+}
+
+/*
+  The name plate fits its own printed box. --blokemon-name-len is card data, so the size is fixed per
+  card rather than reflowed by viewport: the whole 750 x 1050 object still scales as one unit.
+  The .68 factor is the measured worst-case advance width per character for this display stack.
+*/
+.blokemon-gym-card .card-name {
+  position: absolute;
+  left: 64px;
+  top: 57px;
+  z-index: 4;
+  width: 414px;
+  margin: 0;
+  font-family: var(--blokemon-face);
+  font-weight: 700;
+  font-size: min(44px, calc(414px / (var(--blokemon-name-len, 12) * .68)));
+  line-height: 46px;
+  letter-spacing: -.012em;
+  white-space: nowrap;
+  color: #14100a;
+  /* Slight warm/cool ghost either side reads as dated ink misregistration. */
+  text-shadow:
+    .7px .5px 0 rgba(168, 60, 30, .20),
+    -.7px -.3px 0 rgba(38, 76, 140, .16),
+    0 1px 0 rgba(255, 252, 226, .75),
+    0 2px 2px rgba(52, 42, 16, .26);
+}
+
+.blokemon-gym-card:has(.evolution-panel) .classification {
+  left: 51px;
+  top: 53.75px;
+  width: 110px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -.25px;
+  transform: scaleY(1.1);
+  transform-origin: 50% 100%;
+  z-index: 6;
+  text-shadow: 0 1px 0 rgba(255, 250, 206, .85), 0 -1px 0 rgba(255, 250, 206, .55);
+}
+.blokemon-gym-card:has(.evolution-panel) .card-name {
+  left: 190px;
+  top: 63px;
+  width: 288px;
+  font-size: min(34px, calc(288px / (var(--blokemon-name-len, 12) * .68)));
+  line-height: 38px;
+}
+
+.blokemon-gym-card .hp-cluster {
+  position: absolute;
+  left: 490px;
+  top: 59px;
+  z-index: 4;
+  width: 90px;
+  text-align: right;
+  white-space: nowrap;
+  color: #8d2c15;
+}
+
+.blokemon-gym-card .hp-cluster strong {
+  font: 900 35px/40px var(--blokemon-numeric-face);
+  text-shadow: 0 1px 0 rgba(255, 252, 226, .6);
+}
+
+.blokemon-gym-card .hp-cluster small {
+  margin-left: 3px;
+  font: 700 17px/1 var(--blokemon-numeric-face);
+  letter-spacing: .01em;
+}
+
+.blokemon-gym-card .main-type-icon {
+  position: absolute;
+  left: 639px;
+  top: 46.5px;
+  z-index: 4;
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--tt-ink);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 232, .78) 0%, rgba(255, 255, 232, 0) 46%),
+    radial-gradient(circle at 50% 62%, var(--tt-icon) 0%, var(--tt-deep) 100%);
+  box-shadow: inset 0 0 0 2px rgba(255, 253, 226, .62), inset 0 -3px 4px rgba(38, 44, 20, .38);
+  color: #11170c;
+  font: 700 16px/1 var(--blokemon-face);
+  letter-spacing: .02em;
+}
+
+.blokemon-gym-card .evolves-strip {
+  position: absolute;
+  left: 160px;
+  top: 36px;
+  z-index: 4;
+  width: 257px;
+  height: 22px;
+  padding: 2px 8px;
+  border-top: 1px solid var(--tt-ink);
+  border-bottom: 1px solid var(--tt-ink);
+  background: linear-gradient(180deg, rgba(250, 244, 214, .96), rgba(234, 223, 174, .94));
+  font: italic 700 14px/16px var(--blokemon-face);
+  white-space: nowrap;
+  color: #241d0c;
+}
+
+.blokemon-gym-card .evolves-strip::before {
+  content: "";
+  position: absolute;
+  left: -55px;
+  top: 21px;
+  width: 580px;
+  height: 6px;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    #f8de77 0 1px,
+    #b48c22 1px 2px,
+    rgba(0, 0, 0, 0) 2px 4px,
+    #f8de77 4px 5px,
+    #b48c22 5px 6px
+  );
+}
+
+.blokemon-gym-card .evolution-panel {
+  position: absolute;
+  left: 45px;
+  top: 36px;
+  z-index: 5;
+  width: 121px;
+  height: 129px;
+  pointer-events: none;
+}
+
+/*
+  Period evolution burst: a central octagon sitting over three overlapping four-pointed stars.
+  ::before carries the union silhouette of the three stars, ::after the octagon face on top.
+*/
+.blokemon-gym-card .evolution-panel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -3px;
+  width: 121px;
+  height: 121px;
+  z-index: 0;
+  background:
+    repeating-conic-gradient(from 15deg, rgba(255, 250, 208, .22) 0 15deg, rgba(112, 78, 10, .20) 15deg 30deg),
+    linear-gradient(148deg, #eccf6a 0%, #dcb845 40%, #c39a2d 74%, #a17a1c 100%);
+  filter: drop-shadow(0 1px 0 rgba(104, 74, 12, .55));
+  clip-path: polygon(100.0% 50.0%,97.6% 51.6%,95.5% 53.0%,93.5% 54.3%,91.6% 55.5%,89.9% 56.6%,88.4% 57.6%,86.9% 58.6%,85.5% 59.5%,84.9% 60.6%,85.4% 62.0%,86.2% 63.6%,87.0% 65.3%,87.9% 67.2%,88.9% 69.2%,90.0% 71.4%,91.1% 73.8%,88.5% 73.9%,86.1% 74.1%,83.8% 74.2%,81.8% 74.4%,79.9% 74.5%,78.8% 75.3%,78.3% 76.5%,77.8% 77.8%,76.5% 78.3%,75.3% 78.8%,74.1% 79.3%,73.2% 80.2%,73.1% 82.2%,72.9% 84.2%,72.7% 86.5%,72.5% 89.0%,70.3% 87.9%,68.2% 86.9%,66.3% 86.0%,64.6% 85.2%,63.0% 84.5%,61.7% 84.5%,60.6% 84.9%,59.5% 85.5%,58.6% 86.9%,57.6% 88.4%,56.6% 89.9%,55.5% 91.6%,54.3% 93.5%,53.0% 95.5%,51.6% 97.6%,50.0% 100.0%,48.4% 97.6%,47.0% 95.5%,45.7% 93.5%,44.5% 91.6%,43.4% 89.9%,42.4% 88.4%,41.4% 86.9%,40.5% 85.5%,39.4% 84.9%,38.0% 85.4%,36.4% 86.2%,34.7% 87.0%,32.8% 87.9%,30.8% 88.9%,28.6% 90.0%,26.3% 91.1%,26.1% 88.5%,25.9% 86.1%,25.8% 83.8%,25.6% 81.8%,25.5% 79.9%,24.7% 78.8%,23.5% 78.3%,22.2% 77.8%,21.7% 76.5%,21.2% 75.3%,20.7% 74.1%,19.8% 73.2%,17.8% 73.1%,15.8% 72.9%,13.5% 72.7%,11.0% 72.5%,12.1% 70.3%,13.1% 68.2%,14.0% 66.3%,14.8% 64.6%,15.5% 63.0%,15.5% 61.7%,15.1% 60.6%,14.5% 59.5%,13.1% 58.6%,11.6% 57.6%,10.1% 56.6%,8.4% 55.5%,6.5% 54.3%,4.5% 53.0%,2.4% 51.6%,-0.0% 50.0%,2.4% 48.4%,4.5% 47.0%,6.5% 45.7%,8.4% 44.5%,10.1% 43.4%,11.6% 42.4%,13.1% 41.4%,14.5% 40.5%,15.1% 39.4%,14.6% 38.0%,13.8% 36.4%,13.0% 34.7%,12.1% 32.8%,11.1% 30.8%,10.0% 28.6%,8.9% 26.3%,11.5% 26.1%,13.9% 25.9%,16.2% 25.8%,18.2% 25.6%,20.1% 25.5%,21.2% 24.7%,21.7% 23.5%,22.2% 22.2%,23.5% 21.7%,24.7% 21.2%,25.9% 20.7%,26.8% 19.8%,26.9% 17.8%,27.1% 15.8%,27.3% 13.5%,27.5% 11.0%,29.7% 12.1%,31.8% 13.1%,33.7% 14.0%,35.4% 14.8%,37.0% 15.5%,38.3% 15.5%,39.4% 15.1%,40.5% 14.5%,41.4% 13.1%,42.4% 11.6%,43.4% 10.1%,44.5% 8.4%,45.7% 6.5%,47.0% 4.5%,48.4% 2.4%,50.0% -0.0%,51.6% 2.4%,53.0% 4.5%,54.3% 6.5%,55.5% 8.4%,56.6% 10.1%,57.6% 11.6%,58.6% 13.1%,59.5% 14.5%,60.6% 15.1%,62.0% 14.6%,63.6% 13.8%,65.3% 13.0%,67.2% 12.1%,69.2% 11.1%,71.4% 10.0%,73.8% 8.9%,73.9% 11.5%,74.1% 13.9%,74.2% 16.2%,74.4% 18.2%,74.5% 20.1%,75.3% 21.2%,76.5% 21.7%,77.8% 22.2%,78.3% 23.5%,78.8% 24.7%,79.3% 25.9%,80.2% 26.8%,82.2% 26.9%,84.2% 27.1%,86.5% 27.3%,89.0% 27.5%,87.9% 29.7%,86.9% 31.8%,86.0% 33.7%,85.2% 35.4%,84.5% 37.0%,84.5% 38.3%,84.9% 39.4%,85.5% 40.5%,86.9% 41.4%,88.4% 42.4%,89.9% 43.4%,91.6% 44.5%,93.5% 45.7%,95.5% 47.0%,97.6% 48.4%);
+}
+
+.blokemon-gym-card .evolution-panel::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -3px;
+  width: 121px;
+  height: 121px;
+  z-index: 1;
+  background:
+    radial-gradient(72% 64% at 34% 26%, #fdeb9a 0%, #f4d669 44%, #e0bb47 78%, #c69c2c 100%);
+  clip-path: polygon(89.3% 50.0%,88.8% 51.3%,88.3% 52.5%,87.8% 53.7%,87.3% 54.9%,86.8% 56.1%,86.3% 57.2%,85.8% 58.4%,85.4% 59.5%,84.9% 60.6%,84.5% 61.7%,84.0% 62.8%,83.5% 63.9%,83.1% 65.0%,82.6% 66.1%,82.2% 67.2%,81.7% 68.3%,81.3% 69.4%,80.8% 70.6%,80.3% 71.7%,79.8% 72.9%,79.3% 74.1%,78.8% 75.3%,78.3% 76.5%,77.8% 77.8%,76.5% 78.3%,75.3% 78.8%,74.1% 79.3%,72.9% 79.8%,71.7% 80.3%,70.6% 80.8%,69.4% 81.3%,68.3% 81.7%,67.2% 82.2%,66.1% 82.6%,65.0% 83.1%,63.9% 83.5%,62.8% 84.0%,61.7% 84.5%,60.6% 84.9%,59.5% 85.4%,58.4% 85.8%,57.2% 86.3%,56.1% 86.8%,54.9% 87.3%,53.7% 87.8%,52.5% 88.3%,51.3% 88.8%,50.0% 89.3%,48.7% 88.8%,47.5% 88.3%,46.3% 87.8%,45.1% 87.3%,43.9% 86.8%,42.8% 86.3%,41.6% 85.8%,40.5% 85.4%,39.4% 84.9%,38.3% 84.5%,37.2% 84.0%,36.1% 83.5%,35.0% 83.1%,33.9% 82.6%,32.8% 82.2%,31.7% 81.7%,30.6% 81.3%,29.4% 80.8%,28.3% 80.3%,27.1% 79.8%,25.9% 79.3%,24.7% 78.8%,23.5% 78.3%,22.2% 77.8%,21.7% 76.5%,21.2% 75.3%,20.7% 74.1%,20.2% 72.9%,19.7% 71.7%,19.2% 70.6%,18.7% 69.4%,18.3% 68.3%,17.8% 67.2%,17.4% 66.1%,16.9% 65.0%,16.5% 63.9%,16.0% 62.8%,15.5% 61.7%,15.1% 60.6%,14.6% 59.5%,14.2% 58.4%,13.7% 57.2%,13.2% 56.1%,12.7% 54.9%,12.2% 53.7%,11.7% 52.5%,11.2% 51.3%,10.7% 50.0%,11.2% 48.7%,11.7% 47.5%,12.2% 46.3%,12.7% 45.1%,13.2% 43.9%,13.7% 42.8%,14.2% 41.6%,14.6% 40.5%,15.1% 39.4%,15.5% 38.3%,16.0% 37.2%,16.5% 36.1%,16.9% 35.0%,17.4% 33.9%,17.8% 32.8%,18.3% 31.7%,18.7% 30.6%,19.2% 29.4%,19.7% 28.3%,20.2% 27.1%,20.7% 25.9%,21.2% 24.7%,21.7% 23.5%,22.2% 22.2%,23.5% 21.7%,24.7% 21.2%,25.9% 20.7%,27.1% 20.2%,28.3% 19.7%,29.4% 19.2%,30.6% 18.7%,31.7% 18.3%,32.8% 17.8%,33.9% 17.4%,35.0% 16.9%,36.1% 16.5%,37.2% 16.0%,38.3% 15.5%,39.4% 15.1%,40.5% 14.6%,41.6% 14.2%,42.8% 13.7%,43.9% 13.2%,45.1% 12.7%,46.3% 12.2%,47.5% 11.7%,48.7% 11.2%,50.0% 10.7%,51.3% 11.2%,52.5% 11.7%,53.7% 12.2%,54.9% 12.7%,56.1% 13.2%,57.2% 13.7%,58.4% 14.2%,59.5% 14.6%,60.6% 15.1%,61.7% 15.5%,62.8% 16.0%,63.9% 16.5%,65.0% 16.9%,66.1% 17.4%,67.2% 17.8%,68.3% 18.3%,69.4% 18.7%,70.6% 19.2%,71.7% 19.7%,72.9% 20.2%,74.1% 20.7%,75.3% 21.2%,76.5% 21.7%,77.8% 22.2%,78.3% 23.5%,78.8% 24.7%,79.3% 25.9%,79.8% 27.1%,80.3% 28.3%,80.8% 29.4%,81.3% 30.6%,81.7% 31.7%,82.2% 32.8%,82.6% 33.9%,83.1% 35.0%,83.5% 36.1%,84.0% 37.2%,84.5% 38.3%,84.9% 39.4%,85.4% 40.5%,85.8% 41.6%,86.3% 42.8%,86.8% 43.9%,87.3% 45.1%,87.8% 46.3%,88.3% 47.5%,88.8% 48.7%);
+}
+
+.blokemon-gym-card .previous-art {
+  position: absolute;
+  z-index: 2;
+  left: 24px;
+  top: 33px;
+  width: 74px;
+  height: 52px;
+  object-fit: contain;
+  object-position: center;
+  border: 0;
+  background: linear-gradient(168deg, #a3b4bb 0%, #93a5ad 62%, #85979f 100%);
+}
+
+.blokemon-gym-card .art-frame {
+  position: absolute;
+  left: var(--blokemon-art-frame-x);
+  top: var(--blokemon-art-frame-y);
+  width: var(--blokemon-art-frame-w);
+  height: var(--blokemon-art-frame-h);
+  z-index: 2;
+  border: 0;
+  background:
+    linear-gradient(158deg, var(--tt-frame-hi) 0%, #f7d95e 46%, var(--tt-frame-lo) 100%);
+  box-shadow:
+    inset 2px 2px 0 rgba(255, 253, 226, .85),
+    inset -2px -2px 0 rgba(150, 112, 24, .55),
+    5px 5px 6px -1px rgba(38, 28, 6, .45);
+}
+
+.blokemon-gym-card .art-frame::before,
+.blokemon-gym-card .art-frame::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Thin printed rules around the art, not a raised picture frame. */
+.blokemon-gym-card .art-frame::before {
+  inset: 7px;
+  border: 1px solid rgba(140, 104, 24, .55);
+  box-shadow: 0 0 0 1px rgba(255, 251, 216, .45);
+}
+
+.blokemon-gym-card .art-frame::after {
+  left: 13px;
+  top: 12px;
+  width: 592px;
+  height: 418px;
+  border: 1px solid #14140e;
+  box-shadow:
+    inset 2px 2px 4px rgba(26, 22, 8, .50),
+    inset -1px -1px 0 rgba(255, 250, 214, .30),
+    0 0 0 1px rgba(255, 248, 208, .40);
+}
+
+.blokemon-gym-card .art-viewport {
+  position: absolute;
+  left: var(--blokemon-art-x);
+  top: var(--blokemon-art-y);
+  z-index: 3;
+  width: var(--blokemon-art-w);
+  height: var(--blokemon-art-h);
+  margin: 0;
+  border: 0;
+  background: #2b3122;
+}
+
+.blokemon-gym-card .art-viewport img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.blokemon-gym-card .metadata-strip {
+  position: absolute;
+  left: 79px;
+  top: var(--blokemon-meta-y);
+  z-index: 3;
+  width: 590px;
+  height: var(--blokemon-meta-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 2px;
+  /* Vertical sheen over the horizontal foil. */
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 246, .42) 0%,
+      rgba(255, 255, 246, .10) 34%,
+      rgba(255, 255, 255, 0) 52%,
+      rgba(176, 128, 24, .12) 100%
+    ),
+    linear-gradient(
+      90deg,
+      #eec244 0%,
+      #eec244 33.33%,
+      #fff0a6 50%,
+      #eec244 66.67%,
+      #eec244 100%
+    );
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 244, .98),
+    inset 0 -1px 0 rgba(255, 242, 178, .70),
+    0 1px 2px rgba(78, 56, 10, .32);
+  font: italic 700 20px/22px var(--blokemon-face);
+  text-align: center;
+  color: #241d0c;
+}
+
+.blokemon-gym-card .rules-flow {
+  position: absolute;
+  left: var(--blokemon-rules-x);
+  top: var(--blokemon-rules-y);
+  z-index: 3;
+  width: var(--blokemon-rules-w);
+  height: var(--blokemon-rules-h);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border-top: 1px solid rgba(35, 30, 12, .42);
+  overflow: visible;
+}
+
+/* Entries size from their own content. The divider sits between entries, never after the last. */
+.blokemon-gym-card .rule-entry {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 68px minmax(0,1fr) 96px;
+  align-items: center;
+  min-width: 0;
+  padding: 7px 0 8px;
+}
+
+.blokemon-gym-card .rule-entry + .rule-entry { border-top: 2px solid var(--tt-ink); }
+
+/* Ability and Rule keep the Attack grid and share its copy margin; their Energy gutter is blank. */
+
+.blokemon-gym-card .entry-energy {
+  grid-column: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 26px);
+  grid-auto-rows: 38px;
+  justify-items: start;
+  width: 62px;
+}
+
+.blokemon-gym-card .energy-pip {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--disc-rim, var(--tt-pip-rim));
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 234, .8) 0%, rgba(255, 255, 234, 0) 48%),
+    radial-gradient(circle at 50% 60%, var(--disc, var(--tt-pip)) 0%, var(--disc-rim, var(--tt-pip-rim)) 118%);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 253, 226, .60), inset 0 -2px 3px rgba(34, 40, 18, .34);
+  font: 700 13px/1 var(--blokemon-face);
+  color: #14180d;
+}
+
+
+.blokemon-gym-card .entry-copy {
+  grid-column: 2;
+  min-width: 0;
+  margin: 0;
+  padding: 1px 8px 0 0;
+  font: 19px/21.5px var(--blokemon-face);
+  color: #17140a;
+}
+
+.blokemon-gym-card .entry-copy.is-name-only {
+  text-align: center;
+}
+
+.blokemon-gym-card .entry-copy.is-name-only .entry-name {
+  margin-right: 0;
+}
+
+.blokemon-gym-card .rule-entry.is-note .entry-copy {
+  grid-column: 2 / 4;
+  padding-right: 4px;
+}
+
+/* Attack identity comes from Energy, a bold printed name and Damage, never a repeated pill. */
+.blokemon-gym-card .entry-name {
+  margin-right: 7px;
+  font: 700 25px/27px var(--blokemon-face);
+  letter-spacing: -.008em;
+  color: #14100a;
+  text-shadow: .5px .4px 0 rgba(168, 60, 30, .16);
+}
+
+/* Period coloured inline lead-in for Ability and Rule entries. */
+.blokemon-gym-card .entry-lead {
+  margin-right: 6px;
+  font: 700 21px/24px var(--blokemon-face);
+  color: var(--blokemon-lead-label);
+}
+
+.blokemon-gym-card .rule-entry.is-note .entry-name { color: var(--blokemon-lead-name); font-size: 21px; line-height: 24px; }
+
+.blokemon-gym-card .entry-damage {
+  grid-column: 3;
+  justify-self: end;
+  width: 96px;
+  padding-right: 6px;
+  text-align: right;
+  font: 900 34px/36px var(--blokemon-numeric-face);
+  white-space: nowrap;
+  color: #14100a;
+  text-shadow: 0 1px 0 rgba(255, 252, 226, .55);
+}
+
+.blokemon-gym-card .footer-rule {
+  position: absolute;
+  left: 42px;
+  top: var(--blokemon-footer-y);
+  z-index: 3;
+  width: 664px;
+  border-top: 2px solid var(--tt-ink);
+}
+
+/* Compact late-Gen-1 weakness / resistance / retreat composition in one printed row. */
+.blokemon-gym-card .stat-row {
+  position: absolute;
+  left: 42px;
+  top: var(--blokemon-stat-y);
+  z-index: 3;
+  width: 664px;
+  height: var(--blokemon-stat-h);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.blokemon-gym-card .footer-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding-top: 3px;
+}
+
+.blokemon-gym-card .footer-stat b {
+  font: 700 16px/18px var(--blokemon-face);
+  color: #241d0c;
+}
+
+.blokemon-gym-card .stat-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font: 700 14px/16px var(--blokemon-face);
+  white-space: nowrap;
+  color: #1d1a0b;
+}
+
+.blokemon-gym-card .footer-icon {
+  flex: 0 0 29px;
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--tt-ink);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 234, .8) 0%, rgba(255, 255, 234, 0) 48%),
+    radial-gradient(circle at 50% 60%, var(--disc, #d78046) 0%, var(--disc-rim, #a1481f) 116%);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 250, 226, .55);
+  font: 700 11px/1 var(--blokemon-face);
+  color: #2b1109;
+}
+
+
+/* Boxed printed flavour line, the period plate above the illustrator/rarity row. */
+.blokemon-gym-card .flavour-box {
+  position: absolute;
+  left: 42px;
+  top: var(--blokemon-flavour-y);
+  z-index: 3;
+  width: 664px;
+  height: var(--blokemon-flavour-h);
+  display: flex;
+  align-items: center;
+  padding: 4px 11px;
+  border: 1px solid var(--tt-flavour-rule);
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(255, 253, 232, .42), rgba(255, 250, 218, .22));
+  box-shadow: inset 0 0 0 1px rgba(255, 253, 228, .45);
+}
+
+.blokemon-gym-card .flavour {
+  min-width: 0;
+  margin: 0;
+  font: italic 400 14px/16.5px var(--blokemon-face);
+  color: #221b0a;
+}
+
+.blokemon-gym-card .card-index { font-style: normal; }
+
+.blokemon-gym-card .legal-row {
+  position: absolute;
+  left: 42px;
+  top: var(--blokemon-legal-y);
+  z-index: 3;
+  width: 664px;
+  height: var(--blokemon-legal-h);
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: end;
+  align-items: center;
+  gap: 9px;
+  padding: 0 2px;
+  font: 400 10px/12px var(--blokemon-face);
+  color: #2a230e;
+}
+
+.blokemon-gym-card .rarity-mark {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  line-height: 1;
+  color: #241d0c;
+}
+
+/* Only whole-card scale changes. Internal coordinates never reflow. */
+.blokemon-gym-card[data-layout="gym-challenge-750x1050"] { --blokemon-layout-version: "D237"; }
+
+/* Lairy adds radiating impact shock lines from two bruise points. */
+.blokemon-gym-card[data-card-type="Lairy"] .printed-inner-field::after {
+  background-image:
+    repeating-conic-gradient(from 8deg at 21% 26%, rgba(122, 28, 30, .07) 0 2deg, rgba(255, 255, 255, 0) 2deg 19deg),
+    repeating-conic-gradient(from 22deg at 78% 74%, rgba(52, 74, 156, .06) 0 2deg, rgba(255, 255, 255, 0) 2deg 23deg),
+    radial-gradient(34% 8% at 32% 30%, var(--tt-smoke-hi) 0%, rgba(255, 255, 255, 0) 74%),
+    radial-gradient(30% 7% at 70% 70%, var(--tt-glow) 0%, rgba(255, 255, 255, 0) 76%);
+  opacity: .62;
+}
+
+/* Curry adds oily marbling and a few separated droplets. */
+.blokemon-gym-card[data-card-type="Curry"] .printed-inner-field::after {
+  background-image:
+    radial-gradient(circle at 6px 4px, rgba(120, 48, 8, .16) 0 2px, rgba(255, 255, 255, 0) 3.2px),
+    radial-gradient(52% 5% at 30% 22%, var(--tt-smoke-hi) 0%, rgba(255, 255, 255, 0) 76%),
+    radial-gradient(46% 4% at 66% 38%, var(--tt-glow) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(56% 5% at 40% 63%, var(--tt-smoke-mid) 0%, rgba(255, 255, 255, 0) 78%),
+    radial-gradient(44% 4% at 68% 84%, var(--tt-smoke-hi) 0%, rgba(255, 255, 255, 0) 78%);
+  background-size: 23px 19px, auto, auto, auto, auto;
+  opacity: .74;
+}
+
+/* Support: no HP, type disc, evolution or stat row. Its rules region runs to the flavour plate. */
+.blokemon-gym-card[data-card-type="Support"] {
+  --tt-haze: #fdfaef;
+  --tt-cream: #f0e6cc;
+  --tt-mid: #c9b285;
+  --tt-deep: #8a6c3c;
+  --tt-edge: rgba(84, 60, 20, .42);
+  --tt-glow: rgba(226, 190, 116, .50);
+  --tt-smoke-hi: rgba(132, 100, 48, .62);
+  --tt-smoke-mid: rgba(186, 158, 112, .46);
+  --tt-lift: rgba(255, 252, 240, .78);
+  --tt-pip: #c3ad84;
+  --tt-pip-rim: #6f5730;
+  --tt-icon: #c3ad84;
+  --tt-flavour-rule: rgba(122, 88, 34, .82);
+}
+
+.blokemon-gym-card:not(:has(.stat-row)) .rules-flow { height: 341px; }
+
+.blokemon-gym-card:not(:has(.hp-cluster)) .card-name { width: 580px; font-size: min(44px, calc(580px / (var(--blokemon-name-len, 12) * .68))); }
+
+.blokemon-gym-card:not(:has(.rules-flow)) .metadata-strip { top: 640px; }
+.blokemon-gym-card:not(:has(.rules-flow)) .flavour-box { top: 700px; height: 120px; }
+.blokemon-gym-card:not(:has(.rules-flow)) .flavour { font-size: 17px; line-height: 22px; }
+
+/* Reverse: one full-bleed printed face inside the same silhouette. */
+.blokemon-gym-card .art-viewport[data-placement="full-bleed"] {
+  left: 0;
+  top: 0;
+  width: var(--blokemon-card-w);
+  height: var(--blokemon-card-h);
+  border-radius: 20px;
+  overflow: hidden;
+  background: none;
+}
+
+.blokemon-gym-card .art-viewport[data-placement="full-bleed"] img { object-fit: cover; }
+
+.blokemon-gym-card .type-glyph-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.blokemon-gym-card .main-type-icon .type-glyph { width: 39px; height: 39px; }
+.blokemon-gym-card .energy-pip .type-glyph { width: 29px; height: 29px; }
+.blokemon-gym-card .footer-icon .type-glyph { width: 23px; height: 23px; }
+.blokemon-gym-card .type-glyph { display: block; filter: drop-shadow(0 1px 0 rgba(255, 252, 224, .35)); }
+
+.blokemon-gym-card [data-energy="Blazed"] { --disc: #a7c25c; --disc-rim: #4d5a2c; }
+.blokemon-gym-card [data-energy="Beer"] { --disc: #f0cc3c; --disc-rim: #8d6708; }
+.blokemon-gym-card [data-energy="Curry"] { --disc: #e08a44; --disc-rim: #8a3a12; }
+.blokemon-gym-card [data-energy="Dodgy"] { --disc: #8e988d; --disc-rim: #2b332d; }
+.blokemon-gym-card [data-energy="Geeked"] { --disc: #b184cc; --disc-rim: #5d3078; }
+.blokemon-gym-card [data-energy="Lairy"] { --disc: #d16b4e; --disc-rim: #7c2418; }
+.blokemon-gym-card [data-energy="Legend"] { --disc: #d9b849; --disc-rim: #7a5a10; }
+.blokemon-gym-card [data-energy="Local"] { --disc: #e2dcc0; --disc-rim: #7a7355; }
+.blokemon-gym-card [data-energy="Roadie"] { --disc: #a5aeb5; --disc-rim: #454b50; }
+.blokemon-gym-card [data-energy="Sober"] { --disc: #6fadd6; --disc-rim: #2b5a80; }
+
+/*
+  Holo foil. Edition 1 confines the foil to the illustration window: the printed frame, the copy
+  and the imprint row all stay matte, so only the art reads as holographic.
+
+  A polished sheen under the ink plus one travelling glint. Both layers are oversized and driven
+  by transform so the rock runs on the compositor rather than repainting the window.
+*/
+.blokemon-gym-card[data-holo] .art-viewport[data-placement="framed"] {
+  overflow: hidden;
+}
+
+.blokemon-gym-card[data-holo] .art-viewport[data-placement="framed"]::before,
+.blokemon-gym-card[data-holo] .art-viewport[data-placement="framed"]::after {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  z-index: 2;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.blokemon-gym-card[data-holo] .art-viewport[data-placement="framed"]::before {
+  background-image:
+    repeating-linear-gradient(100deg,
+      rgba(255, 255, 255, 0) 0px,
+      rgba(255, 255, 255, .14) 92px,
+      rgba(255, 253, 240, .04) 184px,
+      rgba(255, 255, 255, .16) 276px,
+      rgba(255, 255, 255, 0) 368px),
+    radial-gradient(64% 48% at 40% 26%, rgba(255, 255, 250, .30) 0%, rgba(255, 255, 255, 0) 74%);
+  mix-blend-mode: screen;
+  opacity: .48;
+  animation: blokemon-holo-rock 12s ease-in-out infinite alternate;
+}
+
+.blokemon-gym-card[data-holo] .art-viewport[data-placement="framed"]::after {
+  background-image:
+    linear-gradient(102deg,
+      rgba(255, 255, 255, 0) 30%,
+      rgba(255, 255, 255, .10) 41%,
+      rgba(255, 255, 248, .44) 48%,
+      rgba(255, 255, 255, .72) 50%,
+      rgba(255, 255, 248, .44) 52%,
+      rgba(255, 255, 255, .10) 59%,
+      rgba(255, 255, 255, 0) 70%);
+  mix-blend-mode: screen;
+  opacity: .55;
+  animation: blokemon-holo-glint 7s ease-in-out infinite alternate;
+}
+
+@keyframes blokemon-holo-rock {
+  from { transform: translate3d(-5%, 0, 0); }
+  to { transform: translate3d(5%, 0, 0); }
+}
+
+@keyframes blokemon-holo-glint {
+  from { transform: translate3d(-15%, 0, 0); }
+  to { transform: translate3d(15%, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blokemon-gym-card[data-holo] .art-viewport[data-placement="framed"]::before,
+  .blokemon-gym-card[data-holo] .art-viewport[data-placement="framed"]::after {
+    animation: none;
+  }
+}
+
+/* Imprint row: collector number sits left, the rarity word and mark stay right. */
+.blokemon-gym-card .legal-row {
+  grid-template-columns: 1fr auto auto;
+  justify-content: stretch;
+}
+
+.blokemon-gym-card .collector-number {
+  justify-self: start;
+  font: 700 11px/12px var(--blokemon-face);
+  letter-spacing: .05em;
+}
+
+/*
+  Basic Energy. A gold-foil header bar carries the ENERGY wordmark, the bound illustration drops
+  back to a printed field behind the furniture, and the type symbol rides a printed sphere.
+*/
+.blokemon-gym-card:has([data-placement="field"]) .card-name {
+  left: 25px;
+  top: 36px;
+  z-index: 6;
+  width: 700px;
+  height: 128px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(70, 52, 8, .88);
+  border-radius: 3px;
+  background: linear-gradient(180deg, #f8e79b 0%, #ecd063 26%, #e2bc41 54%, #cfa42e 82%, #bd9224 100%);
+  box-shadow:
+    inset 0 3px 0 rgba(255, 253, 226, .72),
+    inset 0 -4px 6px rgba(92, 68, 12, .42),
+    0 3px 5px rgba(48, 36, 6, .30);
+  font-size: 92px;
+  line-height: 124px;
+  letter-spacing: .015em;
+  text-transform: uppercase;
+  color: #8a6f1e;
+  text-shadow:
+    0 -2px 0 rgba(255, 251, 214, .70),
+    0 2px 0 rgba(74, 54, 8, .58),
+    0 5px 7px rgba(52, 38, 6, .36);
+}
+
+.blokemon-gym-card .art-viewport[data-placement="field"] {
+  left: 25px;
+  top: 168px;
+  z-index: 2;
+  width: 700px;
+  height: 856px;
+  border-radius: 0 0 14px 14px;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--tt-cream) 0%, var(--tt-mid) 100%);
+}
+
+.blokemon-gym-card .art-viewport[data-placement="field"] img {
+  object-fit: cover;
+  opacity: .34;
+  filter: saturate(.7) contrast(.9);
+}
+
+/* Sparkle and bloom sit over the backdrop so the field reads as printed stock, not flat colour. */
+.blokemon-gym-card .art-viewport[data-placement="field"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image:
+    conic-gradient(from 152deg at 50% 64%,
+      rgba(255, 255, 246, 0) 0deg,
+      rgba(255, 255, 246, .30) 13deg,
+      rgba(255, 255, 246, 0) 28deg,
+      rgba(255, 255, 246, 0) 92deg,
+      rgba(255, 255, 246, .26) 105deg,
+      rgba(255, 255, 246, 0) 120deg,
+      rgba(255, 255, 246, 0) 212deg,
+      rgba(255, 255, 246, .26) 226deg,
+      rgba(255, 255, 246, 0) 240deg),
+    radial-gradient(38% 24% at 50% 64%, rgba(255, 255, 244, .68) 0%, rgba(255, 255, 244, 0) 74%),
+    radial-gradient(70% 40% at 50% 8%, var(--tt-glow) 0%, rgba(255, 255, 255, 0) 76%);
+  opacity: .68;
+}
+
+/* Header badge: the reference disc measures 84px, its left edge 44px inside the bar. */
+.blokemon-gym-card:has([data-placement="field"]) .main-type-icon {
+  left: 69px;
+  top: 58px;
+  z-index: 7;
+  width: 84px;
+  height: 84px;
+}
+
+.blokemon-gym-card:has([data-placement="field"]) .main-type-icon .type-glyph {
+  width: 50px;
+  height: 50px;
+}
+
+/* The denomination is the card's large printed sphere. */
+.blokemon-gym-card .denomination {
+  position: absolute;
+  left: 210px;
+  top: 555px;
+  z-index: 5;
+  width: 330px;
+  height: 330px;
+  display: grid;
+  place-items: center;
+  border: 4px solid rgba(58, 44, 8, .82);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 236, .82) 0%, rgba(255, 255, 236, 0) 44%),
+    radial-gradient(circle at 50% 108%, rgba(255, 250, 218, .40) 0%, rgba(255, 250, 218, 0) 40%),
+    radial-gradient(circle at 50% 56%, var(--tt-icon) 0%, var(--tt-deep) 100%);
+  box-shadow:
+    inset 0 0 0 5px rgba(255, 253, 226, .50),
+    inset 0 -16px 26px rgba(38, 28, 4, .40),
+    0 16px 34px rgba(38, 28, 4, .42);
+}
+
+.blokemon-gym-card .denomination .type-glyph {
+  width: 196px;
+  height: 196px;
+  filter: drop-shadow(0 3px 0 rgba(255, 252, 224, .30));
+}

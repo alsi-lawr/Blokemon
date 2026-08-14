@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b039-title b039-desc">
+  <title id="b039-title">BLK-039 Karaoke Kev non-final comic mock-up</title>
+  <desc id="b039-desc">From a low fisheye stage view, pot-bellied Karaoke Kev bends his knees and grips a microphone with both hands, cable wrapped around one ankle as he launches into an enormous solo. Non-final placeholder art.</desc>
+  <defs>
+    <radialGradient id="b039-stage" cx="50%" cy="22%" r="83%"><stop stop-color="#3d648e"/><stop offset=".38" stop-color="#7a283e"/><stop offset="1" stop-color="#171725"/></radialGradient>
+    <radialGradient id="b039-spot" cx="50%" cy="0" r="75%"><stop stop-color="#e2efff" stop-opacity=".8"/><stop offset=".5" stop-color="#6aa9e0" stop-opacity=".2"/><stop offset="1" stop-color="#6aa9e0" stop-opacity="0"/></radialGradient>
+    <pattern id="b039-floor" width="53" height="37" patternUnits="userSpaceOnUse"><rect width="53" height="37" fill="#2a1821"/><circle cx="8" cy="9" r="3" fill="#7d3241"/><circle cx="36" cy="27" r="3" fill="#4d607d"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b039-stage)"/>
+  <ellipse cx="400" cy="82" rx="330" ry="260" fill="url(#b039-spot)"/>
+  <path d="M0 378c166-47 335-58 800 0v182H0Z" fill="url(#b039-floor)" stroke="#11131c" stroke-width="11"/>
+  <!-- curtains, tiny blank monitor, bored room -->
+  <path d="M0 0h133l54 382H0Zm800 0H666l-52 382h186Z" fill="#491f38" stroke="#17141e" stroke-width="11"/>
+  <path d="M38 14c15 118 31 240 55 360M96 4c12 123 25 246 43 366m622-353c-18 117-34 234-51 352m-54-356c-12 119-24 237-39 352" fill="none" stroke="#7d3554" stroke-width="9"/>
+  <path d="M586 341h123l26 68-166 3Z" fill="#222736" stroke="#10131b" stroke-width="9"/>
+  <path d="M602 353h90l12 38-113 2Z" fill="#55708b" stroke="#171b25" stroke-width="5"/>
+  <!-- narrow egg head with protruding ears -->
+  <path d="M320 68c35-35 96-39 133-4 36 34 45 90 25 138-12 29-9 55-29 81-20 26-57 38-91 29-39-11-62-49-61-87 0-28 14-45 4-68-14-34-8-66 19-89Z" fill="#c77757" stroke="#20161c" stroke-width="11"/>
+  <path d="M307 129c-30-10-50 12-42 40 8 27 35 38 57 20m151-61c30-12 51 9 44 38-7 27-33 40-56 22" fill="#b16a52" stroke="#23181e" stroke-width="9"/>
+  <path d="M280 145c14-5 25 3 28 18m194-18c-14-5-25 4-27 19" fill="none" stroke="#713a34" stroke-width="5"/>
+  <!-- thinning spiked fringe -->
+  <path d="M311 99c23-50 92-67 137-25 17 16 26 35 27 56-37-28-77-29-116-10-22 11-41 9-59 2Z" fill="#302426" stroke="#181417" stroke-width="9"/>
+  <path d="m323 91 12-39 18 35 20-47 11 43 25-39 0 46 34-26-14 47" fill="#302426" stroke="#181417" stroke-width="8" stroke-linejoin="round"/>
+  <!-- mismatched eager eyes -->
+  <path d="M319 153c22-20 55-17 73 5-8 31-58 33-73-5Z" fill="#f2dcba" stroke="#27191e" stroke-width="7"/>
+  <ellipse cx="361" cy="160" rx="8" ry="12" fill="#13151b"/>
+  <path d="M414 157c17-15 42-12 55 7-8 24-43 24-55-7Z" fill="#f2dcba" stroke="#27191e" stroke-width="6"/>
+  <ellipse cx="446" cy="163" rx="6" ry="9" fill="#13151b"/>
+  <path d="M322 137c20-14 43-14 64 0m35 3c17-11 35-9 49 4" fill="none" stroke="#3b2228" stroke-width="9" stroke-linecap="round"/>
+  <!-- sharp knuckle nose -->
+  <path d="M399 146c-7 20-17 37-31 51-10 11-4 29 12 34 13 4 23-5 34-4 16 2 28-14 20-28-8-14-17-22-35-53Z" fill="#b14f48" stroke="#54272d" stroke-width="8"/>
+  <path d="M386 187c11 5 20 14 24 26" fill="none" stroke="#eb8b69" stroke-width="5"/>
+  <!-- enormous vertical singing maw, unlike prototype grin -->
+  <path d="M335 225c30-17 78-18 110 1 17 43 5 83-38 104-45 22-88-33-72-105Z" fill="#301522" stroke="#20151b" stroke-width="10"/>
+  <path d="M350 230c24-8 56-8 79 0l-4 24c-23-7-47-7-70 0Z" fill="#ead6ae"/>
+  <path d="M367 229v23m21-25v26m21-24v24" stroke="#aa8068" stroke-width="4"/>
+  <path d="M357 295c20-17 43-19 64-5-11 27-48 35-64 5Z" fill="#b44155"/>
+  <!-- pot belly and twig legs -->
+  <path d="M278 306c45-22 109-25 159-3 63 28 88 92 75 166l-278 0c-9-73 2-130 44-163Z" fill="#3c527c" stroke="#151923" stroke-width="12"/>
+  <path d="M261 338c63 25 142 25 209-1m-227 55c85 30 174 28 257-4" fill="none" stroke="#6985a9" stroke-width="7" opacity=".47"/>
+  <path d="M305 460c-12 29-17 58-15 88m156-88c10 29 14 57 12 86" fill="none" stroke="#242a3d" stroke-width="30"/>
+  <path d="M255 532c25-6 51-1 70 14-4 12-20 14-42 9l-38-9c-5-7-2-12 10-14Zm170 8c25-11 51-10 71 4-1 12-17 16-39 12l-39-7c-6-6-3-9 7-9Z" fill="#4c362d" stroke="#17151a" stroke-width="8"/>
+  <!-- both hands clamp microphone -->
+  <path d="M286 325c-43 15-75 42-96 80-11 20-5 39 12 46 17 7 31-8 42-27l65-79Zm151 3c42 11 76 35 101 71 13 19 9 38-7 47-16 8-32-5-45-23l-72-74Z" fill="#b86b53" stroke="#20161c" stroke-width="10"/>
+  <path d="M319 336c-28 7-44 24-40 45 4 22 25 28 44 17l28-18-8 29c-5 17 5 29 20 27 14-2 19-17 21-34l5-49c2-20-15-33-38-29Z" fill="#c37a5c" stroke="#20161c" stroke-width="9"/>
+  <path d="M416 339c28 5 46 20 44 42-2 21-22 29-43 20l-29-15 11 28c6 16-3 29-17 28-15-1-21-16-25-32l-9-48c-4-20 11-35 34-32Z" fill="#c37a5c" stroke="#20161c" stroke-width="9"/>
+  <path d="M346 346c17 10 29 24 37 42m-53-30c16 9 29 22 37 38m39-45c-15 11-26 25-32 43m48-32c-15 10-26 22-34 37" fill="none" stroke="#754035" stroke-width="5"/>
+  <path d="M379 227c14-8 30-8 44 0l-9 155-36 1Z" fill="#2a2a31" stroke="#111318" stroke-width="8"/>
+  <ellipse cx="402" cy="219" rx="31" ry="19" fill="#555b68" stroke="#15171d" stroke-width="7"/>
+  <path d="M375 212c18 6 36 6 54 0" fill="none" stroke="#9ca5ae" stroke-width="5"/>
+  <!-- cable actually snares ankle -->
+  <path d="M397 381c-14 58 13 92 65 105 68 17 79 52 35 66-36 12-75-2-89-29-14-28-44-34-77-22-37 13-75 7-91-20" fill="none" stroke="#0e1118" stroke-width="9"/>
+  <path d="M440 496c17-8 34-8 50 0m-54 13c20-8 41-7 59 3" fill="none" stroke="#555966" stroke-width="4"/>
+  <!-- sweat, lights and stage scuffs -->
+  <path d="M286 197c-12 20-11 37 4 50m183-51c13 18 13 34 1 49" fill="none" stroke="#a8dce2" stroke-width="6"/>
+  <path d="M285 191c-8 13-7 25 3 32 11-8 11-20-3-32Zm191-2c-7 14-5 25 5 31 10-9 8-21-5-31Z" fill="#a8dce2" stroke="#233743" stroke-width="4"/>
+  <path d="M44 451l49 12m-23-36 42 19m570 5 51-18m-27 46 45-22" stroke="#b65b6f" stroke-width="6" opacity=".55"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#10131b" stroke-width="12"/>
+</svg>

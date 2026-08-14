@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Blokemon.PackGen</RootNamespace>
+    <AssemblyName>Blokemon.PackGen</AssemblyName>
+  </PropertyGroup>
+</Project>

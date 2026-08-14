@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b077-title b077-desc">
+  <title id="b077-title">BLK-077 Southall non-final comic mock-up</title>
+  <desc id="b077-desc">An embroidered cuff and enormous hand sweep loose coins and a blank receipt from an empty copper platter while Southall watches in satisfied profile through teal restaurant shadow. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b077-room" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#163c3e"/><stop offset=".55" stop-color="#256466"/><stop offset="1" stop-color="#0d242a"/></linearGradient>
+    <linearGradient id="b077-bronze" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f1c06e"/><stop offset=".38" stop-color="#a85a31"/><stop offset="1" stop-color="#3e2525"/></linearGradient>
+    <pattern id="b077-embroider" width="28" height="24" patternUnits="userSpaceOnUse"><path d="M2 12 14 2l12 10-12 10Zm6 0 6-5 6 5-6 5Z" fill="none" stroke="#f0c977" stroke-width="3"/></pattern>
+    <pattern id="b077-wall" width="67" height="49" patternUnits="userSpaceOnUse"><rect width="67" height="49" fill="#194345"/><path d="M0 46h67" stroke="#0c282b" stroke-width="7"/><path d="M8 9c16-5 32-4 48 2" fill="none" stroke="#4b7771" stroke-width="4" opacity=".5"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b077-room)"/>
+  <path d="M0 0h800v297H0Z" fill="url(#b077-wall)"/>
+  <path d="M31 56h225v206H25Z" fill="#142f32" stroke="#b67b48" stroke-width="9"/>
+  <path d="M51 76h185v166H44Z" fill="#693532"/>
+  <path d="M56 213 229 83M47 151l96-75M135 244l101-82" stroke="#d69b59" stroke-width="5" opacity=".32"/>
+  <!-- Southall's elegant narrow torso and sharp profile beyond the hand -->
+  <path d="M514 188c38-30 92-29 126 5 29 29 32 71 15 107-9 19-4 39-19 57-21 25-61 34-91 16-36-21-50-65-38-101 7-21 20-35 12-56-4-11-7-19-5-28Z" fill="#b87256" stroke="#211719" stroke-width="11"/>
+  <!-- lacquered beehive wrap -->
+  <path d="M513 192c-15-36 6-64 38-72 5-32 34-51 64-39 29 12 38 44 22 69 24 15 31 44 18 67-32-24-67-26-104-10-17 7-31 3-38-15Z" fill="#262327" stroke="#171418" stroke-width="9"/>
+  <path d="M531 167c22-16 48-22 77-18m-85 38c30-18 62-22 96-13m-66-50c18-7 36-6 52 2" fill="none" stroke="#66504c" stroke-width="6"/>
+  <path d="M625 209c25 3 40 24 32 47-8 22-33 31-52 16" fill="#aa664f" stroke="#25191b" stroke-width="8"/>
+  <path d="M631 224c-11 0-19 7-22 18" fill="none" stroke="#6d3b32" stroke-width="5"/>
+  <path d="M558 222c16-11 35-10 50 2" fill="none" stroke="#402329" stroke-width="9" stroke-linecap="round"/>
+  <path d="M566 236c13-5 26-2 35 7-11 11-25 8-35-7Z" fill="#efdbb9" stroke="#281a1d" stroke-width="5"/>
+  <path d="M587 241h7" stroke="#131619" stroke-width="6"/>
+  <!-- small hooked profile nose and compressed lips -->
+  <path d="M612 225c-4 18 2 29 16 38 12 8 10 26-5 32-16 6-35-4-43-17" fill="#a45c4a" stroke="#552e2c" stroke-width="7"/>
+  <path d="M622 259c11 4 19 12 22 22" fill="none" stroke="#e28d6b" stroke-width="5"/>
+  <path d="M583 312c22-3 42 3 58 17-13 17-40 18-58 2" fill="#55272c" stroke="#27191c" stroke-width="6"/>
+  <path d="M591 328c13 2 26 1 38-3" stroke="#d35d5b" stroke-width="4"/>
+  <path d="M506 361c42-25 106-27 149 2 43 29 59 81 54 147l-241 0c-5-66 7-116 38-149Z" fill="#432f43" stroke="#17141a" stroke-width="11"/>
+  <path d="M497 389c58 22 119 22 181-2m-193 48c72 24 143 23 213-4" fill="none" stroke="#795271" stroke-width="7" opacity=".5"/>
+  <!-- bronze table and empty platter -->
+  <path d="M-30 312c217-40 502-33 860 13v235H-30Z" fill="#3a2222" stroke="#180f12" stroke-width="13"/>
+  <path d="M-10 339c246-29 514-27 810 8" fill="none" stroke="#a25a37" stroke-width="9"/>
+  <ellipse cx="387" cy="405" rx="289" ry="100" fill="url(#b077-bronze)" stroke="#251719" stroke-width="11"/>
+  <ellipse cx="387" cy="400" rx="229" ry="70" fill="#5b3028" stroke="#e0a253" stroke-width="8"/>
+  <path d="M188 396c77-34 157-44 240-30m-210 75c109 30 218 25 323-16" fill="none" stroke="#e8bd70" stroke-width="6" opacity=".45"/>
+  <!-- receipt and coins with no readable values -->
+  <path d="m493 358 99 16-17 92-111-14Z" fill="#e8dfbd" stroke="#2b2120" stroke-width="8"/>
+  <path d="m506 380 63 10m-69 16 59 10m-65 16 43 8" stroke="#a99d79" stroke-width="5"/>
+  <g fill="#d8ad48" stroke="#3b2b20" stroke-width="5"><ellipse cx="297" cy="378" rx="22" ry="10"/><ellipse cx="342" cy="422" rx="20" ry="9"/><ellipse cx="425" cy="373" rx="18" ry="8"/><ellipse cx="454" cy="432" rx="22" ry="10"/><ellipse cx="262" cy="435" rx="17" ry="8"/></g>
+  <!-- enormous embroidered sleeve drives from foreground to profile -->
+  <path d="M-35 346c132-25 244-11 333 42l58 82-130 90H-35Z" fill="#5e355b" stroke="#1b151b" stroke-width="13"/>
+  <path d="M-25 373c109-19 205-6 283 39l74 99-105 49H-25Z" fill="url(#b077-embroider)" opacity=".9"/>
+  <!-- huge gathering hand; every finger separately articulated -->
+  <path d="M230 348c43 8 80 29 111 62l28 33-2-52c-1-20 9-34 25-34 16 0 22 15 23 35l2 45 9-52c4-19 17-29 32-24 15 5 15 21 11 40l-11 47 19-38c8-17 23-24 36-15 13 9 6 25-3 42l-25 46 28-27c14-13 30-14 40-2 10 12-1 27-15 39l-57 45c-30 23-68 30-102 17-35-13-58-41-81-69l-68-82Z" fill="#c27b5d" stroke="#211719" stroke-width="11" stroke-linejoin="round"/>
+  <path d="M365 412c18-7 36-8 54-3m-52 33c19-6 37-6 55 1m4 34c18-4 36-1 52 7m-102 21c28 5 51 16 70 34" fill="none" stroke="#794338" stroke-width="6"/>
+  <path d="M385 370c9 17 13 35 13 55m51-49c6 18 7 36 3 55m45-22c1 16-3 31-10 45" fill="none" stroke="#e69a72" stroke-width="4" opacity=".7"/>
+  <!-- table stains, steam and teal shadow -->
+  <path d="M115 298c-19-28-17-51 7-71 18-15 21-34 10-57m538 136c-16-26-13-48 9-66 16-14 20-32 12-54" fill="none" stroke="#efd9b8" stroke-width="8" opacity=".6"/>
+  <path d="M48 514c92-20 176-18 254-8m300-4c61-8 120-5 180 9" fill="none" stroke="#8d4934" stroke-width="6"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#0e1618" stroke-width="12"/>
+</svg>

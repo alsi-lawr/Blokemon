@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b035-title b035-desc">
+  <title id="b035-title">BLK-035 First Bump non-final comic mock-up</title>
+  <desc id="b035-desc">An extreme tilted dance-floor close-up catches a bright-eyed newcomer colliding shoulder-first into a greeting, surrounded by cropped arms, mint flashes and a blank abstract wrist stamp. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b035-club" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#24133c"/><stop offset=".45" stop-color="#5b2677"/><stop offset="1" stop-color="#101b2b"/></linearGradient>
+    <radialGradient id="b035-flash" cx="50%" cy="50%" r="50%"><stop stop-color="#bcffe0" stop-opacity=".95"/><stop offset=".3" stop-color="#62ffd3" stop-opacity=".35"/><stop offset="1" stop-color="#62ffd3" stop-opacity="0"/></radialGradient>
+    <pattern id="b035-shirt" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(24)"><path d="M0 2h18M0 11h18" stroke="#101629" stroke-width="3" opacity=".35"/></pattern>
+    <filter id="b035-shake" x="-8%" y="-8%" width="116%" height="116%"><feTurbulence baseFrequency=".025 .06" numOctaves="1" seed="35" result="s"/><feDisplacementMap in="SourceGraphic" in2="s" scale="2"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#b035-club)"/>
+  <circle cx="148" cy="119" r="190" fill="url(#b035-flash)"/><circle cx="700" cy="404" r="220" fill="url(#b035-flash)"/>
+  <g transform="rotate(-8 400 280)">
+    <path d="M-40 85c145-50 292-52 429-11 167 49 302 22 454-13" fill="none" stroke="#a74bc0" stroke-width="18" opacity=".48"/>
+    <path d="M-29 139c179-45 326-27 472 19 132 41 256 26 384-7" fill="none" stroke="#62e8c4" stroke-width="7" opacity=".52"/>
+    <!-- cropped surrounding bodies and arms create crush -->
+    <path d="M-77 238c87-91 175-89 248-24l73 202-281 88Z" fill="#3a557d" stroke="#151524" stroke-width="13"/>
+    <path d="M722 126c75 38 112 99 111 183l-43 203-163-38Z" fill="#8a3a72" stroke="#171421" stroke-width="13"/>
+    <path d="M34 100c44 30 91 69 135 115 23 24 51 26 68 7 17-19 5-46-18-68L119 61Z" fill="#a86258" stroke="#1f1820" stroke-width="11"/>
+    <path d="M675 74c-45 33-83 75-119 122-20 26-48 31-67 14-19-18-10-46 11-70l91-102Z" fill="#be735e" stroke="#1f1820" stroke-width="11"/>
+    <!-- newcomer's triangular skull, huge in frame -->
+    <path d="M257 106c54-48 145-58 211-14 58 39 83 112 56 179-17 42-31 78-67 109-48 42-128 32-168-20-23-30-26-64-46-91-40-55-32-116 14-163Z" fill="#c8745b" stroke="#201621" stroke-width="13" filter="url(#b035-shake)"/>
+    <path d="M270 110c42-49 131-62 187-24 24 16 39 38 45 65-54-32-103-23-144-2-33 17-64 11-97-5Z" fill="#2b2532" stroke="#17141b" stroke-width="10"/>
+    <path d="M285 103c32-22 67-29 106-23m-124 46c41-23 81-28 120-20m24-29c25 7 45 20 61 40" fill="none" stroke="#6c5761" stroke-width="6"/>
+    <path d="M259 169c-30-9-52 14-43 44 8 28 37 40 61 21m231-55c29-11 52 10 46 40-6 28-33 43-59 26" fill="#b36655" stroke="#231822" stroke-width="10"/>
+    <path d="M280 179c25-20 58-18 80 5m77 2c22-21 55-20 77 2" fill="none" stroke="#38202c" stroke-width="13" stroke-linecap="round"/>
+    <ellipse cx="326" cy="202" rx="31" ry="29" fill="#f3ddbe" stroke="#231822" stroke-width="7"/><ellipse cx="470" cy="205" rx="29" ry="31" fill="#f3ddbe" stroke="#231822" stroke-width="7"/>
+    <circle cx="331" cy="204" r="8" fill="#13151d"/><circle cx="463" cy="208" r="8" fill="#13151d"/>
+    <path d="M394 185c-9 22-17 38-30 52-11 12-5 31 11 36 16 5 28-6 42-5 17 1 27-18 16-31-13-14-19-38-39-52Z" fill="#af5e50" stroke="#4b2b31" stroke-width="8"/>
+    <path d="M384 226c11 8 19 17 22 29" fill="none" stroke="#e39570" stroke-width="5"/>
+    <path d="M318 291c38-26 95-28 143-4 3 48-32 82-76 81-42-1-70-32-67-77Z" fill="#492132" stroke="#211722" stroke-width="10"/>
+    <path d="M343 300c26-10 60-11 88-1-16 13-61 16-88 1Z" fill="#f1d9b5"/>
+    <path d="M351 335c25-14 53-14 78 0-19 20-58 21-78 0Z" fill="#bc465f"/>
+    <path d="M301 250l-20 7m27 8-19 13m199-21 22 12m-27 4 19 17" stroke="#743542" stroke-width="5" stroke-linecap="round"/>
+    <!-- shoulders collide diagonally -->
+    <path d="M224 371c55-31 112-35 171-3 58-27 119-20 170 22l86 170H126Z" fill="#485e9a" stroke="#141827" stroke-width="14"/>
+    <path d="M126 407c116-25 227-6 333 58m-259-83c103 12 190 45 283 117" fill="none" stroke="#7e8ed0" stroke-width="9" opacity=".4"/>
+    <path d="M131 383h515v177H128Z" fill="url(#b035-shirt)"/>
+    <!-- greeting forearms and individually formed fists fill foreground -->
+    <path d="M90 323c100 7 183 27 258 66 29 15 36 46 17 65-18 19-46 10-72-4l-213-96Z" fill="#ad6756" stroke="#201720" stroke-width="12"/>
+    <path d="M709 319c-92 14-174 41-247 85-27 17-32 48-12 66 20 17 47 6 72-9l199-110Z" fill="#bd725c" stroke="#201720" stroke-width="12"/>
+    <path d="M330 382c29-13 60-2 70 24 10 26-10 51-36 58-29 8-58-11-60-39-1-18 7-32 26-43Z" fill="#b96c58" stroke="#201720" stroke-width="10"/>
+    <path d="M456 396c-29-10-58 4-65 31-7 27 15 49 42 53 30 5 56-17 55-44-1-19-12-32-32-40Z" fill="#b96c58" stroke="#201720" stroke-width="10"/>
+    <path d="M316 398c20 8 38 21 52 38m-64-18c21 8 39 20 53 36m117-40c-20 10-36 24-48 42m58-23c-20 8-36 21-49 38" fill="none" stroke="#733a36" stroke-width="6"/>
+    <!-- abstract wrist stamp, no letters -->
+    <path d="m111 326 44 6-12 34-40-9Z" fill="#54d9c3" stroke="#23202b" stroke-width="6"/>
+    <path d="m119 340 14 10m3-11-14 13" stroke="#27324a" stroke-width="4"/>
+  </g>
+  <!-- sweat, confetti and manual action scrawls -->
+  <path d="M58 166l34 15m-14-45 21 27m585-78-19 37m52-17-31 30M98 510l43-17m530 15 36-23" stroke="#9ff2d5" stroke-width="7" stroke-linecap="round" opacity=".75"/>
+  <path d="m145 98 22 8-9 21-22-9Zm509 252 19-11 12 20-21 12Zm-39 115 24 7-7 22-24-7Z" fill="#f3b65c" stroke="#211826" stroke-width="5"/>
+  <circle cx="224" cy="64" r="8" fill="#e959a1"/><circle cx="712" cy="242" r="7" fill="#7ff2d1"/><circle cx="62" cy="408" r="6" fill="#f4ca68"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#11121d" stroke-width="12"/>
+</svg>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b123-title b123-desc">
+  <title id="b123-title">BLK-123 Cropper non-final comic mock-up</title>
+  <desc id="b123-desc">In strict greenhouse profile, a bony practical grower braces long silver shears across tall stems, headscarf curls, work apron and tied bundles layered through cream-green light. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b123-glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#edf0c7"/><stop offset=".5" stop-color="#a9c99b"/><stop offset="1" stop-color="#55785b"/></linearGradient>
+    <linearGradient id="b123-apron" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8b8468"/><stop offset=".55" stop-color="#565d49"/><stop offset="1" stop-color="#303d31"/></linearGradient>
+    <pattern id="b123-pane" width="112" height="87" patternUnits="userSpaceOnUse"><rect width="112" height="87" fill="url(#b123-glass)"/><path d="M0 1h112M0 86h112M1 0v87M111 0v87" stroke="#5f7965" stroke-width="6"/><path d="M8 72 99 10M19 87 112 22" stroke="#dce5bd" stroke-width="4" opacity=".4"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b123-pane)"/>
+  <path d="M0 0h800v87C650 66 526 96 393 76 245 55 121 94 0 71Z" fill="#49634d" stroke="#26372b" stroke-width="10"/>
+  <path d="M0 426c212-31 517-28 800 6v128H0Z" fill="#4f4c36" stroke="#28291f" stroke-width="10"/>
+  <!-- layered tall plants and tied bundles -->
+  <g fill="#3d8449" stroke="#173d25" stroke-width="7" stroke-linejoin="round">
+    <path d="M42 173c33-60 68-69 103-28-10 49-41 74-91 74Z"/><path d="M121 267c21-65 54-81 94-48 0 50-26 81-76 92Z"/>
+    <path d="M674 159c-36-58-72-65-104-21 13 48 45 71 95 67Z"/><path d="M604 269c-21-65-54-81-94-48 0 50 26 81 76 92Z"/>
+    <path d="M34 359c35-59 71-67 106-24-12 49-44 73-95 68Z"/><path d="M699 355c-35-59-71-67-106-24 12 49 44 73 95 68Z"/>
+  </g>
+  <path d="M78 128c5 125 2 241-8 347m96-349c-4 132-2 246 7 344m475-346c2 126 8 242 18 349m-95-344c4 122 4 236-2 343" stroke="#285e37" stroke-width="10"/>
+  <path d="M43 300c40 12 79 12 118 0m485-9c42 13 82 13 121 0" fill="none" stroke="#d4b66a" stroke-width="7"/>
+  <!-- bony full-body grower strict profile -->
+  <path d="M303 103c38-38 96-40 135-4 34 31 39 79 20 118-22 44-73 62-116 39-48-26-65-98-39-153Z" fill="#b57458" stroke="#20171a" stroke-width="11"/>
+  <!-- cream tied headscarf and wire curls -->
+  <path d="M300 110c13-43 51-66 91-60 39 6 68 35 73 74-38-23-74-26-108-13-22 9-41 8-56-1Z" fill="#e2d5b2" stroke="#211d1c" stroke-width="9"/>
+  <path d="M320 83c29-13 59-14 90-4m-103 27c36-15 72-15 106-2" fill="none" stroke="#9e8c69" stroke-width="6"/>
+  <path d="M307 112c-21 13-34 33-39 61m182-55c21 13 33 34 36 63" fill="none" stroke="#5c5551" stroke-width="9" stroke-dasharray="3 9"/>
+  <path d="M439 129c26 1 43 22 36 47-7 23-32 34-53 19" fill="#a66750" stroke="#24191a" stroke-width="8"/>
+  <path d="M446 145c-12 0-20 8-23 20" fill="none" stroke="#6b3b32" stroke-width="5"/>
+  <!-- tiny square eye, clipped wedge nose, compressed mouth -->
+  <path d="M376 146c16-9 34-7 47 5" fill="none" stroke="#3f2629" stroke-width="9"/>
+  <path d="M384 158h29v15h-29Z" fill="#ead9ba" stroke="#281a1c" stroke-width="5"/>
+  <circle cx="405" cy="166" r="4" fill="#131619"/>
+  <path d="M423 150c-7 18-17 31-29 43-10 9-5 25 9 30 14 4 25-5 37-4 16 2 26-15 16-28-9-12-16-23-33-41Z" fill="#9e5748" stroke="#522d2e" stroke-width="7"/>
+  <path d="M383 233c22-3 43 3 59 16" fill="none" stroke="#4d292b" stroke-width="8" stroke-linecap="round"/>
+  <!-- apron and bony stance -->
+  <path d="M279 265c44-26 108-29 157-4 59 30 84 93 78 174H223c1-78 15-135 56-170Z" fill="#4b5a42" stroke="#151916" stroke-width="12"/>
+  <path d="M290 287c58 26 119 27 184 4m-205 50c80 29 157 27 231-4" fill="none" stroke="#75816a" stroke-width="7" opacity=".48"/>
+  <path d="M331 263c-11 47-10 96 4 147m66-148c17 46 23 95 17 145" fill="url(#b123-apron)" stroke="#323b30" stroke-width="8"/>
+  <!-- long silver shears physically cross stems and body -->
+  <path d="M105 122 601 449m-471-362 454 393" stroke="#d7ddd5" stroke-width="17" stroke-linecap="round"/>
+  <path d="M105 122 601 449m-471-362 454 393" stroke="#596364" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="125" cy="103" rx="59" ry="45" transform="rotate(21 125 103)" fill="none" stroke="#a8b1ab" stroke-width="13"/>
+  <ellipse cx="105" cy="141" rx="58" ry="44" transform="rotate(-20 105 141)" fill="none" stroke="#a8b1ab" stroke-width="13"/>
+  <path d="m575 430 142 42-122 20Zm5 47 131-58-113 97Z" fill="#d1d7d0" stroke="#3a4343" stroke-width="8"/>
+  <!-- separately drawn hands brace handles -->
+  <path d="M287 295c-52 17-93 45-123 85-15 20-10 40 7 49 17 9 34-6 49-25l91-82Z" fill="#ae6e54" stroke="#20171a" stroke-width="10"/>
+  <path d="M168 370c-25 9-38 26-32 43 6 17 25 15 44 7l29-14-18 21c-11 14-5 27 9 30 14 3 24-11 34-25l25-39c11-18 3-37-15-45-18-8-39-1-76 22Z" fill="#ba7a5c" stroke="#20171a" stroke-width="8"/>
+  <path d="M428 294c50 20 90 50 119 91 15 21 10 40-7 49-18 8-34-7-49-27l-88-85Z" fill="#ae6e54" stroke="#20171a" stroke-width="10"/>
+  <path d="M544 375c25 10 37 27 31 44-7 17-26 14-44 5l-29-15 18 22c10 14 4 27-10 29-14 2-24-12-33-26l-24-40c-11-18-2-37 16-45 18-7 39 1 75 26Z" fill="#ba7a5c" stroke="#20171a" stroke-width="8"/>
+  <!-- bony legs planted around work -->
+  <path d="M297 424c-15 36-24 74-26 115m154-114c17 36 27 74 30 114" stroke="#3b4535" stroke-width="37"/>
+  <path d="M234 518c30-8 59-4 82 13-2 12-20 16-46 12l-46-7c-6-8-2-13 10-18Zm185 10c29-12 59-10 83 7 0 12-18 17-44 14l-47-6c-7-7-4-11 8-15Z" fill="#493429" stroke="#171719" stroke-width="9"/>
+  <path d="M29 500c72-15 139-14 204-3m354 1c69-9 134-5 199 8" fill="none" stroke="#80754c" stroke-width="6"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#15251a" stroke-width="12"/>
+</svg>

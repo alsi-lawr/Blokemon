@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="k12-title k12-desc">
+  <title id="k12-title">KIT-012 Closing-Time Regular non-final comic-vector mock-up</title>
+  <desc id="k12-desc">An overhead last-orders aftermath shows a very old regular folded around an injured active patron, dabbing their scraped shoulder with a beer towel while crooked fingers guard the last glass. Tipped stools, dragged chairs, mop water and extinguishing lights crowd the closing pub. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="k12-floor" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#432429"/>
+      <stop offset=".48" stop-color="#291b25"/>
+      <stop offset="1" stop-color="#11151a"/>
+    </linearGradient>
+    <linearGradient id="k12-oldcoat" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#777151"/>
+      <stop offset=".48" stop-color="#455044"/>
+      <stop offset="1" stop-color="#202b2d"/>
+    </linearGradient>
+    <linearGradient id="k12-activecoat" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8b3650"/>
+      <stop offset=".55" stop-color="#54283f"/>
+      <stop offset="1" stop-color="#291d31"/>
+    </linearGradient>
+    <radialGradient id="k12-skin-old" cx="38%" cy="24%" r="85%">
+      <stop offset="0" stop-color="#d8a177"/>
+      <stop offset=".6" stop-color="#9b5d51"/>
+      <stop offset="1" stop-color="#56313a"/>
+    </radialGradient>
+    <radialGradient id="k12-skin-active" cx="38%" cy="24%" r="85%">
+      <stop offset="0" stop-color="#e2a574"/>
+      <stop offset=".58" stop-color="#ad5c4c"/>
+      <stop offset="1" stop-color="#603342"/>
+    </radialGradient>
+    <radialGradient id="k12-lampglow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffd67a" stop-opacity=".82"/>
+      <stop offset=".44" stop-color="#d88b3e" stop-opacity=".24"/>
+      <stop offset="1" stop-color="#d88b3e" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="k12-ale" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f2d475"/>
+      <stop offset=".2" stop-color="#c8862e"/>
+      <stop offset="1" stop-color="#6d351f"/>
+    </linearGradient>
+    <pattern id="k12-carpet" width="76" height="62" patternUnits="userSpaceOnUse" patternTransform="rotate(-7)">
+      <rect width="76" height="62" fill="none"/>
+      <path d="M7 5c23 10 38 10 61-1M5 57c22-11 43-10 66 1M4 31h68" fill="none" stroke="#8a4541" stroke-width="5" opacity=".28"/>
+      <path d="M19 16 29 31 18 47M57 15 46 31l12 17" fill="none" stroke="#bf7a48" stroke-width="3" opacity=".27"/>
+      <circle cx="38" cy="31" r="5" fill="#d49a52" opacity=".19"/>
+    </pattern>
+    <pattern id="k12-hatch" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(21)">
+      <path d="M0 2h11M0 8h11" stroke="#13171a" stroke-width="2" opacity=".27"/>
+    </pattern>
+    <filter id="k12-grit" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency=".34" numOctaves="3" seed="412" result="noise"/>
+      <feColorMatrix in="noise" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .09 0" result="dust"/>
+      <feBlend in="SourceGraphic" in2="dust" mode="multiply"/>
+    </filter>
+    <clipPath id="k12-coatclip">
+      <path d="M155 353c28-105 70-189 135-230 61-39 142-39 197 6 39 33 45 76 16 112-25 31-66 45-108 61-58 22-97 64-119 127Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#k12-floor)"/>
+  <rect width="800" height="560" fill="url(#k12-carpet)"/>
+  <path d="M0 45C189 8 333 70 516 39 634 19 715 15 800 31v82C635 86 515 126 347 98 217 76 104 91 0 119Z" fill="#33252b" opacity=".78"/>
+  <ellipse cx="488" cy="270" rx="310" ry="244" fill="url(#k12-lampglow)"/>
+  <ellipse cx="102" cy="87" rx="125" ry="102" fill="url(#k12-lampglow)" opacity=".22"/>
+
+  <!-- closing lights seen from above, one already dimmed -->
+  <g stroke="#151319" stroke-linejoin="round">
+    <path d="M38 0 65 56h100L191 0Z" fill="#aa763e" stroke-width="8"/>
+    <ellipse cx="115" cy="61" rx="53" ry="20" fill="#f2c768" stroke-width="7"/>
+    <path d="M624 0 645 48h91L757 0Z" fill="#4d4137" stroke-width="8"/>
+    <ellipse cx="690" cy="50" rx="48" ry="17" fill="#786646" stroke-width="7"/>
+  </g>
+  <path d="M645 51c18 7 32 8 48 6" stroke="#d2bb75" stroke-width="5" opacity=".28"/>
+
+  <!-- chairs and stools abandoned into the crop -->
+  <g fill="none" stroke="#171419" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-19 187 105 143l44 94-123 49Zm27-8 23 52m59-72 29 61M9 287l42 87m93-139 46 82" stroke="#6a4133" stroke-width="16"/>
+    <path d="M637 48 783 88l-32 103-143-37Zm37 11-30 111m93-93-26 103m-87-36-51 72m116-44 15 78" stroke="#704632" stroke-width="15"/>
+    <path d="M625 454c33-54 99-66 151-24 48 39 23 107-41 119-59 11-126-38-110-95Z" stroke="#4f342c" stroke-width="18"/>
+    <path d="M655 440c25 32 57 59 96 80M763 429c-29 32-56 60-81 91" stroke="#7f5138" stroke-width="12"/>
+  </g>
+  <path d="M684 92c22 8 48 13 72 14M28 211c29-18 60-29 92-34" fill="none" stroke="#b0784c" stroke-width="5" opacity=".46"/>
+
+  <!-- mop bucket, dirty arcs, footprints and pub-floor debris -->
+  <path d="M-5 431c114-48 218-48 306-1 84 44 191 47 311-5 68-29 132-31 193-12" fill="none" stroke="#869b93" stroke-width="15" opacity=".34"/>
+  <path d="M-6 455c108-38 200-32 287 15M547 463c78-38 164-43 258-14" fill="none" stroke="#bdd1c2" stroke-width="5" opacity=".2"/>
+  <g fill="#14171b" opacity=".68">
+    <path d="M81 414c22-4 36 4 38 17-8 12-26 15-42 8-13-6-10-20 4-25Zm58 35c17-3 31 3 34 14-6 11-23 14-38 8-12-5-9-17 4-22Z"/>
+    <path d="M529 66c19-5 34 2 37 14-7 11-24 15-40 9-13-5-10-18 3-23Zm47 39c16-4 29 1 33 11-5 10-21 14-35 10-12-4-10-15 2-21Z"/>
+  </g>
+  <path d="M54 495c-7-31 3-62 28-82l88 9 16 94Z" fill="#3c5960" stroke="#17191d" stroke-width="9"/>
+  <path d="M69 456c35 10 69 10 101-1M84 422c-4 21-3 43 3 66" fill="none" stroke="#8badac" stroke-width="6"/>
+  <path d="M153 419 203 99" stroke="#9e7960" stroke-width="13"/>
+  <path d="M198 93c21-7 37 7 32 26-7 24-35 34-58 24" fill="none" stroke="#bb9879" stroke-width="16"/>
+  <g fill="#d5a548" stroke="#2b1c1e" stroke-width="3">
+    <path d="m218 481 17-6 6 10-19 7Z"/><path d="m244 458 13 4-4 12-14-5Z"/><path d="m570 493 18-2 2 11-19 3Z"/>
+  </g>
+
+  <!-- injured active, cropped from the lower-right and seen from above -->
+  <path d="M457 360c55-69 130-95 209-71 72 22 119 86 152 173l13 102H442c-20-75-17-145 15-204Z" fill="url(#k12-activecoat)" stroke="#17141b" stroke-width="12"/>
+  <path d="M492 378c68-35 141-40 217-12M467 430c83-28 174-28 276 4" fill="none" stroke="#b65364" stroke-width="7" opacity=".47"/>
+  <path d="M666 286c18-36 52-51 84-39 27 10 43 39 41 66l-12 41-31 30-38 8-35-21-20-39Z" fill="url(#k12-skin-active)" stroke="#20161c" stroke-width="10"/>
+  <path d="M692 268c24-25 59-22 82-2 16 14 22 34 20 54-19-18-36-24-55-17-25 8-42 1-58-11Z" fill="#2d252a" stroke="#17151a" stroke-width="8"/>
+  <path d="M761 332c-10 18-26 31-47 37" fill="none" stroke="#502933" stroke-width="7"/>
+  <path d="M694 347c13 4 23 12 29 25" fill="none" stroke="#271b21" stroke-width="7"/>
+  <path d="M615 343c26-17 60-16 91 4l-32 87-101-29Z" fill="#c66b57" stroke="#21171c" stroke-width="9"/>
+  <path d="M605 354c21-7 40-3 56 11-8 12-15 25-19 40-22 1-41-5-57-18Z" fill="#7e313e"/>
+  <!-- clear scrape/wound being tended -->
+  <path d="M621 360c13 2 24 10 29 21-8 18-24 27-45 24-14-2-24-13-23-25 1-14 18-24 39-20Z" fill="#7f2e38" stroke="#35191f" stroke-width="6"/>
+  <path d="m597 378 18 9 18-12" fill="none" stroke="#e38a70" stroke-width="5"/>
+
+  <!-- the very old regular forms a crooked C around shoulder and glass -->
+  <path d="M155 353c28-105 70-189 135-230 61-39 142-39 197 6 39 33 45 76 16 112-25 31-66 45-108 61-58 22-97 64-119 127-18 50-47 75-86 68-48-9-65-67-35-144Z" fill="url(#k12-oldcoat)" stroke="#15171a" stroke-width="13"/>
+  <rect x="138" y="95" width="394" height="389" fill="url(#k12-hatch)" clip-path="url(#k12-coatclip)" opacity=".72"/>
+  <path d="M198 326c34-94 91-159 169-194M182 394c61-72 126-118 193-139M234 459c9-60 39-111 88-153" fill="none" stroke="#9a9470" stroke-width="8" opacity=".42"/>
+  <path d="M188 282c19 5 38 15 58 30m-32-83c21 6 42 18 62 34" fill="none" stroke="#c1b384" stroke-width="5" opacity=".44"/>
+
+  <!-- hidden old face: scalp, great ear, pressed cheek and sparse hair only -->
+  <path d="M372 160c4-39 29-61 63-58 42 3 74 30 84 65l-8 41-25 28-33 30-36-8-31-22-22-37Z" fill="url(#k12-skin-old)" stroke="#21171c" stroke-width="10"/>
+  <path d="M385 146c9-28 44-49 76-39 15 4 29 14 39 27-31-11-55-5-79 12-13 9-25 11-36 7Z" fill="#9d9181" stroke="#30292a" stroke-width="7"/>
+  <path d="M402 125c20-12 40-15 59-9M388 141c18-13 34-18 50-18M426 111c4-11 10-18 18-24" fill="none" stroke="#ded0b5" stroke-width="5" stroke-linecap="round"/>
+  <path d="M444 183c-22-20-49-4-45 22 3 23 32 35 49 13l8-22Z" fill="#a76357" stroke="#25191e" stroke-width="8"/>
+  <path d="M414 196c12-9 24-4 25 9-8-4-14-1-18 8" fill="none" stroke="#61343c" stroke-width="5"/>
+  <path d="M484 194c8 13 20 22 35 26" fill="none" stroke="#542d36" stroke-width="7"/>
+  <path d="M476 173c14-1 26 4 35 14M468 160c17-3 32 2 45 13" fill="none" stroke="#352027" stroke-width="5"/>
+  <path d="M492 218c-2 10 2 19 12 25" fill="none" stroke="#2a1c22" stroke-width="6"/>
+  <path d="M458 239c17 9 35 10 52 4" fill="none" stroke="#6d3a3f" stroke-width="5" opacity=".65"/>
+  <path d="M418 167c-11 2-20 7-27 16M414 224c-10 5-17 12-21 21" fill="none" stroke="#7c4748" stroke-width="4"/>
+
+  <!-- the active patron's raised shoulder hides nearly all of the old face -->
+  <path d="M461 169c39 4 74 29 102 75l19 55-89 23-53-55 12-48Z" fill="url(#k12-activecoat)" stroke="#17141b" stroke-width="10"/>
+  <path d="M478 190c29 12 52 33 69 63m-78-31c26 12 47 31 62 57" fill="none" stroke="#b65364" stroke-width="6" opacity=".45"/>
+  <path d="M457 180c8 5 15 12 20 21" fill="none" stroke="#d2a077" stroke-width="5" opacity=".52"/>
+
+  <!-- old arm embracing the active shoulder -->
+  <path d="M383 284c48 10 94 29 137 56 29 18 59 30 91 34" fill="none" stroke="#39443e" stroke-width="67" stroke-linecap="round"/>
+  <path d="M399 271c54 14 101 38 141 70" fill="none" stroke="#9d9870" stroke-width="7" opacity=".36"/>
+
+  <!-- beer towel pressed to the scrape by a crooked, jointed hand -->
+  <path d="M560 343c36-6 70 0 98 19l-17 83c-30 11-64 4-92-20Z" fill="#d9d2ab" stroke="#211a1d" stroke-width="8"/>
+  <path d="M564 359c28 12 56 13 83 2m-91 26c30 12 59 14 88 5m-93 24c28 11 57 12 86 3" fill="none" stroke="#8e413e" stroke-width="7" opacity=".7"/>
+  <path d="M537 331c15-7 31-4 42 6l18 17c9 8 7 20-2 25-9 5-18-1-27-9l-11-9 17 23c8 11 4 23-7 26-10 3-18-8-26-18l-11-14 11 25c6 13 0 24-11 24-11 0-16-14-21-27l-6-16 3 23c2 14-6 23-17 20-10-3-12-17-13-30l-2-23c-1-17 5-30 18-38Z" fill="url(#k12-skin-old)" stroke="#22171c" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M554 348c-5 10-5 20 0 31m-19-21c-5 12-4 23 2 34m-20-24c-4 11-2 23 5 34" fill="none" stroke="#713b41" stroke-width="5"/>
+  <path d="M491 336c-14 14-21 31-20 50" fill="none" stroke="#b1a47a" stroke-width="6" opacity=".38"/>
+
+  <!-- guarded last glass and second articulated hand -->
+  <path d="M307 327c24-16 55-16 78 1l-8 125c-19 12-44 12-65 0Z" fill="url(#k12-ale)" stroke="#20171a" stroke-width="9"/>
+  <path d="M309 329c26 10 51 10 75 0l-2 24c-24 10-48 10-72 0Z" fill="#eee0b2" stroke="#20171a" stroke-width="5"/>
+  <path d="M382 350c47-2 55 77-6 81" fill="none" stroke="#d1c8a8" stroke-width="11"/>
+  <path d="M272 324c15-10 34-10 48 0l15 17c8 9 6 20-4 25-9 5-18-3-27-11l-8-7 14 23c7 11 3 21-7 24-10 3-17-8-24-18l-8-13 8 22c5 13-1 23-12 22-10-1-14-14-18-27l-5-18-1 25c0 13-8 21-18 17-10-4-10-18-9-31l2-25c1-14 10-26 24-35Z" fill="url(#k12-skin-old)" stroke="#22171c" stroke-width="8"/>
+  <path d="M290 337c-5 9-5 19 0 29m-19-19c-5 11-4 22 1 31m-19-21c-4 11-2 22 4 31" fill="none" stroke="#713b41" stroke-width="5"/>
+
+  <!-- healing glow is local to towel, wound and glass, not a generic halo -->
+  <ellipse cx="572" cy="382" rx="112" ry="87" fill="url(#k12-lampglow)" opacity=".38"/>
+  <path d="M663 391c19 8 39 7 60-3M653 410c21 10 45 10 67 1" fill="none" stroke="#e59768" stroke-width="5" opacity=".42"/>
+
+  <!-- closing clutter layered over the foreground crop -->
+  <path d="M15 542c77-44 140-44 188 0" fill="none" stroke="#251a20" stroke-width="24"/>
+  <path d="M15 541c63-27 124-26 183 2" fill="none" stroke="#8a5740" stroke-width="8"/>
+  <path d="M704 526c18-21 42-30 71-27l40 61H682Z" fill="#2c2529" stroke="#151317" stroke-width="8"/>
+  <path d="M719 521c20 5 40 16 59 33" fill="none" stroke="#66504a" stroke-width="6"/>
+
+  <g fill="none" stroke="#d3b47d" stroke-linecap="round" opacity=".3">
+    <path d="M268 177c19-14 40-21 62-22m-47 38c17-10 34-14 51-13M212 361c7-22 18-41 34-58M462 446c18 8 33 20 43 36" stroke-width="5"/>
+  </g>
+  <rect width="800" height="560" fill="transparent" filter="url(#k12-grit)"/>
+  <rect x="6" y="6" width="788" height="548" rx="17" fill="none" stroke="#0d0e12" stroke-width="12"/>
+</svg>

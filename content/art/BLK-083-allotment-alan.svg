@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b083-title b083-desc">
+  <title id="b083-title">BLK-083 Allotment Alan non-final comic mock-up</title>
+  <desc id="b083-desc">Allotment Alan stands knobbly and proud between immaculate vegetable rows, wrestling an oversized leek beside a tiny shed while a plain thermos waits on a crate. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b083-sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#839f94"/><stop offset=".55" stop-color="#b6b48a"/><stop offset="1" stop-color="#d8be72"/></linearGradient>
+    <linearGradient id="b083-soil" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#76503a"/><stop offset=".5" stop-color="#4f352b"/><stop offset="1" stop-color="#2b2524"/></linearGradient>
+    <pattern id="b083-earth" width="69" height="43" patternUnits="userSpaceOnUse"><rect width="69" height="43" fill="#5b3c30"/><path d="M4 11c18-7 36-6 53 1M14 34c18-5 35-4 50 2" fill="none" stroke="#2e2924" stroke-width="4"/><circle cx="12" cy="24" r="3" fill="#9c7250"/><circle cx="51" cy="29" r="3" fill="#a47b55"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b083-sky)"/>
+  <path d="M0 188c135-27 263-24 386 5 148 34 286 30 414-6v373H0Z" fill="url(#b083-earth)" stroke="#302922" stroke-width="10"/>
+  <!-- long immaculate rows create generous landscape depth -->
+  <path d="M0 223c151-20 277-12 377 20L168 560H0Zm800 9c-140-23-265-13-375 19l166 309h209Z" fill="url(#b083-soil)"/>
+  <path d="M0 266c110-17 224-12 340 14M0 333c90-12 185-8 287 12M0 426c65-8 139-5 220 9m580-159c-111-18-227-14-345 13m345 58c-94-12-192-8-294 13m294 78c-69-8-143-4-223 8" fill="none" stroke="#ac7b4e" stroke-width="9" opacity=".55"/>
+  <g fill="#397b45" stroke="#153b24" stroke-width="5"><path d="M44 247c17-35 35-36 53-2-6 26-23 38-51 35Z"/><path d="M130 255c17-35 36-36 54-2-7 27-24 39-52 35Z"/><path d="M223 268c17-33 35-34 52-1-6 25-22 37-49 35Z"/><path d="M627 271c18-34 36-34 54 0-6 26-23 38-51 35Z"/><path d="M712 257c18-35 37-35 55 0-7 27-24 39-52 35Z"/></g>
+  <!-- tiny shed and crate/thermos -->
+  <path d="M52 113h209v178H45Z" fill="#557052" stroke="#20281f" stroke-width="10"/>
+  <path d="m34 118 117-82 129 79" fill="#71503a" stroke="#211d1a" stroke-width="11"/>
+  <path d="M83 158h74v133H78Zm97 31h57v74h-57Z" fill="#34483e" stroke="#20251f" stroke-width="7"/>
+  <path d="M91 171c20 8 39 8 58 0m39 31 41 0" fill="none" stroke="#789478" stroke-width="5"/>
+  <path d="M646 397h112l16 91-145 3Z" fill="#795438" stroke="#29211d" stroke-width="9"/>
+  <path d="M663 411h78m-75 29h82m-78 29h84" stroke="#b07e4a" stroke-width="6"/>
+  <path d="M696 321c21-3 38 7 41 24l-5 101-57-1-3-98c0-15 8-24 24-26Z" fill="#a8a684" stroke="#27302a" stroke-width="8"/>
+  <path d="M685 304h39l5 22-49 0Z" fill="#d0c89f" stroke="#27302a" stroke-width="6"/>
+  <!-- tall turnip skull, cloth hat and side tufts -->
+  <path d="M330 92c42-40 108-43 151-4 37 34 42 88 20 131-24 48-85 61-129 31-48-33-66-115-42-158Z" fill="#bb7959" stroke="#211719" stroke-width="11"/>
+  <path d="M323 98c13-45 55-70 98-62 42 7 72 43 73 86-47-27-103-29-171-24Z" fill="#7d754e" stroke="#211d19" stroke-width="9"/>
+  <path d="M292 92c56-37 137-46 219-20l-7 40c-76-24-147-21-216 11Z" fill="#8f8559" stroke="#211d19" stroke-width="9"/>
+  <path d="M332 106c-20 10-33 29-38 57m192-50c19 12 31 32 34 59" fill="none" stroke="#c2b57a" stroke-width="7"/>
+  <path d="M330 132c-26-8-44 12-37 38 7 25 31 35 52 19m145-54c26-9 44 11 37 37-7 24-31 35-52 20" fill="#ac6b52" stroke="#25191a" stroke-width="8"/>
+  <path d="M348 154c16-10 34-9 48 2m31 2c14-8 29-5 40 6" fill="none" stroke="#432728" stroke-width="8"/>
+  <circle cx="380" cy="165" r="4" fill="#eaddbd"/><circle cx="453" cy="169" r="4" fill="#eaddbd"/>
+  <!-- forked red nose and gummy beam -->
+  <path d="M414 153c-7 19-18 35-31 49-11 11-5 29 11 34 15 5 27-5 40-4 18 2 29-16 18-31-10-14-18-26-38-48Z" fill="#a94f45" stroke="#52292b" stroke-width="8"/>
+  <path d="M402 200c9 5 16 12 20 22m-28-3c12-4 25-3 37 2" fill="none" stroke="#e18465" stroke-width="5"/>
+  <path d="M346 243c34 15 75 17 114 3-16 26-88 31-114-3Z" fill="#4f2927" stroke="#26191a" stroke-width="7"/>
+  <path d="M364 252c25 7 51 7 77-1" stroke="#d58c68" stroke-width="5"/>
+  <!-- knobbly full-body grower -->
+  <path d="M327 272c44-24 109-25 157 2 57 33 81 100 69 182l-278-1c-7-83 6-144 52-183Z" fill="#4f6547" stroke="#171b16" stroke-width="12"/>
+  <path d="M312 304c68 24 143 24 213-2m-228 54c88 29 170 27 244-5" fill="none" stroke="#7d8e69" stroke-width="8" opacity=".48"/>
+  <path d="M360 270c-6 47-4 95 8 145m79-143c15 45 20 93 14 144" fill="none" stroke="#30452f" stroke-width="9"/>
+  <!-- giant leek physically bows Alan -->
+  <path d="M187 63c43 51 71 112 84 182l45 247-91 19-48-249c-14-77-11-143 10-199Z" fill="#e5e0ae" stroke="#173322" stroke-width="10"/>
+  <path d="M190 67c-23-28-28-56-15-84 25 16 39 39 41 69 8-35 25-59 52-73 9 33 1 62-23 86 28-28 58-38 91-30-15 31-41 49-79 54Z" fill="#357a45" stroke="#173322" stroke-width="9"/>
+  <path d="M220 115c11 105 28 207 51 305m-21-303c7 102 18 200 35 294" stroke="#a5a674" stroke-width="6"/>
+  <path d="M334 315c-49 25-90 58-122 99-16 20-12 40 4 50 17 10 34-4 49-23l96-94Z" fill="#b57557" stroke="#211719" stroke-width="10"/>
+  <path d="M222 403c-24 10-36 27-30 44 6 17 25 15 43 6l29-15-18 22c-11 14-5 27 9 30 14 3 24-11 34-25l25-39c11-18 3-37-15-46-18-8-39-1-77 23Z" fill="#c17e5d" stroke="#211719" stroke-width="8"/>
+  <path d="M473 317c49 25 89 60 120 103 15 21 10 41-7 50-17 9-34-6-49-26l-93-99Z" fill="#b57557" stroke="#211719" stroke-width="10"/>
+  <path d="M585 410c24 11 35 29 28 46-7 17-26 13-44 3l-28-17 17 23c10 14 4 27-10 29-14 2-23-12-33-27l-23-40c-10-18-1-38 17-45 18-7 39 1 76 28Z" fill="#c17e5d" stroke="#211719" stroke-width="8"/>
+  <!-- knobbly legs and muddy boots -->
+  <path d="M337 447c-15 34-24 69-26 107m150-107c16 34 25 69 27 106" stroke="#3c4938" stroke-width="39"/>
+  <path d="M271 529c31-8 60-4 83 13-2 12-20 16-45 12l-46-7c-6-8-3-14 8-18Zm177 10c30-12 60-10 84 7-1 12-19 17-45 14l-47-6c-7-7-4-11 8-15Z" fill="#4b3529" stroke="#171718" stroke-width="9"/>
+  <path d="M281 535c19 3 37 8 54 16m127-10c18 4 35 9 51 16" stroke="#99724c" stroke-width="5"/>
+  <!-- birds, stains, weather hatching -->
+  <path d="M572 83c18-16 36-16 54 0m26 21c17-14 34-14 51 0" fill="none" stroke="#3d4a43" stroke-width="6"/>
+  <path d="M21 501c72-15 139-14 202-4m353 2c68-9 133-5 199 8" fill="none" stroke="#9c7049" stroke-width="6"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#151817" stroke-width="12"/>
+</svg>

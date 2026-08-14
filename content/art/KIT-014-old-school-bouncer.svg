@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="k14-title k14-desc">
+  <title id="k14-title">KIT-014 Old-School Bouncer non-final comic-vector mock-up</title>
+  <desc id="k14-desc">At wet floor level, an enormous retired bouncer in suspenders turns his battered back and shoulder into an impact wall for a smaller stage-one patron. His cauliflower ear, crushed nose profile, articulated foreground fist and huge boots dominate a rainy doorway layered with velvet rope, startled queue and flying droplets. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="k14-night" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10232b"/>
+      <stop offset=".45" stop-color="#1d2832"/>
+      <stop offset="1" stop-color="#080d13"/>
+    </linearGradient>
+    <linearGradient id="k14-door" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6b263a"/>
+      <stop offset=".48" stop-color="#351c2a"/>
+      <stop offset="1" stop-color="#14141b"/>
+    </linearGradient>
+    <linearGradient id="k14-shirt" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d8cbb1"/>
+      <stop offset=".46" stop-color="#9d8e7c"/>
+      <stop offset="1" stop-color="#4c4746"/>
+    </linearGradient>
+    <linearGradient id="k14-trousers" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#413f48"/>
+      <stop offset="1" stop-color="#181b22"/>
+    </linearGradient>
+    <radialGradient id="k14-skin" cx="34%" cy="24%" r="88%">
+      <stop offset="0" stop-color="#d39469"/>
+      <stop offset=".56" stop-color="#995246"/>
+      <stop offset="1" stop-color="#4d2a34"/>
+    </radialGradient>
+    <radialGradient id="k14-hit" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffd977" stop-opacity=".9"/>
+      <stop offset=".35" stop-color="#e8753f" stop-opacity=".4"/>
+      <stop offset="1" stop-color="#b43842" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="k14-lamp" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffc864" stop-opacity=".86"/>
+      <stop offset=".42" stop-color="#d55a48" stop-opacity=".26"/>
+      <stop offset="1" stop-color="#d55a48" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="k14-rain" width="73" height="61" patternUnits="userSpaceOnUse" patternTransform="rotate(12)">
+      <path d="M7-4 0 20M31 9 22 39M66-2 56 31M49 39l-7 26" stroke="#9fd2d3" stroke-width="5" stroke-linecap="round" opacity=".42"/>
+    </pattern>
+    <pattern id="k14-hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
+      <path d="M0 2h12M0 8h12" stroke="#15161a" stroke-width="2" opacity=".26"/>
+    </pattern>
+    <filter id="k14-grit" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency=".35" numOctaves="3" seed="614" result="noise"/>
+      <feColorMatrix in="noise" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .09 0" result="dust"/>
+      <feBlend in="SourceGraphic" in2="dust" mode="multiply"/>
+    </filter>
+    <clipPath id="k14-backclip">
+      <path d="M181 214c18-57 66-94 119-91 42 2 62 25 95 19 55-10 109 28 143 82 36 59 34 145 24 234l-9 102H157l-6-105c-8-111 2-196 30-241Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#k14-night)"/>
+  <ellipse cx="639" cy="134" rx="251" ry="182" fill="url(#k14-lamp)"/>
+
+  <!-- doorway and rain-depth queue -->
+  <path d="M96-16h640v546H96Z" fill="#090d12" stroke="#05070a" stroke-width="17"/>
+  <path d="M130 11h569v490H130Z" fill="url(#k14-door)" stroke="#805744" stroke-width="11"/>
+  <path d="M149 26h531v445H149Z" fill="#18313a" opacity=".78"/>
+  <rect x="145" y="17" width="541" height="465" fill="url(#k14-rain)"/>
+  <path d="M137 314c130-44 248-42 356 5 77 34 145 37 207 10v152H132Z" fill="#101b23" opacity=".64"/>
+  <g stroke="#13141a" stroke-width="9" stroke-linejoin="round">
+    <path d="M129 224c7-71 49-109 98-88 42 18 56 70 42 133l-5 151H117Z" fill="#315064"/>
+    <path d="M181 115c-32 3-51 41-40 73 11 32 50 44 75 20 26-25 14-98-35-93Z" fill="#9e6150"/>
+    <path d="M151 133c20-26 51-30 75-7-24-4-45 4-66 20Z" fill="#3f3434"/>
+    <path d="M212 246c8-73 54-111 105-86 43 21 56 77 39 141l-4 121H205Z" fill="#605065"/>
+    <path d="M274 138c-36 7-49 52-27 80 19 24 58 22 76-7 19-31-4-82-49-73Z" fill="#bf7a5a"/>
+    <path d="M247 154c17-25 52-35 76-12-21 4-39 13-54 29Z" fill="#22252b"/>
+    <path d="M549 231c10-72 57-104 105-77 42 24 51 80 32 140l3 133H540Z" fill="#4d3c51"/>
+    <path d="M611 131c-35 6-48 50-28 78 19 25 59 23 76-7 17-30-3-80-48-71Z" fill="#a86253"/>
+    <path d="M582 147c21-29 55-30 78-7-24-4-45 5-65 21Z" fill="#343236"/>
+    <path d="M655 235c5-69 50-102 98-76 39 22 53 72 39 133l9 134H654Z" fill="#31535a"/>
+    <path d="M716 137c-32 7-43 50-22 76 18 22 54 19 70-8 16-29-6-77-48-68Z" fill="#c27c5b"/>
+  </g>
+  <g fill="none" stroke-linecap="round">
+    <path d="M159 176c11-10 23-11 35-3m82 10c12-7 23-6 33 2m299-11c11-7 22-6 32 2m70 1c11-7 22-6 31 1" stroke="#241b20" stroke-width="6"/>
+    <path d="M168 198c13 8 26 9 39 2m67 14c15 6 29 4 41-6m288-4c15 6 29 2 40-8m66 8c13 7 26 4 37-7" stroke="#61333b" stroke-width="5"/>
+    <path d="M136 279c46-22 90-18 132 11m-53-27c51-20 97-12 138 24m188-18c47-21 94-14 140 21m-27-28c48-18 95-8 142 27" stroke="#7898a0" stroke-width="7" opacity=".34"/>
+  </g>
+
+  <!-- warm vestibule sliver and smaller protected Stage 1 -->
+  <path d="M581 86h112v368H581Z" fill="#5d2a35" opacity=".72"/>
+  <path d="M607 97h65v333h-65Z" fill="#be7945" opacity=".34"/>
+  <path d="M597 296c26-37 68-48 102-24 37 25 53 79 52 165l-2 123H577l-3-124c-2-68 4-113 23-140Z" fill="#6b4553" stroke="#17141a" stroke-width="10"/>
+  <path d="M626 237c2-31 26-53 57-56l34 10 23 26 3 35-17 31-27 21-34-3-27-22Z" fill="#b76e54" stroke="#21171c" stroke-width="8"/>
+  <path d="M634 213c17-27 48-36 76-20 15 8 25 21 30 37-24-9-43-5-58 11-16 16-32 15-49 2Z" fill="#322f31" stroke="#1d1b1e" stroke-width="7"/>
+  <path d="M640 248c10-8 21-9 31-3m37 0c10 2 17 7 22 14" fill="none" stroke="#271d22" stroke-width="6"/>
+  <path d="M671 270c15 9 31 10 47 3" fill="none" stroke="#70363c" stroke-width="6"/>
+  <path d="M613 342c34-23 73-28 118-14" fill="none" stroke="#a96b72" stroke-width="7" opacity=".45"/>
+  <path d="M585 401c17 11 34 17 52 17m62-17c16 9 33 13 51 11" fill="none" stroke="#c48785" stroke-width="5" opacity=".42"/>
+
+  <!-- velvet rope runs through foreground depth -->
+  <path d="M52 339c152-34 280-29 385 17 95 42 190 44 286 7" fill="none" stroke="#3b1625" stroke-width="28"/>
+  <path d="M55 335c148-27 273-19 382 25 98 40 193 40 286 1" fill="none" stroke="#a52d50" stroke-width="13"/>
+  <g stroke="#251b1b" stroke-width="8">
+    <path d="M70 291h22l21 269H42Z" fill="#a16e3d"/>
+    <ellipse cx="81" cy="290" rx="30" ry="20" fill="#d0a257"/>
+    <path d="M708 306h23l29 254h-76Z" fill="#9b693c"/>
+    <ellipse cx="719" cy="304" rx="31" ry="20" fill="#d0a257"/>
+  </g>
+  <path d="M0 461c186-28 365-20 538 24 99 25 187 26 262 4v71H0Z" fill="#10151b"/>
+  <path d="M0 481c186-15 365-3 538 35 92 20 180 20 262 2" fill="none" stroke="#37464b" stroke-width="8" opacity=".5"/>
+  <g fill="#718b8f" opacity=".44">
+    <path d="M17 493c33-7 62-4 88 10-34 12-65 10-88-10Zm508 30c44-8 81-3 111 14-45 11-82 7-111-14Z"/>
+  </g>
+
+  <!-- enormous back/side bouncer silhouette -->
+  <path d="M181 214c18-57 66-94 119-91 42 2 62 25 95 19 55-10 109 28 143 82 36 59 34 145 24 234l-9 102H157l-6-105c-8-111 2-196 30-241Z" fill="url(#k14-shirt)" stroke="#151519" stroke-width="14"/>
+  <rect x="145" y="118" width="435" height="442" fill="url(#k14-hatch)" clip-path="url(#k14-backclip)" opacity=".78"/>
+  <!-- irregular shoulder blades, creases, sweat and seams -->
+  <path d="M199 251c55-38 108-48 158-30 36 13 72 15 107 7 37-9 67 4 91 38M173 347c61-35 122-44 184-26 78 23 141 19 189-11M165 427c91-25 189-23 292 7 35 10 66 11 94 3" fill="none" stroke="#e0d1b8" stroke-width="8" opacity=".3"/>
+  <path d="M237 190c-17 72-14 148 10 228M459 175c17 78 13 157-11 238" fill="none" stroke="#2a2730" stroke-width="22"/>
+  <path d="M239 185c-10 79-4 153 17 221M457 174c13 76 8 151-15 226" fill="none" stroke="#7c2d3f" stroke-width="10"/>
+  <path d="M245 244c15 7 30 8 46 3m139-12c16 8 32 8 48 0" fill="none" stroke="#c0a58e" stroke-width="6" opacity=".56"/>
+  <path d="M314 276c30-13 57-10 80 8m-103 47c42-18 84-17 125 4m-116 54c36-14 74-10 112 10" fill="none" stroke="#6e6058" stroke-width="7" opacity=".5"/>
+  <path d="M210 306c15 3 27 10 36 22m-48 21c17 4 31 12 42 25m246-76c17 5 31 15 41 29m-49 18c18 5 33 14 44 28" fill="none" stroke="#f2dfbd" stroke-width="5" opacity=".28"/>
+
+  <!-- bald battered side profile tucked over the blocking shoulder -->
+  <path d="M240 72c12-40 50-65 93-62l42 13 34 31 16 42-9 33-30 47 23 14-46 22-47-3-43-25-27-38-13-38Z" fill="url(#k14-skin)" stroke="#21161c" stroke-width="11"/>
+  <path d="M252 57c33-40 94-50 137-18 19 14 31 34 35 56-40-31-82-35-125-12-18 10-34 11-48 4Z" fill="#8d6b5d" opacity=".35"/>
+  <path d="M270 39c30-18 64-22 101-11M254 57c33-17 66-19 98-7" fill="none" stroke="#3b2b2b" stroke-width="6" opacity=".66"/>
+  <path d="M283 100c12-13 27-17 43-11" fill="none" stroke="#352125" stroke-width="9"/>
+  <path d="M297 101c7-2 14-1 20 3" fill="none" stroke="#111419" stroke-width="5"/>
+  <!-- crushed nose, almost flat to face rather than stock long nose -->
+  <path d="M330 111c16 2 31 9 44 22l-17 11 22 11-25 15-28-12" fill="#a9584c" stroke="#61323a" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M348 179c16 5 31 2 45-9" fill="none" stroke="#3a2026" stroke-width="8"/>
+  <path d="M350 186c13 7 26 7 39 0" fill="none" stroke="#6e3439" stroke-width="4"/>
+  <!-- cauliflower ear is a lumpy focal feature -->
+  <path d="M257 101c-33-7-52 22-39 53 12 28 47 38 69 11l4-39-13-17Z" fill="#a2574d" stroke="#21161c" stroke-width="9"/>
+  <path d="M239 116c16-11 35-2 38 17-11-5-19-1-23 10 12-3 20 3 22 15-16 9-35-2-38-20" fill="none" stroke="#65333a" stroke-width="7"/>
+  <path d="M246 124c7 3 12 8 14 15M243 150c8-2 15 0 21 6" fill="none" stroke="#c27a60" stroke-width="4"/>
+  <path d="M320 69c9-5 20-7 31-5M282 74c8-6 17-9 27-9" fill="none" stroke="#6f443e" stroke-width="5"/>
+  <path d="M310 126c4 10 5 20 2 30M300 167c9 4 18 4 27-1" fill="none" stroke="#7a403f" stroke-width="4"/>
+  <path d="M372 81c12 5 22 14 30 27m-13-43c13 7 23 17 30 31" fill="none" stroke="#e0ae81" stroke-width="4" opacity=".34"/>
+
+  <!-- incoming blow from extreme left foreground, shoulder takes it -->
+  <path d="M-91 175c112-27 206-12 281 46" fill="none" stroke="#3b2d34" stroke-width="94" stroke-linecap="round"/>
+  <path d="M-89 168c109-20 199-5 269 48" fill="none" stroke="#66505b" stroke-width="64" stroke-linecap="round"/>
+  <path d="M139 181c23-7 49-1 67 16l26 25c12 12 9 28-4 35-13 7-27-4-39-15l-15-13 19 31c9 15 3 30-12 33-14 3-25-12-35-27l-12-18 9 31c5 17-4 30-19 28-14-2-20-19-25-36l-6-20-3 25c-1 17-12 27-25 21-12-6-12-24-10-40l3-30c2-22 13-38 31-46Z" fill="#b17460" stroke="#21161c" stroke-width="10"/>
+  <path d="M170 206c-7 12-8 25-2 39m-24-24c-7 14-7 28 0 42m-24-29c-6 14-4 28 4 42" fill="none" stroke="#723c43" stroke-width="6"/>
+  <ellipse cx="207" cy="232" rx="136" ry="119" fill="url(#k14-hit)"/>
+  <path d="m180 180 17-42 17 30 29-34 1 46 43-20-24 43 42 8-42 25" fill="none" stroke="#f5c85d" stroke-width="11" stroke-linejoin="round"/>
+  <path d="m197 192-29-25m64 38 34-18m-49 52-8 39" stroke="#ffe6a0" stroke-width="6"/>
+  <path d="M222 210c12 10 22 23 29 38" fill="none" stroke="#822f3b" stroke-width="7"/>
+
+  <!-- bouncer's meaty articulated fist foreshortened into lower-right -->
+  <path d="M489 341c46 6 87 26 123 61" fill="none" stroke="#8f4e45" stroke-width="70" stroke-linecap="round"/>
+  <path d="M583 373c28-16 62-16 91 0l45 27c20 12 24 32 10 44-14 12-34 1-52-9l-17-10 25 26c13 14 10 31-5 39-15 7-30-6-43-19l-15-14 16 28c9 17 3 33-14 36-16 2-27-16-36-32l-10-19 4 29c2 18-9 30-24 25-15-5-17-24-19-42l-2-33c-1-25 15-48 46-66Z" fill="url(#k14-skin)" stroke="#20151b" stroke-width="11" stroke-linejoin="round"/>
+  <path d="M622 397c-9 13-11 28-5 44m-28-27c-8 15-8 31-1 48m-27-29c-7 15-5 32 4 48" fill="none" stroke="#6b343b" stroke-width="7"/>
+  <path d="M596 385c22 11 41 12 58 4m-75 18c21 10 40 10 57 1" fill="none" stroke="#e0a076" stroke-width="5" opacity=".38"/>
+  <path d="M520 354c18 10 31 24 40 42" fill="none" stroke="#c28064" stroke-width="6" opacity=".44"/>
+
+  <!-- giant planted legs and boots establish floor-level camera -->
+  <path d="M203 397c50-16 105-13 147 8l-18 155H121l28-114c7-27 24-42 54-49Zm208 6c45-17 100-12 134 15l51 142H372l-6-112c-2-25 13-37 45-45Z" fill="url(#k14-trousers)" stroke="#12151b" stroke-width="12"/>
+  <path d="M167 461c47-12 98-9 153 8m70-2c53-14 105-10 157 11" fill="none" stroke="#67636b" stroke-width="7" opacity=".4"/>
+  <path d="M93 501c44-18 105-18 165-4l91 25c24 7 30 26 10 38H55c-25-12-15-42 38-59Z" fill="#201d20" stroke="#0d0f12" stroke-width="12"/>
+  <path d="M389 506c64-18 134-13 205 17l50 22c13 6 12 12-4 15H355c-18-8-6-40 34-54Z" fill="#211e21" stroke="#0d0f12" stroke-width="12"/>
+  <path d="M91 522c75-10 148-4 217 19m91-14c65-8 128 2 190 29" fill="none" stroke="#76604e" stroke-width="8"/>
+  <path d="M132 544h172m102 3h180" stroke="#c7a56b" stroke-width="5" opacity=".38"/>
+
+  <!-- rain and scuffs break across foreground anatomy -->
+  <g fill="none" stroke="#9fd5d7" stroke-linecap="round">
+    <path d="M31 30 17 73m70-16-10 34m408-78-9 32m271-24-11 36M103 392l-9 32m556-82-10 35M756 411l-8 29" stroke-width="7" opacity=".56"/>
+    <path d="M191 296c14 9 28 11 42 5m109 78c18 9 36 10 54 2m119 58c15 8 31 9 47 2" stroke-width="5" opacity=".38"/>
+  </g>
+  <g fill="#c7e5df" opacity=".65">
+    <path d="M271 140c8-17 17-18 25-1 3 10-3 19-12 18-10-1-17-8-13-17Z"/>
+    <path d="M442 246c7-15 15-16 22-1 3 9-2 17-11 16-8-1-14-7-11-15Z"/>
+    <path d="M603 300c7-14 14-15 20-1 3 8-2 15-10 15-8-1-13-7-10-14Z"/>
+  </g>
+  <path d="M279 284c16 4 29 12 39 25m92-4c17 4 31 13 42 27" fill="none" stroke="#4f4949" stroke-width="6"/>
+  <path d="M183 374c14-3 27-2 40 4m244-12c15-3 29-2 43 3" fill="none" stroke="#f0ddbd" stroke-width="5" opacity=".24"/>
+
+  <rect width="800" height="560" fill="transparent" filter="url(#k14-grit)"/>
+  <rect x="6" y="6" width="788" height="548" rx="17" fill="none" stroke="#070a0e" stroke-width="12"/>
+</svg>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="kit007-title kit007-desc">
+  <title id="kit007-title">KIT-007 Auntie at the Door non-final comic-vector mock-up</title>
+  <desc id="kit007-desc">From a low distorted threshold camera, a chained front door and two enormous arthritic hands obstruct almost everything. One hand pinches two blank envelopes close to the lens; the other lifts and separates face-down prize parcels. Only a sliver of a narrow elderly auntie appears behind the door: a magnified suspicious eye, hooked cheek, sliding spectacles and pinned wiry hair. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="kit007-night" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#193943"/><stop offset="1" stop-color="#101724"/>
+    </linearGradient>
+    <linearGradient id="kit007-hall" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#d19b63"/><stop offset=".52" stop-color="#71473c"/><stop offset="1" stop-color="#29232a"/>
+    </linearGradient>
+    <linearGradient id="kit007-door" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#7a5135"/><stop offset=".5" stop-color="#452d26"/><stop offset="1" stop-color="#21181a"/>
+    </linearGradient>
+    <linearGradient id="kit007-skin" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#dfb18a"/><stop offset=".55" stop-color="#a66b5d"/><stop offset="1" stop-color="#6e4145"/>
+    </linearGradient>
+    <radialGradient id="kit007-bulb" cx="50%" cy="25%" r="75%">
+      <stop stop-color="#ffe0a0" stop-opacity=".82"/><stop offset=".35" stop-color="#e89f51" stop-opacity=".24"/><stop offset="1" stop-color="#8a4c38" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="kit007-wallpaper" width="47" height="68" patternUnits="userSpaceOnUse">
+      <path d="M24 5c-13 16-13 34 0 52 13-18 13-36 0-52ZM7 22c11 9 20 21 26 35M41 22C30 31 20 43 15 57" fill="none" stroke="#4a3032" stroke-width="3" opacity=".28"/>
+      <circle cx="24" cy="62" r="3" fill="#4a3032" opacity=".28"/>
+    </pattern>
+    <pattern id="kit007-robe" width="35" height="35" patternUnits="userSpaceOnUse">
+      <path d="m3 17 7-7 7 7-7 7Zm18 0 6-6 6 6-6 6Z" fill="none" stroke="#d99bb3" stroke-width="2.5" opacity=".5"/>
+    </pattern>
+    <filter id="kit007-grain">
+      <feTurbulence baseFrequency=".72" numOctaves="2" seed="707" result="n"/>
+      <feColorMatrix in="n" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .07 0" result="g"/>
+      <feBlend in="SourceGraphic" in2="g" mode="multiply"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="560" fill="url(#kit007-night)"/>
+  <!-- Wet street and neighbour layers warped by the low peephole lens. -->
+  <path d="M0 78c112-32 207-21 287 31l-21 327C166 478 78 478 0 445Z" fill="#20434c" stroke="#0e1720" stroke-width="9"/>
+  <path d="M0 342c102-28 187-15 272 40l-6 77C170 492 81 484 0 446Z" fill="#29323a"/>
+  <path d="M16 116 238 95l-13 206-220 18Z" fill="#26383f" stroke="#101b21" stroke-width="8"/>
+  <path d="M36 133 106 126l-4 81-72 7Zm91-10 84-8-5 82-86 8Z" fill="#91b1b2" fill-opacity=".23" stroke="#111c22" stroke-width="6"/>
+  <path d="M31 251 216 237m-98-112-4 79" stroke="#d5e7df" stroke-width="4" opacity=".34"/>
+  <path d="M18 411c38-15 73-14 104 1m32-1c35-7 66-3 93 12" fill="none" stroke="#9cb6b5" stroke-width="4" opacity=".38"/>
+  <path d="m26 17 15 33m42-19 12 31m44-47 15 35m42-6 11 30" stroke="#a7c1c2" stroke-width="4" opacity=".68"/>
+
+  <!-- The hall is only a crooked wedge through the opening. -->
+  <path d="M285-19 721-35c-63 127-75 251-39 372 24 80 17 154-18 223H266c39-89 51-176 35-260-20-103-25-209-16-319Z" fill="url(#kit007-hall)" stroke="#19161a" stroke-width="10"/>
+  <path d="M303-2 695-18c-51 115-59 226-28 334 22 78 16 151-18 225H287c34-89 42-172 27-251-20-99-24-195-11-290Z" fill="url(#kit007-wallpaper)"/>
+  <ellipse cx="501" cy="177" rx="232" ry="224" fill="url(#kit007-bulb)"/>
+  <path d="M457 20c-12-18-39-19-52-1l-9 24h73Z" fill="#30262a" stroke="#171619" stroke-width="7"/>
+  <circle cx="432" cy="43" r="82" fill="url(#kit007-bulb)"/>
+  <path d="M336 68v143m0-109c-18 0-29 8-33 22m33 5c19 1 31 11 35 28m-35-2c-15 1-25 9-29 24" stroke="#242024" stroke-width="7"/>
+  <path d="M298 119c18-10 34-5 45 13l-12 88-58-9Z" fill="#315466" stroke="#17181b" stroke-width="6"/>
+  <path d="M343 148c20-4 37 5 49 25l-6 79-65-17Z" fill="#7b523d" stroke="#17181b" stroke-width="6"/>
+  <path d="M470 312h99l-6-47h-86Zm8-53h100l-6-45h-87Zm8-50h99l-5-43h-87Zm8-48h97l-5-41h-86Z" fill="#795446" stroke="#2a1e21" stroke-width="6"/>
+  <path d="M470 312h99m-91-53h100m-92-50h99m-91-48h97" stroke="#d0a06d" stroke-width="4" opacity=".48"/>
+  <path d="M580 329h70v119h-70Z" fill="#ceb38b" stroke="#32272a" stroke-width="7"/>
+  <path d="M591 342v94m14-94v94m14-94v94m14-94v94" stroke="#7c6558" stroke-width="4"/>
+  <path d="M499 423c16-20 39-20 53-3l16 22-18 35-53-2-20-32Z" fill="#25272b" stroke="#151619" stroke-width="6"/>
+  <path d="M488 424c-11-18-29-20-40-6-10 14-7 37 9 47 15 9 33 4 44-11m38-40c4-19 18-29 32-23 13 5 19 23 13 40" fill="#2e3034" stroke="#151619" stroke-width="6"/>
+  <path d="M464 423c4-4 9-4 12 1m47-7c4-3 9-2 11 3" stroke="#c6b47f" stroke-width="4"/>
+
+  <!-- Face fragment only: auntie is crushed behind the right door edge, never a host body. -->
+  <path d="M622 68c35-19 76-6 97 28 21 34 18 84-8 125l-40 55-53-4-33-47 3-95Z" fill="url(#kit007-skin)" stroke="#18151a" stroke-width="9"/>
+  <path d="M618 101c-8-29 7-53 33-59 5-23 37-29 49-7 25-8 45 20 31 44 18 18 10 47-12 55-18-35-52-46-96-25Z" fill="#96897b" stroke="#171519" stroke-width="7"/>
+  <path d="M634 62c11 9 17 22 17 38m8-50c13 15 17 31 13 49m13-52c12 14 16 31 11 49m17-33c7 11 8 23 3 35" fill="none" stroke="#ded0b7" stroke-width="4"/>
+  <path d="m631 51-14-19m62 17 6-25m28 43 19-16" stroke="#33272a" stroke-width="5"/>
+  <path d="M613 134c-19-2-27 24-10 37 10 7 19 3 25-5" fill="#b17664" stroke="#18151a" stroke-width="6"/>
+  <path d="M631 130c13-13 31-14 45-2m17 7c8 2 14 7 17 15" fill="none" stroke="#4c2931" stroke-width="6"/>
+  <path d="M638 143c10-5 20-1 24 9m33 0c6-2 11 2 13 7" fill="none" stroke="#17151a" stroke-width="5"/>
+  <ellipse cx="650" cy="153" rx="5" ry="8" fill="#15151a"/>
+  <path d="M680 139c-2 22 9 37 30 43l-25 14 17 11" fill="none" stroke="#713d41" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M632 194c19 9 36 8 52-3m-40 17c11 6 22 5 31-2" fill="none" stroke="#44262c" stroke-width="5"/>
+  <path d="M627 176c9 1 16 5 22 12m44-6c8-2 14 0 19 5" stroke="#8b514d" stroke-width="3"/>
+  <ellipse cx="646" cy="154" rx="36" ry="30" fill="#b8d6d8" fill-opacity=".2" stroke="#302a34" stroke-width="8" transform="rotate(12 646 154)"/>
+  <ellipse cx="703" cy="159" rx="23" ry="20" fill="#b8d6d8" fill-opacity=".16" stroke="#302a34" stroke-width="6" transform="rotate(12 703 159)"/>
+  <path d="M682 157h-2m45 7 27 12" stroke="#302a34" stroke-width="6"/>
+  <path d="M610 235c24 13 49 19 76 17l15 141-97 53-30-149Z" fill="#70445f" stroke="#18151a" stroke-width="9"/>
+  <path d="M610 235c24 13 49 19 76 17l15 141-97 53-30-149Z" fill="url(#kit007-robe)"/>
+  <path d="M593 289c30 17 63 20 99 9m-105 43c39 15 75 14 108-1" fill="none" stroke="#ce829e" stroke-width="5" opacity=".54"/>
+
+  <!-- Massive door slab cuts off most of her face and robe. -->
+  <path d="M707-40C655 82 646 203 681 323c27 92 20 184-20 275H800V-40Z" fill="#171416" stroke="#0d0d10" stroke-width="16"/>
+  <path d="M741-24C699 91 695 205 728 318c27 91 18 170-16 242H800V-24Z" fill="url(#kit007-door)" stroke="#b08357" stroke-width="8"/>
+  <path d="M767 0c-29 104-30 206-1 305 28 96 21 179-11 247" fill="none" stroke="#2b1e1e" stroke-width="7" opacity=".68"/>
+  <ellipse cx="749" cy="344" rx="24" ry="32" fill="#b38943" stroke="#241c1d" stroke-width="7"/>
+  <path d="M739 345h20" stroke="#39271e" stroke-width="6"/>
+
+  <!-- Chained obstruction runs close to the camera. -->
+  <path d="M232 199c70-28 130-25 181 9 55 36 116 48 185 36 56-10 106-1 151 28" fill="none" stroke="#151518" stroke-width="18"/>
+  <path d="M232 199c70-28 130-25 181 9 55 36 116 48 185 36 56-10 106-1 151 28" fill="none" stroke="#bd9255" stroke-width="9" stroke-dasharray="4 19" stroke-linecap="round"/>
+  <path d="M247 183c-10-10-24-9-32 1-9 11-4 27 10 31l27-5" fill="none" stroke="#c39a61" stroke-width="8"/>
+  <path d="M744 256c12-7 26-3 32 8 6 12 0 26-13 29l-21-6" fill="none" stroke="#c39a61" stroke-width="8"/>
+
+  <!-- Near hand one enters from behind the door and dominates the lens, pinching two envelopes. -->
+  <path d="M620 281c-22 4-42 15-59 34" fill="none" stroke="#70435e" stroke-width="31" stroke-linecap="round"/>
+
+  <!-- Exactly two cards/envelopes, huge and skewed in the near hand. -->
+  <path d="m31 271 295-49 48 177-305 65Z" fill="#d7c49d" stroke="#282025" stroke-width="10" transform="rotate(-2 202 343)"/>
+  <path d="m53 283 249-41 40 133-256 54Z" fill="#ead9b7" stroke="#8d6b4f" stroke-width="5" transform="rotate(-2 202 343)"/>
+  <path d="m61 289 126 72 115-115" fill="none" stroke="#9d7958" stroke-width="7"/>
+  <path d="m73 369 285-20 23 178-294 31Z" fill="#cbb68f" stroke="#282025" stroke-width="10" transform="rotate(5 227 454)"/>
+  <path d="m94 379 239-17 17 133-246 26Z" fill="#e2d1ad" stroke="#896a50" stroke-width="5" transform="rotate(5 227 454)"/>
+  <path d="m102 385 124 65 107-84" fill="none" stroke="#987355" stroke-width="7"/>
+  <path d="M27 310c-22-4-40-2-57 6m112 193c-30 7-54 19-72 35" fill="none" stroke="#d7e6e1" stroke-width="5" opacity=".34"/>
+
+  <!-- Near hand two crawls under the chain at floor level and peeks under prize parcels. -->
+  <path d="M650 356c-16 26-25 54-27 84" fill="none" stroke="#70435e" stroke-width="29" stroke-linecap="round"/>
+  <path d="M629 421c21-15 49-18 71-8 18 8 31 24 35 43 3 14-8 23-19 18-10-4-11-16-14-27-3 13-12 20-22 16-11-4-9-17-8-29-7 10-17 13-25 7-9-7-3-19 3-29-12 5-24 0-28-10-4-13 8-23 22-25Z" fill="url(#kit007-skin)" stroke="#18151a" stroke-width="8"/>
+  <path d="M715 470c-9-7-13-15-13-24m-21 15c-7-8-10-17-8-27m-26 7c-5-8-4-18 3-29m-28-10c4-10 11-18 22-25" fill="none" stroke="#713f42" stroke-width="5"/>
+  <path d="M706 458c6-2 11-1 15 3m-41-9c6-2 11-1 15 3m-47-23c6-1 11 1 14 5m-30-47c6 0 11 3 14 7" stroke="#f0c8a3" stroke-width="4"/>
+  <path d="M661 399c-7 7-10 15-9 24m41-15c-6 7-8 15-7 23m34-6c-5 7-6 14-4 21" fill="none" stroke="#8b504d" stroke-width="3"/>
+
+  <!-- Face-down Prize parcels dominate the floor plane and are physically separated by her fingers. -->
+  <path d="M302 451c75-36 174-47 297-34 89 10 156 37 201 70v73H278Z" fill="#33262b" stroke="#18161a" stroke-width="9"/>
+  <path d="M314 480c77-31 171-37 281-23 79 10 141 33 189 69" fill="none" stroke="#a07157" stroke-width="5" opacity=".48"/>
+  <g stroke="#261f23" stroke-width="7" stroke-linejoin="round">
+    <path d="m331 430 102-20 20 73-106 25Z" fill="#4e4352"/>
+    <path d="m439 420 106-8 9 75-110 13Z" fill="#3b4c55"/>
+    <path d="m551 423 108 7-4 78-111-4Z" fill="#57433f"/>
+    <path d="m665 448 105 23-19 73-108-19Z" fill="#51503d"/>
+    <path d="m362 489 105-13 12 84H354Z" fill="#574553"/>
+    <path d="m482 483 109 1 3 76H476Z" fill="#394e4d"/>
+  </g>
+  <path d="m331 430 102-20-15 28-82 17Z" fill="#746178" stroke="#261f23" stroke-width="6"/>
+  <path d="M622 416c-10 6-16 16-17 29m48-33c-9 8-13 18-13 31" fill="none" stroke="#7f4d4d" stroke-width="4"/>
+  <path d="M654 428c13-3 25 0 35 9" stroke="#d4b58f" stroke-width="4"/>
+
+  <!-- Left front-door edge closes the composition and prevents any centred host reading. -->
+  <path d="M152-43C112 82 115 196 158 299c35 85 34 183-4 299h190c-37-102-43-195-18-279 31-104 29-225-6-362Z" fill="#151315" stroke="#0d0d10" stroke-width="16"/>
+  <path d="M184-22c-29 112-23 215 18 307 36 81 35 169-1 275h112c-27-100-29-190-4-271 29-95 26-199-8-311Z" fill="url(#kit007-door)" stroke="#b08357" stroke-width="8"/>
+  <path d="M215 1c-18 99-9 193 25 279 36 90 32 179-2 270m44-550c-12 96-3 187 26 270" fill="none" stroke="#2b1e1e" stroke-width="7" opacity=".66"/>
+  <ellipse cx="271" cy="229" rx="23" ry="31" fill="#b38943" stroke="#241c1d" stroke-width="7"/>
+  <circle cx="271" cy="228" r="7" fill="#34241e"/>
+
+  <!-- The envelope hand is deliberately painted above the near door: a knotted crab grip across the lens, not a hanging arm. -->
+  <path d="M674 275c-61-4-115 7-159 34-26 16-48 36-66 61" fill="none" stroke="#70435e" stroke-width="34" stroke-linecap="round"/>
+  <path d="M474 337c-30-14-70-14-104 0-31 13-56 37-70 67-9 19 1 37 19 36 15-1 22-17 29-32-3 19 5 35 21 35 15 0 20-17 24-33 3 16 13 28 27 24 15-5 13-23 11-39 10 13 25 17 36 8 13-11 6-29-3-43 11 5 23 4 30-5 8-11-5-22-20-22Z" fill="url(#kit007-skin)" stroke="#18151a" stroke-width="8"/>
+  <path d="M304 407c19-16 33-35 42-57m23 89c13-22 20-45 21-69m31 61c9-21 11-43 6-64m41 35c5-18 2-37-8-54m34 7c-5-8-12-14-22-18" fill="none" stroke="#713f42" stroke-width="5"/>
+  <path d="M310 401c6-3 12-2 17 2m45 27c6-3 12-2 17 1m34-9c6-3 11-2 15 2m28-32c6-2 11 0 15 4m13-47c6-1 11 1 15 5" stroke="#f0c8a3" stroke-width="4"/>
+  <path d="M332 366c-8 5-14 13-16 23m67-24c-8 6-12 15-12 25m58-35c-6 7-9 16-8 25m47-34c-4 8-4 16-1 24" fill="none" stroke="#8b504d" stroke-width="3"/>
+  <path d="M337 413c8 7 18 10 28 9m27-11c8 6 18 7 28 4m12-25c8 5 16 5 24 1" fill="none" stroke="#744345" stroke-width="3"/>
+
+  <!-- Tactile hatching, threshold grime and rain-light. -->
+  <path d="M321 28c19-6 37-6 54 0m182 90c15-5 29-4 42 1m-249 209c14-6 28-6 42-1m188 7c14-4 27-3 39 2" fill="none" stroke="#f0bf7d" stroke-width="3" opacity=".4"/>
+  <path d="m337 245 15 24m-25 31 17 25m229-51 16 26m-7 34 16 22m-254 28 18 17" stroke="#4d3032" stroke-width="4" opacity=".5"/>
+  <path d="m501 508 16 25m-36-18 13 25m94-22 17 26m-34-17 12 24m117-8 13 17" stroke="#d4b076" stroke-width="4" opacity=".45"/>
+  <path d="M9 10c87 38 162 53 226 43m557-42c-48 31-92 45-134 44M9 550c77-26 143-31 198-17m584 18c-48-23-91-29-128-18" fill="none" stroke="#d6e5e2" stroke-width="7" opacity=".12"/>
+  <rect x="6" y="6" width="788" height="548" rx="74" fill="none" stroke="#080c11" stroke-width="14"/>
+  <rect width="800" height="560" fill="transparent" filter="url(#kit007-grain)" pointer-events="none"/>
+</svg>

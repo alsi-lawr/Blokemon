@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b032-title b032-desc">
+  <title id="b032-title">BLK-032 Knockoff Nigel non-final comic mock-up</title>
+  <desc id="b032-desc">In strict profile, a wiry market trader straightens a rail of conspicuously generic jackets while side-eyeing the aisle over a foreshortened folding table. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b032-sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#34414d"/><stop offset="1" stop-color="#92969a"/></linearGradient>
+    <linearGradient id="b032-coat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#253951"/><stop offset=".5" stop-color="#42698a"/><stop offset="1" stop-color="#172333"/></linearGradient>
+    <pattern id="b032-tarp" width="42" height="32" patternUnits="userSpaceOnUse"><rect width="42" height="32" fill="#e7dfc8"/><path d="M0 8h42M7 0v32M29 0v32" stroke="#a99e86" stroke-width="2" opacity=".5"/></pattern>
+    <filter id="b032-crag" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="turbulence" baseFrequency=".02 .07" numOctaves="1" seed="32" result="w"/><feDisplacementMap in="SourceGraphic" in2="w" scale="1.4"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#b032-sky)"/>
+  <path d="M0 61c176-34 348 6 494-27 106-24 206-15 306 4v87H0Z" fill="#1d2833" stroke="#111820" stroke-width="10"/>
+  <path d="M-9 94c177-26 359 1 522-23 107-15 208-5 298 13l-22 83c-124-27-244-14-356-3-149 15-284-10-442 15Z" fill="url(#b032-tarp)" stroke="#332d2a" stroke-width="9"/>
+  <path d="M0 399c202-29 423-17 800-1v162H0Z" fill="#5d5b57" stroke="#27282b" stroke-width="9"/>
+  <path d="M0 447c150-18 317-8 475-4m52 2c91-8 178-4 273 9" fill="none" stroke="#888477" stroke-width="6"/>
+  <!-- market rail and individually shaped anonymous garments -->
+  <path d="M41 164h461M65 155v243m420-245 5 248" stroke="#27262b" stroke-width="13"/>
+  <g stroke="#1d2027" stroke-width="8" stroke-linejoin="round">
+    <path d="M82 188c16-21 33-29 53-20l35 19 32 1 10 166-147 0 9-158Z" fill="#354d67"/>
+    <path d="M180 178c17-18 35-21 51-6l31 23 37-6 15 160-131 9Z" fill="#774550"/>
+    <path d="M287 184c14-20 31-26 48-14l26 19 41-4 17 162-122 5Z" fill="#d4b05d"/>
+    <path d="M392 176c16-19 33-21 50-7l23 19 38-5 12 164-112 4Z" fill="#3e6b65"/>
+  </g>
+  <path d="M100 218c27 9 54 9 81-2m25-6c27 12 53 13 81 2m28-4c23 11 46 11 70 0m31 4c21 9 42 8 64-1" fill="none" stroke="#e9eadf" stroke-width="7" opacity=".8"/>
+  <path d="m116 177 8-21 16-1 12 22m75-4 9-21 15 1 10 28m70-9 9-19 15 2 10 27m72-9 7-18 15 0 10 25" fill="none" stroke="#29272b" stroke-width="6"/>
+  <!-- long strict-profile trader -->
+  <path d="M487 246c-8-68 19-111 70-125 40-11 80 7 91 44 5 17-2 34 11 47 15 15 9 36-6 47-17 12-25 28-41 39-32 21-93 1-125-52Z" fill="#bc7659" stroke="#231c20" stroke-width="11" filter="url(#b032-crag)"/>
+  <path d="M503 143c23-35 76-45 112-20 20 14 27 31 26 50-27-18-51-15-75-4-28 14-48 13-70 6Z" fill="#332a29" stroke="#1c1a1c" stroke-width="9"/>
+  <path d="M511 145c24-14 50-19 78-13m-93 29c25-12 49-15 73-10" fill="none" stroke="#7b6654" stroke-width="5"/>
+  <path d="M619 150c18 17 26 39 22 65 29 9 47 25 50 40-30 18-63 15-88-2" fill="#c2795b" stroke="#43262a" stroke-width="8"/>
+  <path d="M636 203c14 3 25 10 34 21" fill="none" stroke="#ecae80" stroke-width="5"/>
+  <path d="M548 178c15-8 31-4 42 9" fill="none" stroke="#382228" stroke-width="10" stroke-linecap="round"/>
+  <path d="M554 193c11-7 25-4 32 6-9 13-25 11-32-6Z" fill="#eadbbd" stroke="#271c20" stroke-width="5"/>
+  <ellipse cx="576" cy="197" rx="5" ry="7" fill="#17171b"/>
+  <path d="M617 260c15 0 28 7 37 18-19 15-40 11-51-7" fill="#4b2528" stroke="#281b1e" stroke-width="7"/>
+  <path d="M631 265c7 2 14 6 18 11l-12 7-13-9Z" fill="#d6ad73"/>
+  <path d="M492 180c-12 13-13 30-2 42 9 10 21 9 31 0" fill="#aa6551" stroke="#342127" stroke-width="7"/>
+  <path d="M504 187c-8 5-10 14-5 22" fill="none" stroke="#714034" stroke-width="4"/>
+  <path d="M592 129c20 3 32 16 33 37" fill="none" stroke="#272225" stroke-width="7"/>
+  <path d="M500 168c-14-23-10-39 0-52m72 13c-5-22 4-36 16-48" fill="none" stroke="#332a29" stroke-width="9" stroke-linecap="round"/>
+  <path d="M481 277c35-17 88-8 121 26 27 29 31 93 25 158l-151 12c-19-68-20-148 5-196Z" fill="url(#b032-coat)" stroke="#1b2028" stroke-width="12"/>
+  <path d="M490 304c39 18 83 16 122-4m-119 49c43 15 84 13 122-5" fill="none" stroke="#6e91ae" stroke-width="6" opacity=".45"/>
+  <!-- hand straightens garment -->
+  <path d="M496 315c-50 8-88 3-115-14-17-11-32-5-36 9-5 16 10 27 27 34 39 15 78 24 118 22Z" fill="#b66b55" stroke="#251c20" stroke-width="9"/>
+  <path d="M370 299c-23-8-42-5-47 8-5 13 9 22 24 26l18 4-14 9c-12 8-7 21 7 22 12 0 23-9 34-20l16-18Z" fill="#c57a5c" stroke="#251c20" stroke-width="8"/>
+  <path d="M328 312c15 0 29 4 42 13m-12-27c12 3 22 9 30 17m-27 32c11 0 22 3 31 8" fill="none" stroke="#7b4137" stroke-width="4"/>
+  <!-- skinny trousers -->
+  <path d="M494 458c-4 29-3 56 2 84m94-87c5 32 3 61-4 89" fill="none" stroke="#272d3a" stroke-width="29"/>
+  <path d="M461 532c25-7 49-5 66 8 4 10-6 16-24 16h-48c-6-9-4-18 6-24Zm96 8c23-13 49-13 68-2 6 11-5 18-23 18h-48c-8-7-7-12 3-16Z" fill="#46372d" stroke="#1b191c" stroke-width="8"/>
+  <!-- foreshortened table dominates lower right -->
+  <path d="M364 388 800 329v175l-450-55Z" fill="#7c6f61" stroke="#252229" stroke-width="12"/>
+  <path d="m392 399 370-49m-340 79 337-39" fill="none" stroke="#b5a589" stroke-width="6" opacity=".55"/>
+  <path d="m483 415 74-11 22 45-93 6Zm145-20 96-15 32 62-115 4Z" fill="#d9c598" stroke="#30272a" stroke-width="7"/>
+  <path d="M477 467 453 553m270-96 39 96" stroke="#2b2b2d" stroke-width="12"/>
+  <path d="M27 490c83-15 161-14 239-3m-238 31c71-9 140-6 206 1" fill="none" stroke="#837d72" stroke-width="5"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#12171e" stroke-width="12"/>
+</svg>

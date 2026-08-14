@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b076-title b076-desc">
+  <title id="b076-title">BLK-076 The Firm non-final comic mock-up</title>
+  <desc id="b076-desc">Five distinctly built men close ranks into a dark wedge beneath hard floodlights, their plain scarves and matched boots advancing toward a distant ground-level camera. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b076-night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0e1721"/><stop offset=".55" stop-color="#29343e"/><stop offset="1" stop-color="#090c12"/></linearGradient>
+    <linearGradient id="b076-beam" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f4f3da" stop-opacity=".86"/><stop offset="1" stop-color="#d7e6e4" stop-opacity="0"/></linearGradient>
+    <pattern id="b076-concrete" width="71" height="43" patternUnits="userSpaceOnUse"><rect width="71" height="43" fill="#252b31"/><path d="M4 12c18-7 37-6 55 1M16 33c17-5 31-4 46 2" fill="none" stroke="#48515a" stroke-width="4" opacity=".46"/></pattern>
+    <filter id="b076-rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence baseFrequency=".014 .045" numOctaves="1" seed="76" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#b076-night)"/>
+  <!-- distant stadium geometry and hard anonymous lamps -->
+  <path d="M0 0h800v70C643 49 538 78 389 61 247 45 127 77 0 54Z" fill="#080d13" stroke="#05080c" stroke-width="9"/>
+  <path d="M75 54 205 382H13Zm270-15 79 362H258Zm326 4 116 354H557Z" fill="url(#b076-beam)" opacity=".6"/>
+  <g fill="#e6eadf" stroke="#111821" stroke-width="7"><path d="M58 42h167l-14 38H71Z"/><path d="M326 34h139l-11 37H338Z"/><path d="M642 39h144l-8 38H653Z"/></g>
+  <g fill="#6f7779"><circle cx="89" cy="59" r="9"/><circle cx="125" cy="58" r="9"/><circle cx="162" cy="57" r="9"/><circle cx="198" cy="58" r="9"/><circle cx="353" cy="53" r="9"/><circle cx="389" cy="52" r="9"/><circle cx="425" cy="52" r="9"/><circle cx="670" cy="58" r="9"/><circle cx="707" cy="58" r="9"/><circle cx="744" cy="58" r="9"/></g>
+  <path d="M0 366c239-48 530-42 800 5v189H0Z" fill="url(#b076-concrete)" stroke="#0e141a" stroke-width="11"/>
+  <path d="M21 456c138-28 280-27 422-9m68 7c95-8 178-2 269 13" fill="none" stroke="#58616a" stroke-width="6"/>
+  <!-- rear-left: bald dome, hunched broad body -->
+  <path d="M151 174c25-28 67-28 91 2 20 25 17 62-6 83-24 23-65 20-86-6-18-23-17-59 1-79Z" fill="#9e644f" stroke="#17171b" stroke-width="9"/>
+  <path d="M155 178c21-30 60-34 83-9" fill="none" stroke="#c08465" stroke-width="5"/>
+  <path d="M162 206c12-8 26-6 35 4m13-1c10-6 20-3 27 5" fill="none" stroke="#382425" stroke-width="7"/>
+  <path d="M184 222c-4 11 0 19 10 24" fill="none" stroke="#703f36" stroke-width="5"/>
+  <path d="M170 256c20 7 40 7 59-1" stroke="#442526" stroke-width="7"/>
+  <path d="M127 269c38-24 92-27 132-7 41 22 57 74 53 138l-215 0c-1-59 5-103 30-131Z" fill="#3f464e" stroke="#11171c" stroke-width="11"/>
+  <path d="M117 302c55 19 116 19 177-2m-187 46c68 22 134 21 199-3" fill="none" stroke="#656d72" stroke-width="6" opacity=".45"/>
+  <!-- rear-right: curly narrow man -->
+  <path d="M552 162c24-33 69-38 98-8 27 28 23 73-4 99-28 27-74 20-96-12-18-26-16-56 2-79Z" fill="#b27056" stroke="#17171b" stroke-width="9"/>
+  <g fill="#322729" stroke="#171419" stroke-width="5"><circle cx="558" cy="164" r="18"/><circle cx="580" cy="146" r="19"/><circle cx="608" cy="142" r="20"/><circle cx="635" cy="153" r="18"/><circle cx="650" cy="176" r="17"/></g>
+  <path d="M557 196c12-10 28-9 39 2m21 0c10-7 22-5 29 4" fill="none" stroke="#3a2428" stroke-width="7"/>
+  <path d="M603 192c-4 15 1 25 13 31" fill="none" stroke="#754238" stroke-width="5"/>
+  <path d="M566 236c22 9 44 9 65-1" stroke="#54282a" stroke-width="7"/>
+  <path d="M526 260c40-24 99-22 138 5 35 25 49 71 44 131H493c-2-59 7-105 33-136Z" fill="#303944" stroke="#11171c" stroke-width="11"/>
+  <!-- rear centre: close-crop tower -->
+  <path d="M335 126c34-37 88-40 124-4 30 30 33 77 11 113-24 39-76 48-112 21-39-29-46-92-23-130Z" fill="#aa6952" stroke="#18171b" stroke-width="10"/>
+  <path d="M339 127c29-39 84-47 122-9" fill="none" stroke="#332829" stroke-width="11" stroke-dasharray="4 8"/>
+  <path d="M350 167c18-11 39-9 54 4m20-1c14-8 29-4 39 7" fill="none" stroke="#3c2527" stroke-width="8"/>
+  <path d="M403 165c-6 18 0 31 14 39-8 15-30 16-41 3" fill="#955441" stroke="#57302c" stroke-width="6"/>
+  <path d="M356 224c28 10 61 10 92-1" stroke="#4f2828" stroke-width="8"/>
+  <path d="M302 256c48-31 126-34 177-3 49 30 73 85 71 152l-291-1c-1-67 9-119 43-148Z" fill="#242c35" stroke="#10151b" stroke-width="12"/>
+  <path d="M313 277c56 27 113 28 171 3" fill="none" stroke="#777b78" stroke-width="13"/>
+  <!-- front-left brick skull, pin eyes and scar lip -->
+  <path d="M205 229c33-35 85-35 117 1 28 31 25 78 2 111-27 38-79 44-113 14-36-32-39-91-6-126Z" fill="#a6604b" stroke="#17161a" stroke-width="11" filter="url(#b076-rough)"/>
+  <path d="M206 233c23-36 73-48 109-17 15 13 24 29 26 47-28-18-56-17-81-7-23 9-43 7-62-1Z" fill="#2b292a" stroke="#171517" stroke-width="8"/>
+  <path d="M217 274c16-10 34-9 48 3m27 0c14-8 28-5 38 6" fill="none" stroke="#382225" stroke-width="9"/>
+  <circle cx="248" cy="287" r="4" fill="#ede0c6"/><circle cx="315" cy="290" r="4" fill="#ede0c6"/>
+  <path d="M280 277c-7 18-15 29-27 41-9 10-3 25 11 29 15 4 27-7 40-5 16 2 26-15 17-28-11-15-21-25-41-37Z" fill="#934c42" stroke="#4a292b" stroke-width="7"/>
+  <path d="M226 345c23-7 49-5 73 5 9 4 19 4 29-1" fill="none" stroke="#482526" stroke-width="8"/>
+  <path d="M282 349l-9 12" stroke="#d08568" stroke-width="4"/>
+  <path d="M169 369c43-31 115-38 169-8 52 29 79 86 80 167H115c0-76 13-127 54-159Z" fill="#252c33" stroke="#101419" stroke-width="13"/>
+  <path d="M178 381c56 27 114 29 175 5" fill="none" stroke="#858279" stroke-width="14"/>
+  <!-- front-right pear skull, low rectangle eyes, side missing teeth -->
+  <path d="M452 220c31-37 80-42 115-10 30 28 36 76 16 113-25 46-78 61-118 31-40-30-44-93-13-134Z" fill="#bc7558" stroke="#17161a" stroke-width="11"/>
+  <path d="M454 223c23-39 72-54 110-24 17 13 27 31 29 50-30-18-58-17-85-6-24 10-45 8-64 1Z" fill="#35282b" stroke="#171517" stroke-width="8"/>
+  <path d="M463 267c15-9 31-8 44 3m23 0c12-7 24-4 33 5" fill="none" stroke="#42282a" stroke-width="9"/>
+  <path d="M470 278h28m40 3h20" stroke="#e9d8b8" stroke-width="6"/>
+  <path d="M515 269c-4 17 3 27 16 35-7 13-26 14-37 4" fill="#a25c48" stroke="#552e2d" stroke-width="6"/>
+  <path d="M465 325c31-9 66-5 94 13-14 24-67 27-99 4" fill="#4d2929" stroke="#24191c" stroke-width="7"/>
+  <path d="m526 332 17 5-8 15-18-5m-22-19 16 4-8 14-17-5" fill="#dfccaa"/>
+  <path d="M423 365c46-34 117-39 171-10 53 29 82 88 85 173H368c2-75 17-129 55-163Z" fill="#303944" stroke="#101419" stroke-width="13"/>
+  <path d="M432 378c57 27 117 28 179 2" fill="none" stroke="#84847b" stroke-width="14"/>
+  <!-- arms close ranks; boots dominate low lens -->
+  <path d="M181 385c-42 17-75 47-96 89" fill="none" stroke="#252c33" stroke-width="43" stroke-linecap="round"/>
+  <path d="M590 377c45 17 80 47 105 91" fill="none" stroke="#303944" stroke-width="43" stroke-linecap="round"/>
+  <path d="M153 509c-11 13-15 29-11 47h135c7-21-4-36-31-45-34-11-66-11-93-2Zm361 0c-24 9-34 25-27 47h151c5-21-4-37-29-47-30-12-62-12-95 0Z" fill="#14171b" stroke="#080a0d" stroke-width="10"/>
+  <path d="M158 527c34 11 70 12 108 3m235 4c42 9 82 7 120-4" fill="none" stroke="#858174" stroke-width="7"/>
+  <path d="M301 475c-6 26-9 53-8 80m205-81c7 28 9 55 6 81" stroke="#171c22" stroke-width="35"/>
+  <!-- plain scarves, rain scratches and no insignia -->
+  <path d="M191 373c-16 35-19 74-10 117m165-211c-12 37-12 76 1 117m90-19c-13 38-13 76 0 115m107-116c15 37 17 76 7 116" fill="none" stroke="#73746e" stroke-width="9"/>
+  <path d="M30 178l-15 46m72-83-13 42m633-39-14 43m64-8-11 39M84 405l38 8m557 3 48-11" stroke="#becdd0" stroke-width="6" stroke-linecap="round" opacity=".52"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#080c11" stroke-width="12"/>
+</svg>

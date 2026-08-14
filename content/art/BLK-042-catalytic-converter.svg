@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b042-title b042-desc">
+  <title id="b042-title">BLK-042 Catalytic Converter non-final comic mock-up</title>
+  <desc id="b042-desc">At tyre height, a grease-marked operator shoves a rattling trolley and awkward unmarked metal bundle through a half-open back gate, glancing over one shoulder in sodium light. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b042-yard" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#242a2c"/><stop offset=".55" stop-color="#4b4a42"/><stop offset="1" stop-color="#171b1f"/></linearGradient>
+    <linearGradient id="b042-sodium" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7a23d"/><stop offset=".4" stop-color="#9a4e24"/><stop offset="1" stop-color="#382a27"/></linearGradient>
+    <linearGradient id="b042-metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d0cec0"/><stop offset=".35" stop-color="#676e6d"/><stop offset=".7" stop-color="#b9a67e"/><stop offset="1" stop-color="#3c4141"/></linearGradient>
+    <pattern id="b042-wall" width="84" height="46" patternUnits="userSpaceOnUse"><rect width="84" height="46" fill="#3f4140"/><path d="M0 2h84M0 44h84M42 2v20M0 24h84M17 24v20M72 24v20" stroke="#242827" stroke-width="4"/><path d="M7 12c18-6 34-5 49 1M31 34c15-4 28-3 42 2" fill="none" stroke="#72736d" stroke-width="3" opacity=".4"/></pattern>
+  </defs>
+  <rect width="800" height="560" fill="url(#b042-yard)"/>
+  <path d="M0 0h800v367H0Z" fill="url(#b042-wall)"/>
+  <!-- half-open gate creates deep diagonal -->
+  <path d="M505 0h295v480H477Z" fill="#12171a" stroke="#0b1013" stroke-width="12"/>
+  <path d="M537 12h263v414L501 464Z" fill="url(#b042-sodium)"/>
+  <path d="M20 71h423v281H8Z" fill="#313638" stroke="#171d1e" stroke-width="10"/>
+  <path d="M30 88h400M25 132h408M19 178h414M14 223h419M8 270h426M3 318h430" stroke="#596062" stroke-width="6"/>
+  <path d="M0 366c201-22 459-16 800 18v176H0Z" fill="#25282a" stroke="#111619" stroke-width="11"/>
+  <path d="M19 462c144-17 296-14 447-1m72 7c81-3 159 3 240 17" fill="none" stroke="#66645c" stroke-width="7"/>
+  <!-- low trapezoid head in back-three-quarter -->
+  <path d="M408 97c38-30 91-26 123 10 28 31 30 74 13 107-10 20-5 40-19 57-20 24-58 32-88 17-34-18-51-55-45-90 4-23 18-35 12-57-5-18-5-31 4-44Z" fill="#aa6851" stroke="#201719" stroke-width="11"/>
+  <path d="M410 105c35-29 83-27 115 3" fill="none" stroke="#553f38" stroke-width="6" stroke-dasharray="3 13" stroke-linecap="round"/>
+  <path d="M416 124c32-20 69-21 103-3m-99 19c29-14 60-15 91-4" fill="none" stroke="#6f554c" stroke-width="4" stroke-dasharray="2 11" stroke-linecap="round"/>
+  <path d="M397 151c-20-8-34 9-28 29 6 20 25 27 40 13m135-40c21-9 35 8 29 29-6 20-25 28-41 14" fill="#9a5b49" stroke="#23191b" stroke-width="7"/>
+  <!-- one squint, one alarmed circle -->
+  <path d="M420 163c12-8 27-7 38 2" fill="none" stroke="#3f2927" stroke-width="9" stroke-linecap="round"/>
+  <path d="M475 163c16-13 39-10 50 8-8 22-39 21-50-8Z" fill="#f0dbb9" stroke="#271a1b" stroke-width="6"/>
+  <circle cx="506" cy="169" r="7" fill="#111518"/>
+  <!-- mashed boxer nose, sideways chipped grimace -->
+  <path d="M462 160c-8 17-20 30-33 42-11 10-7 27 7 33 13 5 25-3 36 0 17 5 32-10 25-26-7-15-18-22-35-49Z" fill="#9e5146" stroke="#51292b" stroke-width="8"/>
+  <path d="M449 200c11 6 20 15 23 27" fill="none" stroke="#df8266" stroke-width="5"/>
+  <path d="M421 249c26-8 59-3 82 13-19 22-62 22-89-1" fill="#512529" stroke="#27191b" stroke-width="7"/>
+  <path d="M456 256l14 5-8 13-15-5Zm21 5 12 5-7 11-13-5Z" fill="#dccaa6"/>
+  <path d="M427 83c-8-20 1-33 13-44m30 46c-4-20 6-32 18-41m28 55c4-17 15-26 27-29" fill="none" stroke="#74706a" stroke-width="4" opacity=".7"/>
+  <!-- low heavy hauler body facing away -->
+  <path d="M355 276c49-23 116-20 164 13 50 35 72 97 64 171l-294 0c-5-77 15-142 66-184Z" fill="#384348" stroke="#171b1d" stroke-width="12"/>
+  <path d="M330 309c65 28 141 31 213 4m-231 55c87 30 175 30 260-1" fill="none" stroke="#657278" stroke-width="7" opacity=".45"/>
+  <path d="M368 281c15 40 16 83 2 128m95-121c-10 42-6 83 12 123" fill="none" stroke="#20282d" stroke-width="9"/>
+  <!-- hauling arms physically push trolley -->
+  <path d="M353 306c-55 22-101 55-137 99-17 20-13 42 3 52 17 11 35-3 51-22l109-98Zm159 9c49 26 89 63 120 110 14 22 7 42-10 51-18 9-34-7-48-28l-89-105Z" fill="#a56550" stroke="#201719" stroke-width="10"/>
+  <path d="M221 395c-24 10-36 27-31 44 5 18 24 17 43 8l29-14-20 21c-12 13-8 27 5 31 13 4 24-8 35-20l31-37c13-16 8-37-10-47-16-9-41-4-82 14Zm410 20c22 13 32 31 24 47-8 17-27 13-44 2l-27-17 17 24c10 14 4 27-10 29-14 2-23-11-32-25l-25-41c-11-18-3-38 16-45 17-7 41 1 81 26Z" fill="#b27257" stroke="#201719" stroke-width="9"/>
+  <path d="M211 417c20 2 38 9 54 20m-64-4c19 3 36 10 50 21m388-17c-19 0-37 5-54 15m59 2c-18 1-34 7-49 17" fill="none" stroke="#744036" stroke-width="5"/>
+  <!-- trolley explodes toward tyre-height camera -->
+  <path d="M132 351 690 319l36 183-629 4Z" fill="none" stroke="#202528" stroke-width="16"/>
+  <path d="M131 356 98 510m589-185 38 178" stroke="#1a2023" stroke-width="14"/>
+  <ellipse cx="111" cy="513" rx="53" ry="42" fill="#171b1e" stroke="#090e10" stroke-width="10"/><ellipse cx="715" cy="507" rx="57" ry="45" fill="#171b1e" stroke="#090e10" stroke-width="10"/>
+  <circle cx="111" cy="513" r="21" fill="#555b5b"/><circle cx="715" cy="507" r="22" fill="#555b5b"/>
+  <!-- suspicious unmarked metal bundle -->
+  <path d="M139 323c64-37 132-46 205-26l87 27 85-20c67-16 121 2 154 52l-39 99-493 2-54-78Z" fill="url(#b042-metal)" stroke="#202326" stroke-width="12"/>
+  <path d="M117 375c129 24 252 22 366-7 65-17 120-17 169 1" fill="none" stroke="#d6c396" stroke-width="8" opacity=".5"/>
+  <path d="M176 331c26 37 34 76 24 115m87-142c19 45 19 91 1 139m92-118c28 34 39 71 34 113m109-123c-13 43-12 82 4 118" fill="none" stroke="#484e4e" stroke-width="7"/>
+  <!-- foreground socket set rattles out -->
+  <path d="M17 444c79-18 141-10 189 25l-14 78H8Z" fill="#4c3a2d" stroke="#171719" stroke-width="10"/>
+  <g fill="url(#b042-metal)" stroke="#1b1e20" stroke-width="5"><path d="m34 464 56-4 4 25-58 7Z"/><path d="m101 468 25-5 9 49-26 5Z"/><path d="m145 476 31-7 8 29-32 8Z"/><circle cx="71" cy="522" r="17"/></g>
+  <path d="M47 540l47-12m33 14 55-17M612 110l35-17m-18 47 44-19" stroke="#f2a24b" stroke-width="7" opacity=".58"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#101417" stroke-width="12"/>
+</svg>

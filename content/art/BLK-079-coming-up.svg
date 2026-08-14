@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="b079-title b079-desc">
+  <title id="b079-title">BLK-079 Coming Up non-final comic mock-up</title>
+  <desc id="b079-desc">A flushed compact clubber perches on the very edge of a worn sofa, huge unequal eyes fixed beyond frame and expectant hands hovering while untouched water waits in violet-pink light. Non-final placeholder art.</desc>
+  <defs>
+    <linearGradient id="b079-room" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#24173e"/><stop offset=".55" stop-color="#5f2e70"/><stop offset="1" stop-color="#bd527b"/></linearGradient>
+    <radialGradient id="b079-rise" cx="83%" cy="28%" r="60%"><stop stop-color="#ff9db8" stop-opacity=".72"/><stop offset="1" stop-color="#ff9db8" stop-opacity="0"/></radialGradient>
+    <pattern id="b079-sofa" width="43" height="31" patternUnits="userSpaceOnUse"><rect width="43" height="31" fill="#463650"/><path d="M0 15h43M21 0v31" stroke="#6f5579" stroke-width="3"/><circle cx="21" cy="15" r="3" fill="#9a769c"/></pattern>
+    <filter id="b079-tremble" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence baseFrequency=".025 .07" numOctaves="1" seed="79" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="1.7"/></filter>
+  </defs>
+  <rect width="800" height="560" fill="url(#b079-room)"/>
+  <ellipse cx="658" cy="160" rx="276" ry="238" fill="url(#b079-rise)"/>
+  <path d="M0 0h800v87C652 66 525 93 392 75 244 55 119 94 0 66Z" fill="#191429" stroke="#100e18" stroke-width="10"/>
+  <path d="M39 113h233v208H31Z" fill="#1a2033" stroke="#7a5b82" stroke-width="9"/>
+  <path d="M58 132h194v169H51Z" fill="#272944"/>
+  <path d="M66 279 244 145M55 213l105-79M142 303l108-92" stroke="#a38bae" stroke-width="5" opacity=".3"/>
+  <!-- sofa has physical wear, burst seam, integrated water -->
+  <path d="M42 319c80-47 179-54 275-25 115 34 241 25 365-10 51-14 93 18 101 72l7 170H9l8-154c2-23 8-41 25-53Z" fill="url(#b079-sofa)" stroke="#15121b" stroke-width="13"/>
+  <path d="M31 396c135-31 261-23 383 8 123 31 243 28 358-8" fill="none" stroke="#271d30" stroke-width="13"/>
+  <path d="M218 302c-5 41-3 78 8 111m325-112c5 41 4 78-4 111" fill="none" stroke="#211927" stroke-width="8"/>
+  <path d="M98 440c23-17 47-17 72 0m487-3c25-17 49-16 72 2" fill="none" stroke="#8b6a8d" stroke-width="6"/>
+  <path d="m729 370 19-19m-26 36 32-12m-46 20 34-2" stroke="#d08ca7" stroke-width="5"/>
+  <!-- inverted-triangle head seen obliquely -->
+  <path d="M317 108c40-42 106-48 151-10 42 35 55 95 31 144-17 35-37 75-78 95-47 23-103-1-129-44-22-37-19-87 2-122 14-24 5-43 23-63Z" fill="#c66f5a" stroke="#21161f" stroke-width="12" filter="url(#b079-tremble)"/>
+  <!-- sweat-plastered micro fringe -->
+  <path d="M326 111c17-20 37-27 58-20l13-18 12 20 22-13-4 23 26-5-14 21c18 6 32 17 43 34-31-12-61-12-91-2-35 11-63 5-85-17Z" fill="#312736" stroke="#18131c" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M333 105c18-8 35-8 52-2m-68 24c25-10 48-11 70-4m48-13c14 4 26 12 36 24" fill="none" stroke="#725870" stroke-width="5"/>
+  <path d="M313 170c-28-8-47 13-39 41 8 26 34 36 56 18m158-52c27-10 47 10 41 38-6 26-31 39-54 23" fill="#b46151" stroke="#251820" stroke-width="9"/>
+  <!-- huge unequal eyes -->
+  <ellipse cx="360" cy="192" rx="35" ry="31" fill="#f1dfbd" stroke="#281922" stroke-width="7"/>
+  <ellipse cx="449" cy="196" rx="27" ry="34" fill="#f1dfbd" stroke="#281922" stroke-width="7"/>
+  <circle cx="368" cy="194" r="8" fill="#12151b"/><circle cx="442" cy="199" r="7" fill="#12151b"/>
+  <path d="M329 160c22-15 47-15 68 0m25 1c19-12 41-8 57 8" fill="none" stroke="#3e222b" stroke-width="10" stroke-linecap="round"/>
+  <!-- tiny pug nose and dry pebble mouth -->
+  <path d="M404 188c-8 14-13 25-16 39-3 12 8 22 21 21 14-2 21-15 14-27-7-13-9-23-19-33Z" fill="#a9574d" stroke="#512a30" stroke-width="6"/>
+  <path d="M394 268c15-9 34-7 46 5-10 17-34 19-49 4Z" fill="#54262f" stroke="#28191e" stroke-width="7"/>
+  <path d="M400 274c10 2 19 2 28-1" stroke="#d3746d" stroke-width="4"/>
+  <path d="M316 241l-18 10m19 5-14 14m167-10 18 11m-22 4 15 14" stroke="#7a3742" stroke-width="5"/>
+  <!-- compact body on sofa edge, zip dominant -->
+  <path d="M302 329c46-23 110-24 157 1 54 29 74 92 61 165l-253 0c-8-73 3-128 35-166Z" fill="#394c77" stroke="#161925" stroke-width="12"/>
+  <path d="M286 359c66 24 140 24 211-1m-223 52c86 28 167 26 240-4" fill="none" stroke="#687da8" stroke-width="7" opacity=".46"/>
+  <path d="M402 329v156" stroke="#17243d" stroke-width="10"/><path d="M397 346h16m-16 22h16m-16 22h16m-16 22h16" stroke="#b9bfd0" stroke-width="4"/>
+  <!-- two individually drawn expectant hands hover, no mirrored template -->
+  <path d="M303 348c-48 8-88 29-120 61-18 18-17 38-2 49 15 11 33 1 50-15l62-50Z" fill="#bb6d58" stroke="#21161f" stroke-width="10"/>
+  <path d="M187 395c-24 2-39 14-39 29 1 16 18 19 35 14l28-8-19 18c-12 11-9 25 4 29 13 4 24-8 35-20l27-32c13-15 8-34-8-43-16-9-34-5-63 13Z" fill="#c67a60" stroke="#21161f" stroke-width="8"/>
+  <path d="M455 351c47 7 88 27 121 59 18 17 18 37 4 49-15 11-33 2-50-14l-64-49Z" fill="#bb6d58" stroke="#21161f" stroke-width="10"/>
+  <path d="M571 396c23 0 39 11 40 26 1 16-16 20-33 16l-28-7 20 17c12 11 10 24-3 29-13 5-24-7-36-18l-29-31c-13-15-10-34 7-44 15-10 34-7 62 12Z" fill="#c67a60" stroke="#21161f" stroke-width="8"/>
+  <path d="M169 416c19 4 36 12 51 23m-60-7c18 4 34 12 47 23m386-41c-19 4-36 12-50 24m59-8c-18 5-34 13-47 24" fill="none" stroke="#794039" stroke-width="5"/>
+  <!-- knees below, shoes turned inward -->
+  <path d="M334 477c-10 24-16 49-17 75m113-75c10 24 15 49 15 74" fill="none" stroke="#262d46" stroke-width="34"/>
+  <path d="M285 536c25-8 51-4 70 11-2 11-18 14-39 10l-39-7c-6-7-2-12 8-14Zm127 8c25-11 51-10 72 4 0 11-16 15-38 12l-40-6c-6-6-4-9 6-10Z" fill="#3f312f" stroke="#17151b" stroke-width="8"/>
+  <!-- untouched water with reflected pink rise -->
+  <path d="M646 398h67l-11 111h-45Z" fill="#b7dfe0" fill-opacity=".35" stroke="#d4efea" stroke-width="7"/>
+  <ellipse cx="680" cy="399" rx="34" ry="11" fill="none" stroke="#d4efea" stroke-width="6"/>
+  <path d="M656 463c15 7 31 8 47 1l-2 35h-42Z" fill="#f39ab1" opacity=".68"/>
+  <!-- sweat and tiny environmental scuffs -->
+  <path d="M290 206c-9 16-8 29 3 37m186-39c10 16 10 29-1 38" fill="none" stroke="#9fd8db" stroke-width="6"/>
+  <path d="M289 199c-7 13-6 24 4 30 10-8 9-19-4-30Zm191-2c-7 13-5 24 5 30 10-8 8-20-5-30Z" fill="#9fd8db" stroke="#273c48" stroke-width="4"/>
+  <path d="M37 500l55 12m-31-39 44 18m626-18 43-19" stroke="#a65b86" stroke-width="6" opacity=".5"/>
+  <rect x="6" y="6" width="788" height="548" rx="18" fill="none" stroke="#100e18" stroke-width="12"/>
+</svg>
