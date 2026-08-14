@@ -116,6 +116,7 @@ public enum BlokemonOpcode
     RestrictTaxi,
     RestrictKit,
     RestrictLocal,
+    RestrictEmptiesRecovery,
     BeerMatToss,
     RepeatUntilBlankSide,
     Conditional,
@@ -158,10 +159,15 @@ public enum BlokemonCondition
     OwnBarChitCountIsGreater,
     TargetHasDamage,
     OtherBoothExists,
-    SentHomeByAttackDamage,
+    OwnBlokeSentHomeByOtherAttackDamage,
+    OtherSentHomeByThisAttackDamage,
     OwnersFirstRound,
     OpenedSecond,
     PromotedFromMittThisRound,
+    SourceIsRegular,
+    TargetIsRegular,
+    TargetIsSeasoned,
+    TargetIsLandlord,
 }
 
 public enum BlokemonTarget
@@ -181,6 +187,10 @@ public enum BlokemonTarget
     OwnStack,
     OtherStack,
     OwnEmptiesTray,
+    OtherEmptiesTray,
+    OwnAttachedBarKits,
+    OwnOcheAttachedVim,
+    OtherOcheAttachedVim,
     BarChits,
     LocalInPlay,
 }
@@ -211,6 +221,50 @@ public enum BlokemonValueSource
     CardsChuckedByEffect,
     KitCardsInOtherMitt,
     QualifyingChuckedCards,
+    MittCardsNeeded,
+}
+
+public enum BlokemonCardCategory
+{
+    Bloke,
+    Vim,
+    Kit,
+}
+
+public enum BlokemonEffectDestination
+{
+    Unspecified,
+    OwnMitt,
+    OtherMitt,
+    OwnBooth,
+    OtherBooth,
+    OwnStack,
+    OtherStack,
+    BottomOfOwnStack,
+    BottomOfOtherStack,
+    OwnEmptiesTray,
+    OtherEmptiesTray,
+}
+
+public sealed record BlokemonEffectCardFilter(
+    BlokemonCardCategory[] Categories,
+    BlokemonRank[] Ranks,
+    BlokemonKitKind[] KitKinds,
+    bool BasicVimOnly,
+    bool DifferentMechanicalTypes,
+    string[] ExcludedRelatedIds
+);
+
+public enum BlokemonTrigger
+{
+    Activated,
+    Continuous,
+    OnPromotionFromMitt,
+    OnOwnBlokeSentHomeByOtherAttackDamage,
+    BeforeSelfSentHomeByAttackDamage,
+    AfterSelfDamagedByAttack,
+    AfterSelfSentHomeByAttackDamage,
+    OnBarChitTaken,
 }
 
 public sealed record BlokemonEffectPredicate(
@@ -233,12 +287,17 @@ public sealed record BlokemonEffectInstruction(
     BlokemonRoughState[] RoughStates,
     string[] RelatedIds,
     BlokemonEffectInstruction[] Then,
-    BlokemonEffectInstruction[] Otherwise
+    BlokemonEffectInstruction[] Otherwise,
+    BlokemonTarget[]? Sources = null,
+    BlokemonEffectDestination Destination = BlokemonEffectDestination.Unspecified,
+    BlokemonEffectCardFilter? CardFilter = null,
+    int SourceTopCount = 0
 );
 
 public sealed record BlokemonPartyTrick(
     string MechanicalId,
     BlokemonPresentationStatus PresentationStatus,
+    BlokemonTrigger Trigger,
     BlokemonEffectInstruction[] Program
 );
 

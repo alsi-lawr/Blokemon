@@ -6,7 +6,7 @@
 
 The published mechanical authority is `content/authorities/mechanics.json`. It defines 151 collectible names and types, opaque mechanical IDs, internal mechanical types, display mappings, opcodes, targets, the fixed kit and Basic Vim library, acquisition products and the complete base-rule structure.
 
-All 310 programs are structurally validated. Complete match execution remains future runtime work. Representative mechanics bind BLK-034 to its 190 printed/program damage plus DodgyPint, retain BLK-036 as an explicit Chosen swap, and derive BLK-052 badge/blank branching from its one beer-mat toss followed by a Chosen booth swap.
+All 310 programs are validated against executable opcode, condition, target, selection, distribution and trigger shapes. `sv151-authority-reconciliation.json` binds each effect to the preserved SV151 candidate.6 source hashes and records the narrow cases where the declarative authority corrects a candidate-program omission or ambiguity. `Blokemon.Game` executes the authority without provider, web or storage dependencies and persists random state, identified face-down bar chits, deferred choices, trigger timing and accepted command identities in `MatchState`.
 
 Roadie is the display label for internal Metal on BLK-035, BLK-036 and BLK-124 soft spots and BLK-137's selectable-affinity mechanic. Roadie is not a collectible type.
 
@@ -31,7 +31,7 @@ Resolve one committed Attack in this exact order:
 
 1. Validate the declared Attack and Vim.
 
-Attack declaration metadata is authoritative at this step: `canBeUsedFromBench` is false by default, while a true value permits that Attack to be declared while its Blokemon is on the Bench. Future runtime work owns enforcement; the metadata does not execute battle state here.
+Attack declaration metadata is authoritative at this step: `canBeUsedFromBench` is false by default, while a true value permits that Attack to be declared while its Blokemon is on the Bench. The match engine enforces this field directly.
 2. Apply effects that alter or cancel the Attack.
 3. Resolve the Muddled beer-mat check.
 4. Make required choices.
@@ -68,7 +68,7 @@ KIT-001 through KIT-003 may act as Regular Local Blokes with 60 staying power. T
 
 ## Products
 
-The one-card product is uniform across all 151 collectible identities (1/151 each). The eleven-card product selects one of 37 Rare, three distinct of 51 Uncommon and seven distinct of 63 Common identities. Exact named-identity inclusion odds are 1/37 Rare, 1/17 Uncommon and 1/9 Common. There is no pity; one pack cannot repeat an identity; separate packs may.
+The one-card product is uniform across all 151 collectible identities (1/151 each). The eleven-card product selects one of 49 Rare, three distinct of 49 Uncommon and seven distinct of 53 Common identities. Exact named-identity inclusion odds are 1/49 Rare, 3/49 Uncommon and 7/53 Common. There is no pity; one pack cannot repeat an identity; separate packs may.
 
 ## D-216 timing and finalisation rows
 

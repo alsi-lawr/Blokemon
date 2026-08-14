@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Blokemon.Game</RootNamespace>
+    <AssemblyName>Blokemon.Game</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.csproj" />
+  </ItemGroup>
+</Project>

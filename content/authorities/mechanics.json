@@ -1,5 +1,5 @@
 {
-  "manifestVersion": "blokemon-mechanics-1.0.0-candidate.9",
+  "manifestVersion": "sv151-candidate.11",
   "presentationStatus": "PlaceholderBacked",
   "approvedMechanicalDisplayMap": [
     {
@@ -303,7 +303,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Activated"
         }
       ],
       "attacks": [
@@ -559,7 +560,7 @@
               "targets": [
                 "Self"
               ],
-              "selection": "All",
+              "selection": "Chosen",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
@@ -701,8 +702,8 @@
               "targets": [
                 "Self"
               ],
-              "selection": "All",
-              "targetCount": 1,
+              "selection": "Chosen",
+              "targetCount": 3,
               "predicates": [],
               "mechanicalTypes": [],
               "roughStates": [],
@@ -929,25 +930,21 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "ChuckVim",
-                  "amount": 3,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "Self"
+                  "otherwise": [],
+                  "sources": [
+                    "OwnEmptiesTray"
                   ],
-                  "selection": "UpTo",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Water"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
+                  "destination": "OwnMitt",
+                  "cardFilter": {
+                    "categories": [
+                      "Vim"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": true,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
                 }
               ],
               "otherwise": []
@@ -1046,7 +1043,8 @@
               "then": [],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -1414,7 +1412,7 @@
             },
             {
               "opcode": "SwapOche",
-              "amount": 60,
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [
                 "OtherBoothChosen"
@@ -1634,7 +1632,8 @@
               "then": [],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -1885,7 +1884,20 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Bloke"
+                    ],
+                    "ranks": [
+                      "Regular"
+                    ],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  },
+                  "destination": "OwnBooth"
                 },
                 {
                   "opcode": "ShuffleStack",
@@ -2370,7 +2382,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -2511,7 +2524,8 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "destination": "OwnMitt"
                 }
               ],
               "otherwise": []
@@ -2627,7 +2641,7 @@
                   "targets": [
                     "OtherOche"
                   ],
-                  "selection": "BeerMat",
+                  "selection": "Chosen",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
@@ -2765,8 +2779,8 @@
               "targets": [
                 "OtherMitt"
               ],
-              "selection": "All",
-              "targetCount": 1,
+              "selection": "OtherSideChosen",
+              "targetCount": 2,
               "predicates": [],
               "mechanicalTypes": [],
               "roughStates": [],
@@ -2855,7 +2869,17 @@
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "cardFilter": {
+                "categories": [
+                  "Vim"
+                ],
+                "ranks": [],
+                "kitKinds": [],
+                "basicVimOnly": true,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              }
             },
             {
               "opcode": "ShuffleStack",
@@ -2972,7 +2996,7 @@
                   "relatedId": null
                 },
                 {
-                  "condition": "SentHomeByAttackDamage",
+                  "condition": "OwnBlokeSentHomeByOtherAttackDamage",
                   "value": 0,
                   "mechanicalType": null,
                   "roughState": null,
@@ -3022,7 +3046,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "OnOwnBlokeSentHomeByOtherAttackDamage"
         }
       ],
       "attacks": [
@@ -3106,11 +3131,11 @@
           "presentationStatus": "PlaceholderBacked",
           "program": [
             {
-              "opcode": "MoveCards",
-              "amount": 1,
+              "opcode": "ContinuousPartyTrick",
+              "amount": 0,
               "valueSource": "Fixed",
               "targets": [
-                "OtherStack"
+                "Self"
               ],
               "selection": "All",
               "targetCount": 1,
@@ -3122,12 +3147,10 @@
               "otherwise": []
             },
             {
-              "opcode": "ChuckCards",
+              "opcode": "RestrictEmptiesRecovery",
               "amount": 1,
               "valueSource": "Fixed",
-              "targets": [
-                "OtherStack"
-              ],
+              "targets": [],
               "selection": "All",
               "targetCount": 1,
               "predicates": [],
@@ -3137,7 +3160,8 @@
               "then": [],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -3478,7 +3502,17 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Bloke"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
                 },
                 {
                   "opcode": "ShuffleStack",
@@ -3526,7 +3560,8 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "destination": "OwnMitt"
                 }
               ],
               "otherwise": []
@@ -3642,7 +3677,15 @@
               ],
               "selection": "All",
               "targetCount": 1,
-              "predicates": [],
+              "predicates": [
+                {
+                  "condition": "SourceIsRegular",
+                  "value": 0,
+                  "mechanicalType": null,
+                  "roughState": null,
+                  "relatedId": null
+                }
+              ],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
@@ -3879,6 +3922,22 @@
               "relatedIds": [],
               "then": [
                 {
+                  "opcode": "ContinuousPartyTrick",
+                  "amount": 0,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "Self"
+                  ],
+                  "selection": "All",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": []
+                },
+                {
                   "opcode": "ModifyAttackCost",
                   "amount": -99,
                   "valueSource": "Fixed",
@@ -3897,7 +3956,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -4026,7 +4086,20 @@
                     "BLK-035"
                   ],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Bloke"
+                    ],
+                    "ranks": [
+                      "Regular"
+                    ],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  },
+                  "destination": "OwnBooth"
                 },
                 {
                   "opcode": "ShuffleStack",
@@ -4173,7 +4246,7 @@
               "targetCount": 1,
               "predicates": [
                 {
-                  "condition": "SentHomeByAttackDamage",
+                  "condition": "OtherSentHomeByThisAttackDamage",
                   "value": 0,
                   "mechanicalType": null,
                   "roughState": null,
@@ -4516,7 +4589,19 @@
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "cardFilter": {
+                "categories": [
+                  "Kit"
+                ],
+                "ranks": [],
+                "kitKinds": [
+                  "Mate"
+                ],
+                "basicVimOnly": false,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              }
             },
             {
               "opcode": "ShuffleStack",
@@ -4564,7 +4649,8 @@
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "destination": "OwnMitt"
             }
           ]
         },
@@ -4702,22 +4788,6 @@
                   "otherwise": []
                 },
                 {
-                  "opcode": "AttachVim",
-                  "amount": 100,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "Self"
-                  ],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
                   "opcode": "ModifyStayingPower",
                   "amount": 100,
                   "valueSource": "Fixed",
@@ -4736,7 +4806,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -4913,7 +4984,7 @@
                   "amount": 1,
                   "valueSource": "Fixed",
                   "targets": [
-                    "OwnStack"
+                    "OtherMitt"
                   ],
                   "selection": "All",
                   "targetCount": 1,
@@ -4927,7 +4998,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Activated"
         }
       ],
       "attacks": [
@@ -5002,38 +5074,6 @@
           "variablePrintedDamage": false,
           "canBeUsedFromBench": false,
           "program": [
-            {
-              "opcode": "ContinuousPartyTrick",
-              "amount": 40,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBlokeChosen"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ModifySoftSpot",
-              "amount": 40,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBlokeChosen"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
             {
               "opcode": "DealBoothDamage",
               "amount": 40,
@@ -5194,19 +5234,30 @@
                 },
                 {
                   "opcode": "SearchStack",
-                  "amount": 1,
+                  "amount": 3,
                   "valueSource": "Fixed",
                   "targets": [
                     "OwnStack"
                   ],
-                  "selection": "AnyDistribution",
+                  "selection": "Top",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Vim"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": true,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  },
+                  "sourceTopCount": 3
                 },
                 {
                   "opcode": "ShuffleStack",
@@ -5215,7 +5266,7 @@
                   "targets": [
                     "OwnStack"
                   ],
-                  "selection": "AnyDistribution",
+                  "selection": "All",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
@@ -5226,10 +5277,10 @@
                 },
                 {
                   "opcode": "AttachVim",
-                  "amount": 1,
+                  "amount": 3,
                   "valueSource": "Fixed",
                   "targets": [
-                    "Self"
+                    "OwnBlokesAll"
                   ],
                   "selection": "AnyDistribution",
                   "targetCount": 1,
@@ -5243,7 +5294,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "OnPromotionFromMitt"
         }
       ],
       "attacks": [
@@ -5352,19 +5404,30 @@
                 },
                 {
                   "opcode": "SearchStack",
-                  "amount": 1,
+                  "amount": 8,
                   "valueSource": "Fixed",
                   "targets": [
                     "OwnStack"
                   ],
-                  "selection": "AnyDistribution",
+                  "selection": "Top",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Vim"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": true,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  },
+                  "sourceTopCount": 8
                 },
                 {
                   "opcode": "ShuffleStack",
@@ -5373,7 +5436,7 @@
                   "targets": [
                     "OwnStack"
                   ],
-                  "selection": "AnyDistribution",
+                  "selection": "All",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
@@ -5384,10 +5447,10 @@
                 },
                 {
                   "opcode": "AttachVim",
-                  "amount": 1,
+                  "amount": 8,
                   "valueSource": "Fixed",
                   "targets": [
-                    "Self"
+                    "OwnBlokesAll"
                   ],
                   "selection": "AnyDistribution",
                   "targetCount": 1,
@@ -5401,7 +5464,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "OnPromotionFromMitt"
         }
       ],
       "attacks": [
@@ -5608,7 +5672,20 @@
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "cardFilter": {
+                "categories": [
+                  "Bloke"
+                ],
+                "ranks": [
+                  "Regular"
+                ],
+                "kitKinds": [],
+                "basicVimOnly": false,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              },
+              "destination": "OwnBooth"
             },
             {
               "opcode": "ShuffleStack",
@@ -6227,7 +6304,19 @@
                     "KIT-010"
                   ],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Kit"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [
+                      "Mate"
+                    ],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
                 },
                 {
                   "opcode": "ShuffleStack",
@@ -6281,12 +6370,14 @@
                     "KIT-010"
                   ],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "destination": "OwnMitt"
                 }
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Activated"
         }
       ],
       "attacks": [
@@ -6476,23 +6567,21 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "ChuckCards",
-                  "amount": 4,
-                  "valueSource": "Fixed",
-                  "targets": [
+                  "otherwise": [],
+                  "sources": [
                     "OwnEmptiesTray"
                   ],
-                  "selection": "UpTo",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
+                  "destination": "OwnMitt",
+                  "cardFilter": {
+                    "categories": [
+                      "Bloke"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
                 }
               ],
               "otherwise": []
@@ -6843,12 +6932,12 @@
             },
             {
               "opcode": "ChuckVim",
-              "amount": 10,
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [
                 "OtherOche"
               ],
-              "selection": "All",
+              "selection": "Chosen",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [
@@ -6936,24 +7025,6 @@
               "relatedIds": [],
               "then": [
                 {
-                  "opcode": "ChuckVim",
-                  "amount": 2,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "Self"
-                  ],
-                  "selection": "UpTo",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Fire"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
                   "opcode": "AttachVim",
                   "amount": 2,
                   "valueSource": "Fixed",
@@ -6961,7 +7032,7 @@
                     "Self"
                   ],
                   "selection": "UpTo",
-                  "targetCount": 1,
+                  "targetCount": 2,
                   "predicates": [],
                   "mechanicalTypes": [
                     "Fire"
@@ -6969,7 +7040,20 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "sources": [
+                    "OwnEmptiesTray"
+                  ],
+                  "cardFilter": {
+                    "categories": [
+                      "Vim"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": true,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
                 }
               ],
               "otherwise": []
@@ -7012,8 +7096,8 @@
               "targets": [
                 "Self"
               ],
-              "selection": "All",
-              "targetCount": 1,
+              "selection": "Chosen",
+              "targetCount": 2,
               "predicates": [],
               "mechanicalTypes": [
                 "Fire"
@@ -7596,22 +7680,6 @@
               "relatedIds": [],
               "then": [],
               "otherwise": []
-            },
-            {
-              "opcode": "DealBoothDamage",
-              "amount": 30,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothAll"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
             }
           ]
         },
@@ -7818,7 +7886,7 @@
             },
             {
               "opcode": "ChuckCards",
-              "amount": 50,
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [
                 "OtherStack"
@@ -7927,7 +7995,8 @@
               "then": [],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "BeforeSelfSentHomeByAttackDamage"
         }
       ],
       "attacks": [
@@ -9518,23 +9587,23 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "ChuckCards",
-                  "amount": 2,
-                  "valueSource": "Fixed",
-                  "targets": [
+                  "otherwise": [],
+                  "sources": [
                     "OwnEmptiesTray"
                   ],
-                  "selection": "UpTo",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
+                  "destination": "OwnMitt",
+                  "cardFilter": {
+                    "categories": [
+                      "Kit"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [
+                      "BarBit"
+                    ],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
                 }
               ],
               "otherwise": []
@@ -9841,7 +9910,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Activated"
         }
       ],
       "attacks": [
@@ -9992,39 +10062,11 @@
           "canBeUsedFromBench": false,
           "program": [
             {
-              "opcode": "ContinuousPartyTrick",
-              "amount": 50,
-              "valueSource": "Fixed",
-              "targets": [],
-              "selection": "Chosen",
-              "targetCount": 2,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ModifySoftSpot",
-              "amount": 50,
-              "valueSource": "Fixed",
-              "targets": [],
-              "selection": "Chosen",
-              "targetCount": 2,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
               "opcode": "DealBoothDamage",
               "amount": 50,
               "valueSource": "Fixed",
               "targets": [
-                "OtherBoothChosen"
+                "OtherBlokeChosen"
               ],
               "selection": "Chosen",
               "targetCount": 2,
@@ -10617,28 +10659,29 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "ChuckCards",
-                  "amount": 1,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "OtherMitt"
+                  "otherwise": [],
+                  "sources": [
+                    "OtherEmptiesTray"
                   ],
-                  "selection": "Chosen",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
+                  "destination": "OtherMitt",
+                  "cardFilter": {
+                    "categories": [
+                      "Kit"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [
+                      "Mate"
+                    ],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
                 }
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "OnPromotionFromMitt"
         }
       ],
       "attacks": [
@@ -11063,7 +11106,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "OnPromotionFromMitt"
         }
       ],
       "attacks": [
@@ -11172,7 +11216,17 @@
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "cardFilter": {
+                "categories": [
+                  "Vim"
+                ],
+                "ranks": [],
+                "kitKinds": [],
+                "basicVimOnly": true,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              }
             },
             {
               "opcode": "ShuffleStack",
@@ -11199,7 +11253,7 @@
               "targets": [
                 "Self"
               ],
-              "selection": "UpTo",
+              "selection": "All",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [
@@ -11300,7 +11354,7 @@
             },
             {
               "opcode": "ChuckCards",
-              "amount": 90,
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [
                 "OtherStack"
@@ -11511,14 +11565,14 @@
               "relatedIds": [],
               "then": [
                 {
-                  "opcode": "AdjustDamage",
-                  "amount": 40,
-                  "valueSource": "CardsChuckedByEffect",
+                  "opcode": "ChuckCards",
+                  "amount": 99,
+                  "valueSource": "Fixed",
                   "targets": [
-                    "OtherOche"
+                    "OwnAttachedBarKits"
                   ],
-                  "selection": "All",
-                  "targetCount": 1,
+                  "selection": "UpTo",
+                  "targetCount": 99,
                   "predicates": [],
                   "mechanicalTypes": [],
                   "roughStates": [],
@@ -11527,10 +11581,12 @@
                   "otherwise": []
                 },
                 {
-                  "opcode": "ChuckCards",
+                  "opcode": "AdjustDamage",
                   "amount": 40,
-                  "valueSource": "Fixed",
-                  "targets": [],
+                  "valueSource": "CardsChuckedByEffect",
+                  "targets": [
+                    "OtherOche"
+                  ],
                   "selection": "All",
                   "targetCount": 1,
                   "predicates": [],
@@ -11734,22 +11790,6 @@
               "relatedIds": [],
               "then": [],
               "otherwise": []
-            },
-            {
-              "opcode": "AttachVim",
-              "amount": 30,
-              "valueSource": "Fixed",
-              "targets": [
-                "Self"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
             }
           ]
         },
@@ -11866,7 +11906,7 @@
                   "amount": 30,
                   "valueSource": "Fixed",
                   "targets": [
-                    "OtherOche"
+                    "OwnBlokesAll"
                   ],
                   "selection": "All",
                   "targetCount": 1,
@@ -11882,7 +11922,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -11999,38 +12040,6 @@
               "otherwise": []
             },
             {
-              "opcode": "ContinuousPartyTrick",
-              "amount": 30,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothChosen"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ModifySoftSpot",
-              "amount": 30,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothChosen"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
               "opcode": "DealBoothDamage",
               "amount": 30,
               "valueSource": "Fixed",
@@ -12132,13 +12141,13 @@
           "canBeUsedFromBench": false,
           "program": [
             {
-              "opcode": "ContinuousPartyTrick",
+              "opcode": "DealBoothDamage",
               "amount": 10,
               "valueSource": "Fixed",
               "targets": [
-                "Self"
+                "OtherBlokesAll"
               ],
-              "selection": "Chosen",
+              "selection": "All",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
@@ -12149,42 +12158,10 @@
             },
             {
               "opcode": "SwapOche",
-              "amount": 10,
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [
-                "OtherBoothChosen"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ModifySoftSpot",
-              "amount": 10,
-              "valueSource": "Fixed",
-              "targets": [
-                "Self"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "DealBoothDamage",
-              "amount": 10,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothAll"
+                "OwnBoothChosen"
               ],
               "selection": "Chosen",
               "targetCount": 1,
@@ -12313,7 +12290,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "AfterSelfDamagedByAttack"
         }
       ],
       "attacks": [
@@ -12332,22 +12310,6 @@
               "opcode": "DealPrintedDamage",
               "amount": 60,
               "valueSource": "PrintedDamage",
-              "targets": [
-                "OtherOche"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "AdjustDamage",
-              "amount": 60,
-              "valueSource": "Fixed",
               "targets": [
                 "OtherOche"
               ],
@@ -12606,7 +12568,8 @@
               "then": [],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "AfterSelfSentHomeByAttackDamage"
         }
       ],
       "attacks": [
@@ -12627,38 +12590,6 @@
               "valueSource": "PrintedDamage",
               "targets": [
                 "OtherOche"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ContinuousPartyTrick",
-              "amount": 10,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothAll"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ModifySoftSpot",
-              "amount": 10,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothAll"
               ],
               "selection": "All",
               "targetCount": 1,
@@ -12746,7 +12677,7 @@
             },
             {
               "opcode": "SwapOche",
-              "amount": 20,
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [
                 "OtherBoothChosen"
@@ -12993,7 +12924,11 @@
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "sources": [
+                "BarChits"
+              ],
+              "destination": "OwnMitt"
             },
             {
               "opcode": "TakeExtraBarChit",
@@ -13011,7 +12946,8 @@
               "then": [],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "OnBarChitTaken"
         }
       ],
       "attacks": [
@@ -13718,24 +13654,6 @@
               "relatedIds": [],
               "then": [],
               "otherwise": []
-            },
-            {
-              "opcode": "AttachVim",
-              "amount": 30,
-              "valueSource": "Fixed",
-              "targets": [
-                "Self"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [
-                "Water"
-              ],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
             }
           ]
         }
@@ -13867,28 +13785,12 @@
               "then": [
                 {
                   "opcode": "OncePerRound",
-                  "amount": 2,
+                  "amount": 1,
                   "valueSource": "Fixed",
                   "targets": [
                     "Self"
                   ],
-                  "selection": "Chosen",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "ChuckCards",
-                  "amount": 2,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "Self"
-                  ],
-                  "selection": "Chosen",
+                  "selection": "All",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
@@ -13902,7 +13804,7 @@
                   "amount": 2,
                   "valueSource": "Fixed",
                   "targets": [
-                    "Self"
+                    "OtherBlokeChosen"
                   ],
                   "selection": "Chosen",
                   "targetCount": 1,
@@ -13915,12 +13817,12 @@
                 },
                 {
                   "opcode": "ChuckSelf",
-                  "amount": 2,
+                  "amount": 1,
                   "valueSource": "Fixed",
                   "targets": [
                     "Self"
                   ],
-                  "selection": "Chosen",
+                  "selection": "All",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
@@ -13932,7 +13834,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Activated"
         }
       ],
       "attacks": [
@@ -14067,7 +13970,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -14159,31 +14063,13 @@
               "otherwise": []
             },
             {
-              "opcode": "ChuckVim",
-              "amount": 1,
-              "valueSource": "Fixed",
-              "targets": [
-                "Self"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [
-                "Grass"
-              ],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
               "opcode": "AttachVim",
               "amount": 1,
               "valueSource": "Fixed",
               "targets": [
                 "OwnBoothChosen"
               ],
-              "selection": "Chosen",
+              "selection": "AnyDistribution",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [
@@ -14192,7 +14078,20 @@
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "sources": [
+                "OwnEmptiesTray"
+              ],
+              "cardFilter": {
+                "categories": [
+                  "Vim"
+                ],
+                "ranks": [],
+                "kitKinds": [],
+                "basicVimOnly": true,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              }
             }
           ]
         },
@@ -14805,7 +14704,20 @@
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "cardFilter": {
+                "categories": [
+                  "Bloke"
+                ],
+                "ranks": [
+                  "Regular"
+                ],
+                "kitKinds": [],
+                "basicVimOnly": false,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              },
+              "destination": "OwnBooth"
             },
             {
               "opcode": "ShuffleStack",
@@ -15014,10 +14926,10 @@
                   "amount": 5,
                   "valueSource": "Fixed",
                   "targets": [
-                    "OwnMitt"
+                    "OwnStack"
                   ],
-                  "selection": "Chosen",
-                  "targetCount": 1,
+                  "selection": "Top",
+                  "targetCount": 5,
                   "predicates": [],
                   "mechanicalTypes": [],
                   "roughStates": [],
@@ -15028,7 +14940,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "OnPromotionFromMitt"
         }
       ],
       "attacks": [
@@ -15068,7 +14981,7 @@
               "targets": [
                 "OtherOche"
               ],
-              "selection": "All",
+              "selection": "Chosen",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
@@ -15151,7 +15064,17 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Bloke"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
                 },
                 {
                   "opcode": "ShuffleStack",
@@ -15199,7 +15122,8 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "destination": "OwnMitt"
                 }
               ],
               "otherwise": []
@@ -15313,11 +15237,23 @@
                   "predicates": [],
                   "mechanicalTypes": [],
                   "roughStates": [],
-                  "relatedIds": [
-                    "BLK-132"
-                  ],
+                  "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Bloke"
+                    ],
+                    "ranks": [
+                      "Regular"
+                    ],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": [
+                      "BLK-132"
+                    ]
+                  }
                 },
                 {
                   "opcode": "ShuffleStack",
@@ -15338,38 +15274,16 @@
                   "otherwise": []
                 },
                 {
-                  "opcode": "ChuckCards",
-                  "amount": 1,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "OwnStack"
-                  ],
-                  "selection": "Chosen",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [
-                    "BLK-132"
-                  ],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
                   "opcode": "TransformFromStack",
                   "amount": 1,
                   "valueSource": "Fixed",
-                  "targets": [
-                    "Self"
-                  ],
-                  "selection": "Chosen",
+                  "targets": [],
+                  "selection": "All",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
                   "roughStates": [],
-                  "relatedIds": [
-                    "BLK-132"
-                  ],
+                  "relatedIds": [],
                   "then": [],
                   "otherwise": []
                 },
@@ -15380,21 +15294,20 @@
                   "targets": [
                     "Self"
                   ],
-                  "selection": "Chosen",
+                  "selection": "All",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
                   "roughStates": [],
-                  "relatedIds": [
-                    "BLK-132"
-                  ],
+                  "relatedIds": [],
                   "then": [],
                   "otherwise": []
                 }
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Activated"
         }
       ],
       "attacks": [
@@ -15502,7 +15415,17 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Bloke"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": true,
+                    "excludedRelatedIds": []
+                  }
                 },
                 {
                   "opcode": "ShuffleStack",
@@ -15550,7 +15473,8 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "destination": "OwnMitt"
                 }
               ],
               "otherwise": []
@@ -15772,43 +15696,11 @@
           "canBeUsedFromBench": false,
           "program": [
             {
-              "opcode": "ContinuousPartyTrick",
-              "amount": 30,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBlokeChosen"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ModifySoftSpot",
-              "amount": 30,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBlokeChosen"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
               "opcode": "DealBoothDamage",
               "amount": 30,
               "valueSource": "Fixed",
               "targets": [
-                "OtherBoothChosen"
+                "OtherBlokeChosen"
               ],
               "selection": "Chosen",
               "targetCount": 1,
@@ -15970,7 +15862,7 @@
                   "targets": [
                     "OtherOche"
                   ],
-                  "selection": "BeerMat",
+                  "selection": "Chosen",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
@@ -16185,35 +16077,62 @@
             },
             {
               "opcode": "MoveCards",
-              "amount": 50,
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [
                 "OtherMitt"
               ],
-              "selection": "All",
+              "selection": "Chosen",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "sources": [
+                "OtherOcheAttachedVim"
+              ],
+              "destination": "OtherMitt",
+              "cardFilter": {
+                "categories": [
+                  "Vim"
+                ],
+                "ranks": [],
+                "kitKinds": [],
+                "basicVimOnly": false,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              }
             },
             {
               "opcode": "AttachVim",
-              "amount": 50,
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [
-                "Self"
+                "OwnOche"
               ],
-              "selection": "All",
+              "selection": "Chosen",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "sources": [
+                "OwnMitt"
+              ],
+              "cardFilter": {
+                "categories": [
+                  "Vim"
+                ],
+                "ranks": [],
+                "kitKinds": [],
+                "basicVimOnly": false,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              }
             }
           ]
         }
@@ -16289,7 +16208,7 @@
                   "amount": 1,
                   "valueSource": "Fixed",
                   "targets": [
-                    "Self"
+                    "OtherOche"
                   ],
                   "selection": "All",
                   "targetCount": 1,
@@ -16305,7 +16224,7 @@
                   "amount": 1,
                   "valueSource": "Fixed",
                   "targets": [
-                    "Self"
+                    "OtherOche"
                   ],
                   "selection": "All",
                   "targetCount": 1,
@@ -16319,7 +16238,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -16343,38 +16263,6 @@
               ],
               "selection": "All",
               "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ContinuousPartyTrick",
-              "amount": 30,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothChosen"
-              ],
-              "selection": "Chosen",
-              "targetCount": 2,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ModifySoftSpot",
-              "amount": 30,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothChosen"
-              ],
-              "selection": "Chosen",
-              "targetCount": 2,
               "predicates": [],
               "mechanicalTypes": [],
               "roughStates": [],
@@ -16552,7 +16440,8 @@
               "then": [],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -16714,7 +16603,7 @@
               "then": [
                 {
                   "opcode": "Demote",
-                  "amount": 100,
+                  "amount": 1,
                   "valueSource": "Fixed",
                   "targets": [
                     "OtherOche"
@@ -16823,30 +16712,29 @@
                     "KIT-012"
                   ],
                   "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "ChuckCards",
-                  "amount": 2,
-                  "valueSource": "Fixed",
-                  "targets": [
+                  "otherwise": [],
+                  "sources": [
                     "OwnEmptiesTray"
                   ],
-                  "selection": "UpTo",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [
-                    "KIT-012"
-                  ],
-                  "then": [],
-                  "otherwise": []
+                  "destination": "OwnMitt",
+                  "cardFilter": {
+                    "categories": [
+                      "Kit"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [
+                      "BarKit"
+                    ],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
                 }
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Activated"
         }
       ],
       "attacks": [
@@ -17004,7 +16892,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -17026,38 +16915,6 @@
               "valueSource": "PrintedDamage",
               "targets": [
                 "OtherOche"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ContinuousPartyTrick",
-              "amount": 10,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothAll"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ModifySoftSpot",
-              "amount": 10,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothAll"
               ],
               "selection": "All",
               "targetCount": 1,
@@ -17199,7 +17056,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -17232,11 +17090,13 @@
               "otherwise": []
             },
             {
-              "opcode": "Conditional",
-              "amount": 0,
+              "opcode": "DealBoothDamage",
+              "amount": 90,
               "valueSource": "Fixed",
-              "targets": [],
-              "selection": "All",
+              "targets": [
+                "OtherBoothChosen"
+              ],
+              "selection": "Chosen",
               "targetCount": 1,
               "predicates": [
                 {
@@ -17250,56 +17110,7 @@
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [
-                {
-                  "opcode": "ContinuousPartyTrick",
-                  "amount": 90,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "OtherBoothChosen"
-                  ],
-                  "selection": "Chosen",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "ModifySoftSpot",
-                  "amount": 90,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "OtherBoothChosen"
-                  ],
-                  "selection": "Chosen",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "DealBoothDamage",
-                  "amount": 90,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "OtherBoothChosen"
-                  ],
-                  "selection": "Chosen",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                }
-              ],
+              "then": [],
               "otherwise": []
             }
           ]
@@ -17440,7 +17251,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -17457,24 +17269,6 @@
           "canBeUsedFromBench": false,
           "program": [
             {
-              "opcode": "ContinuousPartyTrick",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "Self"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [
-                "Fire"
-              ],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
               "opcode": "ChuckVim",
               "amount": 2,
               "valueSource": "Fixed",
@@ -17482,25 +17276,7 @@
                 "Self"
               ],
               "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [
-                "Fire"
-              ],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ModifySoftSpot",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "Self"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
+              "targetCount": 2,
               "predicates": [],
               "mechanicalTypes": [
                 "Fire"
@@ -17747,6 +17523,22 @@
           "presentationStatus": "PlaceholderBacked",
           "program": [
             {
+              "opcode": "ContinuousPartyTrick",
+              "amount": 0,
+              "valueSource": "Fixed",
+              "targets": [
+                "Self"
+              ],
+              "selection": "All",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [],
+              "roughStates": [],
+              "relatedIds": [],
+              "then": [],
+              "otherwise": []
+            },
+            {
               "opcode": "ModifyTaxiFare",
               "amount": 1,
               "valueSource": "Fixed",
@@ -17762,7 +17554,8 @@
               "then": [],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [
@@ -17930,8 +17723,8 @@
               "targets": [
                 "Self"
               ],
-              "selection": "All",
-              "targetCount": 1,
+              "selection": "Chosen",
+              "targetCount": 2,
               "predicates": [],
               "mechanicalTypes": [],
               "roughStates": [],
@@ -18016,7 +17809,7 @@
                 {
                   "opcode": "DrawFromStack",
                   "amount": 3,
-                  "valueSource": "Fixed",
+                  "valueSource": "MittCardsNeeded",
                   "targets": [
                     "OwnStack"
                   ],
@@ -18032,7 +17825,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Activated"
         }
       ],
       "attacks": [
@@ -18151,7 +17945,8 @@
               "then": [],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [],
@@ -18180,22 +17975,6 @@
               "roughStates": [],
               "relatedIds": [],
               "then": [
-                {
-                  "opcode": "ChuckCards",
-                  "amount": 60,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
                 {
                   "opcode": "ModifyTaxiFare",
                   "amount": 1,
@@ -18246,7 +18025,7 @@
                 },
                 {
                   "opcode": "ChuckSelf",
-                  "amount": 60,
+                  "amount": 1,
                   "valueSource": "Fixed",
                   "targets": [],
                   "selection": "All",
@@ -18379,7 +18158,8 @@
               ],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [],
@@ -18408,22 +18188,6 @@
               "roughStates": [],
               "relatedIds": [],
               "then": [
-                {
-                  "opcode": "ChuckCards",
-                  "amount": 60,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
                 {
                   "opcode": "ModifyTaxiFare",
                   "amount": 1,
@@ -18474,7 +18238,7 @@
                 },
                 {
                   "opcode": "ChuckSelf",
-                  "amount": 60,
+                  "amount": 1,
                   "valueSource": "Fixed",
                   "targets": [],
                   "selection": "All",
@@ -18584,7 +18348,8 @@
               "then": [],
               "otherwise": []
             }
-          ]
+          ],
+          "trigger": "Continuous"
         }
       ],
       "attacks": [],
@@ -18613,22 +18378,6 @@
               "roughStates": [],
               "relatedIds": [],
               "then": [
-                {
-                  "opcode": "ChuckCards",
-                  "amount": 60,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
                 {
                   "opcode": "ModifyTaxiFare",
                   "amount": 1,
@@ -18679,7 +18428,7 @@
                 },
                 {
                   "opcode": "ChuckSelf",
-                  "amount": 60,
+                  "amount": 1,
                   "valueSource": "Fixed",
                   "targets": [],
                   "selection": "All",
@@ -18780,7 +18529,15 @@
               "targets": [],
               "selection": "All",
               "targetCount": 1,
-              "predicates": [],
+              "predicates": [
+                {
+                  "condition": "TargetIsLandlord",
+                  "value": 0,
+                  "mechanicalType": null,
+                  "roughState": null,
+                  "relatedId": null
+                }
+              ],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
@@ -18877,14 +18634,25 @@
                   "targets": [
                     "OwnStack"
                   ],
-                  "selection": "Top",
+                  "selection": "UpTo",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Bloke"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  },
+                  "sourceTopCount": 8
                 },
                 {
                   "opcode": "ShuffleStack",
@@ -18932,7 +18700,8 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "destination": "OwnMitt"
                 }
               ],
               "otherwise": []
@@ -19021,11 +18790,11 @@
               "relatedIds": [],
               "then": [
                 {
-                  "opcode": "DrawFromStack",
+                  "opcode": "OncePerRound",
                   "amount": 1,
                   "valueSource": "Fixed",
                   "targets": [
-                    "OwnStack"
+                    "Self"
                   ],
                   "selection": "All",
                   "targetCount": 1,
@@ -19040,8 +18809,35 @@
                   "opcode": "ChuckVim",
                   "amount": 1,
                   "valueSource": "Fixed",
+                  "targets": [],
+                  "selection": "Chosen",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": [],
+                  "sources": [
+                    "OwnMitt"
+                  ],
+                  "cardFilter": {
+                    "categories": [
+                      "Vim"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": true,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
+                },
+                {
+                  "opcode": "DrawFromStack",
+                  "amount": 1,
+                  "valueSource": "Fixed",
                   "targets": [
-                    "Self"
+                    "OwnStack"
                   ],
                   "selection": "All",
                   "targetCount": 1,
@@ -19082,8 +18878,8 @@
               "relatedIds": [],
               "then": [
                 {
-                  "opcode": "ChuckCards",
-                  "amount": 1,
+                  "opcode": "ContinuousPartyTrick",
+                  "amount": 0,
                   "valueSource": "Fixed",
                   "targets": [],
                   "selection": "All",
@@ -19136,10 +18932,10 @@
             },
             {
               "opcode": "RevealCards",
-              "amount": 2,
+              "amount": 6,
               "valueSource": "Fixed",
               "targets": [
-                "OwnStack"
+                "BarChits"
               ],
               "selection": "All",
               "targetCount": 1,
@@ -19224,24 +19020,7 @@
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [
-                {
-                  "opcode": "ChuckVim",
-                  "amount": 1,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "Self"
-                  ],
-                  "selection": "Chosen",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                }
-              ],
+              "then": [],
               "otherwise": []
             },
             {
@@ -19251,14 +19030,27 @@
               "targets": [
                 "OwnBoothChosen"
               ],
-              "selection": "Chosen",
+              "selection": "AnyDistribution",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "sources": [
+                "OwnEmptiesTray"
+              ],
+              "cardFilter": {
+                "categories": [
+                  "Vim"
+                ],
+                "ranks": [],
+                "kitKinds": [],
+                "basicVimOnly": true,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              }
             }
           ]
         },
@@ -19328,7 +19120,7 @@
               "amount": 1,
               "valueSource": "Fixed",
               "targets": [
-                "OwnStack"
+                "OtherMitt"
               ],
               "selection": "All",
               "targetCount": 1,
@@ -19338,6 +19130,38 @@
               "relatedIds": [],
               "then": [],
               "otherwise": []
+            },
+            {
+              "opcode": "MoveCards",
+              "amount": 1,
+              "valueSource": "Fixed",
+              "targets": [
+                "OtherMitt"
+              ],
+              "selection": "Chosen",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [],
+              "roughStates": [],
+              "relatedIds": [],
+              "then": [],
+              "otherwise": [],
+              "sources": [
+                "OtherMitt"
+              ],
+              "destination": "OtherBooth",
+              "cardFilter": {
+                "categories": [
+                  "Bloke"
+                ],
+                "ranks": [
+                  "Regular"
+                ],
+                "kitKinds": [],
+                "basicVimOnly": false,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              }
             },
             {
               "opcode": "SwapOche",
@@ -19425,30 +19249,57 @@
               "targets": [
                 "OtherMitt"
               ],
-              "selection": "All",
+              "selection": "Chosen",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "sources": [
+                "OtherOcheAttachedVim"
+              ],
+              "destination": "OtherMitt",
+              "cardFilter": {
+                "categories": [
+                  "Vim"
+                ],
+                "ranks": [],
+                "kitKinds": [],
+                "basicVimOnly": false,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              }
             },
             {
               "opcode": "AttachVim",
               "amount": 1,
               "valueSource": "Fixed",
               "targets": [
-                "Self"
+                "OwnOche"
               ],
-              "selection": "All",
+              "selection": "Chosen",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "sources": [
+                "OwnMitt"
+              ],
+              "cardFilter": {
+                "categories": [
+                  "Vim"
+                ],
+                "ranks": [],
+                "kitKinds": [],
+                "basicVimOnly": false,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              }
             }
           ]
         },
@@ -19518,7 +19369,7 @@
               "amount": 1,
               "valueSource": "Fixed",
               "targets": [
-                "OwnStack"
+                "OtherMitt"
               ],
               "selection": "All",
               "targetCount": 1,
@@ -19536,14 +19387,28 @@
               "targets": [
                 "OtherMitt"
               ],
-              "selection": "All",
+              "selection": "Chosen",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
               "then": [],
-              "otherwise": []
+              "otherwise": [],
+              "sources": [
+                "OtherMitt"
+              ],
+              "destination": "BottomOfOtherStack",
+              "cardFilter": {
+                "categories": [
+                  "Bloke"
+                ],
+                "ranks": [],
+                "kitKinds": [],
+                "basicVimOnly": false,
+                "differentMechanicalTypes": false,
+                "excludedRelatedIds": []
+              }
             }
           ]
         },
@@ -19708,7 +19573,15 @@
               "targets": [],
               "selection": "All",
               "targetCount": 1,
-              "predicates": [],
+              "predicates": [
+                {
+                  "condition": "TargetIsRegular",
+                  "value": 0,
+                  "mechanicalType": null,
+                  "roughState": null,
+                  "relatedId": null
+                }
+              ],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
@@ -19785,7 +19658,15 @@
               "targets": [],
               "selection": "All",
               "targetCount": 1,
-              "predicates": [],
+              "predicates": [
+                {
+                  "condition": "TargetIsSeasoned",
+                  "value": 0,
+                  "mechanicalType": null,
+                  "roughState": null,
+                  "relatedId": null
+                }
+              ],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
@@ -20224,6 +20105,7 @@
       "RestrictTaxi",
       "RestrictKit",
       "RestrictLocal",
+      "RestrictEmptiesRecovery",
       "BeerMatToss",
       "RepeatUntilBlankSide",
       "Conditional",

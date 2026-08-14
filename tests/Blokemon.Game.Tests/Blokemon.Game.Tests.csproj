@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Blokemon.Core/Blokemon.Core.csproj" />
+    <ProjectReference Include="../../src/Blokemon.Game/Blokemon.Game.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="TUnit" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content
+      Include="../../content/authorities/mechanics.json"
+      Link="Authorities/mechanics.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
+  <ItemGroup>
+    <Content
+      Include="../../content/reference/sv151-authority-reconciliation.json"
+      Link="Authorities/sv151-authority-reconciliation.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
+</Project>
