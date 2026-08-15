@@ -6,6 +6,7 @@
     <ProjectReference Include="../../src/Blokemon.Web/Blokemon.Web.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="TUnit" />
   </ItemGroup>
 </Project>
