@@ -1,70 +1,179 @@
 @page "/"
-@rendermode InteractiveAuto
-@inject BlokemonApiClient Api
+@implements IAsyncDisposable
+@inject IBlokemonApplication Api
+@inject PlayModeApplication Modes
+@inject IJSRuntime Js
 
 <PageTitle>Home · Blokemon</PageTitle>
 
-@if (_view is null && _error is null)
+@if (!_modeLoaded)
+{
+    <LoadingPanel />
+}
+else if (_mode!.Selected is null)
+{
+    <header class="topline">
+        <div>
+            <span class="eyebrow">Choose your game</span>
+            <h1>Where should Blokemon save your player?</h1>
+        </div>
+    </header>
+    @if (_modeError is not null)
+    {
+        <FailurePanel Message="@_modeError" />
+    }
+    <div class="@(_mode.ServerBackedAvailable ? "grid two" : "grid")">
+        @if (_mode.ServerBackedAvailable)
+        {
+            <div class="panel hero">
+                <div class="hero-copy">
+                    <span class="eyebrow">Server game</span>
+                    <h2>Play on this server.</h2>
+                    <p>Your player, cards, decks, and battles are saved by this server.</p>
+                    <div class="actions">
+                        <button class="primary" @onclick="() => ChooseMode(PlayMode.ServerBacked)" disabled="@_choosingMode">Use this server</button>
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="panel hero">
+            <div class="hero-copy">
+                <span class="eyebrow">Browser game</span>
+                <h2>Keep this game in this browser.</h2>
+                <p>Your player, cards, decks, and battles stay in this browser only. Clearing its site data removes them.</p>
+                @if (_mode.BrowserStorageError is not null)
+                {
+                    <p class="error-text">@_mode.BrowserStorageError</p>
+                }
+                <div class="actions">
+                    <button class="primary" @onclick="() => ChooseMode(PlayMode.BrowserLocal)" disabled="@(_choosingMode || _mode.BrowserStorageError is not null)">Use this browser</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (_view is null && _error is null)
 {
     <LoadingPanel />
 }
 else if (_error is not null)
 {
     <FailurePanel Message="@_error" />
+    <div class="panel">
+        <h2>Choose another game.</h2>
+        <p>Changing games does not move or replace either player.</p>
+        <div class="actions">
+            @if (_mode?.ServerBackedAvailable is true)
+            {
+                <button class="secondary" @onclick="() => ChooseMode(PlayMode.ServerBacked)" disabled="@(_choosingMode || _mode.Selected == PlayMode.ServerBacked)">Use this server</button>
+            }
+            <button class="secondary" @onclick="() => ChooseMode(PlayMode.BrowserLocal)" disabled="@(_choosingMode || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)">Use this browser</button>
+        </div>
+    </div>
 }
 else if (_view!.Profile is null)
 {
     <header class="topline">
         <div>
-            <span class="eyebrow">First round</span>
-            <h1>Pull up a chair.</h1>
+            <span class="eyebrow">Local game</span>
+            <h1>Create a player.</h1>
         </div>
-        <span class="dev-badge">Development build · placeholder art</span>
     </header>
     <div class="panel hero">
         <div class="hero-copy">
-            <h2>Your local league starts here.</h2>
-            <p>Create the profile stored on this machine, then open your first pack.</p>
-            <div class="actions"><a class="primary button" href="profile">Create local profile</a></div>
+            <p>Your cards and battles stay on this device.</p>
+            <div class="actions"><a class="primary button" href="profile">Create player</a></div>
         </div>
     </div>
+}
+else if (_view.Profile.StarterDeckId is null)
+{
+    <section class="starter-shell" aria-labelledby="starter-heading">
+        <div class="starter-intro">
+            <div>
+                <span class="eyebrow">Starter Deck</span>
+                <h1 id="starter-heading">Choose your first deck.</h1>
+                <p>Each starter has 60 cards. You can edit the deck after you choose it.</p>
+            </div>
+            <div class="starter-boxes" aria-label="Starter Deck boxes">
+                <div><PackagingArt Markup="@_view.PackPresentation.Gloss.StarterDeckSvgMarkup" Label="Foil Starter Deck box" /><span>Foil</span></div>
+                <div><PackagingArt Markup="@_view.PackPresentation.Kraft.StarterDeckSvgMarkup" Label="Kraft Starter Deck box" /><span>Kraft</span></div>
+            </div>
+        </div>
+        @if (_operationError is not null)
+        {
+            <FailurePanel Message="@_operationError" />
+        }
+        <div class="starter-grid">
+            @foreach (var starter in _view.StarterDecks)
+            {
+                <article class="starter-option @TypeClass(starter.Type)">
+                    <div class="starter-title">
+                        <div>
+                            <span class="eyebrow">@starter.Type · @starter.Role</span>
+                            <h2>@starter.Name</h2>
+                            <small>Led by @starter.Leader.Name</small>
+                        </div>
+                        <i class="type-dot" aria-hidden="true"></i>
+                    </div>
+                    <div class="leader-stage">
+                        <CardFace Card="starter.Leader" Size="CardFaceSize.Leader" />
+                    </div>
+                    <div class="deck-numbers" aria-label="Deck composition">
+                        <span><b>@starter.BlokemonCount</b><small>Blokemon</small></span>
+                        <span><b>@starter.TrainerCount</b><small>Trainer</small></span>
+                        <span><b>@starter.EnergyCount</b><small>Energy</small></span>
+                    </div>
+                    <p>@starter.Description</p>
+                    <button class="primary full"
+                            @onclick="() => Claim(starter.Id)"
+                            disabled="@_working">
+                        @(_working && _claimingStarterId == starter.Id ? "Claiming deck…" : $"Choose {starter.Name}")
+                    </button>
+                </article>
+            }
+        </div>
+    </section>
 }
 else
 {
     var owned = _view.Cards.Count(static card => card.OwnedQuantity > 0);
+    var claimedStarter = _view.StarterDecks.FirstOrDefault(static starter => starter.IsClaimed);
     <header class="topline">
         <div>
-            <span class="eyebrow">Local league</span>
-            <h1>Ready for another round?</h1>
+            <span class="eyebrow">Your game</span>
+            <h1>Your deck is ready.</h1>
         </div>
-        <span class="dev-badge">Development build · placeholder art</span>
+        @if (claimedStarter is not null)
+        {
+            <span class="dev-badge">@claimedStarter.Name · @claimedStarter.Type</span>
+        }
     </header>
     <div class="grid two">
         <div class="panel hero">
             <div class="hero-copy">
                 @if (_view.Match is not null)
                 {
-                    @if (_view.Match.IsComplete)
+                    @if (_view.Match.Frame.IsComplete)
                     {
                         <span class="eyebrow">Match complete</span>
-                        <h2>@_view.Match.Winner took the match.</h2>
-                        <p>The final command log is saved. Start another local bout when you are ready.</p>
-                        <div class="actions"><a class="primary button" href="match">Return to the table</a></div>
+                        <h2>@_view.Match.Frame.Winner won the match.</h2>
+                        <p>The battle is saved. You can start another battle.</p>
                     }
                     else
                     {
-                        <span class="eyebrow">Resume match · Round @_view.Match.Round</span>
-                        <h2>@_view.Profile.DisplayName vs. @_view.Match.Opponent.Name</h2>
-                        <p>Your oche is waiting. Nothing moves until you do.</p>
-                        <div class="actions"><a class="primary button" href="match">Return to the table</a></div>
+                        <span class="eyebrow">Resume match · Turn @_view.Match.Frame.Round</span>
+                        <h2>@_view.Profile.DisplayName vs. @_view.Match.Frame.Opponent.Name</h2>
+                        <p>Your battle is saved.</p>
                     }
+                    <div class="actions"><a class="primary button" href="match">Return to the table</a></div>
                 }
                 else
                 {
-                    <span class="eyebrow">Next action</span>
-                    <h2>Build a stack and take the oche.</h2>
-                    <p>Open your starter packs, save a legal deck, then face the local CPU.</p>
-                    <div class="actions"><a class="primary button" href="packs">Open a pack</a><a class="secondary button" href="decks">Build a deck</a></div>
+                    <span class="eyebrow">Your starter</span>
+                    <h2>Start a battle.</h2>
+                    <p>Edit your deck, or play against the computer.</p>
+                    <div class="actions"><a class="primary button" href="match">Start a match</a><a class="secondary button" href="decks">Edit your deck</a></div>
                 }
             </div>
         </div>
@@ -85,7 +194,10 @@ else
                     <div class="activity">
                         @foreach (var card in _view.LastPack.Cards.Take(3))
                         {
-                            <div class="activity-row"><img src="@card.ArtUrl" alt="" /><span><b>@card.Name</b><small>@card.Detail · copy @card.OwnedQuantity</small></span></div>
+                            <div class="activity-row">
+                                <CardFace Card="card" Size="CardFaceSize.Tiny" />
+                                <span><b>@card.Name</b><small>@card.Detail · copy @card.OwnedQuantity</small></span>
+                            </div>
                         }
                     </div>
                 }
@@ -94,11 +206,127 @@ else
     </div>
 }
 
+@if (_ceremonyStage != DeckOpeningStage.Closed && _ceremonyStarter is not null && _view is not null)
+{
+    <section class="opening-ceremony deck-opening--@CeremonyStageClass()" aria-label="@($"Opening the {_ceremonyStarter.Name} Starter Deck")">
+        <header class="opening-ceremony-head">
+            <span class="eyebrow">Starter Deck · @_ceremonyStarter.Name</span>
+            <button type="button" class="quiet" @onclick="CloseDeckOpening">Skip</button>
+        </header>
+        @if (_ceremonyStage == DeckOpeningStage.Spread)
+        {
+            <div class="opening-summary">
+                <div><span class="eyebrow">@_ceremonyStarter.Name · @_ceremonyStarter.Type</span><h1>Your 60 cards.</h1></div>
+                <div class="opening-summary-grid opening-summary-grid--deck">
+                    @{ var summaryIndex = 0; }
+                    @foreach (var card in CeremonyCards())
+                    {
+                        <div class="opening-summary-card" style="--summary-index: @summaryIndex"><CardFace Card="card" Size="CardFaceSize.Catalogue" /><b>@card.Name</b></div>
+                        summaryIndex++;
+                    }
+                </div>
+                <button @ref="_ceremonyDoneElement" class="primary" @onclick="CloseDeckOpening">Start playing</button>
+            </div>
+        }
+        else
+        {
+            <div class="opening-ceremony-stage">
+                <div class="opening-floor" aria-hidden="true"></div>
+                <div class="deck-opening-assembly">
+                    <div class="deck-opening-tray" aria-hidden="true">
+                        <PackagingArt Markup="@_view.PackPresentation.Gloss.StarterDeckTraySvgMarkup" Label="" Decorative="true" />
+                    </div>
+                    <div class="deck-opening-deck" aria-hidden="true">
+                        @for (var depth = 8; depth >= 0; depth--)
+                        {
+                            <span class="deck-opening-deck-card" style="--deck-depth: @depth; --fan-angle: @((depth - 4) * 8)deg"><CardBack /></span>
+                        }
+                    </div>
+                    <div class="deck-opening-tray deck-opening-tray--front" aria-hidden="true">
+                        <PackagingArt Markup="@_view.PackPresentation.Gloss.StarterDeckTraySvgMarkup" Label="" Decorative="true" />
+                    </div>
+                    @if (_ceremonyStage is DeckOpeningStage.Boxed or DeckOpeningStage.Unboxing)
+                    {
+                        <div class="deck-opening-box">
+                            <PackagingArt Markup="@_view.PackPresentation.Gloss.StarterDeckSvgMarkup" Label="" Decorative="true" />
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </section>
+}
+
 @code {
+    // Delays pace the deck-opening lid, pull, and fan animations in app.css.
+    private const int BoxMilliseconds = 950;
+    private const int UnboxMilliseconds = 900;
+    private const int DrawnMilliseconds = 3250;
+
     private ApplicationView? _view;
+    private PlayModeState? _mode;
+    private IJSObjectReference? _presentationModule;
+    private StarterDeckView? _ceremonyStarter;
+    private ElementReference _ceremonyDoneElement;
+    private DeckOpeningStage _ceremonyStage;
     private string? _error;
+    private string? _modeError;
+    private string? _operationError;
+    private string? _claimingStarterId;
+    private Guid? _commandId;
+    private int _ceremonySequence;
+    private bool _working;
+    private bool _choosingMode;
+    private bool _modeLoaded;
+    private bool _skipAnimations;
+    private bool _focusCeremonyDone;
 
     protected override async Task OnInitializedAsync()
+    {
+        _mode = await Modes.Mode();
+        _modeLoaded = true;
+        if (_mode.Selected is null)
+        {
+            return;
+        }
+        await Load();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _presentationModule = await Js.InvokeAsync<IJSObjectReference>("import", "./matchPresentation.js");
+            _skipAnimations = await _presentationModule.InvokeAsync<bool>("prefersReducedMotion");
+            return;
+        }
+
+        if (_focusCeremonyDone)
+        {
+            _focusCeremonyDone = false;
+            await _ceremonyDoneElement.FocusAsync();
+        }
+    }
+
+    private async Task ChooseMode(PlayMode mode)
+    {
+        _choosingMode = true;
+        _modeError = null;
+        var response = await Modes.SelectMode(mode);
+        _choosingMode = false;
+        if (!response.Succeeded)
+        {
+            _modeError = response.Error?.Message;
+            return;
+        }
+
+        _mode = response.Value;
+        _view = null;
+        _error = null;
+        await Load();
+    }
+
+    private async Task Load()
     {
         var response = await Api.State();
         if (response.Succeeded)
@@ -107,5 +335,104 @@ else
             return;
         }
         _error = response.Error?.Message;
+    }
+
+    private async Task Claim(string starterDeckId)
+    {
+        if (_claimingStarterId != starterDeckId)
+        {
+            _commandId = Guid.NewGuid();
+            _claimingStarterId = starterDeckId;
+        }
+
+        _working = true;
+        _operationError = null;
+        var response = await Api.ClaimStarterDeck(
+            new(_commandId ??= Guid.NewGuid(), starterDeckId)
+        );
+        _working = false;
+        if (!response.Succeeded)
+        {
+            _operationError = response.Error?.Message;
+            return;
+        }
+
+        _commandId = null;
+        _claimingStarterId = null;
+        _view = response.Value;
+        var starter = _view?.StarterDecks.FirstOrDefault(static starter => starter.IsClaimed);
+        if (starter is not null && !_skipAnimations)
+        {
+            await PlayDeckOpening(starter);
+        }
+    }
+
+    private async Task PlayDeckOpening(StarterDeckView starter)
+    {
+        _ceremonyStarter = starter;
+        var sequence = ++_ceremonySequence;
+        if (!await ShowCeremonyStage(DeckOpeningStage.Boxed, BoxMilliseconds, sequence)
+            || !await ShowCeremonyStage(DeckOpeningStage.Unboxing, UnboxMilliseconds, sequence)
+            || !await ShowCeremonyStage(DeckOpeningStage.Drawn, DrawnMilliseconds, sequence))
+        {
+            return;
+        }
+
+        _ceremonyStage = DeckOpeningStage.Spread;
+        _focusCeremonyDone = true;
+    }
+
+    private IEnumerable<CardView> CeremonyCards()
+    {
+        var cards = _view!.Cards.ToDictionary(static card => card.Id);
+        return _ceremonyStarter!.Entries.SelectMany(entry =>
+            Enumerable.Repeat(cards[entry.CardId], entry.Quantity)
+        );
+    }
+
+    private async Task<bool> ShowCeremonyStage(DeckOpeningStage stage, int milliseconds, int sequence)
+    {
+        _ceremonyStage = stage;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(milliseconds);
+        return sequence == _ceremonySequence;
+    }
+
+    private void CloseDeckOpening()
+    {
+        _ceremonySequence++;
+        _ceremonyStage = DeckOpeningStage.Closed;
+        _ceremonyStarter = null;
+    }
+
+    private string CeremonyStageClass() => _ceremonyStage.ToString().ToLowerInvariant();
+
+    private static string TypeClass(string type) => $"type-{type.ToLowerInvariant()}";
+
+    public async ValueTask DisposeAsync()
+    {
+        _ceremonySequence++;
+        if (_presentationModule is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _presentationModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The browser already released the module when the circuit ended.
+        }
+    }
+
+    private enum DeckOpeningStage
+    {
+        Closed,
+        Boxed,
+        Unboxing,
+        Drawn,
+        Spread,
     }
 }

@@ -1,6 +1,7 @@
 @page "/packs"
-@rendermode InteractiveAuto
-@inject BlokemonApiClient Api
+@implements IAsyncDisposable
+@inject IBlokemonApplication Api
+@inject IJSRuntime Js
 
 <PageTitle>Packs · Blokemon</PageTitle>
 
@@ -14,49 +15,198 @@ else if (_error is not null)
 }
 else if (_view!.Profile is null)
 {
-    <FailurePanel Title="Create a profile first." Message="A local profile owns pack entitlements and collection receipts." />
+    <FailurePanel Title="Create a player first." Message="Your packs and cards belong to this player." />
 }
 else
 {
-    <header class="topline"><div><span class="eyebrow">The bar stock</span><h1>Open a pack.</h1></div><span class="dev-badge">Pack receipt saved atomically</span></header>
-    <div class="grid two">
-        <div class="panel pack-stage">
-            <div>
-                <div class="pack"><small>Eleven card booster</small></div>
-                <div class="actions centered"><button class="primary" @onclick="Open" disabled="@(_opening || _view.Profile.UnopenedPacks == 0)">@PackButton()</button></div>
+    <header class="topline pack-topline">
+        <div><span class="eyebrow">The Oche · 11 cards</span><h1>Choose a pack.</h1></div>
+        <span class="pack-count-badge">@_view.Profile.UnopenedPacks left</span>
+    </header>
+
+    @if (_operationError is not null)
+    {
+        <FailurePanel Message="@_operationError" />
+    }
+
+    <section class="pack-shelf" aria-label="Choose a wrapper">
+        <button type="button"
+                class="pack-finish @(_stock == PackFinish.Gloss ? "selected" : null)"
+                aria-pressed="@(_stock == PackFinish.Gloss)"
+                @onclick="() => _stock = PackFinish.Gloss">
+            <PackagingArt Markup="@_view.PackPresentation.Gloss.BoosterSvgMarkup" Label="The Oche gloss foil booster" />
+            <span>Foil</span>
+        </button>
+        <button type="button"
+                class="pack-finish @(_stock == PackFinish.Kraft ? "selected" : null)"
+                aria-pressed="@(_stock == PackFinish.Kraft)"
+                @onclick="() => _stock = PackFinish.Kraft">
+            <PackagingArt Markup="@_view.PackPresentation.Kraft.BoosterSvgMarkup" Label="The Oche kraft booster" />
+            <span>Kraft</span>
+        </button>
+        <div class="pack-order">
+            <span class="eyebrow">@FinishName() · The Oche</span>
+            <h2>Open 11 cards.</h2>
+            <p>Select a wrapper. The pack saves before the animation starts.</p>
+            <label class="animation-choice">
+                <input type="checkbox" checked="@_skipAnimations" @onchange="SkipAnimationsChanged" />
+                <span>Skip opening animation</span>
+            </label>
+            <button class="primary" @onclick="Open" disabled="@(_opening || _stage != PackOpeningStage.Closed || _view.Profile.UnopenedPacks == 0)">@PackButton()</button>
+        </div>
+    </section>
+
+    @if (_view.LastPack is not null)
+    {
+        <section class="panel recent-pack">
+            <div class="panel-head"><div><span class="eyebrow">Last pack</span><h2>Pack @_view.LastPack.Sequence</h2></div><span>11 cards</span></div>
+            <div class="recent-pack-cards">
+                @foreach (var card in _view.LastPack.Cards)
+                {
+                    <div><CardFace Card="card" Size="CardFaceSize.Tiny" /><span>@card.Name</span></div>
+                }
             </div>
-        </div>
-        <div class="grid">
-            <div class="panel"><span class="eyebrow">Unopened</span><div class="pack-count">@_view.Profile.UnopenedPacks</div><p>Each pack has one Rare, three Uncommon and seven Common Blokemon. No repeats inside one pack.</p></div>
-            @if (_operationError is not null)
-            {
-                <FailurePanel Message="@_operationError" />
-            }
-            else if (_view.LastPack is not null)
-            {
-                <div class="notice">Receipt #@_view.LastPack.Sequence is committed. Retrying the same opening cannot grant it twice.</div>
-                <div class="panel">
-                    <div class="panel-head"><h2>Last pull</h2><span>11 cards</span></div>
-                    <div class="activity scroll-list">
-                        @foreach (var card in _view.LastPack.Cards)
-                        {
-                            <div class="activity-row"><img src="@card.ArtUrl" alt="" /><span><b>@card.Name</b><small>@card.Detail · copy @card.OwnedQuantity</small></span></div>
-                        }
-                    </div>
+        </section>
+    }
+}
+
+@if (_stage != PackOpeningStage.Closed && _openingReceipt is not null && _view is not null)
+{
+    <section class="opening-ceremony pack-opening--@StageClass()" aria-label="Opening The Oche booster pack">
+        <header class="opening-ceremony-head">
+            <span class="eyebrow">The Oche · Pack @_openingReceipt.Sequence</span>
+            <label class="animation-choice">
+                <input type="checkbox" checked="@_skipAnimations" @onchange="SkipAnimationsChanged" />
+                <span>Skip animation</span>
+            </label>
+        </header>
+
+        @if (_stage == PackOpeningStage.Summary)
+        {
+            <div class="opening-summary">
+                <div><span class="eyebrow">Your cards</span><h1>11 cards.</h1></div>
+                <div class="opening-summary-grid">
+                    @for (var index = 0; index < _openingReceipt.Cards.Length; index++)
+                    {
+                        var card = _openingReceipt.Cards[index];
+                        <div class="opening-summary-card" style="--summary-index: @index"><CardFace Card="card" Size="CardFaceSize.Catalogue" /><b>@card.Name</b></div>
+                    }
                 </div>
-            }
-        </div>
-    </div>
+                <button class="primary" @onclick="CloseOpening">Done</button>
+            </div>
+        }
+        else
+        {
+            <div class="opening-ceremony-stage">
+                <div class="opening-floor" aria-hidden="true"></div>
+
+                @if (_stage is PackOpeningStage.Sealed or PackOpeningStage.Tearing)
+                {
+                    <button type="button"
+                            @ref="_packElement"
+                            class="opening-pack"
+                            aria-label="@($"Tear the {FinishName()} booster open")"
+                            @onclick="TearPack">
+                        <span class="opening-pack-body">
+                            <span class="opening-pack-fray" aria-hidden="true"></span>
+                            <PackagingArt Markup="@SelectedStock().BoosterSvgMarkup" Label="" Class="opening-pack-art" Decorative="true" />
+                            <span class="opening-pack-strip" aria-hidden="true">
+                                <span class="opening-pack-strip-fray"></span>
+                                <PackagingArt Markup="@SelectedStock().BoosterSvgMarkup" Label="" Class="opening-pack-crimp" Decorative="true" />
+                            </span>
+                        </span>
+                        <span class="opening-pack-hint">Tap the pack to tear it open</span>
+                    </button>
+                }
+
+                @if (_stage is PackOpeningStage.Tearing or PackOpeningStage.Reveal)
+                {
+                    var stackCardCount = StackCardCount();
+                    @if (stackCardCount > 0)
+                    {
+                        <div class="opening-stack @(_stage == PackOpeningStage.Tearing ? "opening-stack--aligned" : null)" aria-hidden="true">
+                            @for (var index = 0; index < stackCardCount; index++)
+                            {
+                                var depth = stackCardCount - index - 1;
+                                <span class="opening-stack-card" style="@StackCardStyle(depth)"><CardBack /></span>
+                            }
+                        </div>
+                    }
+                }
+
+                @if (_stage == PackOpeningStage.Reveal)
+                {
+                    var card = _openingReceipt.Cards[_revealIndex];
+                    <button @key="_revealIndex"
+                            type="button"
+                            @ref="_revealCardElement"
+                            class="pack-reveal-card @(_revealIndex == 0 ? "pack-reveal-card--first" : null) @(_cardFaceUp ? "is-face-up" : null) @(_cardLeaving ? "is-leaving" : null)"
+                            aria-label="@(_cardFaceUp ? NextLabel() : "Turn the card over")"
+                            @onclick="TapCard">
+                        <div class="reveal-flip">
+                            <div class="reveal-flip-back"><CardBack /></div>
+                            <div class="reveal-flip-front"><CardFace Card="card" Size="CardFaceSize.Showcase" ShowTitle="false" Decorative="true" /></div>
+                        </div>
+                    </button>
+                    <div class="opening-ceremony-copy" aria-live="polite">
+                        <span class="eyebrow">Card @(_revealIndex + 1) of @_openingReceipt.Cards.Length</span>
+                        <h1>@(_cardFaceUp ? card.Name : "Turn it over…")</h1>
+                        <button class="primary" @onclick="NextCard" disabled="@(!_cardFaceUp || _cardLeaving)">@NextLabel()</button>
+                    </div>
+                }
+            </div>
+        }
+    </section>
 }
 
 @code {
+    // Delays mirror the pack-tear-away and card-leave timings in app.css.
+    private const int TearMilliseconds = 2200;
+    private const int LeaveMilliseconds = 420;
+
     private ApplicationView? _view;
+    private PackReceiptView? _openingReceipt;
+    private IJSObjectReference? _presentationModule;
+    private ElementReference _packElement;
+    private ElementReference _revealCardElement;
+    private PackOpeningStage _stage;
+    private PackFinish _stock;
     private string? _error;
     private string? _operationError;
-    private bool _opening;
     private Guid? _commandId;
+    private int _sequence;
+    private int _revealIndex;
+    private bool _opening;
+    private bool _skipAnimations;
+    private bool _cardFaceUp;
+    private bool _cardLeaving;
+    private bool _focusPack;
+    private bool _focusRevealCard;
 
     protected override async Task OnInitializedAsync() => await Load();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _presentationModule = await Js.InvokeAsync<IJSObjectReference>("import", "./matchPresentation.js");
+            _skipAnimations = await _presentationModule.InvokeAsync<bool>("prefersReducedMotion");
+            StateHasChanged();
+            return;
+        }
+
+        if (_focusPack)
+        {
+            _focusPack = false;
+            await _packElement.FocusAsync();
+        }
+
+        if (_focusRevealCard)
+        {
+            _focusRevealCard = false;
+            await _revealCardElement.FocusAsync();
+        }
+    }
 
     private async Task Load()
     {
@@ -78,15 +228,171 @@ else
         _commandId ??= Guid.NewGuid();
         var response = await Api.OpenPack(new(_commandId.Value));
         _opening = false;
-        if (!response.Succeeded)
+        if (!response.Succeeded || response.Value?.LastPack is null)
         {
-            _operationError = response.Error?.Message;
+            _operationError = response.Error?.Message ?? "That pack did not open. Try again.";
             return;
         }
+
         _commandId = null;
         _view = response.Value;
+        _openingReceipt = response.Value.LastPack;
+        _revealIndex = 0;
+        _cardFaceUp = false;
+        _cardLeaving = false;
+        _sequence++;
+        if (_skipAnimations)
+        {
+            _stage = PackOpeningStage.Summary;
+            return;
+        }
+
+        _stage = PackOpeningStage.Sealed;
+        _focusPack = true;
+    }
+
+    private async Task TearPack()
+    {
+        if (_stage != PackOpeningStage.Sealed)
+        {
+            return;
+        }
+
+        var sequence = _sequence;
+        _stage = PackOpeningStage.Tearing;
+        await Task.Delay(TearMilliseconds);
+        if (sequence != _sequence || _skipAnimations)
+        {
+            return;
+        }
+
+        _stage = PackOpeningStage.Reveal;
+        _cardFaceUp = false;
+        _cardLeaving = false;
+        _focusRevealCard = true;
+    }
+
+    private async Task TapCard()
+    {
+        if (_cardLeaving)
+        {
+            return;
+        }
+
+        if (!_cardFaceUp)
+        {
+            _cardFaceUp = true;
+            return;
+        }
+
+        await NextCard();
+    }
+
+    private async Task NextCard()
+    {
+        if (_openingReceipt is null || !_cardFaceUp || _cardLeaving)
+        {
+            return;
+        }
+
+        var sequence = _sequence;
+        _cardLeaving = true;
+        await Task.Delay(LeaveMilliseconds);
+        if (sequence != _sequence)
+        {
+            return;
+        }
+
+        if (_revealIndex == _openingReceipt.Cards.Length - 1)
+        {
+            _stage = PackOpeningStage.Summary;
+            _cardFaceUp = false;
+            _cardLeaving = false;
+            return;
+        }
+
+        _revealIndex++;
+        _cardFaceUp = false;
+        _cardLeaving = false;
+        _focusRevealCard = true;
+    }
+
+    private void SkipAnimationsChanged(ChangeEventArgs eventArgs)
+    {
+        _skipAnimations = Convert.ToBoolean(eventArgs.Value);
+        if (_skipAnimations && _stage != PackOpeningStage.Closed)
+        {
+            _sequence++;
+            _stage = PackOpeningStage.Summary;
+            _cardFaceUp = false;
+            _cardLeaving = false;
+        }
+    }
+
+    private void CloseOpening()
+    {
+        _sequence++;
+        _stage = PackOpeningStage.Closed;
+        _openingReceipt = null;
+        _cardFaceUp = false;
+        _cardLeaving = false;
+    }
+
+    private PackStockPresentationView SelectedStock() =>
+        _stock == PackFinish.Gloss ? _view!.PackPresentation.Gloss : _view!.PackPresentation.Kraft;
+
+    private string FinishName() => _stock == PackFinish.Gloss ? "Foil" : "Kraft";
+
+    private string StageClass() => _stage.ToString().ToLowerInvariant();
+
+    private string NextLabel() =>
+        _revealIndex == (_openingReceipt?.Cards.Length ?? 0) - 1 ? "See all cards" : "Next card";
+
+    private int StackCardCount() =>
+        _stage == PackOpeningStage.Tearing
+            ? _openingReceipt?.Cards.Length ?? 0
+            : Math.Max(0, (_openingReceipt?.Cards.Length ?? 0) - _revealIndex - 1);
+
+    private static string StackCardStyle(int depth)
+    {
+        var step = (depth + 1) / 2;
+        var direction = depth % 2 == 0 ? 1 : -1;
+        return $"--stack-x: {step * direction * 3}px; --stack-y: {depth}px; --stack-angle: {step * direction}deg";
     }
 
     private string PackButton() =>
         _opening ? "Opening…" : _view?.Profile?.UnopenedPacks == 0 ? "No packs left" : "Open pack";
+
+    public async ValueTask DisposeAsync()
+    {
+        _sequence++;
+        if (_presentationModule is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _presentationModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The browser already released the module when the circuit ended.
+        }
+    }
+
+    private enum PackFinish
+    {
+        Gloss,
+        Kraft,
+    }
+
+    private enum PackOpeningStage
+    {
+        Closed,
+        Sealed,
+        Tearing,
+        Reveal,
+        Summary,
+    }
 }

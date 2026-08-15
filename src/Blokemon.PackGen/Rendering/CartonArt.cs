@@ -11,6 +11,8 @@ public static class CartonArt
     private const double _stage = 640d;
     private const double _pitch = -14d;
     private const double _yaw = -27d;
+    private const double _gauge = 7d;
+    private const double _seat = 14d;
 
     /// <summary>Draws a carton.</summary>
     /// <param name="pack">The pack to draw.</param>
@@ -48,20 +50,58 @@ public static class CartonArt
         );
     }
 
-    private static string Defs(Palette palette) =>
-        string.Concat(
+    /// <summary>Draws the open inner tray the carton's lid slides off.</summary>
+    /// <param name="pack">The pack whose tray is drawn.</param>
+    /// <param name="profile">The profile printing it.</param>
+    /// <returns>The document.</returns>
+    public static string DrawTray(Pack pack, PackProfile profile)
+    {
+        ArgumentNullException.ThrowIfNull(pack);
+        ArgumentNullException.ThrowIfNull(profile);
+
+        var palette = Palette.For(pack.MaterialUnder(profile.Stock));
+
+        var art = string.Concat(
+            Cast(),
             string.Concat(
-                Faces()
-                    .Select(face =>
-                        Svg.Linear(
-                            $"stock-{face.Name}",
-                            palette.StockAngle,
-                            face.Across,
-                            face.Down,
-                            palette.Stock
-                        )
-                    )
-            ),
+                TrayFaces()
+                    .Where(face => Rotate(face.Normal).Z > 0d)
+                    .OrderBy(face => Rotate(face.Centre).Z)
+                    .Select(face => TrayFace(face, palette))
+            )
+        );
+
+        return Document.Wrap(
+            0d,
+            0d,
+            _stage,
+            _stage,
+            $"{profile.Noun} {profile.Name(pack.Key)} inner tray",
+            string.Concat(StockDefs(TrayFaces(), palette), SurfaceDefs(palette)),
+            art,
+            string.Empty,
+            $"{pack.Key.Slug()}-tray-{profile.Stock.ToString().ToLowerInvariant()}"
+        );
+    }
+
+    private static string Defs(Palette palette) =>
+        string.Concat(StockDefs(Faces(), palette), SurfaceDefs(palette), PrintedFace.Defs());
+
+    private static string StockDefs(Panel[] faces, Palette palette) =>
+        string.Concat(
+            faces.Select(face =>
+                Svg.Linear(
+                    $"stock-{face.Name}",
+                    palette.StockAngle,
+                    face.Across,
+                    face.Down,
+                    palette.Stock
+                )
+            )
+        );
+
+    private static string SurfaceDefs(Palette palette) =>
+        string.Concat(
             """<linearGradient id="carton-form" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.07"/><stop offset="0.3" stop-color="#000000" stop-opacity="0"/><stop offset="1" stop-color="#000000" stop-opacity="0.16"/></linearGradient>""",
             """<radialGradient id="ground"><stop offset="0" stop-color="#0a0802" stop-opacity="0.55"/><stop offset="0.68" stop-color="#0a0802" stop-opacity="0"/></radialGradient>""",
             """<filter id="soften"><feGaussianBlur stdDeviation="7"/></filter>""",
@@ -70,26 +110,11 @@ public static class CartonArt
                     Svg.Stripes("fibre-warp", 72d, 4d, 1d, "#5a3c14", 0.14d),
                     Svg.Stripes("fibre-weft", -64d, 6d, 1d, "#5a3c14", 0.10d)
                 )
-                : string.Empty,
-            PrintedFace.Defs()
+                : string.Empty
         );
 
     private static string Face(Panel panel, Pack pack, PackProfile profile, Palette palette)
     {
-        var origin = Project(panel.At(0d, 0d));
-        var across = Project(panel.At(panel.Across, 0d));
-        var down = Project(panel.At(0d, panel.Down));
-
-        var matrix = string.Join(
-            " ",
-            Svg.N((across.X - origin.X) / panel.Across),
-            Svg.N((across.Y - origin.Y) / panel.Across),
-            Svg.N((down.X - origin.X) / panel.Down),
-            Svg.N((down.Y - origin.Y) / panel.Down),
-            Svg.N(origin.X),
-            Svg.N(origin.Y)
-        );
-
         var content = string.Concat(
             Svg.Rect(0d, 0d, panel.Across, panel.Down, Svg.Url($"stock-{panel.Name}")),
             Grain(panel, palette),
@@ -99,7 +124,37 @@ public static class CartonArt
             Core(panel)
         );
 
-        return $"""<g transform="matrix({matrix})">{content}</g>""";
+        return $"""<g transform="matrix({Matrix(panel)})">{content}</g>""";
+    }
+
+    private static string TrayFace(Panel panel, Palette palette)
+    {
+        var content = string.Concat(
+            Svg.Rect(0d, 0d, panel.Across, panel.Down, Svg.Url($"stock-{panel.Name}")),
+            Grain(panel, palette),
+            Svg.Rect(0d, 0d, panel.Across, panel.Down, Svg.Url("carton-form")),
+            Shade(panel),
+            Rim(panel)
+        );
+
+        return $"""<g transform="matrix({Matrix(panel)})">{content}</g>""";
+    }
+
+    private static string Matrix(Panel panel)
+    {
+        var origin = Project(panel.At(0d, 0d));
+        var across = Project(panel.At(panel.Across, 0d));
+        var down = Project(panel.At(0d, panel.Down));
+
+        return string.Join(
+            " ",
+            Svg.N((across.X - origin.X) / panel.Across),
+            Svg.N((across.Y - origin.Y) / panel.Across),
+            Svg.N((down.X - origin.X) / panel.Down),
+            Svg.N((down.Y - origin.Y) / panel.Down),
+            Svg.N(origin.X),
+            Svg.N(origin.Y)
+        );
     }
 
     private static string Grain(Panel panel, Palette palette) =>
@@ -138,6 +193,20 @@ public static class CartonArt
             "front" =>
                 $"""{Svg.Rect(panel.Across - 1d, 0d, 1d, panel.Down, "#ffffff", " fill-opacity=\"0.34\"")}{Svg.Rect(0d, 0d, panel.Across, 1d, "#ffffff", " fill-opacity=\"0.3\"")}""",
             "side" => Svg.Rect(0d, 0d, 1d, panel.Down, "#ffffff", " fill-opacity=\"0.18\""),
+            _ => string.Empty,
+        };
+
+    // The cut board core runs around the whole opening, which is what reads as an open tray
+    // rather than a shorter closed box.
+    private static string Rim(Panel panel) =>
+        panel.Name switch
+        {
+            "tray-front" =>
+                $"""{Svg.Rect(0d, 0d, panel.Across, 1.4d, "#ffffff", " fill-opacity=\"0.34\"")}{Svg.Rect(panel.Across - 1d, 0d, 1d, panel.Down, "#ffffff", " fill-opacity=\"0.3\"")}""",
+            "tray-side" =>
+                $"""{Svg.Rect(0d, 0d, panel.Across, 1.4d, "#ffffff", " fill-opacity=\"0.26\"")}{Svg.Rect(0d, 0d, 1d, panel.Down, "#ffffff", " fill-opacity=\"0.18\"")}""",
+            "tray-back" => Svg.Rect(0d, 0d, panel.Across, 1.4d, "#fffcf0", " fill-opacity=\"0.2\""),
+            "tray-left" => Svg.Rect(0d, 0d, panel.Across, 1.4d, "#fffcf0", " fill-opacity=\"0.16\""),
             _ => string.Empty,
         };
 
@@ -183,6 +252,70 @@ public static class CartonArt
                 0.72d
             ),
         ];
+
+    // The tray keeps the carton's rig, so the lid art and the tray art line up exactly when one
+    // is drawn over the other. It is a board gauge smaller on every side, seats below the lid's
+    // top, and shows its shaded interior through the open mouth.
+    private static Panel[] TrayFaces()
+    {
+        var width = _width - (2d * _gauge);
+        var depth = _depth - (2d * _gauge);
+        var down = _height - _seat;
+        var rim = (_height / 2d) - down;
+        var innerWidth = width - (2d * _gauge);
+        var innerDepth = depth - (2d * _gauge);
+        var floor = (_height / 2d) - _gauge;
+        var cavity = floor - rim;
+
+        return
+        [
+            new Panel(
+                "tray-front",
+                width,
+                down,
+                (0d, 0d, 1d),
+                (u, v) => (u - (width / 2d), v + rim, depth / 2d),
+                null,
+                0d
+            ),
+            new Panel(
+                "tray-side",
+                depth,
+                down,
+                (1d, 0d, 0d),
+                (u, v) => (width / 2d, v + rim, (depth / 2d) - u),
+                "#060a04",
+                0.46d
+            ),
+            new Panel(
+                "tray-left",
+                innerDepth,
+                cavity,
+                (1d, 0d, 0d),
+                (u, v) => (-(innerWidth / 2d), v + rim, (innerDepth / 2d) - u),
+                "#030c07",
+                0.58d
+            ),
+            new Panel(
+                "tray-back",
+                innerWidth,
+                cavity,
+                (0d, 0d, 1d),
+                (u, v) => (u - (innerWidth / 2d), v + rim, -(innerDepth / 2d)),
+                "#04100a",
+                0.5d
+            ),
+            new Panel(
+                "tray-floor",
+                innerWidth,
+                innerDepth,
+                (0d, -1d, 0d),
+                (u, v) => (u - (innerWidth / 2d), floor, (innerDepth / 2d) - v),
+                "#020805",
+                0.66d
+            ),
+        ];
+    }
 
     // The rig turns the box and the projection is orthographic, which keeps every face an exact
     // parallelogram so its printing maps onto it without distortion.

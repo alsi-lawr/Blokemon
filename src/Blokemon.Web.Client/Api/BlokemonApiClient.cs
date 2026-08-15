@@ -7,7 +7,13 @@ public sealed record ApiError(string Code, string Message);
 
 public sealed record ApiResponse<T>(bool Succeeded, T? Value, ApiError? Error);
 
-public sealed record ProfileView(Guid Id, string DisplayName, long Revision, int UnopenedPacks);
+public sealed record ProfileView(
+    Guid Id,
+    string DisplayName,
+    long Revision,
+    int UnopenedPacks,
+    string? StarterDeckId
+);
 
 public enum CardKindView
 {
@@ -16,13 +22,30 @@ public enum CardKindView
     BasicVim,
 }
 
+public enum CardRuleKindView
+{
+    Ability,
+    Attack,
+    Rule,
+    Energy,
+}
+
+public sealed record CardRuleView(
+    CardRuleKindView Kind,
+    string Name,
+    string? Text,
+    string[] EnergyCost,
+    int? Damage
+);
+
 public sealed record CardView(
     string Id,
     string Name,
     CardKindView Kind,
     string Type,
     string Detail,
-    string ArtUrl,
+    string FaceHtml,
+    CardRuleView[] Rules,
     int OwnedQuantity,
     bool FreelyAvailable
 );
@@ -37,21 +60,47 @@ public sealed record DeckView(
     long Revision,
     DeckEntryView[] Entries,
     bool IsLegal,
-    string[] Errors
+    string[] Errors,
+    string[] Warnings
 )
 {
     public int CardCount => Entries.Sum(static entry => entry.Quantity);
 }
 
+public sealed record StarterDeckView(
+    string Id,
+    string Name,
+    string Type,
+    string Role,
+    string Description,
+    CardView Leader,
+    DeckEntryView[] Entries,
+    int BlokemonCount,
+    int TrainerCount,
+    int EnergyCount,
+    bool IsClaimed
+);
+
+public sealed record PackStockPresentationView(
+    string BoosterSvgMarkup,
+    string StarterDeckSvgMarkup,
+    string StarterDeckTraySvgMarkup
+);
+
+public sealed record PackPresentationView(
+    PackStockPresentationView Gloss,
+    PackStockPresentationView Kraft
+);
+
 public sealed record MatchSideView(
     string Name,
-    int StackCount,
-    int MittCount,
-    int BarChits,
-    CardView? Oche,
-    CardView[] Booth,
-    int Damage,
-    int PrintedStayingPower,
+    string DeckName,
+    int DeckCount,
+    int HandCount,
+    int PrizeCards,
+    MatchCardInstanceView? Active,
+    MatchCardInstanceView[] Bench,
+    MatchCardInstanceView[] Hand,
     bool HasTurn
 );
 
@@ -73,7 +122,12 @@ public sealed record MatchCardInstanceView(
     CardView Card,
     string OwnerName,
     string Zone,
-    int Damage
+    int Damage,
+    int HitPoints,
+    CardView[] AttachedEnergy,
+    CardView[] AttachedTools,
+    CardView[] UnderlyingCards,
+    string[] Conditions
 );
 
 public sealed record MatchMechanicalTypeOptionView(string Value, string Label);
@@ -100,36 +154,118 @@ public sealed record MatchChoiceRequirementView(
 
 public sealed record MatchActionView(
     string Id,
+    MatchActionKindView Kind,
     string Label,
     bool Primary,
+    string? SourceCardInstanceId,
+    string? TargetCardInstanceId,
+    string? EffectId,
     MatchChoiceRequirementView[] ChoiceRequirements
 );
 
-public sealed record MatchView(
+public enum MatchActionKindView
+{
+    ChooseMulliganBonus,
+    ChooseOpening,
+    ChooseReplacement,
+    AttachEnergy,
+    PlayBlokemon,
+    Evolve,
+    PlayTrainer,
+    UseAbility,
+    Attack,
+    Retreat,
+    DiscardFossil,
+    EndTurn,
+    ResolveChoice,
+    ResolveKnockout,
+    TakePrize,
+}
+
+public sealed record MatchAttackView(
+    string SourceCardInstanceId,
+    string EffectId,
+    string Name,
+    string[] EnergyCost,
+    int PrintedDamage,
+    string? ActionId,
+    string? DisabledReason
+);
+
+public sealed record MatchFrameView(
     Guid Id,
     long Revision,
     int Round,
     string Status,
     MatchSideView Opponent,
     MatchSideView Player,
-    MatchActionView[] LegalActions,
-    string[] RecentEvents,
     bool IsComplete,
     string? Winner
 );
+
+public sealed record MatchView(
+    MatchFrameView Frame,
+    MatchActionView[] LegalActions,
+    MatchAttackView[] Attacks,
+    string[] RecentEvents
+);
+
+public enum MatchAnimationKindView
+{
+    Setup,
+    Shuffle,
+    Draw,
+    Play,
+    Attach,
+    Evolve,
+    Attack,
+    Damage,
+    Heal,
+    Condition,
+    Knockout,
+    Prize,
+    Turn,
+    Coin,
+    Victory,
+    Other,
+}
+
+public sealed record MatchEventCueView(
+    long Sequence,
+    MatchAnimationKindView Kind,
+    string Label,
+    string? SourceCardInstanceId,
+    string[] TargetCardInstanceIds,
+    int Amount,
+    bool? BadgeSide,
+    bool? ActorIsLocalPlayer
+);
+
+public sealed record MatchPresentationStepView(MatchFrameView Frame, MatchEventCueView[] Events);
+
+public sealed record MatchPresentationView(MatchPresentationStepView[] Steps);
 
 public sealed record ApplicationView(
     ProfileView? Profile,
     CardView[] Cards,
     DeckView[] Decks,
+    StarterDeckView[] StarterDecks,
+    PackPresentationView PackPresentation,
     PackReceiptView? LastPack,
     MatchView? Match,
     ApiError? MatchError
 );
 
+public sealed record MatchMutationView(
+    ApplicationView Application,
+    MatchPresentationView? Presentation
+);
+
 public sealed record CreateProfileRequest(Guid CommandId, string DisplayName);
 
 public sealed record OpenPackRequest(Guid CommandId);
+
+public sealed record ClaimStarterDeckRequest(Guid CommandId, string StarterDeckId);
 
 public sealed record SaveDeckRequest(
     Guid CommandId,
@@ -164,7 +300,43 @@ public sealed record MatchChoiceSelectionRequest(
     MatchAttachmentRequest[] Attachments
 );
 
-public sealed class BlokemonApiClient(HttpClient http)
+public interface IBlokemonApplication
+{
+    Task<ApiResponse<ApplicationView>> State(CancellationToken cancellationToken = default);
+
+    Task<ApiResponse<ApplicationView>> CreateProfile(
+        CreateProfileRequest request,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<ApiResponse<ApplicationView>> OpenPack(
+        OpenPackRequest request,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<ApiResponse<ApplicationView>> ClaimStarterDeck(
+        ClaimStarterDeckRequest request,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<ApiResponse<ApplicationView>> SaveDeck(
+        SaveDeckRequest request,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<ApiResponse<MatchMutationView>> StartMatch(
+        StartMatchRequest request,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<ApiResponse<MatchMutationView>> ApplyMatchAction(
+        Guid matchId,
+        ApplyMatchActionRequest request,
+        CancellationToken cancellationToken = default
+    );
+}
+
+public sealed class BlokemonApiClient(HttpClient http) : IBlokemonApplication
 {
     public Task<ApiResponse<ApplicationView>> State(
         CancellationToken cancellationToken = default
@@ -180,22 +352,32 @@ public sealed class BlokemonApiClient(HttpClient http)
         CancellationToken cancellationToken = default
     ) => Post<OpenPackRequest, ApplicationView>("api/packs/open", request, cancellationToken);
 
+    public Task<ApiResponse<ApplicationView>> ClaimStarterDeck(
+        ClaimStarterDeckRequest request,
+        CancellationToken cancellationToken = default
+    ) =>
+        Post<ClaimStarterDeckRequest, ApplicationView>(
+            "api/starter-decks/claim",
+            request,
+            cancellationToken
+        );
+
     public Task<ApiResponse<ApplicationView>> SaveDeck(
         SaveDeckRequest request,
         CancellationToken cancellationToken = default
     ) => Post<SaveDeckRequest, ApplicationView>("api/decks", request, cancellationToken);
 
-    public Task<ApiResponse<ApplicationView>> StartMatch(
+    public Task<ApiResponse<MatchMutationView>> StartMatch(
         StartMatchRequest request,
         CancellationToken cancellationToken = default
-    ) => Post<StartMatchRequest, ApplicationView>("api/matches", request, cancellationToken);
+    ) => Post<StartMatchRequest, MatchMutationView>("api/matches", request, cancellationToken);
 
-    public Task<ApiResponse<ApplicationView>> ApplyMatchAction(
+    public Task<ApiResponse<MatchMutationView>> ApplyMatchAction(
         Guid matchId,
         ApplyMatchActionRequest request,
         CancellationToken cancellationToken = default
     ) =>
-        Post<ApplyMatchActionRequest, ApplicationView>(
+        Post<ApplyMatchActionRequest, MatchMutationView>(
             $"api/matches/{matchId:D}/actions",
             request,
             cancellationToken
