@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Blokemon.Web.Application;
 using Blokemon.Web.Client.Api;
 using Blokemon.Web.Content;
@@ -56,6 +57,144 @@ public sealed class StateDocumentStoreTests
         await Assert.That(restored.Profile!.UnopenedPacks).IsEqualTo(9);
         await Assert.That(restored.LastPack!.Sequence).IsEqualTo(1);
         await Assert.That(restored.Decks.Single().CardCount).IsEqualTo(60);
+    }
+
+    [Test]
+    public async Task HistoricalCardsRemainResolvableAcrossPersistedViews()
+    {
+        await using var database = await TestDatabase.Create();
+        var catalogue = BlokemonCatalogue.Load(Path.Combine(AppContext.BaseDirectory, "content"));
+        var store = new StateDocumentStore(database);
+        var application = Application(catalogue, store);
+        var profileCommand = Guid.Parse("41111111-1111-1111-1111-111111111111");
+        var packCommand = Guid.Parse("42222222-2222-2222-2222-222222222222");
+        var deckCommand = Guid.Parse("43333333-3333-3333-3333-333333333333");
+        Value(await application.CreateProfile(new(profileCommand, "Local Player")));
+        Value(await application.OpenPack(new(packCommand)));
+        Value(
+            await application.SaveDeck(
+                new(
+                    deckCommand,
+                    null,
+                    null,
+                    "Historical deck",
+                    [new("BLK-001", 1), new("VIM-DODGY", 59)]
+                )
+            )
+        );
+        var original = (await store.Read("profile"))!;
+        var document = JsonNode.Parse(original.Json)!.AsObject();
+        var profile = document["profile"]!.AsObject();
+        profile["authorityManifestVersion"] = "historical-manifest";
+        var sampledCards = profile["packReceipts"]![0]!["sampledCollectibleIds"]!.AsArray();
+        var replacedCardId = sampledCards[0]!.GetValue<string>();
+        const string historicalCollectibleId = "HISTORICAL-COLLECTIBLE";
+        const string historicalDeckCardId = "HISTORICAL-DECK-CARD";
+        sampledCards[0] = historicalCollectibleId;
+        var ownership = profile["collectibleOwnership"]!.AsArray();
+        var replacedOwnership = ownership
+            .Select(static item => item!.AsObject())
+            .Single(item => item["cardId"]!.GetValue<string>() == replacedCardId);
+        var remainingQuantity = replacedOwnership["quantity"]!.GetValue<int>() - 1;
+        if (remainingQuantity == 0)
+        {
+            ownership.Remove(replacedOwnership);
+        }
+        else
+        {
+            replacedOwnership["quantity"] = remainingQuantity;
+        }
+        ownership.Add(new JsonObject { ["cardId"] = historicalCollectibleId, ["quantity"] = 1 });
+        var deckCards = profile["savedDecks"]![0]!["cards"]!.AsArray();
+        deckCards
+            .Select(static item => item!.AsObject())
+            .Single(item => item["cardId"]!.GetValue<string>() == "VIM-DODGY")["cardId"] =
+            historicalDeckCardId;
+        await store.Update("profile", original.Revision, document.ToJsonString());
+        var historical = (await store.Read("profile"))!;
+
+        var restored = Value(await Application(catalogue, store).State());
+        var after = await store.Read("profile");
+        var deck = restored.Decks.Single();
+        var historicalCollectible = restored.Cards.Single(card =>
+            card.Id == historicalCollectibleId
+        );
+        var historicalDeckCard = restored.Cards.Single(card => card.Id == historicalDeckCardId);
+
+        await Assert.That(deck.IsLegal).IsFalse();
+        foreach (var entry in deck.Entries)
+        {
+            await Assert.That(restored.Cards.Count(card => card.Id == entry.CardId)).IsEqualTo(1);
+        }
+        await Assert.That(historicalCollectible.OwnedQuantity).IsEqualTo(1);
+        await Assert.That(historicalCollectible.ArtUrl).IsEqualTo("/art/card-back.svg");
+        await Assert.That(historicalDeckCard.OwnedQuantity).IsEqualTo(0);
+        await Assert.That(historicalDeckCard.FreelyAvailable).IsFalse();
+        await Assert.That(historicalDeckCard.ArtUrl).IsEqualTo("/art/card-back.svg");
+        await Assert
+            .That(restored.LastPack!.Cards.Any(card => card.Id == historicalCollectibleId))
+            .IsTrue();
+        await Assert
+            .That(restored.Cards.Single(card => card.Id == "BLK-001").Type)
+            .IsNotEqualTo("Historical");
+        await Assert.That(after).IsEqualTo(historical);
+    }
+
+    [Test]
+    [Arguments("profile")]
+    [Arguments("deck")]
+    [Arguments("receipt")]
+    public async Task PersistedNonGuidWebIdentity_IsTypedAndNonMutating(string identity)
+    {
+        await using var database = await TestDatabase.Create();
+        var catalogue = BlokemonCatalogue.Load(Path.Combine(AppContext.BaseDirectory, "content"));
+        var store = new StateDocumentStore(database);
+        var application = Application(catalogue, store);
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("51111111-1111-1111-1111-111111111111"), "Local Player")
+            )
+        );
+        Value(await application.OpenPack(new(Guid.Parse("52222222-2222-2222-2222-222222222222"))));
+        Value(await application.OpenPack(new(Guid.Parse("52222222-2222-2222-2222-222222222223"))));
+        Value(
+            await application.SaveDeck(
+                new(
+                    Guid.Parse("53333333-3333-3333-3333-333333333333"),
+                    null,
+                    null,
+                    "Local deck",
+                    [new("BLK-001", 1), new("VIM-DODGY", 59)]
+                )
+            )
+        );
+        var original = (await store.Read("profile"))!;
+        var document = JsonNode.Parse(original.Json)!.AsObject();
+        var profile = document["profile"]!.AsObject();
+        switch (identity)
+        {
+            case "profile":
+                profile["profileId"] = "not-a-guid";
+                break;
+            case "deck":
+                profile["savedDecks"]![0]!["deckId"] = "not-a-guid";
+                break;
+            case "receipt":
+                profile["packReceipts"]![0]!["receiptId"] = "not-a-guid";
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(identity));
+        }
+        await store.Update("profile", original.Revision, document.ToJsonString());
+        var invalid = (await store.Read("profile"))!;
+
+        var response = await Application(catalogue, store).State();
+        var after = await store.Read("profile");
+
+        await Assert.That(response.Succeeded).IsFalse();
+        await Assert.That(response.Error!.Code).IsEqualTo("state.invalid");
+        await Assert.That(response.Value).IsNull();
+        await Assert.That(after).IsEqualTo(invalid);
     }
 
     [Test]
@@ -132,6 +271,11 @@ public sealed class StateDocumentStoreTests
             return ValueTask.CompletedTask;
         }
     }
+
+    private static LocalApplicationService Application(
+        BlokemonCatalogue catalogue,
+        StateDocumentStore store
+    ) => new(catalogue, store, new LocalMatchService(catalogue, store));
 
     private static T Value<T>(ApiResponse<T> response)
         where T : class

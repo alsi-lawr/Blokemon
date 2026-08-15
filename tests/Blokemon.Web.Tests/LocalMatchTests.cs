@@ -1,3 +1,6 @@
+using System.Text.Json;
+using Blokemon.Core.SetDesign;
+using Blokemon.Product;
 using Blokemon.Web.Application;
 using Blokemon.Web.Client.Api;
 using Blokemon.Web.Content;
@@ -20,20 +23,43 @@ public sealed class LocalMatchTests
     private static readonly Guid _matchCommand = Guid.Parse("30000000-0000-0000-0000-000000000001");
 
     [Test]
-    public async Task Restart_ReplaysTheActiveMatchAlongsideProfileAndDeck()
+    public async Task Restart_PreservesNonEmptyHumanOpeningAndVisibleState()
     {
         await using var database = await TestDatabase.Create();
-        var fixture = await ReadyFixture.Create(database);
+        var fixture = await ReadyFixture.CreateOpeningChoice(database);
         var started = Value(
             await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
         );
         var opening = await AdvanceToOpeningChoice(fixture.Application, started);
-        var applied = Value(
-            await fixture.Application.ApplyMatchAction(
-                opening.Match!.Id,
-                RequestFor(opening.Match, OpeningAction(opening.Match), Guid.NewGuid())
-            )
+        var openingMatch = opening.Match!;
+        var action = OpeningAction(openingMatch);
+        var request = RequestFor(openingMatch, action, Guid.NewGuid());
+        var selectedOcheId = action.Id["opening:".Length..];
+        var selectedOche = openingMatch
+            .LegalActions.SelectMany(static candidate => candidate.ChoiceRequirements)
+            .SelectMany(static requirement => requirement.EligibleCards)
+            .First(card => card.Id == selectedOcheId);
+        var boothRequirement = action.ChoiceRequirements.Single(requirement =>
+            requirement.Id == "opening:booth"
         );
+        var eligibleBooth = boothRequirement
+            .EligibleCards.Where(card => card.Id != selectedOche.Id)
+            .ToArray();
+        await Assert.That(eligibleBooth.Length).IsGreaterThan(0);
+        var selectedBooth = eligibleBooth[0];
+        var humanBoothSelection = SelectionFor(boothRequirement) with
+        {
+            CardInstanceIds = [selectedBooth.Id],
+        };
+        request = request with
+        {
+            Choices = request
+                .Choices.Select(choice =>
+                    choice.Id == boothRequirement.Id ? humanBoothSelection : choice
+                )
+                .ToArray(),
+        };
+        var applied = Value(await fixture.Application.ApplyMatchAction(openingMatch.Id, request));
 
         var restarted = fixture.Restart();
         var restored = Value(await restarted.State());
@@ -41,8 +67,11 @@ public sealed class LocalMatchTests
         await Assert.That(restored.Profile!.Id).IsEqualTo(applied.Profile!.Id);
         await Assert.That(restored.Decks.Single().Id).IsEqualTo(_firstDeckCommand);
         await Assert.That(restored.Match!.Id).IsEqualTo(applied.Match!.Id);
-        await Assert.That(restored.Match.Revision).IsEqualTo(applied.Match.Revision);
-        await Assert.That(restored.Match.Status).IsEqualTo(applied.Match.Status);
+        await Assert.That(applied.Match.Player.Oche!.Id).IsEqualTo(selectedOche.Card.Id);
+        await Assert
+            .That(applied.Match.Player.Booth.Select(static card => card.Id))
+            .Contains(selectedBooth.Card.Id);
+        await AssertEquivalent(restored.Match, applied.Match);
         await Assert.That(restored.MatchError).IsNull();
     }
 
@@ -175,7 +204,7 @@ public sealed class LocalMatchTests
     }
 
     [Test]
-    public async Task OpeningChoice_RoundTripsAndInvalidSelectionMutatesNothing()
+    public async Task OpeningChoiceFailures_AreTypedAndMutateNothing()
     {
         await using var database = await TestDatabase.Create();
         var fixture = await ReadyFixture.Create(database);
@@ -211,6 +240,53 @@ public sealed class LocalMatchTests
             }
         );
         var afterMalformed = await fixture.Store.Read("match");
+        var missing = await fixture.Application.ApplyMatchAction(
+            opening.Match.Id,
+            validRequest with
+            {
+                CommandId = Guid.NewGuid(),
+                Choices = validRequest
+                    .Choices.Where(choice => choice.Id != requirement.Id)
+                    .ToArray(),
+            }
+        );
+        var afterMissing = await fixture.Store.Read("match");
+        var extra = await fixture.Application.ApplyMatchAction(
+            opening.Match.Id,
+            validRequest with
+            {
+                CommandId = Guid.NewGuid(),
+                Choices =
+                [
+                    .. validRequest.Choices,
+                    EmptySelection(requirement) with
+                    {
+                        Id = "unknown-choice",
+                    },
+                ],
+            }
+        );
+        var afterExtra = await fixture.Store.Read("match");
+        var wrongKind = await fixture.Application.ApplyMatchAction(
+            opening.Match.Id,
+            validRequest with
+            {
+                CommandId = Guid.NewGuid(),
+                Choices = validRequest
+                    .Choices.Select(choice =>
+                        choice.Id == requirement.Id
+                            ? choice with
+                            {
+                                Kind = MatchChoiceKindView.Amount,
+                                Amount = 0,
+                                CardInstanceIds = [],
+                            }
+                            : choice
+                    )
+                    .ToArray(),
+            }
+        );
+        var afterWrongKind = await fixture.Store.Read("match");
         var applied = Value(
             await fixture.Application.ApplyMatchAction(opening.Match.Id, validRequest)
         );
@@ -218,10 +294,59 @@ public sealed class LocalMatchTests
 
         await Assert.That(Error(invalid).Code).IsEqualTo("match.choice_invalid");
         await Assert.That(Error(malformed).Code).IsEqualTo("match.choice_invalid");
+        await Assert.That(Error(missing).Code).IsEqualTo("match.choice_required");
+        await Assert.That(Error(extra).Code).IsEqualTo("match.choice_invalid");
+        await Assert.That(Error(wrongKind).Code).IsEqualTo("match.choice_invalid");
         await Assert.That(afterInvalid).IsEqualTo(original);
         await Assert.That(afterMalformed).IsEqualTo(original);
+        await Assert.That(afterMissing).IsEqualTo(original);
+        await Assert.That(afterExtra).IsEqualTo(original);
+        await Assert.That(afterWrongKind).IsEqualTo(original);
         await Assert.That(applied.Match!.Revision).IsGreaterThan(opening.Match.Revision);
         await AssertEquivalent(restored.Match!, applied.Match);
+    }
+
+    [Test]
+    public async Task NonOpeningChoiceFailures_AreTypedAndNonMutating()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = ChoiceMatchFixture.Create(database);
+        var (match, action) = await ReachCiggySamAttack(fixture);
+
+        await AssertChoiceFailuresDoNotMutate(fixture, match, action);
+    }
+
+    [Test]
+    public async Task DeferredChoiceFailuresAndRestart_AreTotalAndNonMutating()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = ChoiceMatchFixture.Create(database);
+        var (deferred, action) = await ReachCiggySamDeferredChoice(fixture);
+        var requirement = action.ChoiceRequirements.Single();
+        await Assert.That(requirement.Kind).IsEqualTo(MatchChoiceKindView.Cards);
+        await Assert.That(requirement.EligibleCards.Length).IsGreaterThan(0);
+
+        await AssertChoiceFailuresDoNotMutate(fixture, deferred, action);
+        var beforeRestart = await fixture.Store.Read("match");
+        var restartedService = fixture.Restart();
+        var restored = Match(await restartedService.State(fixture.Profile, "Local Player"));
+        var afterRestart = await fixture.Store.Read("match");
+        await AssertEquivalent(restored, deferred);
+        await Assert.That(afterRestart).IsEqualTo(beforeRestart);
+
+        var selection = SelectionFor(requirement) with
+        {
+            CardInstanceIds = [requirement.EligibleCards[0].Id],
+        };
+        var request = RequestFor(restored, action, Guid.NewGuid()) with { Choices = [selection] };
+        var resolved = Match(
+            await restartedService.Apply(fixture.Profile, "Local Player", restored.Id, request)
+        );
+        var restoredResolution = Match(
+            await fixture.Restart().State(fixture.Profile, "Local Player")
+        );
+
+        await AssertEquivalent(restoredResolution, resolved);
     }
 
     [Test]
@@ -405,6 +530,171 @@ public sealed class LocalMatchTests
         throw new InvalidOperationException("The match did not complete inside the test bound.");
     }
 
+    private static async Task<(MatchView Match, MatchActionView Action)> ReachCiggySamAttack(
+        ChoiceMatchFixture fixture
+    )
+    {
+        var started = Match(
+            await fixture.Service.Start(
+                fixture.Profile,
+                "Local Player",
+                new(_matchCommand, _firstDeckCommand)
+            )
+        );
+        var openingCards = started
+            .LegalActions.SelectMany(static action => action.ChoiceRequirements)
+            .SelectMany(static requirement => requirement.EligibleCards)
+            .DistinctBy(static card => card.Id)
+            .ToDictionary(static card => card.Id, StringComparer.Ordinal);
+        var opening = started.LegalActions.First(action =>
+            action.Id.StartsWith("opening:", StringComparison.Ordinal)
+            && openingCards[action.Id["opening:".Length..]].Card.Id == "BLK-016"
+            && action
+                .ChoiceRequirements.Single(requirement => requirement.Id == "opening:booth")
+                .EligibleCards.Any(static card => card.Card.Id == "BLK-001")
+        );
+        var ocheId = opening.Id["opening:".Length..];
+        var boothRequirement = opening.ChoiceRequirements.Single(requirement =>
+            requirement.Id == "opening:booth"
+        );
+        var boothCard = boothRequirement.EligibleCards.Single(static card =>
+            card.Card.Id == "BLK-001"
+        );
+        var openingRequest = RequestFor(started, opening, Guid.NewGuid()) with
+        {
+            Choices = [SelectionFor(boothRequirement) with { CardInstanceIds = [boothCard.Id] }],
+        };
+        var opened = Match(
+            await fixture.Service.Apply(fixture.Profile, "Local Player", started.Id, openingRequest)
+        );
+        var attach = opened.LegalActions.First(action =>
+            action.Id.StartsWith("attach:", StringComparison.Ordinal)
+            && action.Id.EndsWith($":{ocheId}", StringComparison.Ordinal)
+        );
+        var attached = Match(
+            await fixture.Service.Apply(
+                fixture.Profile,
+                "Local Player",
+                opened.Id,
+                RequestFor(opened, attach, Guid.NewGuid())
+            )
+        );
+        var endRound = attached.LegalActions.Single(action => action.Id == "end");
+        var nextRound = Match(
+            await fixture.Service.Apply(
+                fixture.Profile,
+                "Local Player",
+                attached.Id,
+                RequestFor(attached, endRound, Guid.NewGuid())
+            )
+        );
+        var attack = nextRound.LegalActions.SingleOrDefault(action =>
+            action.Id == $"attack:{ocheId}:BLK-016-B01"
+        );
+        if (attack is null)
+        {
+            throw new InvalidOperationException(
+                $"The {nextRound.Player.Oche?.Id} attack was unavailable: {string.Join(", ", nextRound.LegalActions.Select(static action => action.Id))}"
+            );
+        }
+        await Assert
+            .That(attack.ChoiceRequirements.Single().Kind)
+            .IsEqualTo(MatchChoiceKindView.Optional);
+        return (nextRound, attack);
+    }
+
+    private static async Task<(
+        MatchView Match,
+        MatchActionView Action
+    )> ReachCiggySamDeferredChoice(ChoiceMatchFixture fixture)
+    {
+        var (match, attack) = await ReachCiggySamAttack(fixture);
+        var optional = attack.ChoiceRequirements.Single();
+        var request = RequestFor(match, attack, Guid.NewGuid()) with
+        {
+            Choices = [SelectionFor(optional) with { Accepted = true }],
+        };
+        var deferred = Match(
+            await fixture.Service.Apply(fixture.Profile, "Local Player", match.Id, request)
+        );
+        return (
+            deferred,
+            deferred.LegalActions.Single(action =>
+                action.Id.StartsWith("choice:", StringComparison.Ordinal)
+            )
+        );
+    }
+
+    private static async Task AssertChoiceFailuresDoNotMutate(
+        ChoiceMatchFixture fixture,
+        MatchView match,
+        MatchActionView action
+    )
+    {
+        var original = await fixture.Store.Read("match");
+        var requirement = action.ChoiceRequirements.Single();
+        var valid = RequestFor(match, action, Guid.NewGuid());
+        var wrongKind =
+            requirement.Kind == MatchChoiceKindView.Optional
+                ? MatchChoiceKindView.Cards
+                : MatchChoiceKindView.Optional;
+        var cases = new[]
+        {
+            new ChoiceFailureCase(
+                valid with
+                {
+                    CommandId = Guid.NewGuid(),
+                    Choices = [],
+                },
+                "match.choice_required"
+            ),
+            new ChoiceFailureCase(
+                valid with
+                {
+                    CommandId = Guid.NewGuid(),
+                    Choices =
+                    [
+                        .. valid.Choices,
+                        EmptySelection(requirement) with
+                        {
+                            Id = "unknown-choice",
+                        },
+                    ],
+                },
+                "match.choice_invalid"
+            ),
+            new ChoiceFailureCase(
+                valid with
+                {
+                    CommandId = Guid.NewGuid(),
+                    Choices =
+                    [
+                        EmptySelection(requirement) with
+                        {
+                            Kind = wrongKind,
+                            Accepted = wrongKind == MatchChoiceKindView.Optional ? false : null,
+                        },
+                    ],
+                },
+                "match.choice_invalid"
+            ),
+        };
+
+        foreach (var candidate in cases)
+        {
+            var response = await fixture.Service.Apply(
+                fixture.Profile,
+                "Local Player",
+                match.Id,
+                candidate.Request
+            );
+            var after = await fixture.Store.Read("match");
+            await Assert.That(response.View).IsNull();
+            await Assert.That(response.Error!.Code).IsEqualTo(candidate.ErrorCode);
+            await Assert.That(after).IsEqualTo(original);
+        }
+    }
+
     private static MatchActionView OpeningAction(MatchView match) =>
         match.LegalActions.First(action =>
             action.ChoiceRequirements.Any(requirement => requirement.Id == "opening:booth")
@@ -498,28 +788,91 @@ public sealed class LocalMatchTests
         return response.Error;
     }
 
+    private static MatchView Match(MatchServiceResult response)
+    {
+        if (response.Error is not null || response.View is null)
+        {
+            throw new InvalidOperationException(response.Error?.Message);
+        }
+        return response.View;
+    }
+
+    private static TValue ProductValue<TValue, TFailure>(DomainResult<TValue, TFailure> result)
+        where TValue : notnull
+        where TFailure : notnull =>
+        result is DomainResult<TValue, TFailure>.Succeeded succeeded
+            ? succeeded.Value
+            : throw new InvalidOperationException("The product fixture transition failed.");
+
+    private static LocalProfile CreateChoiceProfile(BlokemonCatalogue catalogue)
+    {
+        var profile = ProductValue(
+            LocalProfile.Create(
+                ProductValue(ProfileId.Create("00000000-0000-0000-0000-000000000003")),
+                ProductValue(DisplayName.Create("Local Player")),
+                catalogue.Mechanics
+            )
+        );
+        for (var index = 1; index <= 4; index++)
+        {
+            var identity = $"70000000-0000-0000-0000-{index:D12}";
+            profile = ProductValue(
+                profile.OpenPack(
+                    ProductValue(CommandId.Create(identity)),
+                    ProductValue(PackReceiptId.Create(identity)),
+                    catalogue.Mechanics,
+                    new BlokemonSeededRandom(22)
+                )
+            ).Profile;
+        }
+        return ProductValue(
+            profile.CreateDeck(
+                ProductValue(DeckId.Create(_firstDeckCommand.ToString("D"))),
+                ProductValue(DeckName.Create("Choice deck")),
+                [
+                    new(ProductValue(CardId.Create("BLK-001")), 1),
+                    new(ProductValue(CardId.Create("BLK-016")), 4),
+                    new(ProductValue(CardId.Create("VIM-DODGY")), 55),
+                ],
+                catalogue.Mechanics
+            )
+        ).Profile;
+    }
+
     private static async Task AssertEquivalent(MatchView actual, MatchView expected)
     {
-        await Assert.That(actual.Id).IsEqualTo(expected.Id);
-        await Assert.That(actual.Revision).IsEqualTo(expected.Revision);
-        await Assert.That(actual.Round).IsEqualTo(expected.Round);
-        await Assert.That(actual.Status).IsEqualTo(expected.Status);
-        await Assert.That(actual.Player.StackCount).IsEqualTo(expected.Player.StackCount);
-        await Assert.That(actual.Player.MittCount).IsEqualTo(expected.Player.MittCount);
-        await Assert.That(actual.Player.BarChits).IsEqualTo(expected.Player.BarChits);
-        await Assert.That(actual.Player.Oche?.Id).IsEqualTo(expected.Player.Oche?.Id);
-        await Assert.That(actual.Player.Damage).IsEqualTo(expected.Player.Damage);
-        await Assert.That(actual.Opponent.StackCount).IsEqualTo(expected.Opponent.StackCount);
-        await Assert.That(actual.Opponent.MittCount).IsEqualTo(expected.Opponent.MittCount);
-        await Assert.That(actual.Opponent.BarChits).IsEqualTo(expected.Opponent.BarChits);
-        await Assert.That(actual.Opponent.Oche?.Id).IsEqualTo(expected.Opponent.Oche?.Id);
-        await Assert.That(actual.Opponent.Damage).IsEqualTo(expected.Opponent.Damage);
         await Assert
-            .That(actual.LegalActions.Select(static action => action.Id))
-            .IsEquivalentTo(expected.LegalActions.Select(static action => action.Id));
-        await Assert.That(actual.RecentEvents).IsEquivalentTo(expected.RecentEvents);
-        await Assert.That(actual.IsComplete).IsEqualTo(expected.IsComplete);
-        await Assert.That(actual.Winner).IsEqualTo(expected.Winner);
+            .That(JsonSerializer.Serialize(actual))
+            .IsEqualTo(JsonSerializer.Serialize(expected));
+    }
+
+    private sealed record ChoiceFailureCase(ApplyMatchActionRequest Request, string ErrorCode);
+
+    private sealed record PersistedProfileDocument(
+        int SchemaVersion,
+        Guid CreationCommandId,
+        LocalProfileSnapshot Profile
+    );
+
+    private sealed record ChoiceMatchFixture(
+        BlokemonCatalogue Catalogue,
+        TestDatabase Database,
+        StateDocumentStore Store,
+        LocalMatchService Service,
+        LocalProfile Profile
+    )
+    {
+        public static ChoiceMatchFixture Create(TestDatabase database)
+        {
+            var catalogue = BlokemonCatalogue.Load(
+                Path.Combine(AppContext.BaseDirectory, "content")
+            );
+            var profile = CreateChoiceProfile(catalogue);
+            var store = new StateDocumentStore(database);
+            return new(catalogue, database, store, new(catalogue, store), profile);
+        }
+
+        public LocalMatchService Restart() => new(Catalogue, new StateDocumentStore(Database));
     }
 
     private sealed record ReadyFixture(
@@ -563,6 +916,24 @@ public sealed class LocalMatchTests
                         )
                     )
                 );
+            }
+            return fixture;
+        }
+
+        public static async Task<ReadyFixture> CreateOpeningChoice(TestDatabase database)
+        {
+            var catalogue = BlokemonCatalogue.Load(
+                Path.Combine(AppContext.BaseDirectory, "content")
+            );
+            var fixture = FromExisting(database, catalogue);
+            var profile = CreateChoiceProfile(catalogue);
+            var document = JsonSerializer.Serialize(
+                new PersistedProfileDocument(1, _profileCommand, profile.ToSnapshot()),
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)
+            );
+            if (await fixture.Store.Create("profile", document) is not DocumentWriteResult.Written)
+            {
+                throw new InvalidOperationException("The opening-choice profile was not stored.");
             }
             return fixture;
         }

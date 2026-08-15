@@ -95,7 +95,9 @@ else
 
     private IEnumerable<CardView> AvailableCards() =>
         (_view?.Cards ?? [])
-            .Where(card => card.FreelyAvailable || card.OwnedQuantity > 0)
+            .Where(card =>
+                card.FreelyAvailable || card.OwnedQuantity > 0 || Quantity(card.Id) > 0
+            )
             .Where(card =>
                 string.IsNullOrWhiteSpace(_search)
                 || card.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)

@@ -67,7 +67,8 @@ public sealed class LocalApplicationService(
                 )
             );
         }
-        var profileId = Required(ProfileId.Create(Guid.NewGuid().ToString("D")));
+        var persistedProfileId = Guid.NewGuid();
+        var profileId = Required(ProfileId.Create(persistedProfileId.ToString("D")));
         var created = LocalProfile.Create(
             profileId,
             ((DomainResult<DisplayName, DisplayNameCreationFailure>.Succeeded)displayName).Value,
@@ -97,7 +98,21 @@ public sealed class LocalApplicationService(
             cancellationToken
         );
         return write is DocumentWriteResult.Written written
-            ? Success(await ToView(new(written.Revision, document, profile), cancellationToken))
+            ? Success(
+                await ToView(
+                    new(
+                        written.Revision,
+                        document,
+                        profile,
+                        new(
+                            persistedProfileId,
+                            new Dictionary<DeckId, Guid>(),
+                            new Dictionary<PackReceiptId, Guid>()
+                        )
+                    ),
+                    cancellationToken
+                )
+            )
             : Failure<ApplicationView>(Conflict());
     }
 
@@ -307,6 +322,12 @@ public sealed class LocalApplicationService(
         CancellationToken cancellationToken
     )
     {
+        var ids = WebLocalIds.TryCreate(loaded.Profile);
+        if (ids is null)
+        {
+            return Failure<ApplicationView>(InvalidStateError());
+        }
+
         var write = await documents.Update(
             _profileKey,
             loaded.Revision,
@@ -314,7 +335,16 @@ public sealed class LocalApplicationService(
             cancellationToken
         );
         return write is DocumentWriteResult.Written written
-            ? Success(await ToView(loaded with { Revision = written.Revision }, cancellationToken))
+            ? Success(
+                await ToView(
+                    loaded with
+                    {
+                        Revision = written.Revision,
+                        Ids = ids,
+                    },
+                    cancellationToken
+                )
+            )
             : Failure<ApplicationView>(Conflict());
     }
 
@@ -341,15 +371,19 @@ public sealed class LocalApplicationService(
         }
 
         var restored = LocalProfile.Restore(document.Profile, catalogue.Mechanics);
-        return restored switch
+        if (
+            restored
+                is not DomainResult<
+                    LocalProfile,
+                    LocalProfileRestorationFailure
+                >.Succeeded succeeded
+            || WebLocalIds.TryCreate(succeeded.Value) is not { } ids
+        )
         {
-            DomainResult<LocalProfile, LocalProfileRestorationFailure>.Succeeded succeeded => new(
-                new(stored.Revision, document, succeeded.Value),
-                null
-            ),
-            DomainResult<LocalProfile, LocalProfileRestorationFailure>.Failed => InvalidState(),
-            _ => throw new UnreachableException(),
-        };
+            return InvalidState();
+        }
+
+        return new(new(stored.Revision, document, succeeded.Value, ids), null);
     }
 
     private async Task<ApplicationView> ToView(
@@ -375,18 +409,40 @@ public sealed class LocalApplicationService(
             static entry => entry.Value,
             StringComparer.Ordinal
         );
-        var cards = catalogue.CardsWithOwnership(ownership);
+        var currentCards = catalogue.Cards.ToDictionary(
+            static card => card.Id,
+            StringComparer.Ordinal
+        );
+        var cards = currentCards
+            .Keys.Concat(ownership.Keys)
+            .Concat(
+                loaded.Profile.SavedDecks.Values.SelectMany(static deck =>
+                    deck.Cards.Keys.Select(static cardId => cardId.Value)
+                )
+            )
+            .Concat(
+                loaded.Profile.PackReceipts.Values.SelectMany(static receipt =>
+                    receipt.SampledCollectibleIds.Select(static cardId => cardId.Value)
+                )
+            )
+            .Distinct(StringComparer.Ordinal)
+            .Select(id => CurrentCard(id, ownership, currentCards))
+            .OrderBy(static card => card.Kind)
+            .ThenBy(static card => card.Id, StringComparer.Ordinal)
+            .ToArray();
         var decks = loaded
             .Profile.SavedDecks.Values.OrderBy(static deck => deck.Name.Value)
-            .Select(deck => DeckView(loaded.Profile, deck))
+            .Select(deck => DeckView(loaded.Profile, deck, loaded.Ids.Decks[deck.Id]))
             .ToArray();
         var lastPack = loaded
             .Profile.PackReceipts.Values.OrderByDescending(static receipt => receipt.Sequence)
             .Select(receipt => new PackReceiptView(
-                ParseGuid(receipt.Id.Value, "pack receipt"),
+                loaded.Ids.PackReceipts[receipt.Id],
                 receipt.Sequence,
                 receipt
-                    .SampledCollectibleIds.Select(id => CurrentCard(id.Value, ownership))
+                    .SampledCollectibleIds.Select(id =>
+                        CurrentCard(id.Value, ownership, currentCards)
+                    )
                     .ToArray()
             ))
             .FirstOrDefault();
@@ -399,7 +455,7 @@ public sealed class LocalApplicationService(
             );
         return new(
             new(
-                ParseGuid(loaded.Profile.Id.Value, "profile"),
+                loaded.Ids.Profile,
                 loaded.Profile.DisplayName.Value,
                 loaded.Revision,
                 loaded.Profile.AvailablePackEntitlements
@@ -412,7 +468,7 @@ public sealed class LocalApplicationService(
         );
     }
 
-    private DeckView DeckView(LocalProfile profile, SavedDeck deck)
+    private DeckView DeckView(LocalProfile profile, SavedDeck deck, Guid deckId)
     {
         var currentAuthority = string.Equals(
             profile.BoundAuthorityManifestVersion,
@@ -432,7 +488,7 @@ public sealed class LocalApplicationService(
                 ? invalid.Issues.Select(DeckIssue).ToArray()
             : [];
         return new(
-            ParseGuid(deck.Id.Value, "deck"),
+            deckId,
             deck.Name.Value,
             deck.Revision.Value,
             deck.Cards.OrderBy(static entry => entry.Key.Value, StringComparer.Ordinal)
@@ -443,8 +499,12 @@ public sealed class LocalApplicationService(
         );
     }
 
-    private CardView CurrentCard(string id, IReadOnlyDictionary<string, int> ownership) =>
-        catalogue.Cards.FirstOrDefault(card => card.Id == id) is { } current
+    private static CardView CurrentCard(
+        string id,
+        IReadOnlyDictionary<string, int> ownership,
+        IReadOnlyDictionary<string, CardView> currentCards
+    ) =>
+        currentCards.TryGetValue(id, out var current)
             ? current with
             {
                 OwnedQuantity = ownership.GetValueOrDefault(id),
@@ -537,11 +597,6 @@ public sealed class LocalApplicationService(
         return BitConverter.ToUInt64(bytes);
     }
 
-    private static Guid ParseGuid(string value, string kind) =>
-        Guid.TryParse(value, out var parsed)
-            ? parsed
-            : throw new InvalidDataException($"The persisted {kind} ID is invalid.");
-
     private static TValue Required<TValue>(DomainResult<TValue, TextValueFailure> result)
         where TValue : notnull =>
         result switch
@@ -558,11 +613,10 @@ public sealed class LocalApplicationService(
     private static ApiError Conflict() =>
         new("state.conflict", "The local state changed in another operation. Retry this action.");
 
-    private static ProfileLoad InvalidState() =>
-        new(
-            null,
-            new("state.invalid", "The persisted local profile is invalid and was left unchanged.")
-        );
+    private static ProfileLoad InvalidState() => new(null, InvalidStateError());
+
+    private static ApiError InvalidStateError() =>
+        new("state.invalid", "The persisted local profile is invalid and was left unchanged.");
 
     private sealed record ProductDocument(
         int SchemaVersion,
@@ -573,8 +627,46 @@ public sealed class LocalApplicationService(
     private sealed record LoadedProfile(
         long Revision,
         ProductDocument Document,
-        LocalProfile Profile
+        LocalProfile Profile,
+        WebLocalIds Ids
     );
+
+    private sealed record WebLocalIds(
+        Guid Profile,
+        IReadOnlyDictionary<DeckId, Guid> Decks,
+        IReadOnlyDictionary<PackReceiptId, Guid> PackReceipts
+    )
+    {
+        public static WebLocalIds? TryCreate(LocalProfile profile)
+        {
+            if (!Guid.TryParse(profile.Id.Value, out var profileId))
+            {
+                return null;
+            }
+
+            var decks = new Dictionary<DeckId, Guid>();
+            foreach (var deckId in profile.SavedDecks.Keys)
+            {
+                if (!Guid.TryParse(deckId.Value, out var parsed))
+                {
+                    return null;
+                }
+                decks.Add(deckId, parsed);
+            }
+
+            var packReceipts = new Dictionary<PackReceiptId, Guid>();
+            foreach (var receiptId in profile.PackReceipts.Keys)
+            {
+                if (!Guid.TryParse(receiptId.Value, out var parsed))
+                {
+                    return null;
+                }
+                packReceipts.Add(receiptId, parsed);
+            }
+
+            return new(profileId, decks, packReceipts);
+        }
+    }
 
     private sealed record ProfileLoad(LoadedProfile? Profile, ApiError? Error);
 }
