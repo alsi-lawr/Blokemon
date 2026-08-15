@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoDefaultLaunchSettingsFile>True</NoDefaultLaunchSettingsFile>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Blokemon.Core\Blokemon.Core.csproj" />
+    <ProjectReference Include="..\Blokemon.Game\Blokemon.Game.csproj" />
+    <ProjectReference Include="..\Blokemon.Product\Blokemon.Product.csproj" />
+    <ProjectReference Include="..\Blokemon.Web.Client\Blokemon.Web.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Blokemon.Web.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content
+      Include="..\..\content\authorities\**"
+      Link="content\authorities\%(RecursiveDir)%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <Content
+      Include="..\..\content\art\**"
+      Link="content\art\%(RecursiveDir)%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <Content
+      Include="..\..\content\fonts\**"
+      Link="content\fonts\%(RecursiveDir)%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
+</Project>

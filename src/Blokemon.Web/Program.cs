@@ -1,0 +1,90 @@
+using Blokemon.Web.Api;
+using Blokemon.Web.Application;
+using Blokemon.Web.Client.Api;
+using Blokemon.Web.Components;
+using Blokemon.Web.Content;
+using Blokemon.Web.Persistence;
+using Microsoft.AspNetCore.Components;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var contentRoot = Path.Combine(AppContext.BaseDirectory, "content");
+var catalogue = BlokemonCatalogue.Load(contentRoot);
+var databasePath = LocalDataPath.Resolve(builder.Configuration);
+
+builder.Services.AddSingleton(catalogue);
+builder.Services.AddPooledDbContextFactory<BlokemonDbContext>(options =>
+    options.UseSqlite($"Data Source={databasePath}")
+);
+builder.Services.AddScoped<StateDocumentStore>();
+builder.Services.AddScoped<LocalMatchService>();
+builder.Services.AddScoped<LocalApplicationService>();
+builder.Services.AddScoped(serviceProvider => new HttpClient
+{
+    BaseAddress = new Uri(serviceProvider.GetRequiredService<NavigationManager>().BaseUri),
+});
+builder.Services.AddScoped<BlokemonApiClient>();
+builder
+    .Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseWebAssemblyDebugging();
+}
+else
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+app.UseAntiforgery();
+app.MapStaticAssets();
+app.UseStaticFiles(
+    new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(Path.Combine(contentRoot, "art")),
+        RequestPath = "/art",
+    }
+);
+app.UseStaticFiles(
+    new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(Path.Combine(contentRoot, "fonts")),
+        RequestPath = "/fonts",
+    }
+);
+app.MapGet(
+    "/healthz",
+    () =>
+        Results.Ok(
+            new
+            {
+                status = "ready",
+                mechanics = catalogue.Mechanics.ManifestVersion,
+                content = catalogue.PublicContent.ContentVersion,
+            }
+        )
+);
+app.MapApplicationEndpoints();
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(Blokemon.Web.Client._Imports).Assembly);
+
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var contexts = scope.ServiceProvider.GetRequiredService<IDbContextFactory<BlokemonDbContext>>();
+    await using var database = await contexts.CreateDbContextAsync();
+    await database.Database.MigrateAsync();
+}
+
+app.Run();
+
+public partial class Program;

@@ -1,0 +1,355 @@
+using System.Collections.Immutable;
+
+namespace Blokemon.Product;
+
+public sealed record CollectibleOwnershipSnapshot(string? CardId, int Quantity);
+
+public sealed record PackReceiptSnapshot(
+    string? ReceiptId,
+    string? CommandId,
+    int Sequence,
+    ImmutableArray<string?> SampledCollectibleIds
+);
+
+public sealed record SavedDeckCardSnapshot(string? CardId, int Quantity);
+
+public sealed record SavedDeckSnapshot(
+    string? DeckId,
+    string? Name,
+    long Revision,
+    ImmutableArray<SavedDeckCardSnapshot> Cards
+);
+
+public sealed record LocalProfileSnapshot(
+    string? AuthorityManifestVersion,
+    string? ProfileId,
+    string? DisplayName,
+    string? GuaranteedRegularCollectibleId,
+    int AvailablePackEntitlements,
+    ImmutableArray<CollectibleOwnershipSnapshot> CollectibleOwnership,
+    ImmutableArray<PackReceiptSnapshot> PackReceipts,
+    ImmutableArray<SavedDeckSnapshot> SavedDecks
+);
+
+public enum SnapshotDuplicateKind
+{
+    OwnershipCardId,
+    PackReceiptId,
+    PackCommandId,
+    SampledCardIdWithinReceipt,
+    DeckId,
+    DeckCardId,
+}
+
+public abstract record LocalProfileRestorationFailure
+{
+    private LocalProfileRestorationFailure() { }
+
+    public abstract TResult Match<TResult>(
+        Func<string, TextValueFailure, TResult> onInvalidId,
+        Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+        Func<string, TResult> onMissingEntry,
+        Func<string, int, TResult> onNegativeQuantity,
+        Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+        Func<string, CardId, TResult> onUnknownCard,
+        Func<CardId, TResult> onStarterNotRegular,
+        Func<int, int, TResult> onEntitlementHistoryMismatch,
+        Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+        Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+        Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+        Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+        Func<DeckId, long, TResult> onInvalidDeckRevision,
+        Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+    );
+
+    public sealed record InvalidId(string Path, TextValueFailure Failure)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onInvalidId(Path, Failure);
+    }
+
+    public sealed record InvalidDisplayName(DisplayNameCreationFailure Failure)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onInvalidDisplayName(Failure);
+    }
+
+    public sealed record MissingEntry(string Path) : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onMissingEntry(Path);
+    }
+
+    public sealed record NegativeQuantity(string Path, int Quantity)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onNegativeQuantity(Path, Quantity);
+    }
+
+    public sealed record DuplicateValue(SnapshotDuplicateKind Kind, string Value)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onDuplicateValue(Kind, Value);
+    }
+
+    public sealed record UnknownCard(string Path, CardId CardId) : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onUnknownCard(Path, CardId);
+    }
+
+    public sealed record StarterNotRegular(CardId CardId) : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onStarterNotRegular(CardId);
+    }
+
+    public sealed record EntitlementHistoryMismatch(int Actual, int Expected)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onEntitlementHistoryMismatch(Actual, Expected);
+    }
+
+    public sealed record InvalidPackCardCount(PackReceiptId ReceiptId, int Actual)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onInvalidPackCardCount(ReceiptId, Actual);
+    }
+
+    public sealed record InvalidPackSequence(PackReceiptId ReceiptId, int Sequence)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onInvalidPackSequence(ReceiptId, Sequence);
+    }
+
+    public sealed record OwnershipHistoryMismatch(CardId CardId, int Actual, int Expected)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onOwnershipHistoryMismatch(CardId, Actual, Expected);
+    }
+
+    public sealed record InvalidDeckName(DeckId DeckId, TextValueFailure Failure)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onInvalidDeckName(DeckId, Failure);
+    }
+
+    public sealed record InvalidDeckRevision(DeckId DeckId, long Revision)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onInvalidDeckRevision(DeckId, Revision);
+    }
+
+    public sealed record InvalidSavedDeck(DeckId DeckId, ImmutableArray<DeckValidationIssue> Issues)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<int, int, TResult> onEntitlementHistoryMismatch,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        ) => onInvalidSavedDeck(DeckId, Issues);
+    }
+}

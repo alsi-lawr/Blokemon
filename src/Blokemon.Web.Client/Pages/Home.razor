@@ -1,0 +1,111 @@
+@page "/"
+@rendermode InteractiveAuto
+@inject BlokemonApiClient Api
+
+<PageTitle>Home · Blokemon</PageTitle>
+
+@if (_view is null && _error is null)
+{
+    <LoadingPanel />
+}
+else if (_error is not null)
+{
+    <FailurePanel Message="@_error" />
+}
+else if (_view!.Profile is null)
+{
+    <header class="topline">
+        <div>
+            <span class="eyebrow">First round</span>
+            <h1>Pull up a chair.</h1>
+        </div>
+        <span class="dev-badge">Development build · placeholder art</span>
+    </header>
+    <div class="panel hero">
+        <div class="hero-copy">
+            <h2>Your local league starts here.</h2>
+            <p>Create the profile stored on this machine, then open your first pack.</p>
+            <div class="actions"><a class="primary button" href="profile">Create local profile</a></div>
+        </div>
+    </div>
+}
+else
+{
+    var owned = _view.Cards.Count(static card => card.OwnedQuantity > 0);
+    <header class="topline">
+        <div>
+            <span class="eyebrow">Local league</span>
+            <h1>Ready for another round?</h1>
+        </div>
+        <span class="dev-badge">Development build · placeholder art</span>
+    </header>
+    <div class="grid two">
+        <div class="panel hero">
+            <div class="hero-copy">
+                @if (_view.Match is not null)
+                {
+                    @if (_view.Match.IsComplete)
+                    {
+                        <span class="eyebrow">Match complete</span>
+                        <h2>@_view.Match.Winner took the match.</h2>
+                        <p>The final command log is saved. Start another local bout when you are ready.</p>
+                        <div class="actions"><a class="primary button" href="match">Return to the table</a></div>
+                    }
+                    else
+                    {
+                        <span class="eyebrow">Resume match · Round @_view.Match.Round</span>
+                        <h2>@_view.Profile.DisplayName vs. @_view.Match.Opponent.Name</h2>
+                        <p>Your oche is waiting. Nothing moves until you do.</p>
+                        <div class="actions"><a class="primary button" href="match">Return to the table</a></div>
+                    }
+                }
+                else
+                {
+                    <span class="eyebrow">Next action</span>
+                    <h2>Build a stack and take the oche.</h2>
+                    <p>Open your starter packs, save a legal deck, then face the local CPU.</p>
+                    <div class="actions"><a class="primary button" href="packs">Open a pack</a><a class="secondary button" href="decks">Build a deck</a></div>
+                }
+            </div>
+        </div>
+        <div class="grid">
+            <div class="panel metrics">
+                <div class="metric"><b>@_view.Profile.UnopenedPacks</b><span>Packs left</span></div>
+                <div class="metric"><b>@owned</b><span>Owned</span></div>
+                <div class="metric"><b>@_view.Decks.Length</b><span>Decks</span></div>
+            </div>
+            <div class="panel">
+                <div class="panel-head"><h2>Recently pulled</h2><a class="quiet button" href="collection">See all</a></div>
+                @if (_view.LastPack is null)
+                {
+                    <p>Your first pack is still sealed.</p>
+                }
+                else
+                {
+                    <div class="activity">
+                        @foreach (var card in _view.LastPack.Cards.Take(3))
+                        {
+                            <div class="activity-row"><img src="@card.ArtUrl" alt="" /><span><b>@card.Name</b><small>@card.Detail · copy @card.OwnedQuantity</small></span></div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private ApplicationView? _view;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Api.State();
+        if (response.Succeeded)
+        {
+            _view = response.Value;
+            return;
+        }
+        _error = response.Error?.Message;
+    }
+}

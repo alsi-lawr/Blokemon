@@ -1,0 +1,12 @@
+<div class="notice failure" role="alert">
+    <strong>@Title</strong>
+    <span>@Message</span>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "That did not work.";
+
+    [Parameter]
+    public required string Message { get; set; }
+}

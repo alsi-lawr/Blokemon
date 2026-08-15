@@ -1,0 +1,62 @@
+@page "/collection"
+@rendermode InteractiveAuto
+@inject BlokemonApiClient Api
+
+<PageTitle>Collection · Blokemon</PageTitle>
+
+@if (_view is null && _error is null)
+{
+    <LoadingPanel />
+}
+else if (_error is not null)
+{
+    <FailurePanel Message="@_error" />
+}
+else
+{
+    var owned = _view!.Cards.Count(static card => card.OwnedQuantity > 0);
+    <header class="topline"><div><span class="eyebrow">@owned owned · @_view.Cards.Length known</span><h1>Your collection.</h1></div><span class="dev-badge">Kits and Basic Vim are always available</span></header>
+    <div class="toolbar">
+        <input class="search" placeholder="Search by name or type" @bind="_search" @bind:event="oninput" />
+        <button class="secondary @(_ownedOnly ? "selected" : null)" @onclick="() => _ownedOnly = !_ownedOnly">Owned</button>
+    </div>
+    <div class="card-grid">
+        @foreach (var card in VisibleCards())
+        {
+            <article class="card-tile"><span class="qty">@(card.FreelyAvailable ? "Free" : $"×{card.OwnedQuantity}")</span><img src="@card.ArtUrl" alt="@card.Name" /><b>@card.Name</b><span>@card.Detail · @card.Type</span></article>
+        }
+    </div>
+    @if (!VisibleCards().Any())
+    {
+        <div class="panel empty-state"><h2>No matching cards</h2><p>Change the search or open another pack.</p></div>
+    }
+}
+
+@code {
+    private ApplicationView? _view;
+    private string? _error;
+    private string _search = string.Empty;
+    private bool _ownedOnly;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Api.State();
+        if (response.Succeeded)
+        {
+            _view = response.Value;
+        }
+        else
+        {
+            _error = response.Error?.Message;
+        }
+    }
+
+    private IEnumerable<CardView> VisibleCards() =>
+        (_view?.Cards ?? [])
+            .Where(card => !_ownedOnly || card.OwnedQuantity > 0 || card.FreelyAvailable)
+            .Where(card =>
+                string.IsNullOrWhiteSpace(_search)
+                || card.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                || card.Type.Contains(_search, StringComparison.OrdinalIgnoreCase)
+            );
+}

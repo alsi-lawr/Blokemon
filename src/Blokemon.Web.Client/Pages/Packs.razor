@@ -1,0 +1,92 @@
+@page "/packs"
+@rendermode InteractiveAuto
+@inject BlokemonApiClient Api
+
+<PageTitle>Packs · Blokemon</PageTitle>
+
+@if (_view is null && _error is null)
+{
+    <LoadingPanel />
+}
+else if (_error is not null)
+{
+    <FailurePanel Message="@_error" />
+}
+else if (_view!.Profile is null)
+{
+    <FailurePanel Title="Create a profile first." Message="A local profile owns pack entitlements and collection receipts." />
+}
+else
+{
+    <header class="topline"><div><span class="eyebrow">The bar stock</span><h1>Open a pack.</h1></div><span class="dev-badge">Pack receipt saved atomically</span></header>
+    <div class="grid two">
+        <div class="panel pack-stage">
+            <div>
+                <div class="pack"><small>Eleven card booster</small></div>
+                <div class="actions centered"><button class="primary" @onclick="Open" disabled="@(_opening || _view.Profile.UnopenedPacks == 0)">@PackButton()</button></div>
+            </div>
+        </div>
+        <div class="grid">
+            <div class="panel"><span class="eyebrow">Unopened</span><div class="pack-count">@_view.Profile.UnopenedPacks</div><p>Each pack has one Rare, three Uncommon and seven Common Blokemon. No repeats inside one pack.</p></div>
+            @if (_operationError is not null)
+            {
+                <FailurePanel Message="@_operationError" />
+            }
+            else if (_view.LastPack is not null)
+            {
+                <div class="notice">Receipt #@_view.LastPack.Sequence is committed. Retrying the same opening cannot grant it twice.</div>
+                <div class="panel">
+                    <div class="panel-head"><h2>Last pull</h2><span>11 cards</span></div>
+                    <div class="activity scroll-list">
+                        @foreach (var card in _view.LastPack.Cards)
+                        {
+                            <div class="activity-row"><img src="@card.ArtUrl" alt="" /><span><b>@card.Name</b><small>@card.Detail · copy @card.OwnedQuantity</small></span></div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private ApplicationView? _view;
+    private string? _error;
+    private string? _operationError;
+    private bool _opening;
+    private Guid? _commandId;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        var response = await Api.State();
+        if (response.Succeeded)
+        {
+            _view = response.Value;
+        }
+        else
+        {
+            _error = response.Error?.Message;
+        }
+    }
+
+    private async Task Open()
+    {
+        _opening = true;
+        _operationError = null;
+        _commandId ??= Guid.NewGuid();
+        var response = await Api.OpenPack(new(_commandId.Value));
+        _opening = false;
+        if (!response.Succeeded)
+        {
+            _operationError = response.Error?.Message;
+            return;
+        }
+        _commandId = null;
+        _view = response.Value;
+    }
+
+    private string PackButton() =>
+        _opening ? "Opening…" : _view?.Profile?.UnopenedPacks == 0 ? "No packs left" : "Open pack";
+}

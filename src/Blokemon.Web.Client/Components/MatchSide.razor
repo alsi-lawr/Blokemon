@@ -1,0 +1,13 @@
+<section class="side @(Opponent ? "opponent" : "player") @(Side.HasTurn ? "has-turn" : null)">
+    <div class="match-meta"><strong>@Side.Name</strong>@if (Side.HasTurn){<span class="turn-marker">Choosing now</span>}<span>Stack @Side.StackCount · Mitt @Side.MittCount</span><div class="chits" aria-label="@Side.BarChits bar chits">@for (var index = 0; index < Side.BarChits; index++){<i></i>}</div></div>
+    <div class="oche">@if (Side.Oche is not null){<img class="battle-card" src="@Side.Oche.ArtUrl" alt="@Side.Oche.Name" />}</div>
+    <div class="bench">@foreach (var card in Side.Booth){<img src="@card.ArtUrl" alt="@card.Name" />}</div>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public required MatchSideView Side { get; set; }
+
+    [Parameter]
+    public bool Opponent { get; set; }
+}

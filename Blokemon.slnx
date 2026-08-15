@@ -2,10 +2,17 @@
   <Folder Name="/src/">
     <Project Path="src/Blokemon.CardGen/Blokemon.CardGen.csproj" />
     <Project Path="src/Blokemon.Core/Blokemon.Core.csproj" />
+    <Project Path="src/Blokemon.Game/Blokemon.Game.csproj" />
     <Project Path="src/Blokemon.PackGen/Blokemon.PackGen.csproj" />
+    <Project Path="src/Blokemon.Product/Blokemon.Product.csproj" />
     <Project Path="src/Blokemon.Sheet/Blokemon.Sheet.csproj" />
+    <Project Path="src/Blokemon.Web.Client/Blokemon.Web.Client.csproj" />
+    <Project Path="src/Blokemon.Web/Blokemon.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Blokemon.Core.Tests/Blokemon.Core.Tests.csproj" />
+    <Project Path="tests/Blokemon.Game.Tests/Blokemon.Game.Tests.csproj" />
+    <Project Path="tests/Blokemon.Product.Tests/Blokemon.Product.Tests.csproj" />
+    <Project Path="tests/Blokemon.Web.Tests/Blokemon.Web.Tests.csproj" />
   </Folder>
 </Solution>

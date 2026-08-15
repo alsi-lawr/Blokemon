@@ -1,0 +1,339 @@
+@page "/match"
+@rendermode InteractiveAuto
+@inject BlokemonApiClient Api
+
+<PageTitle>Match · Blokemon</PageTitle>
+
+@if (_view is null && _error is null)
+{
+    <LoadingPanel />
+}
+else if (_error is not null)
+{
+    <FailurePanel Message="@_error" />
+}
+else if (_view!.Profile is null)
+{
+    <FailurePanel Title="Create a profile first." Message="A local profile owns decks and match recovery." />
+}
+else if (_view.MatchError is not null)
+{
+    <header class="topline"><div><span class="eyebrow">Match recovery</span><h1>The table is paused.</h1></div></header>
+    <FailurePanel Title="The saved match could not be replayed." Message="@_view.MatchError.Message" />
+    <div class="panel"><p>Your profile, collection and decks remain available. The invalid match document was not overwritten.</p></div>
+}
+else if (_view.Match is null)
+{
+    var deck = ReadyDeck();
+    <header class="topline"><div><span class="eyebrow">Local bout</span><h1>Take the oche.</h1></div></header>
+    @if (_operationError is not null)
+    {
+        <FailurePanel Message="@_operationError" />
+    }
+    <div class="panel hero">
+        <div class="hero-copy">
+            <h2>Face The Regular.</h2>
+            @if (deck is null)
+            {
+                <p>Save a legal 60-card deck before starting a match.</p>
+                <div class="actions"><a class="primary button" href="decks">Build a deck</a></div>
+            }
+            else
+            {
+                <p>@deck.Name is ready. The opponent mirrors this legal stack, and the saved command log reconstructs every move after refresh or restart.</p>
+                <div class="actions"><button class="primary" @onclick="() => Start(deck.Id)" disabled="@_working">@(_working ? "Setting the table…" : "Start local match")</button></div>
+            }
+        </div>
+    </div>
+}
+else if (_view.Match.IsComplete)
+{
+    var match = _view.Match;
+    var deck = ReadyDeck();
+    <header class="topline"><div><span class="eyebrow">Match complete · Revision @match.Revision</span><h1>@match.Winner won.</h1></div></header>
+    @if (_operationError is not null)
+    {
+        <FailurePanel Message="@_operationError" />
+    }
+    <div class="grid two">
+        <div class="panel hero"><div class="hero-copy"><h2>The final command is committed.</h2><p>The complete match remains replayable until you start another one.</p>@if (deck is not null){<div class="actions"><button class="primary" @onclick="() => Start(deck.Id)" disabled="@_working">@(_working ? "Setting the table…" : "Start new match")</button></div>}</div></div>
+        <div class="panel match-log"><span class="eyebrow">Recent events</span><ol>@foreach (var entry in match.RecentEvents){<li>@entry</li>}</ol></div>
+    </div>
+}
+else
+{
+    var match = _view.Match;
+    <header class="topline"><div><span class="eyebrow">Round @match.Round · @match.Status</span><h1>@(match.Player.HasTurn ? "Your throw." : "Keep your nerve.")</h1></div><span class="dev-badge">Replayed revision @match.Revision</span></header>
+    @if (_operationError is not null)
+    {
+        <FailurePanel Message="@_operationError" />
+    }
+    <div class="tabletop">
+        <MatchSide Side="match.Opponent" Opponent="true" />
+        <MatchSide Side="match.Player" />
+    </div>
+    <div class="turnbar">
+        <div><span class="eyebrow">Your action</span><h3>@OcheSummary(match)</h3></div>
+    </div>
+    <div class="match-actions">
+        @foreach (var action in match.LegalActions)
+        {
+            <article class="match-action @(_selectedAction?.Id == action.Id ? "selected" : null)">
+                <button class="@(action.Primary ? "primary" : "secondary")" @onclick="() => ChooseAction(action)" disabled="@_working">@action.Label</button>
+                @if (action.ChoiceRequirements.Length > 0)
+                {
+                    <ul class="choice-summary">
+                        @foreach (var requirement in action.ChoiceRequirements)
+                        {
+                            <li>@requirement.Label <span>· @requirement.Chooser.Name</span></li>
+                        }
+                    </ul>
+                }
+            </article>
+        }
+    </div>
+    @if (_selectedAction is not null)
+    {
+        <section class="panel choice-panel">
+            <div class="panel-head"><div><span class="eyebrow">Materialize action</span><h2>@_selectedAction.Label</h2></div><button class="quiet" @onclick="CancelChoice" disabled="@_working">Cancel</button></div>
+            @foreach (var requirement in _selectedAction.ChoiceRequirements)
+            {
+                <div class="choice-block @(ChoiceIsActive(requirement) ? null : "choice-inactive")">
+                    <div class="choice-heading"><div><h3>@requirement.Label</h3><small>@ChoiceBounds(requirement)</small></div><span class="chooser @(!requirement.Chooser.IsLocalPlayer ? "cpu" : null)">@(requirement.Chooser.IsLocalPlayer ? "Your choice" : $"{requirement.Chooser.Name} chooses")</span></div>
+                    @if (!requirement.Chooser.IsLocalPlayer)
+                    {
+                        <p>The deterministic opponent will resolve this requirement after your command is committed.</p>
+                    }
+                    else if (!ChoiceIsActive(requirement))
+                    {
+                        <p>This requirement is skipped because its optional branch was declined.</p>
+                    }
+                    else
+                    {
+                        @switch (requirement.Kind)
+                        {
+                            case MatchChoiceKindView.Optional:
+                                <label class="toggle-choice"><input type="checkbox" checked="@Draft(requirement).Accepted" @onchange="eventArgs => SetAccepted(requirement, eventArgs)" /><span>Apply the optional branch</span></label>
+                                break;
+                            case MatchChoiceKindView.Amount:
+                                <input class="choice-number" type="number" min="@requirement.Minimum" max="@requirement.Maximum" value="@Draft(requirement).Amount" @onchange="eventArgs => SetAmount(requirement, eventArgs)" />
+                                break;
+                            case MatchChoiceKindView.Cards:
+                                <div class="choice-cards">@foreach (var card in requirement.EligibleCards){<label class="choice-card"><input type="checkbox" checked="@Draft(requirement).Cards.Contains(card.Id)" @onchange="eventArgs => ToggleCard(requirement, card.Id, eventArgs)" /><img src="@card.Card.ArtUrl" alt="" /><span><b>@card.Card.Name</b><small>@CardChoiceDetail(requirement, card)</small></span></label>}</div>
+                                break;
+                            case MatchChoiceKindView.MechanicalType:
+                                <select class="choice-select" value="@Draft(requirement).MechanicalType" @onchange="eventArgs => SetMechanicalType(requirement, eventArgs)"><option value="">Choose a type</option>@foreach (var option in requirement.EligibleMechanicalTypes){<option value="@option.Value">@option.Label</option>}</select>
+                                break;
+                            case MatchChoiceKindView.Attack:
+                                <select class="choice-select" value="@Draft(requirement).EffectId" @onchange="eventArgs => SetEffect(requirement, eventArgs)"><option value="">Choose an attack</option>@foreach (var option in requirement.EligibleEffects){<option value="@option.Id">@option.Label</option>}</select>
+                                break;
+                            case MatchChoiceKindView.Distribution:
+                                <div class="distribution-grid">@foreach (var card in requirement.EligibleCards){<label><span>@card.Card.Name</span><input class="choice-number" type="number" min="0" max="@requirement.Maximum" value="@Draft(requirement).Distribution.GetValueOrDefault(card.Id)" @onchange="eventArgs => SetDistribution(requirement, card.Id, eventArgs)" /></label>}</div>
+                                break;
+                            case MatchChoiceKindView.Attachments:
+                                <div class="attachment-grid">@foreach (var card in requirement.EligibleCards){<label><span>@card.Card.Name</span><select class="choice-select" value="@Draft(requirement).Attachments.GetValueOrDefault(card.Id)" @onchange="eventArgs => SetAttachment(requirement, card.Id, eventArgs)"><option value="">Do not attach</option>@foreach (var target in requirement.EligibleTargets){<option value="@target.Id">@target.Card.Name · @target.Zone</option>}</select></label>}</div>
+                                break;
+                        }
+                    }
+                </div>
+            }
+            @if (_choiceValidation is not null)
+            {
+                <p class="field-error" role="alert">@_choiceValidation</p>
+            }
+            <button class="primary full" @onclick="ConfirmChoice" disabled="@_working">@(_working ? "Applying…" : "Apply selected action")</button>
+        </section>
+    }
+    <details class="panel match-log"><summary>Recent match events</summary><ol>@foreach (var entry in match.RecentEvents){<li>@entry</li>}</ol></details>
+}
+
+@code {
+    private ApplicationView? _view;
+    private MatchActionView? _selectedAction;
+    private readonly Dictionary<string, ChoiceDraft> _drafts = new(StringComparer.Ordinal);
+    private string? _error;
+    private string? _operationError;
+    private string? _choiceValidation;
+    private bool _working;
+    private Guid? _commandId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Api.State();
+        if (response.Succeeded) _view = response.Value;
+        else _error = response.Error?.Message;
+    }
+
+    private DeckView? ReadyDeck() => _view?.Decks.FirstOrDefault(static deck => deck.IsLegal);
+
+    private async Task Start(Guid deckId)
+    {
+        _working = true;
+        _commandId ??= Guid.NewGuid();
+        Complete(await Api.StartMatch(new(_commandId.Value, deckId)));
+    }
+
+    private async Task ChooseAction(MatchActionView action)
+    {
+        _operationError = null;
+        _choiceValidation = null;
+        _selectedAction = action;
+        _drafts.Clear();
+        foreach (var requirement in action.ChoiceRequirements.Where(static requirement => requirement.Chooser.IsLocalPlayer))
+        {
+            _drafts[requirement.Id] = new ChoiceDraft { Amount = requirement.Minimum };
+        }
+
+        if (!action.ChoiceRequirements.Any(static requirement => requirement.Chooser.IsLocalPlayer))
+        {
+            await Apply(action, []);
+        }
+    }
+
+    private async Task ConfirmChoice()
+    {
+        if (_selectedAction is null || !TryBuildChoices(_selectedAction, out var choices))
+        {
+            return;
+        }
+        await Apply(_selectedAction, choices);
+    }
+
+    private async Task Apply(MatchActionView action, MatchChoiceSelectionRequest[] choices)
+    {
+        _working = true;
+        _commandId ??= Guid.NewGuid();
+        var match = _view!.Match!;
+        Complete(await Api.ApplyMatchAction(match.Id, new(_commandId.Value, match.Revision, action.Id, choices)));
+    }
+
+    private bool TryBuildChoices(MatchActionView action, out MatchChoiceSelectionRequest[] choices)
+    {
+        var result = new List<MatchChoiceSelectionRequest>();
+        foreach (var requirement in action.ChoiceRequirements.Where(static requirement => requirement.Chooser.IsLocalPlayer))
+        {
+            if (!ChoiceIsActive(requirement)) continue;
+            var draft = Draft(requirement);
+            if (requirement.Kind == MatchChoiceKindView.Cards && draft.Cards.Count is var cardCount && (cardCount < requirement.Minimum || cardCount > requirement.Maximum))
+            {
+                return ChoiceFailure($"Choose from {requirement.Minimum} to {requirement.Maximum} card(s).", out choices);
+            }
+            if (requirement.Kind == MatchChoiceKindView.MechanicalType && string.IsNullOrEmpty(draft.MechanicalType))
+            {
+                return ChoiceFailure("Choose a mechanical type.", out choices);
+            }
+            if (requirement.Kind == MatchChoiceKindView.Attack && string.IsNullOrEmpty(draft.EffectId))
+            {
+                return ChoiceFailure("Choose an attack.", out choices);
+            }
+            if (requirement.Kind == MatchChoiceKindView.Distribution && draft.Distribution.Values.Sum() != requirement.Maximum)
+            {
+                return ChoiceFailure($"Distribute exactly {requirement.Maximum} damage counter(s).", out choices);
+            }
+            if (requirement.Kind == MatchChoiceKindView.Attachments && draft.Attachments.Count is var attachmentCount && (attachmentCount < requirement.Minimum || attachmentCount > requirement.Maximum))
+            {
+                return ChoiceFailure($"Choose targets for {requirement.Minimum} Vim attachment(s).", out choices);
+            }
+
+            result.Add(new(
+                requirement.Id,
+                requirement.Kind,
+                requirement.Kind == MatchChoiceKindView.Optional ? draft.Accepted : null,
+                requirement.Kind == MatchChoiceKindView.Amount ? draft.Amount : null,
+                requirement.Kind == MatchChoiceKindView.Cards ? [.. draft.Cards] : [],
+                requirement.Kind == MatchChoiceKindView.MechanicalType ? draft.MechanicalType : null,
+                requirement.Kind == MatchChoiceKindView.Attack ? draft.EffectId : null,
+                requirement.Kind == MatchChoiceKindView.Distribution ? draft.Distribution.Where(static item => item.Value > 0).Select(static item => new MatchDamageAllocationRequest(item.Key, item.Value)).ToArray() : [],
+                requirement.Kind == MatchChoiceKindView.Attachments ? draft.Attachments.Select(static item => new MatchAttachmentRequest(item.Key, item.Value)).ToArray() : []
+            ));
+        }
+        _choiceValidation = null;
+        choices = [.. result];
+        return true;
+    }
+
+    private bool ChoiceFailure(string message, out MatchChoiceSelectionRequest[] choices)
+    {
+        _choiceValidation = message;
+        choices = [];
+        return false;
+    }
+
+    private ChoiceDraft Draft(MatchChoiceRequirementView requirement) => _drafts[requirement.Id];
+
+    private bool ChoiceIsActive(MatchChoiceRequirementView requirement) =>
+        requirement.DependsOnOptional is null
+        || (_drafts.TryGetValue(requirement.DependsOnOptional, out var parent) && parent.Accepted);
+
+    private void SetAccepted(MatchChoiceRequirementView requirement, ChangeEventArgs eventArgs) => Draft(requirement).Accepted = Convert.ToBoolean(eventArgs.Value);
+    private void SetAmount(MatchChoiceRequirementView requirement, ChangeEventArgs eventArgs) => Draft(requirement).Amount = ParseNumber(eventArgs.Value, requirement.Minimum);
+    private void SetMechanicalType(MatchChoiceRequirementView requirement, ChangeEventArgs eventArgs) => Draft(requirement).MechanicalType = eventArgs.Value?.ToString();
+    private void SetEffect(MatchChoiceRequirementView requirement, ChangeEventArgs eventArgs) => Draft(requirement).EffectId = eventArgs.Value?.ToString();
+    private void SetDistribution(MatchChoiceRequirementView requirement, string card, ChangeEventArgs eventArgs) => Draft(requirement).Distribution[card] = Math.Max(0, ParseNumber(eventArgs.Value, 0));
+
+    private void ToggleCard(MatchChoiceRequirementView requirement, string card, ChangeEventArgs eventArgs)
+    {
+        var selected = Convert.ToBoolean(eventArgs.Value);
+        if (selected && Draft(requirement).Cards.Count < requirement.Maximum) Draft(requirement).Cards.Add(card);
+        else if (!selected) Draft(requirement).Cards.Remove(card);
+    }
+
+    private void SetAttachment(MatchChoiceRequirementView requirement, string vim, ChangeEventArgs eventArgs)
+    {
+        var target = eventArgs.Value?.ToString();
+        if (string.IsNullOrEmpty(target)) Draft(requirement).Attachments.Remove(vim);
+        else Draft(requirement).Attachments[vim] = target;
+    }
+
+    private static int ParseNumber(object? value, int fallback) => int.TryParse(value?.ToString(), out var parsed) ? parsed : fallback;
+
+    private static string ChoiceBounds(MatchChoiceRequirementView requirement)
+    {
+        var bounds = requirement.Minimum == requirement.Maximum ? $"Exactly {requirement.Minimum}" : $"{requirement.Minimum}–{requirement.Maximum}";
+        var dependency = requirement.DependsOnOptional is null ? null : " · depends on optional choice";
+        var distinct = requirement.RequireDifferentMechanicalTypes ? " · different mechanical types required" : null;
+        return bounds + dependency + distinct;
+    }
+
+    private static string CardChoiceDetail(MatchChoiceRequirementView requirement, MatchCardInstanceView card)
+    {
+        var types = requirement.EligibleCardTypes.FirstOrDefault(candidate => candidate.CardInstanceId == card.Id)?.MechanicalTypes;
+        return types is { Length: > 0 } ? $"{card.OwnerName} · {card.Zone} · {string.Join(" / ", types)}" : $"{card.OwnerName} · {card.Zone}";
+    }
+
+    private static string OcheSummary(MatchView match) => match.Player.Oche is null ? "Complete your opening setup" : $"{match.Player.Oche.Name} · {match.Player.Damage} damage · {match.Player.PrintedStayingPower} printed staying power";
+
+    private void CancelChoice()
+    {
+        _selectedAction = null;
+        _choiceValidation = null;
+        _drafts.Clear();
+    }
+
+    private void Complete(ApiResponse<ApplicationView> response)
+    {
+        _working = false;
+        if (!response.Succeeded)
+        {
+            _operationError = response.Error?.Message;
+            return;
+        }
+        _commandId = null;
+        _operationError = null;
+        _selectedAction = null;
+        _choiceValidation = null;
+        _drafts.Clear();
+        _view = response.Value;
+    }
+
+    private sealed class ChoiceDraft
+    {
+        public bool Accepted { get; set; }
+        public int Amount { get; set; }
+        public HashSet<string> Cards { get; } = new(StringComparer.Ordinal);
+        public string? MechanicalType { get; set; }
+        public string? EffectId { get; set; }
+        public Dictionary<string, int> Distribution { get; } = new(StringComparer.Ordinal);
+        public Dictionary<string, string> Attachments { get; } = new(StringComparer.Ordinal);
+    }
+}

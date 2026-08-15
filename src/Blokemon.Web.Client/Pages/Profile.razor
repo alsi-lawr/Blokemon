@@ -1,0 +1,89 @@
+@page "/profile"
+@rendermode InteractiveAuto
+@inject BlokemonApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>Profile · Blokemon</PageTitle>
+
+@if (_view is null && _error is null)
+{
+    <LoadingPanel />
+}
+else if (_error is not null)
+{
+    <FailurePanel Message="@_error" />
+}
+else if (_view!.Profile is not null)
+{
+    <header class="topline"><div><span class="eyebrow">Local profile</span><h1>@_view.Profile.DisplayName</h1></div></header>
+    <div class="panel setup-card">
+        <h2>Stored on this machine</h2>
+        <p>Your provider-neutral profile ID is <code>@_view.Profile.Id</code>. Collection and match state remain after restart.</p>
+        <dl class="facts"><div><dt>Unopened packs</dt><dd>@_view.Profile.UnopenedPacks</dd></div><div><dt>Revision</dt><dd>@_view.Profile.Revision</dd></div></dl>
+    </div>
+}
+else
+{
+    <div class="profile-setup">
+        <div class="panel setup-card">
+            <span class="eyebrow">First round</span>
+            <h1>Pull up a chair.</h1>
+            <p>Create the local profile kept on this machine. No account, password or provider connection required.</p>
+            <label for="display-name">Display name</label>
+            <input id="display-name" maxlength="32" autocomplete="nickname" @bind="_displayName" disabled="@_saving" />
+            @if (_validation is not null)
+            {
+                <span class="field-error" role="alert">@_validation</span>
+            }
+            <button class="primary full" @onclick="Create" disabled="@_saving">@(_saving ? "Creating…" : "Create local profile")</button>
+            <p><small>Your collection and matches are stored locally and stay after restart.</small></p>
+        </div>
+    </div>
+}
+
+@code {
+    private ApplicationView? _view;
+    private string? _error;
+    private string? _validation;
+    private string _displayName = string.Empty;
+    private bool _saving;
+    private Guid? _commandId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Api.State();
+        if (response.Succeeded)
+        {
+            _view = response.Value;
+        }
+        else
+        {
+            _error = response.Error?.Message;
+        }
+    }
+
+    private async Task Create()
+    {
+        var displayName = _displayName.Trim();
+        if (displayName.Length is < 1 or > 32)
+        {
+            _validation = "Enter a display name from 1 to 32 characters.";
+            return;
+        }
+
+        _saving = true;
+        _validation = null;
+        _commandId ??= Guid.NewGuid();
+        var response = await Api.CreateProfile(new(_commandId.Value, displayName));
+        _saving = false;
+        if (!response.Succeeded)
+        {
+            _validation = response.Error?.Message;
+            return;
+        }
+
+        _commandId = null;
+        _view = response.Value;
+        Navigation.NavigateTo("/");
+    }
+}

@@ -1,0 +1,138 @@
+@page "/decks"
+@rendermode InteractiveAuto
+@inject BlokemonApiClient Api
+
+<PageTitle>Decks · Blokemon</PageTitle>
+
+@if (_view is null && _error is null)
+{
+    <LoadingPanel />
+}
+else if (_error is not null)
+{
+    <FailurePanel Message="@_error" />
+}
+else if (_view!.Profile is null)
+{
+    <FailurePanel Title="Create a profile first." Message="Decks belong to the local profile on this machine." />
+}
+else
+{
+    <header class="topline"><div><span class="eyebrow">Deck builder</span><h1>@_deckName</h1></div><button class="primary" @onclick="Save" disabled="@_saving">@(_saving ? "Saving…" : "Save deck")</button></header>
+    @if (_operationError is not null)
+    {
+        <FailurePanel Message="@_operationError" />
+    }
+    <div class="deck-layout">
+        <div>
+            <div class="toolbar"><input class="search" placeholder="Find a card" @bind="_search" @bind:event="oninput" /><button class="secondary selected">Available</button></div>
+            <div class="card-grid">
+                @foreach (var card in AvailableCards())
+                {
+                    var quantity = Quantity(card.Id);
+                    <article class="card-tile">
+                        <span class="qty">@(card.FreelyAvailable ? "Free" : $"{card.OwnedQuantity} owned")</span>
+                        <img src="@card.ArtUrl" alt="@card.Name" />
+                        <b>@card.Name</b><span>@quantity in deck</span>
+                        <div class="stepper"><button aria-label="Remove @card.Name" @onclick="() => Change(card, -1)" disabled="@(quantity == 0)">−</button><output>@quantity</output><button aria-label="Add @card.Name" @onclick="() => Change(card, 1)" disabled="@(!CanAdd(card))">+</button></div>
+                    </article>
+                }
+            </div>
+        </div>
+        <aside class="panel deck-summary">
+            <div class="panel-head"><div><span class="eyebrow">@(_saved?.IsLegal == true ? "Legal deck" : "Working deck")</span><h2>@CardCount() / 60 cards</h2></div>@if (_saved?.IsLegal == true){<span class="valid">Ready</span>}</div>
+            <div class="progress"><i style="@($"width:{Math.Min(100, CardCount() * 100 / 60)}%")"></i></div>
+            @if (_saved is not null && !_saved.IsLegal)
+            {
+                <ul class="validation-list">@foreach (var error in _saved.Errors){<li>@error</li>}</ul>
+            }
+            <div class="deck-lines">
+                @foreach (var entry in _entries.Where(static entry => entry.Value > 0).OrderBy(static entry => entry.Key))
+                {
+                    var card = Card(entry.Key);
+                    <div class="deck-line"><img class="mini-art" src="@card.ArtUrl" alt="" /><span><b>@card.Name</b><small>@card.Detail</small></span><span>×@entry.Value</span></div>
+                }
+            </div>
+            @if (_saved?.IsLegal == true)
+            {
+                <a class="primary button full" href="match">Play this deck</a>
+            }
+        </aside>
+    </div>
+}
+
+@code {
+    private ApplicationView? _view;
+    private DeckView? _saved;
+    private readonly Dictionary<string, int> _entries = new(StringComparer.Ordinal);
+    private string _deckName = "The Friday stack";
+    private string _search = string.Empty;
+    private string? _error;
+    private string? _operationError;
+    private bool _saving;
+    private Guid? _commandId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Api.State();
+        if (!response.Succeeded)
+        {
+            _error = response.Error?.Message;
+            return;
+        }
+        _view = response.Value;
+        _saved = _view?.Decks.FirstOrDefault();
+        if (_saved is null)
+        {
+            return;
+        }
+        _deckName = _saved.Name;
+        foreach (var entry in _saved.Entries)
+        {
+            _entries[entry.CardId] = entry.Quantity;
+        }
+    }
+
+    private IEnumerable<CardView> AvailableCards() =>
+        (_view?.Cards ?? [])
+            .Where(card => card.FreelyAvailable || card.OwnedQuantity > 0)
+            .Where(card =>
+                string.IsNullOrWhiteSpace(_search)
+                || card.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
+            );
+
+    private CardView Card(string id) => _view!.Cards.Single(card => card.Id == id);
+    private int Quantity(string id) => _entries.GetValueOrDefault(id);
+    private int CardCount() => _entries.Values.Sum();
+    private bool CanAdd(CardView card) =>
+        CardCount() < 60 && (card.FreelyAvailable || Quantity(card.Id) < card.OwnedQuantity);
+    private void Change(CardView card, int delta) =>
+        _entries[card.Id] = Math.Max(0, Quantity(card.Id) + delta);
+
+    private async Task Save()
+    {
+        _saving = true;
+        _operationError = null;
+        _commandId ??= Guid.NewGuid();
+        var request = new SaveDeckRequest(
+            _commandId.Value,
+            _saved?.Id,
+            _saved?.Revision,
+            _deckName,
+            _entries
+                .Where(static row => row.Value > 0)
+                .Select(static row => new DeckEntryView(row.Key, row.Value))
+                .ToArray()
+        );
+        var response = await Api.SaveDeck(request);
+        _saving = false;
+        if (!response.Succeeded)
+        {
+            _operationError = response.Error?.Message;
+            return;
+        }
+        _commandId = null;
+        _view = response.Value;
+        _saved = _view?.Decks.FirstOrDefault();
+    }
+}
