@@ -230,16 +230,6 @@ public sealed partial class LocalProfile
         ArgumentNullException.ThrowIfNull(selections);
         ArgumentNullException.ThrowIfNull(authority);
 
-        if (!IsBoundTo(authority))
-        {
-            return DomainResult<DeckSaveTransition, DeckSaveFailure>.Failure(
-                new DeckSaveFailure.AuthorityVersionMismatch(
-                    BoundAuthorityManifestVersion,
-                    authority.ManifestVersion
-                )
-            );
-        }
-
         if (_savedDecks.ContainsKey(deckId))
         {
             return DomainResult<DeckSaveTransition, DeckSaveFailure>.Failure(
@@ -271,16 +261,6 @@ public sealed partial class LocalProfile
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(selections);
         ArgumentNullException.ThrowIfNull(authority);
-
-        if (!IsBoundTo(authority))
-        {
-            return DomainResult<DeckSaveTransition, DeckSaveFailure>.Failure(
-                new DeckSaveFailure.AuthorityVersionMismatch(
-                    BoundAuthorityManifestVersion,
-                    authority.ManifestVersion
-                )
-            );
-        }
 
         if (!_savedDecks.TryGetValue(deckId, out var current))
         {
@@ -340,13 +320,6 @@ public sealed partial class LocalProfile
         && authority.Products.Eleven.Slots.All(slot =>
             slot.Count >= 0
             && authority.Collectibles.Count(card => card.ProductBucket == slot.Bucket) >= slot.Count
-        );
-
-    private bool IsBoundTo(BlokemonRuntimeManifest authority) =>
-        string.Equals(
-            BoundAuthorityManifestVersion,
-            authority.ManifestVersion,
-            StringComparison.Ordinal
         );
 
     private LocalProfile Copy(

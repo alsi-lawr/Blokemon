@@ -470,22 +470,13 @@ public sealed class LocalApplicationService(
 
     private DeckView DeckView(LocalProfile profile, SavedDeck deck, Guid deckId)
     {
-        var currentAuthority = string.Equals(
-            profile.BoundAuthorityManifestVersion,
-            catalogue.Mechanics.ManifestVersion,
-            StringComparison.Ordinal
+        var validation = DeckValidator.Validate(
+            profile,
+            catalogue.Mechanics,
+            deck.Cards.Select(static entry => new DeckCardSelection(entry.Key, entry.Value))
         );
-        var validation = currentAuthority
-            ? DeckValidator.Validate(
-                profile,
-                catalogue.Mechanics,
-                deck.Cards.Select(static entry => new DeckCardSelection(entry.Key, entry.Value))
-            )
-            : null;
-        var issues =
-            !currentAuthority ? ["The card authority changed. Revalidate this deck before playing."]
-            : validation is DeckValidationResult.Invalid invalid
-                ? invalid.Issues.Select(DeckIssue).ToArray()
+        var issues = validation is DeckValidationResult.Invalid invalid
+            ? invalid.Issues.Select(DeckIssue).ToArray()
             : [];
         return new(
             deckId,
@@ -561,12 +552,7 @@ public sealed class LocalApplicationService(
                     "The deck changed in another operation. Reload it before saving."
                 ),
             static issues => new("deck.invalid", string.Join(" ", issues.Select(DeckIssue))),
-            static _ => new("deck.revision", "The deck revision cannot advance."),
-            static (_, _) =>
-                new(
-                    "deck.authority_changed",
-                    "The card authority changed. Revalidate the profile before saving decks."
-                )
+            static _ => new("deck.revision", "The deck revision cannot advance.")
         );
 
     private static ApiError PackFailure(PackOpenFailure failure) =>

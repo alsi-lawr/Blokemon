@@ -60,7 +60,7 @@ public sealed class StateDocumentStoreTests
     }
 
     [Test]
-    public async Task HistoricalCardsRemainResolvableAcrossPersistedViews()
+    public async Task UnavailableHistoricalDeckCard_RemainsVisibleAndCanBePersistentlyReplaced()
     {
         await using var database = await TestDatabase.Create();
         var catalogue = BlokemonCatalogue.Load(Path.Combine(AppContext.BaseDirectory, "content"));
@@ -113,7 +113,8 @@ public sealed class StateDocumentStoreTests
         await store.Update("profile", original.Revision, document.ToJsonString());
         var historical = (await store.Read("profile"))!;
 
-        var restored = Value(await Application(catalogue, store).State());
+        var restarted = Application(catalogue, store);
+        var restored = Value(await restarted.State());
         var after = await store.Read("profile");
         var deck = restored.Decks.Single();
         var historicalCollectible = restored.Cards.Single(card =>
@@ -138,6 +139,109 @@ public sealed class StateDocumentStoreTests
             .That(restored.Cards.Single(card => card.Id == "BLK-001").Type)
             .IsNotEqualTo("Historical");
         await Assert.That(after).IsEqualTo(historical);
+
+        var revised = Value(
+            await restarted.SaveDeck(
+                new(
+                    Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                    deck.Id,
+                    deck.Revision,
+                    "Current deck",
+                    [new("BLK-001", 1), new("VIM-DODGY", 59)]
+                )
+            )
+        );
+        var persisted = (await store.Read("profile"))!;
+        var persistedDocument = JsonNode.Parse(persisted.Json)!.AsObject();
+        var persistedProfile = persistedDocument["profile"]!.AsObject();
+        var persistedDeck = persistedProfile["savedDecks"]![0]!.AsObject();
+        var persistedCardIds = persistedDeck["cards"]!
+            .AsArray()
+            .Select(static item => item!["cardId"]!.GetValue<string>())
+            .ToArray();
+        var pack = await restarted.OpenPack(
+            new(Guid.Parse("45555555-5555-5555-5555-555555555555"))
+        );
+
+        await Assert.That(revised.Decks.Single().IsLegal).IsTrue();
+        await Assert
+            .That(revised.Decks.Single().Entries.Select(static entry => entry.CardId))
+            .IsEquivalentTo(["BLK-001", "VIM-DODGY"]);
+        await Assert
+            .That(persistedProfile["authorityManifestVersion"]!.GetValue<string>())
+            .IsEqualTo("historical-manifest");
+        await Assert.That(persistedDeck["revision"]!.GetValue<long>()).IsEqualTo(deck.Revision + 1);
+        await Assert.That(persistedCardIds).IsEquivalentTo(["BLK-001", "VIM-DODGY"]);
+        await Assert.That(Error(pack).Code).IsEqualTo("pack.authority_changed");
+        await Assert.That(await store.Read("profile")).IsEqualTo(persisted);
+    }
+
+    [Test]
+    public async Task HistoricalProfile_CurrentDeckSupportsRevisionCasAndStartsMatch()
+    {
+        await using var database = await TestDatabase.Create();
+        var catalogue = BlokemonCatalogue.Load(Path.Combine(AppContext.BaseDirectory, "content"));
+        var store = new StateDocumentStore(database);
+        var application = Application(catalogue, store);
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("61111111-1111-1111-1111-111111111111"), "Local Player")
+            )
+        );
+        var saved = Value(
+            await application.SaveDeck(
+                new(
+                    Guid.Parse("62222222-2222-2222-2222-222222222222"),
+                    null,
+                    null,
+                    "Current deck",
+                    [new("BLK-001", 1), new("VIM-DODGY", 59)]
+                )
+            )
+        );
+        var original = (await store.Read("profile"))!;
+        var document = JsonNode.Parse(original.Json)!.AsObject();
+        document["profile"]!["authorityManifestVersion"] = "historical-manifest";
+        await store.Update("profile", original.Revision, document.ToJsonString());
+        var historical = (await store.Read("profile"))!;
+        var restarted = Application(catalogue, store);
+
+        var current = Value(await restarted.State());
+        var currentDeck = current.Decks.Single();
+        var revised = Value(
+            await restarted.SaveDeck(
+                new(
+                    Guid.Parse("63333333-3333-3333-3333-333333333333"),
+                    currentDeck.Id,
+                    currentDeck.Revision,
+                    "Revised current deck",
+                    currentDeck.Entries
+                )
+            )
+        );
+        var afterRevision = (await store.Read("profile"))!;
+        var stale = await restarted.SaveDeck(
+            new(
+                Guid.Parse("64444444-4444-4444-4444-444444444444"),
+                currentDeck.Id,
+                currentDeck.Revision,
+                "Stale overwrite",
+                currentDeck.Entries
+            )
+        );
+        var started = Value(
+            await restarted.StartMatch(
+                new(Guid.Parse("65555555-5555-5555-5555-555555555555"), saved.Decks.Single().Id)
+            )
+        );
+
+        await Assert.That(currentDeck.IsLegal).IsTrue();
+        await Assert.That(currentDeck.Errors).IsEmpty();
+        await Assert.That(revised.Decks.Single().Revision).IsEqualTo(currentDeck.Revision + 1);
+        await Assert.That(Error(stale).Code).IsEqualTo("deck.stale");
+        await Assert.That(await store.Read("profile")).IsEqualTo(afterRevision);
+        await Assert.That(started.Match).IsNotNull();
+        await Assert.That(afterRevision).IsNotEqualTo(historical);
     }
 
     [Test]
@@ -285,5 +389,14 @@ public sealed class StateDocumentStoreTests
             throw new InvalidOperationException(response.Error?.Message);
         }
         return response.Value;
+    }
+
+    private static ApiError Error<T>(ApiResponse<T> response)
+    {
+        if (response.Succeeded || response.Error is null)
+        {
+            throw new InvalidOperationException("Expected an API failure.");
+        }
+        return response.Error;
     }
 }

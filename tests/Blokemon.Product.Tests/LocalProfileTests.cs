@@ -214,6 +214,10 @@ public sealed class LocalProfileTests
 
         var failure = Failure(stale);
         await Assert.That(failure).IsTypeOf<DeckSaveFailure.StaleRevision>();
+        var staleRevision = (DeckSaveFailure.StaleRevision)failure;
+        await Assert.That(staleRevision.DeckId).IsEqualTo(deckId);
+        await Assert.That(staleRevision.ExpectedRevision).IsEqualTo(created.Deck.Revision);
+        await Assert.That(staleRevision.ActualRevision).IsEqualTo(revised.Deck.Revision);
         await Assert.That(revised.Profile.SavedDecks[deckId].Name.Value).IsEqualTo("Second");
         await Assert.That(revised.Profile.SavedDecks[deckId].Revision.Value).IsEqualTo(2);
     }
@@ -279,7 +283,7 @@ public sealed class LocalProfileTests
     }
 
     [Test]
-    public async Task SnapshotRestore_PreservesHistoricalStateAcrossAuthorityVersions()
+    public async Task HistoricalProfile_PreservesPackBindingWhileDecksUseCurrentMechanics()
     {
         var snapshot = CreatePopulatedProfile().ToSnapshot();
         var firstReceipt = snapshot.PackReceipts[0];
@@ -316,21 +320,32 @@ public sealed class LocalProfileTests
 
         var restored = Success(LocalProfile.Restore(historicalSnapshot, _authority.Value));
         var restoredSnapshot = restored.ToSnapshot();
+        var historicalDeckId = Value(DeckId.Create(historicalDeck.DeckId));
+        var currentCards = LegalCards(restored);
+        var revised = Success(
+            restored.ReviseDeck(
+                historicalDeckId,
+                restored.SavedDecks[historicalDeckId].Revision,
+                Value(DeckName.Create("Current deck")),
+                currentCards,
+                _authority.Value
+            )
+        );
+        var created = Success(
+            revised.Profile.CreateDeck(
+                Value(DeckId.Create("current-deck")),
+                Value(DeckName.Create("Another current deck")),
+                currentCards,
+                _authority.Value
+            )
+        );
         var random = new CountingRandomSource();
         var packFailure = Failure(
-            restored.OpenPack(
+            created.Profile.OpenPack(
                 Value(CommandId.Create("blocked-command")),
                 Value(PackReceiptId.Create("blocked-receipt")),
                 _authority.Value,
                 random
-            )
-        );
-        var deckFailure = Failure(
-            restored.CreateDeck(
-                Value(DeckId.Create("blocked-deck")),
-                Value(DeckName.Create("Blocked")),
-                LegalCards(restored),
-                _authority.Value
             )
         );
 
@@ -354,8 +369,15 @@ public sealed class LocalProfileTests
                     )
             )
             .IsTrue();
+        await Assert
+            .That(revised.Deck.Cards.Keys.Select(static cardId => cardId.Value))
+            .IsEquivalentTo(currentCards.Select(static selection => selection.CardId.Value));
+        await Assert.That(revised.Deck.Revision.Value).IsEqualTo(historicalDeck.Revision + 1);
+        await Assert.That(created.Deck.Cards.Keys).IsEquivalentTo(revised.Deck.Cards.Keys);
+        await Assert
+            .That(created.Profile.BoundAuthorityManifestVersion)
+            .IsEqualTo("historical-manifest");
         await Assert.That(packFailure).IsEqualTo(PackOpenFailure.AuthorityVersionMismatch);
-        await Assert.That(deckFailure).IsTypeOf<DeckSaveFailure.AuthorityVersionMismatch>();
         await Assert.That(random.ConsumptionIndex).IsEqualTo(0);
     }
 

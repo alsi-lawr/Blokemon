@@ -354,8 +354,7 @@ public abstract record DeckSaveFailure
         Func<DeckId, TResult> onNotFound,
         Func<DeckId, DeckRevision, DeckRevision, TResult> onStaleRevision,
         Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck,
-        Func<DeckId, TResult> onRevisionExhausted,
-        Func<string, string, TResult> onAuthorityVersionMismatch
+        Func<DeckId, TResult> onRevisionExhausted
     );
 
     public sealed record AlreadyExists(DeckId DeckId) : DeckSaveFailure
@@ -365,8 +364,7 @@ public abstract record DeckSaveFailure
             Func<DeckId, TResult> onNotFound,
             Func<DeckId, DeckRevision, DeckRevision, TResult> onStaleRevision,
             Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck,
-            Func<DeckId, TResult> onRevisionExhausted,
-            Func<string, string, TResult> onAuthorityVersionMismatch
+            Func<DeckId, TResult> onRevisionExhausted
         ) => onAlreadyExists(DeckId);
     }
 
@@ -377,8 +375,7 @@ public abstract record DeckSaveFailure
             Func<DeckId, TResult> onNotFound,
             Func<DeckId, DeckRevision, DeckRevision, TResult> onStaleRevision,
             Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck,
-            Func<DeckId, TResult> onRevisionExhausted,
-            Func<string, string, TResult> onAuthorityVersionMismatch
+            Func<DeckId, TResult> onRevisionExhausted
         ) => onNotFound(DeckId);
     }
 
@@ -393,8 +390,7 @@ public abstract record DeckSaveFailure
             Func<DeckId, TResult> onNotFound,
             Func<DeckId, DeckRevision, DeckRevision, TResult> onStaleRevision,
             Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck,
-            Func<DeckId, TResult> onRevisionExhausted,
-            Func<string, string, TResult> onAuthorityVersionMismatch
+            Func<DeckId, TResult> onRevisionExhausted
         ) => onStaleRevision(DeckId, ExpectedRevision, ActualRevision);
     }
 
@@ -405,8 +401,7 @@ public abstract record DeckSaveFailure
             Func<DeckId, TResult> onNotFound,
             Func<DeckId, DeckRevision, DeckRevision, TResult> onStaleRevision,
             Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck,
-            Func<DeckId, TResult> onRevisionExhausted,
-            Func<string, string, TResult> onAuthorityVersionMismatch
+            Func<DeckId, TResult> onRevisionExhausted
         ) => onInvalidDeck(Issues);
     }
 
@@ -417,24 +412,8 @@ public abstract record DeckSaveFailure
             Func<DeckId, TResult> onNotFound,
             Func<DeckId, DeckRevision, DeckRevision, TResult> onStaleRevision,
             Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck,
-            Func<DeckId, TResult> onRevisionExhausted,
-            Func<string, string, TResult> onAuthorityVersionMismatch
+            Func<DeckId, TResult> onRevisionExhausted
         ) => onRevisionExhausted(DeckId);
-    }
-
-    public sealed record AuthorityVersionMismatch(
-        string BoundManifestVersion,
-        string RequestedManifestVersion
-    ) : DeckSaveFailure
-    {
-        public override TResult Match<TResult>(
-            Func<DeckId, TResult> onAlreadyExists,
-            Func<DeckId, TResult> onNotFound,
-            Func<DeckId, DeckRevision, DeckRevision, TResult> onStaleRevision,
-            Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck,
-            Func<DeckId, TResult> onRevisionExhausted,
-            Func<string, string, TResult> onAuthorityVersionMismatch
-        ) => onAuthorityVersionMismatch(BoundManifestVersion, RequestedManifestVersion);
     }
 }
 
