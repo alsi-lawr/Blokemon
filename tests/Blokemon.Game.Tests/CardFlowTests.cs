@@ -35,25 +35,33 @@ public sealed class CardFlowTests
         };
         var missing = (CommandOutcome.Rejected)
             engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-016-B01"));
-        var requirement = missing.Rejection.ChoiceRequirements.Single(value =>
-            value.Kind == ChoiceRequirementKind.Cards
-        );
         var optional = missing.Rejection.ChoiceRequirements.Single(value =>
             value.Kind == ChoiceRequirementKind.Optional
         );
-        var command = MatchScenario.AttackCommand(
-            state,
-            "BLK-016-B01",
+        var requested = (CommandOutcome.Applied)
+            engine.Apply(
+                state,
+                MatchScenario.AttackCommand(
+                    state,
+                    "BLK-016-B01",
+                    FrozenList<EffectChoice>.Create(new EffectChoice.Optional(optional.Id, true))
+                )
+            );
+        var requirement = requested.State.PendingEffect!.Requirements.Single(value =>
+            value.Kind == ChoiceRequirementKind.Cards
+        );
+        var command = MatchScenario.ResolveEffectChoiceCommand(
+            requested.State,
             FrozenList<EffectChoice>.Create(
-                new EffectChoice.Optional(optional.Id, true),
                 new EffectChoice.Cards(requirement.Id, FrozenList<CardInstanceId>.Create(basic.Id))
             )
         );
 
-        var outcome = engine.Apply(state, command);
+        var outcome = engine.Apply(requested.State, command);
         await Assert.That((outcome as CommandOutcome.Rejected)?.Rejection.Code).IsNull();
         var applied = (CommandOutcome.Applied)outcome;
 
+        await Assert.That(missing.Rejection.ChoiceRequirements.Count).IsEqualTo(1);
         await Assert.That(requirement.EligibleCards).IsEquivalentTo([basic.Id]);
         await Assert.That(applied.State.Card(basic.Id).Zone).IsEqualTo(CardZone.Booth);
         await Assert.That(applied.State.Card(evolved.Id).Zone).IsEqualTo(CardZone.Stack);

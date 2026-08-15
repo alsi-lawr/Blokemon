@@ -1,10 +1,44 @@
 using System.Text.Json;
+using Blokemon.Core.SetDesign;
 using Blokemon.Game;
 
 namespace Blokemon.Game.Tests;
 
 public sealed class AuthorityAuditTests
 {
+    [Test]
+    public async Task DeclaredReactiveTriggerProgram_ControlsRuntimeOutcome()
+    {
+        var owner = MatchScenario.Authority.Collectibles.Single(card => card.Id == "BLK-107");
+        var trigger = owner.PartyTricks.Single(trick => trick.MechanicalId == "BLK-107-T01");
+        var changedTrigger = trigger with
+        {
+            Program = ReplaceInstructionAmount(
+                trigger.Program,
+                BlokemonOpcode.PlaceDamageCounters,
+                4
+            ),
+        };
+        var changedOwner = owner with { PartyTricks = [changedTrigger] };
+        var authority = MatchScenario.Authority with
+        {
+            Collectibles =
+            [
+                .. MatchScenario.Authority.Collectibles.Select(card =>
+                    card.Id == changedOwner.Id ? changedOwner : card
+                ),
+            ],
+        };
+        var engine = new MatchEngine(authority);
+        var state = MatchScenario.BattleState("BLK-076", "BLK-107", ["VIM-LAIRY"], 107);
+
+        var applied = MatchScenario.Applied(
+            engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-076-B01"))
+        );
+
+        await Assert.That(applied.Card(new CardInstanceId("attacker")).Damage).IsEqualTo(40);
+    }
+
     [Test]
     public async Task ReconciledEffects_AllHaveExecutableSemanticShapesAndProvenance()
     {
@@ -51,9 +85,31 @@ public sealed class AuthorityAuditTests
                     effect.GetProperty("disposition").GetString() == "CorrectedFromCandidate6"
                 )
             )
-            .IsEqualTo(79);
+            .IsEqualTo(83);
         await Assert.That(audit.EffectCount).IsEqualTo(310);
-        await Assert.That(audit.InstructionCount).IsEqualTo(643);
+        await Assert.That(audit.InstructionCount).IsEqualTo(644);
         await Assert.That(audit.Issues.Count).IsEqualTo(0);
     }
+
+    private static BlokemonEffectInstruction[] ReplaceInstructionAmount(
+        BlokemonEffectInstruction[] program,
+        BlokemonOpcode opcode,
+        int amount
+    ) =>
+        program
+            .Select(instruction =>
+                (
+                    instruction.Opcode == opcode
+                        ? instruction with
+                        {
+                            Amount = amount,
+                        }
+                        : instruction
+                ) with
+                {
+                    Then = ReplaceInstructionAmount(instruction.Then, opcode, amount),
+                    Otherwise = ReplaceInstructionAmount(instruction.Otherwise, opcode, amount),
+                }
+            )
+            .ToArray();
 }

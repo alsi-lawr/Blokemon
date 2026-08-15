@@ -1,5 +1,5 @@
 {
-  "manifestVersion": "sv151-candidate.11",
+  "manifestVersion": "sv151-candidate.12",
   "presentationStatus": "PlaceholderBacked",
   "approvedMechanicalDisplayMap": [
     {
@@ -3041,7 +3041,10 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "sources": [
+                    "KnockedOutBlokeAttachedVim"
+                  ]
                 }
               ],
               "otherwise": []
@@ -5653,56 +5656,57 @@
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "SearchStack",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "OwnStack"
+              "then": [
+                {
+                  "opcode": "SearchStack",
+                  "amount": 2,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "OwnStack"
+                  ],
+                  "selection": "UpTo",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [
+                    "Grass"
+                  ],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Bloke"
+                    ],
+                    "ranks": [
+                      "Regular"
+                    ],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  },
+                  "destination": "OwnBooth"
+                },
+                {
+                  "opcode": "ShuffleStack",
+                  "amount": 2,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "OwnStack"
+                  ],
+                  "selection": "UpTo",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [
+                    "Grass"
+                  ],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": []
+                }
               ],
-              "selection": "UpTo",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [
-                "Grass"
-              ],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": [],
-              "cardFilter": {
-                "categories": [
-                  "Bloke"
-                ],
-                "ranks": [
-                  "Regular"
-                ],
-                "kitKinds": [],
-                "basicVimOnly": false,
-                "differentMechanicalTypes": false,
-                "excludedRelatedIds": []
-              },
-              "destination": "OwnBooth"
-            },
-            {
-              "opcode": "ShuffleStack",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "OwnStack"
-              ],
-              "selection": "UpTo",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [
-                "Grass"
-              ],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
               "otherwise": []
             }
           ]
@@ -6169,23 +6173,24 @@
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "SwapOche",
-              "amount": 1,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothChosen"
+              "then": [
+                {
+                  "opcode": "SwapOche",
+                  "amount": 1,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "OtherBoothChosen"
+                  ],
+                  "selection": "Chosen",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": []
+                }
               ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
               "otherwise": []
             }
           ]
@@ -11197,71 +11202,72 @@
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "SearchStack",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "OwnStack"
+              "then": [
+                {
+                  "opcode": "SearchStack",
+                  "amount": 2,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "OwnStack"
+                  ],
+                  "selection": "UpTo",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [
+                    "Water"
+                  ],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Vim"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": true,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
+                },
+                {
+                  "opcode": "ShuffleStack",
+                  "amount": 2,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "OwnStack"
+                  ],
+                  "selection": "UpTo",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [
+                    "Water"
+                  ],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": []
+                },
+                {
+                  "opcode": "AttachVim",
+                  "amount": 2,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "Self"
+                  ],
+                  "selection": "All",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [
+                    "Water"
+                  ],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": []
+                }
               ],
-              "selection": "UpTo",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [
-                "Water"
-              ],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": [],
-              "cardFilter": {
-                "categories": [
-                  "Vim"
-                ],
-                "ranks": [],
-                "kitKinds": [],
-                "basicVimOnly": true,
-                "differentMechanicalTypes": false,
-                "excludedRelatedIds": []
-              }
-            },
-            {
-              "opcode": "ShuffleStack",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "OwnStack"
-              ],
-              "selection": "UpTo",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [
-                "Water"
-              ],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "AttachVim",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "Self"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [
-                "Water"
-              ],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
               "otherwise": []
             }
           ]
@@ -12276,7 +12282,7 @@
                   "amount": 3,
                   "valueSource": "Fixed",
                   "targets": [
-                    "Self"
+                    "AttackingBloke"
                   ],
                   "selection": "All",
                   "targetCount": 1,
@@ -12557,7 +12563,7 @@
               "amount": 1,
               "valueSource": "Fixed",
               "targets": [
-                "OtherOche"
+                "AttackingBloke"
               ],
               "selection": "BeerMat",
               "targetCount": 1,
@@ -12881,69 +12887,100 @@
           "presentationStatus": "PlaceholderBacked",
           "program": [
             {
-              "opcode": "BeerMatToss",
-              "amount": 1,
+              "opcode": "Conditional",
+              "amount": 0,
               "valueSource": "Fixed",
               "targets": [],
-              "selection": "BeerMat",
+              "selection": "All",
               "targetCount": 1,
-              "predicates": [],
+              "predicates": [
+                {
+                  "condition": "Optional",
+                  "value": 0,
+                  "mechanicalType": null,
+                  "roughState": null,
+                  "relatedId": null
+                },
+                {
+                  "condition": "BoothHasSpace",
+                  "value": 0,
+                  "mechanicalType": null,
+                  "roughState": null,
+                  "relatedId": null
+                }
+              ],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "TriggeredPartyTrick",
-              "amount": 1,
-              "valueSource": "Fixed",
-              "targets": [
-                "Self"
+              "then": [
+                {
+                  "opcode": "MoveCards",
+                  "amount": 1,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "Self"
+                  ],
+                  "selection": "All",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": [],
+                  "sources": [
+                    "Self"
+                  ],
+                  "destination": "OwnBooth"
+                },
+                {
+                  "opcode": "BeerMatToss",
+                  "amount": 1,
+                  "valueSource": "Fixed",
+                  "targets": [],
+                  "selection": "BeerMat",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [
+                    {
+                      "opcode": "TriggeredPartyTrick",
+                      "amount": 1,
+                      "valueSource": "Fixed",
+                      "targets": [
+                        "Self"
+                      ],
+                      "selection": "BeerMat",
+                      "targetCount": 1,
+                      "predicates": [],
+                      "mechanicalTypes": [],
+                      "roughStates": [],
+                      "relatedIds": [],
+                      "then": [],
+                      "otherwise": []
+                    },
+                    {
+                      "opcode": "TakeExtraBarChit",
+                      "amount": 1,
+                      "valueSource": "Fixed",
+                      "targets": [
+                        "Self"
+                      ],
+                      "selection": "BeerMat",
+                      "targetCount": 1,
+                      "predicates": [],
+                      "mechanicalTypes": [],
+                      "roughStates": [],
+                      "relatedIds": [],
+                      "then": [],
+                      "otherwise": []
+                    }
+                  ],
+                  "otherwise": []
+                }
               ],
-              "selection": "BeerMat",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "MoveCards",
-              "amount": 1,
-              "valueSource": "Fixed",
-              "targets": [
-                "OwnMitt"
-              ],
-              "selection": "BeerMat",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": [],
-              "sources": [
-                "BarChits"
-              ],
-              "destination": "OwnMitt"
-            },
-            {
-              "opcode": "TakeExtraBarChit",
-              "amount": 1,
-              "valueSource": "Fixed",
-              "targets": [
-                "Self"
-              ],
-              "selection": "BeerMat",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
               "otherwise": []
             }
           ],
@@ -19020,37 +19057,38 @@
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [],
+              "then": [
+                {
+                  "opcode": "AttachVim",
+                  "amount": 1,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "OwnBoothChosen"
+                  ],
+                  "selection": "AnyDistribution",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": [],
+                  "sources": [
+                    "OwnEmptiesTray"
+                  ],
+                  "cardFilter": {
+                    "categories": [
+                      "Vim"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": true,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
+                }
+              ],
               "otherwise": []
-            },
-            {
-              "opcode": "AttachVim",
-              "amount": 1,
-              "valueSource": "Fixed",
-              "targets": [
-                "OwnBoothChosen"
-              ],
-              "selection": "AnyDistribution",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": [],
-              "sources": [
-                "OwnEmptiesTray"
-              ],
-              "cardFilter": {
-                "categories": [
-                  "Vim"
-                ],
-                "ranks": [],
-                "kitKinds": [],
-                "basicVimOnly": true,
-                "differentMechanicalTypes": false,
-                "excludedRelatedIds": []
-              }
             }
           ]
         },

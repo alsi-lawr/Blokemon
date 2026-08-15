@@ -5,6 +5,58 @@ namespace Blokemon.Game.Tests;
 public sealed class TriggerTimingTests
 {
     [Test]
+    public async Task RuleBoxKnockout_TakesBothBarChitsAndWins()
+    {
+        var engine = MatchScenario.Engine();
+        var state = MatchScenario.BattleState(
+            "BLK-026",
+            "BLK-151",
+            ["VIM-BEER", "VIM-BEER", "VIM-SOBER"],
+            97
+        );
+        var firstPrize = MatchScenario.Card(
+            "prize-1",
+            "VIM-LAIRY",
+            MatchScenario.FirstPlayer,
+            CardZone.BarChit,
+            0
+        );
+        var secondPrize = MatchScenario.Card(
+            "prize-2",
+            "VIM-SOBER",
+            MatchScenario.FirstPlayer,
+            CardZone.BarChit,
+            1
+        );
+        state = state with
+        {
+            Cards = FrozenList<CardState>.Create(
+                state.Cards.Append(firstPrize).Append(secondPrize).OrderBy(static card => card.Id)
+            ),
+            Players = FrozenList<PlayerState>.Create(
+                state.Players.Select(player =>
+                    player.Id == MatchScenario.FirstPlayer
+                        ? player with
+                        {
+                            BarChitsRemaining = 2,
+                        }
+                        : player
+                )
+            ),
+        };
+
+        var applied = (CommandOutcome.Applied)
+            engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-026-B01"));
+
+        await Assert.That(applied.State.Card(firstPrize.Id).Zone).IsEqualTo(CardZone.Mitt);
+        await Assert.That(applied.State.Card(secondPrize.Id).Zone).IsEqualTo(CardZone.Mitt);
+        await Assert
+            .That(applied.State.Player(MatchScenario.FirstPlayer).BarChitsRemaining)
+            .IsEqualTo(0);
+        await Assert.That(applied.State.Winner).IsEqualTo(MatchScenario.FirstPlayer);
+    }
+
+    [Test]
     public async Task WouldBeKnockedOutTrigger_ResolvesBeforeKnockout()
     {
         var engine = MatchScenario.Engine();

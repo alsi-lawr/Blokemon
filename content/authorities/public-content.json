@@ -1,7 +1,7 @@
 {
   "schemaVersion": "blokemon-public-content-schema-2.0.0-candidate.5",
   "contentVersion": "blokemon-public-content-2.0.0-candidate.5",
-  "mechanicalManifestVersion": "sv151-candidate.11",
+  "mechanicalManifestVersion": "sv151-candidate.12",
   "terminologyVersion": "blokemon-public-terminology-2.0.0-candidate.5",
   "humanApprovalStatus": "AwaitingApproval",
   "terminology": [

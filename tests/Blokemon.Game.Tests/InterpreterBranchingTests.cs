@@ -12,7 +12,7 @@ public sealed class InterpreterBranchingTests
 
         await Assert.That(audit.IsInventoryComplete).IsTrue();
         await Assert.That(audit.EffectCount).IsEqualTo(310);
-        await Assert.That(audit.InstructionCount).IsEqualTo(643);
+        await Assert.That(audit.InstructionCount).IsEqualTo(644);
     }
 
     [Test]
@@ -79,24 +79,11 @@ public sealed class InterpreterBranchingTests
             ),
         };
         var engine = MatchScenario.Engine();
-        var missing = (CommandOutcome.Rejected)
-            engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-052-B01"));
-        var targetChoice = missing.Rejection.ChoiceRequirements.Single(requirement =>
-            requirement.Kind == ChoiceRequirementKind.Cards
-        );
-        var command = MatchScenario.AttackCommand(
-            state,
-            "BLK-052-B01",
-            FrozenList<EffectChoice>.Create(
-                new EffectChoice.Cards(
-                    targetChoice.Id,
-                    FrozenList<CardInstanceId>.Create(boothCard.Id)
-                )
-            )
+        var applied = MatchScenario.Applied(
+            engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-052-B01"))
         );
 
-        var applied = MatchScenario.Applied(engine.Apply(state, command));
-
+        await Assert.That(applied.PendingEffect).IsNull();
         await Assert
             .That(applied.Card(new CardInstanceId("defender")).Zone)
             .IsEqualTo(CardZone.Oche);
@@ -130,14 +117,42 @@ public sealed class InterpreterBranchingTests
             .GetLegalActions(state, MatchScenario.FirstPlayer)
             .Single(action => action.Kind == LegalActionKind.Attack);
         var cpu = new DeterministicCpu();
-        var decision = (CpuDecision.Selected)cpu.Choose(engine, state, MatchScenario.FirstPlayer);
+        var attackDecision = (CpuDecision.Selected)
+            cpu.Choose(engine, state, MatchScenario.FirstPlayer);
+        var requested = (CommandOutcome.Applied)engine.Apply(state, attackDecision.Action.Command);
+        var pending = requested.State.PendingEffect!;
+        var wrongChooser = new MatchCommand.ResolveEffectChoice(
+            new CommandId("wrong-branch-chooser"),
+            requested.State.Id,
+            MatchScenario.SecondPlayer,
+            requested.State.Revision,
+            FrozenList<EffectChoice>.Create(
+                new EffectChoice.Cards(
+                    pending.Requirements.Single().Id,
+                    FrozenList<CardInstanceId>.Create(boothCard.Id)
+                )
+            )
+        );
+        var rejected = (CommandOutcome.Rejected)engine.Apply(requested.State, wrongChooser);
+        var choiceDecision = (CpuDecision.Selected)
+            cpu.Choose(engine, requested.State, MatchScenario.FirstPlayer);
+        var resolved = (CommandOutcome.Applied)
+            engine.Apply(requested.State, choiceDecision.Action.Command);
 
-        var applied = engine.Apply(state, decision.Action.Command);
-
-        await Assert.That(legalAttack.ChoiceRequirements.Count).IsGreaterThan(0);
-        await Assert.That(legalAttack.Command.Choices.Count).IsGreaterThan(0);
-        await Assert.That(decision.Action.Kind).IsEqualTo(LegalActionKind.Attack);
-        await Assert.That(applied).IsTypeOf<CommandOutcome.Applied>();
+        await Assert.That(legalAttack.ChoiceRequirements.Count).IsEqualTo(0);
+        await Assert.That(legalAttack.Command.Choices.Count).IsEqualTo(0);
+        await Assert.That(attackDecision.Action.Kind).IsEqualTo(LegalActionKind.Attack);
+        await Assert.That(requested.State.Phase).IsEqualTo(MatchPhase.AwaitingEffectChoice);
+        await Assert
+            .That(pending.Requirements.Single().Chooser)
+            .IsEqualTo(MatchScenario.FirstPlayer);
+        await Assert.That(rejected.Rejection.Code).IsEqualTo(CommandRejectionCode.WrongChooser);
+        await Assert.That(rejected.State).IsEqualTo(requested.State);
+        await Assert
+            .That(choiceDecision.Action.Kind)
+            .IsEqualTo(LegalActionKind.ResolveEffectChoice);
+        await Assert.That(resolved.State.PendingEffect).IsNull();
+        await Assert.That(resolved.State.Card(boothCard.Id).Zone).IsEqualTo(CardZone.Oche);
     }
 
     private static ulong SeedFor(bool firstBadge)

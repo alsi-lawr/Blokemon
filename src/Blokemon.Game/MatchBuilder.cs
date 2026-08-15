@@ -29,7 +29,7 @@ internal sealed class MatchBuilder
         _effects = [.. state.Effects];
         _processedCommands = [.. state.ProcessedCommands];
         RoundUsage = state.RoundUsage;
-        PendingAttack = state.PendingAttack;
+        PendingEffect = state.PendingEffect;
         PendingKnockout = state.PendingKnockout;
         _pendingBarChits = [.. state.PendingBarChits];
         ReplacementPlayer = state.ReplacementPlayer;
@@ -60,7 +60,7 @@ internal sealed class MatchBuilder
 
     public RoundUsage RoundUsage { get; set; }
 
-    public PendingAttackResolution? PendingAttack { get; set; }
+    public PendingEffectResolution? PendingEffect { get; set; }
 
     public PendingKnockoutResolution? PendingKnockout { get; set; }
 
@@ -494,7 +494,7 @@ internal sealed class MatchBuilder
             ),
             FrozenList<CommandId>.Create(_processedCommands),
             RoundUsage,
-            PendingAttack,
+            PendingEffect,
             PendingKnockout,
             FrozenList<PendingBarChitResolution>.Create(_pendingBarChits),
             ReplacementPlayer,

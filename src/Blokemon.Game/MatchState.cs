@@ -75,7 +75,7 @@ public sealed record MatchState(
     FrozenList<TemporaryEffect> Effects,
     FrozenList<CommandId> ProcessedCommands,
     RoundUsage RoundUsage,
-    PendingAttackResolution? PendingAttack,
+    PendingEffectResolution? PendingEffect,
     PendingKnockoutResolution? PendingKnockout,
     FrozenList<PendingBarChitResolution> PendingBarChits,
     PlayerId? ReplacementPlayer,

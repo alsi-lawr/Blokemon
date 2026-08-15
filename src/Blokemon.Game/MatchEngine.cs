@@ -794,6 +794,16 @@ public sealed class MatchEngine
 
     private HandlerResult PlayKit(MatchBuilder builder, MatchCommand.PlayKit command)
     {
+        return PlayKit(builder, command, false, []);
+    }
+
+    private HandlerResult PlayKit(
+        MatchBuilder builder,
+        MatchCommand.PlayKit command,
+        bool isResuming,
+        FrozenList<bool> beerMatResults
+    )
+    {
         var turn = ValidatePlayingTurn(builder, command.Actor);
         if (turn is not null)
         {
@@ -823,6 +833,77 @@ public sealed class MatchEngine
             return HandlerResult.Reject(categoryRejection.Value);
         }
 
+        var executableRules = kit
+            .HouseRules.Where(rule =>
+                !ContainsOpcode(rule.Program, BlokemonOpcode.OncePerRound)
+                && !IsDeclarativeHouseRule(rule)
+            )
+            .ToArray();
+        if (!isResuming)
+        {
+            var requirements = FrozenList<ChoiceRequirement>.Create(
+                executableRules
+                    .SelectMany(rule =>
+                        _interpreter.InspectChoices(
+                            builder,
+                            command.Actor,
+                            kitCard,
+                            new EffectId(rule.MechanicalId),
+                            rule.Program
+                        )
+                    )
+                    .DistinctBy(static requirement => requirement.Id)
+            );
+            var choiceRejection = _interpreter.ValidateChoiceSubmission(
+                command.Choices,
+                requirements,
+                command.Actor
+            );
+            if (choiceRejection is not null)
+            {
+                return HandlerResult.Reject(choiceRejection.Value, requirements);
+            }
+        }
+
+        foreach (var houseRule in executableRules)
+        {
+            var effect = new EffectId(houseRule.MechanicalId);
+            var plan = _interpreter.Plan(
+                builder,
+                command.Actor,
+                kitCard,
+                effect,
+                houseRule.Program,
+                command.Choices,
+                false,
+                true,
+                beerMatResults
+            );
+            if (plan.IsApplied)
+            {
+                continue;
+            }
+
+            if (plan.Rejection != CommandRejectionCode.ChoiceRequired)
+            {
+                return HandlerResult.Reject(
+                    plan.Rejection ?? CommandRejectionCode.InvalidChoice,
+                    plan.Requirements
+                );
+            }
+
+            return PendEffect(
+                builder,
+                command,
+                kitCard.Id,
+                effect,
+                plan.Requirements,
+                beerMatResults,
+                plan.BeerMatResults,
+                false
+            );
+        }
+
         if (kit.Kind == BlokemonKitKind.BarKit && command.Target is { } targetId)
         {
             builder.Attach(kitCard.Id, targetId);
@@ -838,12 +919,7 @@ public sealed class MatchEngine
             builder.MoveCard(kitCard.Id, CardZone.Local);
         }
 
-        foreach (
-            var houseRule in kit.HouseRules.Where(rule =>
-                !ContainsOpcode(rule.Program, BlokemonOpcode.OncePerRound)
-                && !IsDeclarativeHouseRule(rule)
-            )
-        )
+        foreach (var houseRule in executableRules)
         {
             var execution = _interpreter.Execute(
                 builder,
@@ -853,7 +929,8 @@ public sealed class MatchEngine
                 houseRule.Program,
                 command.Choices,
                 false,
-                true
+                true,
+                beerMatResults: beerMatResults
             );
             if (!execution.IsApplied)
             {
@@ -1026,6 +1103,16 @@ public sealed class MatchEngine
 
     private HandlerResult UsePartyTrick(MatchBuilder builder, MatchCommand.UsePartyTrick command)
     {
+        return UsePartyTrick(builder, command, false, []);
+    }
+
+    private HandlerResult UsePartyTrick(
+        MatchBuilder builder,
+        MatchCommand.UsePartyTrick command,
+        bool isResuming,
+        FrozenList<bool> beerMatResults
+    )
+    {
         var turn = ValidatePlayingTurn(builder, command.Actor);
         if (turn is not null)
         {
@@ -1068,15 +1155,70 @@ public sealed class MatchEngine
             return HandlerResult.Reject(CommandRejectionCode.EffectUnavailable);
         }
 
+        var program = trick?.Program ?? houseRule!.Program;
+        if (!isResuming)
+        {
+            var requirements = _interpreter.InspectChoices(
+                builder,
+                command.Actor,
+                source,
+                command.Effect,
+                program
+            );
+            var choiceRejection = _interpreter.ValidateChoiceSubmission(
+                command.Choices,
+                requirements,
+                command.Actor
+            );
+            if (choiceRejection is not null)
+            {
+                return HandlerResult.Reject(choiceRejection.Value, requirements);
+            }
+        }
+
+        var plan = _interpreter.Plan(
+            builder,
+            command.Actor,
+            source,
+            command.Effect,
+            program,
+            command.Choices,
+            false,
+            isActivatedLocalRule,
+            beerMatResults
+        );
+        if (!plan.IsApplied)
+        {
+            if (plan.Rejection != CommandRejectionCode.ChoiceRequired)
+            {
+                return HandlerResult.Reject(
+                    plan.Rejection ?? CommandRejectionCode.InvalidChoice,
+                    plan.Requirements
+                );
+            }
+
+            return PendEffect(
+                builder,
+                command,
+                source.Id,
+                command.Effect,
+                plan.Requirements,
+                beerMatResults,
+                plan.BeerMatResults,
+                false
+            );
+        }
+
         var execution = _interpreter.Execute(
             builder,
             command.Actor,
             source,
             command.Effect,
-            trick?.Program ?? houseRule!.Program,
+            program,
             command.Choices,
             false,
-            isActivatedLocalRule
+            isActivatedLocalRule,
+            beerMatResults: beerMatResults
         );
         if (!execution.IsApplied)
         {
@@ -1093,10 +1235,16 @@ public sealed class MatchEngine
 
     private HandlerResult Attack(MatchBuilder builder, MatchCommand.Attack command)
     {
-        return Attack(builder, command, false);
+        return Attack(builder, command, false, false, []);
     }
 
-    private HandlerResult Attack(MatchBuilder builder, MatchCommand.Attack command, bool isResuming)
+    private HandlerResult Attack(
+        MatchBuilder builder,
+        MatchCommand.Attack command,
+        bool isResuming,
+        bool attackStarted,
+        FrozenList<bool> beerMatResults
+    )
     {
         var turn = ValidatePlayingTurn(builder, command.Actor);
         if (turn is not null)
@@ -1171,10 +1319,14 @@ public sealed class MatchEngine
                     return HandlerResult.Reject(CommandRejectionCode.InvalidChoice, requirements);
                 }
 
-                builder.PendingAttack = new PendingAttackResolution(
+                builder.PendingEffect = new PendingEffectResolution(
                     command,
+                    attacker.Id,
+                    command.AttackId,
                     chooser,
-                    FrozenList<ChoiceRequirement>.Create(deferred)
+                    FrozenList<ChoiceRequirement>.Create(deferred),
+                    beerMatResults,
+                    false
                 );
                 builder.Phase = MatchPhase.AwaitingEffectChoice;
                 builder.Events.Add(
@@ -1192,47 +1344,83 @@ public sealed class MatchEngine
         var defendingCard = builder.Oche(builder.Other(command.Actor));
         var defendingDamageBefore = defendingCard?.Damage ?? 0;
 
-        builder.Events.Add(
-            new PendingMatchEvent(
-                MatchEventKind.AttackDeclared,
-                command.Actor,
-                attacker.Id,
-                Effect: command.AttackId
-            )
-        );
-        if (attacker.RoughStates.Any(entry => entry.State == BlokemonRoughState.Muddled))
+        if (!attackStarted)
         {
-            var badge = builder.Random.NextInt(2) == 1;
             builder.Events.Add(
                 new PendingMatchEvent(
-                    MatchEventKind.BeerMatTossed,
+                    MatchEventKind.AttackDeclared,
                     command.Actor,
                     attacker.Id,
-                    Effect: command.AttackId,
-                    BadgeSide: badge
+                    Effect: command.AttackId
                 )
             );
-            if (!badge)
+            if (attacker.RoughStates.Any(entry => entry.State == BlokemonRoughState.Muddled))
             {
-                builder.PlaceDamage(
-                    command.Actor,
-                    attacker.Id,
-                    30,
-                    DamageKind.PlacedCounter,
-                    attacker.Id
-                );
+                var badge = builder.Random.NextInt(2) == 1;
                 builder.Events.Add(
                     new PendingMatchEvent(
-                        MatchEventKind.AttackCancelled,
+                        MatchEventKind.BeerMatTossed,
                         command.Actor,
                         attacker.Id,
-                        Effect: command.AttackId
+                        Effect: command.AttackId,
+                        BadgeSide: badge
                     )
                 );
-                ResolveSendHome(builder, []);
-                FinishOrPendRound(builder);
-                return HandlerResult.Accepted;
+                if (!badge)
+                {
+                    builder.PlaceDamage(
+                        command.Actor,
+                        attacker.Id,
+                        30,
+                        DamageKind.PlacedCounter,
+                        attacker.Id
+                    );
+                    builder.Events.Add(
+                        new PendingMatchEvent(
+                            MatchEventKind.AttackCancelled,
+                            command.Actor,
+                            attacker.Id,
+                            Effect: command.AttackId
+                        )
+                    );
+                    ResolveSendHome(builder, []);
+                    FinishOrPendRound(builder);
+                    return HandlerResult.Accepted;
+                }
             }
+        }
+
+        var plan = _interpreter.Plan(
+            builder,
+            command.Actor,
+            attacker,
+            command.AttackId,
+            attack.Program,
+            command.Choices,
+            true,
+            beerMatResults: beerMatResults
+        );
+        if (!plan.IsApplied)
+        {
+            if (plan.Rejection != CommandRejectionCode.ChoiceRequired)
+            {
+                return HandlerResult.Reject(
+                    plan.Rejection ?? CommandRejectionCode.InvalidChoice,
+                    plan.Requirements
+                );
+            }
+
+            var pending = PendEffect(
+                builder,
+                command,
+                attacker.Id,
+                command.AttackId,
+                plan.Requirements,
+                beerMatResults,
+                plan.BeerMatResults,
+                true
+            );
+            return pending;
         }
 
         var execution = _interpreter.Execute(
@@ -1242,7 +1430,8 @@ public sealed class MatchEngine
             command.AttackId,
             attack.Program,
             command.Choices,
-            true
+            true,
+            beerMatResults: beerMatResults
         );
         if (!execution.IsApplied)
         {
@@ -1267,7 +1456,7 @@ public sealed class MatchEngine
         MatchCommand.ResolveEffectChoice command
     )
     {
-        var pending = builder.PendingAttack;
+        var pending = builder.PendingEffect;
         if (builder.Phase != MatchPhase.AwaitingEffectChoice || pending is null)
         {
             return HandlerResult.Reject(CommandRejectionCode.WrongPhase);
@@ -1288,16 +1477,105 @@ public sealed class MatchEngine
             return HandlerResult.Reject(choiceRejection.Value, pending.Requirements);
         }
 
-        builder.PendingAttack = null;
+        builder.PendingEffect = null;
         builder.Phase = MatchPhase.Playing;
-        var resumed = pending.Attack with
+        var resumed = WithChoices(
+            pending.Command,
+            FrozenList<EffectChoice>.Create(pending.Command.Choices.Concat(command.Choices))
+        );
+        return resumed switch
         {
-            Choices = FrozenList<EffectChoice>.Create(
-                pending.Attack.Choices.Concat(command.Choices)
+            MatchCommand.Attack attack => Attack(
+                builder,
+                attack,
+                true,
+                pending.AttackStarted,
+                pending.BeerMatResults
             ),
+            MatchCommand.PlayKit playKit => PlayKit(builder, playKit, true, pending.BeerMatResults),
+            MatchCommand.UsePartyTrick usePartyTrick => UsePartyTrick(
+                builder,
+                usePartyTrick,
+                true,
+                pending.BeerMatResults
+            ),
+            _ => HandlerResult.Reject(CommandRejectionCode.InvalidChoice),
         };
-        return Attack(builder, resumed, true);
     }
+
+    private HandlerResult PendEffect(
+        MatchBuilder builder,
+        MatchCommand command,
+        CardInstanceId source,
+        EffectId effect,
+        FrozenList<ChoiceRequirement> requirements,
+        FrozenList<bool> recordedBeerMats,
+        FrozenList<bool> plannedBeerMats,
+        bool attackStarted
+    )
+    {
+        if (requirements.Count == 0)
+        {
+            return HandlerResult.Reject(CommandRejectionCode.InvalidChoice);
+        }
+
+        var chooser = requirements[0].Chooser;
+        if (requirements.Any(requirement => requirement.Chooser != chooser))
+        {
+            return HandlerResult.Reject(CommandRejectionCode.InvalidChoice, requirements);
+        }
+
+        foreach (var expected in plannedBeerMats.Skip(recordedBeerMats.Count))
+        {
+            var actual = builder.Random.NextInt(2) == 1;
+            if (actual != expected)
+            {
+                return HandlerResult.Reject(CommandRejectionCode.AuthorityMismatch);
+            }
+
+            builder.Events.Add(
+                new PendingMatchEvent(
+                    MatchEventKind.BeerMatTossed,
+                    command.Actor,
+                    source,
+                    Effect: effect,
+                    BadgeSide: actual
+                )
+            );
+        }
+
+        builder.PendingEffect = new PendingEffectResolution(
+            command,
+            source,
+            effect,
+            chooser,
+            requirements,
+            plannedBeerMats,
+            attackStarted
+        );
+        builder.Phase = MatchPhase.AwaitingEffectChoice;
+        builder.Events.Add(
+            new PendingMatchEvent(
+                MatchEventKind.EffectChoiceRequested,
+                chooser,
+                source,
+                Effect: effect
+            )
+        );
+        return HandlerResult.Accepted;
+    }
+
+    private static MatchCommand WithChoices(
+        MatchCommand command,
+        FrozenList<EffectChoice> choices
+    ) =>
+        command switch
+        {
+            MatchCommand.Attack attack => attack with { Choices = choices },
+            MatchCommand.PlayKit playKit => playKit with { Choices = choices },
+            MatchCommand.UsePartyTrick usePartyTrick => usePartyTrick with { Choices = choices },
+            _ => command,
+        };
 
     private HandlerResult ResolveKnockoutTrigger(
         MatchBuilder builder,
@@ -1320,10 +1598,66 @@ public sealed class MatchEngine
             return HandlerResult.Reject(CommandRejectionCode.InvalidChoice);
         }
 
+        var source = builder.Card(pending.TriggerSource);
+        var trick = _catalog
+            .PartyTricks(source)
+            .Single(value => new EffectId(value.MechanicalId) == pending.TriggerEffect);
+        var context = new TriggerContext(pending.KnockedOutCard, pending.AttackingCard);
+        var requirements = _interpreter.InspectChoices(
+            builder,
+            command.Actor,
+            source,
+            pending.TriggerEffect,
+            trick.Program,
+            context
+        );
+        var optional = requirements.Single(requirement =>
+            requirement.Kind == ChoiceRequirementKind.Optional
+        );
+        var acceptedOptional = new EffectChoice.Optional(optional.Id, command.Vim is not null);
+        if (command.Vim is not null)
+        {
+            requirements = _interpreter
+                .Plan(
+                    builder,
+                    command.Actor,
+                    source,
+                    pending.TriggerEffect,
+                    trick.Program,
+                    FrozenList<EffectChoice>.Create(acceptedOptional),
+                    false,
+                    triggerContext: context
+                )
+                .Requirements;
+        }
+
+        var choices = new List<EffectChoice> { acceptedOptional };
         if (command.Vim is { } selected)
         {
-            builder.DetachTo(selected, CardZone.Mitt);
-            builder.Attach(selected, pending.TriggerSource);
+            var cards = requirements.Single(requirement =>
+                requirement.Kind == ChoiceRequirementKind.Cards
+            );
+            choices.Add(
+                new EffectChoice.Cards(cards.Id, FrozenList<CardInstanceId>.Create(selected))
+            );
+        }
+
+        var execution = _interpreter.Execute(
+            builder,
+            command.Actor,
+            source,
+            pending.TriggerEffect,
+            trick.Program,
+            FrozenList<EffectChoice>.Create(choices),
+            false,
+            triggerContext: context
+        );
+        if (!execution.IsApplied)
+        {
+            return HandlerResult.Reject(
+                execution.Rejection ?? CommandRejectionCode.InvalidChoice,
+                execution.Requirements
+            );
         }
 
         builder.Events.Add(
@@ -1344,7 +1678,7 @@ public sealed class MatchEngine
         if (pending.TriggerSources.Count > 0 && remainingVim.Length > 0)
         {
             var nextSource = pending.TriggerSources[0];
-            var trick = _catalog
+            var nextTrick = _catalog
                 .PartyTricks(builder.Card(nextSource))
                 .Single(value =>
                     value.Trigger == BlokemonTrigger.OnOwnBlokeSentHomeByOtherAttackDamage
@@ -1353,7 +1687,7 @@ public sealed class MatchEngine
             {
                 TriggerSources = FrozenList<CardInstanceId>.Create(pending.TriggerSources.Skip(1)),
                 TriggerSource = nextSource,
-                TriggerEffect = new EffectId(trick.MechanicalId),
+                TriggerEffect = new EffectId(nextTrick.MechanicalId),
                 EligibleVim = FrozenList<CardInstanceId>.Create(remainingVim),
             };
             return HandlerResult.Accepted;
@@ -1406,20 +1740,36 @@ public sealed class MatchEngine
         }
 
         builder.RemoveBarChit(pending);
-        if (command.PutOntoBooth)
+        var trick = _catalog
+            .PartyTricks(card)
+            .Single(value => new EffectId(value.MechanicalId) == pending.Effect);
+        var requirements = _interpreter.InspectChoices(
+            builder,
+            command.Actor,
+            card,
+            pending.Effect,
+            trick.Program
+        );
+        var optional = requirements.Single(requirement =>
+            requirement.Kind == ChoiceRequirementKind.Optional
+        );
+        var execution = _interpreter.Execute(
+            builder,
+            command.Actor,
+            card,
+            pending.Effect,
+            trick.Program,
+            FrozenList<EffectChoice>.Create(
+                new EffectChoice.Optional(optional.Id, command.PutOntoBooth)
+            ),
+            false
+        );
+        if (!execution.IsApplied)
         {
-            builder.MoveCard(card.Id, CardZone.Booth);
-            builder.SetCard(
-                builder.Card(card.Id) with
-                {
-                    EnteredAtOwnerRound = builder.Player(command.Actor).RoundsStarted,
-                }
+            return HandlerResult.Reject(
+                execution.Rejection ?? CommandRejectionCode.InvalidChoice,
+                execution.Requirements
             );
-            if (TossCheckup(builder, command.Actor, card.Id))
-            {
-                var extra = builder.TakeBarChits(command.Actor, 1, card.Id);
-                QueueBarChitTriggers(builder, command.Actor, extra, true);
-            }
         }
 
         builder.Events.Add(
@@ -1689,7 +2039,10 @@ public sealed class MatchEngine
                 continue;
             }
 
-            if (attackingCard is not null && TryRecover(builder, current))
+            if (
+                attackingCard is { } recoverAttacker
+                && TryRecover(builder, current, recoverAttacker)
+            )
             {
                 continue;
             }
@@ -1730,7 +2083,7 @@ public sealed class MatchEngine
         return true;
     }
 
-    private bool TryRecover(MatchBuilder builder, CardState card)
+    private bool TryRecover(MatchBuilder builder, CardState card, CardInstanceId attackingCard)
     {
         var recovery = _catalog
             .PartyTricks(card)
@@ -1742,28 +2095,32 @@ public sealed class MatchEngine
             return false;
         }
 
-        var badge = builder.Random.NextInt(2) == 1;
-        builder.Events.Add(
-            new PendingMatchEvent(
-                MatchEventKind.BeerMatTossed,
-                card.Owner,
-                card.Id,
-                Effect: new EffectId(recovery.MechanicalId),
-                BadgeSide: badge
-            )
+        var effect = new EffectId(recovery.MechanicalId);
+        var execution = _interpreter.Execute(
+            builder,
+            card.Owner,
+            card,
+            effect,
+            recovery.Program,
+            [],
+            false,
+            triggerContext: new TriggerContext(card.Id, attackingCard)
         );
-        if (!badge)
+        if (!execution.IsApplied)
         {
             return false;
         }
 
-        builder.SetCard(
-            card with
-            {
-                Damage = Math.Max(0, EffectiveStayingPower(builder, card) - 10),
-            }
+        builder.Events.Add(
+            new PendingMatchEvent(
+                MatchEventKind.TriggerResolved,
+                card.Owner,
+                card.Id,
+                Effect: effect
+            )
         );
-        return true;
+        var recovered = builder.Card(card.Id);
+        return recovered.Damage < EffectiveStayingPower(builder, recovered);
     }
 
     private bool QueueKnockoutTrigger(
@@ -1774,21 +2131,6 @@ public sealed class MatchEngine
         bool finishRoundAfterResolution
     )
     {
-        var eligibleVim = knockedOut
-            .Attachments.Select(builder.Card)
-            .Where(card =>
-                card.Kind == CardKind.Vim
-                && _catalog.Vim(card.MechanicalId).MechanicalType
-                    == BlokemonMechanicalType.Lightning
-            )
-            .Select(static card => card.Id)
-            .Order()
-            .ToArray();
-        if (eligibleVim.Length == 0)
-        {
-            return false;
-        }
-
         var sources = builder
             .Cards.Where(card =>
                 card.Owner == knockedOut.Owner && card.Id != knockedOut.Id && IsInPlay(card)
@@ -1813,12 +2155,45 @@ public sealed class MatchEngine
             .Single(static value =>
                 value.Trigger == BlokemonTrigger.OnOwnBlokeSentHomeByOtherAttackDamage
             );
+        var effect = new EffectId(trick.MechanicalId);
+        var requirements = _interpreter.InspectChoices(
+            builder,
+            knockedOut.Owner,
+            first,
+            effect,
+            trick.Program,
+            new TriggerContext(knockedOut.Id, attackingCard)
+        );
+        var optional = requirements.Single(requirement =>
+            requirement.Kind == ChoiceRequirementKind.Optional
+        );
+        var branch = _interpreter.Plan(
+            builder,
+            knockedOut.Owner,
+            first,
+            effect,
+            trick.Program,
+            FrozenList<EffectChoice>.Create(new EffectChoice.Optional(optional.Id, true)),
+            false,
+            triggerContext: new TriggerContext(knockedOut.Id, attackingCard)
+        );
+        var eligibleVim = branch
+            .Requirements.Where(requirement => requirement.Kind == ChoiceRequirementKind.Cards)
+            .SelectMany(static requirement => requirement.EligibleCards)
+            .Distinct()
+            .Order()
+            .ToArray();
+        if (eligibleVim.Length == 0)
+        {
+            return false;
+        }
+
         builder.PendingKnockout = new PendingKnockoutResolution(
             knockedOut.Id,
             remainingKnockouts,
             FrozenList<CardInstanceId>.Create(sources.Skip(1).Select(static card => card.Id)),
             first.Id,
-            new EffectId(trick.MechanicalId),
+            effect,
             knockedOut.Owner,
             FrozenList<CardInstanceId>.Create(eligibleVim),
             attackingCard,
@@ -1831,7 +2206,7 @@ public sealed class MatchEngine
                 knockedOut.Owner,
                 first.Id,
                 FrozenList<CardInstanceId>.Create(knockedOut.Id),
-                new EffectId(trick.MechanicalId)
+                effect
             )
         );
         return true;
@@ -1839,15 +2214,14 @@ public sealed class MatchEngine
 
     private bool SendHomeOne(MatchBuilder builder, CardState current, CardInstanceId? attackingCard)
     {
-        var retaliates =
-            attackingCard is not null
-            && current.Zone == CardZone.Oche
-            && _catalog
-                .PartyTricks(current)
-                .Any(static trick =>
-                    trick.Trigger == BlokemonTrigger.AfterSelfSentHomeByAttackDamage
-                )
-            && TossCheckup(builder, current.Owner, current.Id);
+        var retaliation =
+            attackingCard is not null && current.Zone == CardZone.Oche
+                ? _catalog
+                    .PartyTricks(current)
+                    .FirstOrDefault(static trick =>
+                        trick.Trigger == BlokemonTrigger.AfterSelfSentHomeByAttackDamage
+                    )
+                : null;
         var wasOche = current.Zone == CardZone.Oche;
         builder.ChuckBloke(current.Id);
         builder.Events.Add(
@@ -1861,6 +2235,32 @@ public sealed class MatchEngine
         var takingPlayer = builder.Other(current.Owner);
         var taken = builder.TakeBarChits(takingPlayer, _catalog.BarChits(current), current.Id);
         QueueBarChitTriggers(builder, takingPlayer, taken, attackingCard is not null);
+        var retaliates = false;
+        if (retaliation is not null && attackingCard is { } attacker)
+        {
+            var effect = new EffectId(retaliation.MechanicalId);
+            var execution = _interpreter.Execute(
+                builder,
+                current.Owner,
+                current,
+                effect,
+                retaliation.Program,
+                [],
+                false,
+                triggerContext: new TriggerContext(current.Id, attacker)
+            );
+            retaliates = execution.ForcedSendHome.Contains(attacker);
+            builder.Events.Add(
+                new PendingMatchEvent(
+                    MatchEventKind.TriggerResolved,
+                    current.Owner,
+                    current.Id,
+                    execution.ForcedSendHome,
+                    effect
+                )
+            );
+        }
+
         if (wasOche)
         {
             AssignReplacement(builder, current.Owner);
@@ -1927,35 +2327,31 @@ public sealed class MatchEngine
             return;
         }
 
-        if (
-            defender.Zone == CardZone.Oche
-            && _catalog
+        foreach (
+            var trick in _catalog
                 .PartyTricks(defender)
-                .Any(static trick => trick.Trigger == BlokemonTrigger.AfterSelfDamagedByAttack)
+                .Where(static trick => trick.Trigger == BlokemonTrigger.AfterSelfDamagedByAttack)
         )
         {
-            builder.PlaceDamage(
+            var effect = new EffectId(trick.MechanicalId);
+            _interpreter.Execute(
+                builder,
                 defender.Owner,
-                attacker.Id,
-                30,
-                DamageKind.PlacedCounter,
-                defender.Id
+                defender,
+                effect,
+                trick.Program,
+                [],
+                false,
+                triggerContext: new TriggerContext(defender.Id, attacker.Id)
             );
-        }
-
-        if (
-            builder.Effects.Any(effect =>
-                effect.TargetCard == defender.Id
-                && effect.Kind == TemporaryEffectKind.TriggeredPartyTrick
-            )
-        )
-        {
-            builder.PlaceDamage(
-                defender.Owner,
-                attacker.Id,
-                defender.Damage - damageBefore,
-                DamageKind.PlacedCounter,
-                defender.Id
+            builder.Events.Add(
+                new PendingMatchEvent(
+                    MatchEventKind.TriggerResolved,
+                    defender.Owner,
+                    defender.Id,
+                    FrozenList<CardInstanceId>.Create(attacker.Id),
+                    effect
+                )
             );
         }
     }
@@ -2306,7 +2702,7 @@ public sealed class MatchEngine
 
     private IEnumerable<LegalAction> EffectChoiceActions(MatchState state, PlayerId actor)
     {
-        var pending = state.PendingAttack;
+        var pending = state.PendingEffect;
         if (pending is null || pending.Chooser != actor)
         {
             return [];
@@ -2318,14 +2714,14 @@ public sealed class MatchEngine
             new LegalAction(
                 LegalActionKind.ResolveEffectChoice,
                 new MatchCommand.ResolveEffectChoice(
-                    CpuCommandId(state, $"choice:{pending.Attack.Id.Value}"),
+                    CpuCommandId(state, $"choice:{pending.Command.Id.Value}"),
                     state.Id,
                     actor,
                     state.Revision,
                     choices
                 ),
                 pending.Requirements,
-                $"choice:{pending.Attack.Id.Value}"
+                $"choice:{pending.Command.Id.Value}"
             ),
         ];
     }
@@ -2694,50 +3090,60 @@ public sealed class MatchEngine
 
     private static FrozenList<EffectChoice> StableChoices(
         FrozenList<ChoiceRequirement> requirements
-    ) =>
-        FrozenList<EffectChoice>.Create(
-            requirements.Select(requirement =>
-                requirement.Kind switch
-                {
-                    ChoiceRequirementKind.Optional => (EffectChoice)
-                        new EffectChoice.Optional(requirement.Id, true),
-                    ChoiceRequirementKind.Amount => new EffectChoice.Amount(
-                        requirement.Id,
-                        requirement.Minimum
-                    ),
-                    ChoiceRequirementKind.Cards => new EffectChoice.Cards(
-                        requirement.Id,
-                        FrozenList<CardInstanceId>.Create(
-                            requirement.EligibleCards.Take(requirement.Minimum)
+    ) => FrozenList<EffectChoice>.Create(requirements.SelectMany(StableChoice));
+
+    private static IEnumerable<EffectChoice> StableChoice(ChoiceRequirement requirement) =>
+        requirement.Kind switch
+        {
+            ChoiceRequirementKind.Optional => [new EffectChoice.Optional(requirement.Id, true)],
+            ChoiceRequirementKind.Amount =>
+            [
+                new EffectChoice.Amount(requirement.Id, requirement.Minimum),
+            ],
+            ChoiceRequirementKind.Cards =>
+            [
+                new EffectChoice.Cards(
+                    requirement.Id,
+                    FrozenList<CardInstanceId>.Create(
+                        requirement.EligibleCards.Take(requirement.Minimum)
+                    )
+                ),
+            ],
+            ChoiceRequirementKind.MechanicalType => requirement
+                .EligibleMechanicalTypes.Take(1)
+                .Select(type =>
+                    (EffectChoice)new EffectChoice.MechanicalType(requirement.Id, type)
+                ),
+            ChoiceRequirementKind.Attack => requirement
+                .EligibleEffects.Take(1)
+                .Select(effect => (EffectChoice)new EffectChoice.Attack(requirement.Id, effect)),
+            ChoiceRequirementKind.Distribution => requirement
+                .EligibleCards.Take(1)
+                .Select(card =>
+                    (EffectChoice)
+                        new EffectChoice.Distribution(
+                            requirement.Id,
+                            FrozenList<DamageAllocation>.Create(
+                                new DamageAllocation(card, requirement.Maximum)
+                            )
                         )
-                    ),
-                    ChoiceRequirementKind.MechanicalType => new EffectChoice.MechanicalType(
-                        requirement.Id,
-                        requirement.EligibleMechanicalTypes[0]
-                    ),
-                    ChoiceRequirementKind.Attack => new EffectChoice.Attack(
-                        requirement.Id,
-                        requirement.EligibleEffects[0]
-                    ),
-                    ChoiceRequirementKind.Distribution => new EffectChoice.Distribution(
-                        requirement.Id,
-                        FrozenList<DamageAllocation>.Create(
-                            new DamageAllocation(requirement.EligibleCards[0], requirement.Maximum)
+                ),
+            ChoiceRequirementKind.Attachments => requirement
+                .EligibleTargets.Take(1)
+                .Select(target =>
+                    (EffectChoice)
+                        new EffectChoice.Attachments(
+                            requirement.Id,
+                            FrozenList<VimAttachment>.Create(
+                                requirement.EligibleCards.Select(vim => new VimAttachment(
+                                    vim,
+                                    target
+                                ))
+                            )
                         )
-                    ),
-                    ChoiceRequirementKind.Attachments => new EffectChoice.Attachments(
-                        requirement.Id,
-                        FrozenList<VimAttachment>.Create(
-                            requirement.EligibleCards.Select(vim => new VimAttachment(
-                                vim,
-                                requirement.EligibleTargets[0]
-                            ))
-                        )
-                    ),
-                    _ => throw new UnreachableException(),
-                }
-            )
-        );
+                ),
+            _ => throw new UnreachableException(),
+        };
 
     private static CommandId CpuCommandId(MatchState state, string key) =>
         new($"cpu:{state.Revision.Value}:{key}");

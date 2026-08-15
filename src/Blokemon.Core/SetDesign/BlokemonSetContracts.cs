@@ -159,6 +159,7 @@ public enum BlokemonCondition
     OwnBarChitCountIsGreater,
     TargetHasDamage,
     OtherBoothExists,
+    BoothHasSpace,
     OwnBlokeSentHomeByOtherAttackDamage,
     OtherSentHomeByThisAttackDamage,
     OwnersFirstRound,
@@ -191,6 +192,8 @@ public enum BlokemonTarget
     OwnAttachedBarKits,
     OwnOcheAttachedVim,
     OtherOcheAttachedVim,
+    KnockedOutBlokeAttachedVim,
+    AttackingBloke,
     BarChits,
     LocalInPlay,
 }

@@ -79,14 +79,21 @@ public sealed class ExceptionalEffectTests
         var optional = missing.Rejection.ChoiceRequirements.Single(value =>
             value.Kind == ChoiceRequirementKind.Optional
         );
-        var cards = missing.Rejection.ChoiceRequirements.Single(value =>
+        var requested = (CommandOutcome.Applied)
+            engine.Apply(
+                state,
+                MatchScenario.AttackCommand(
+                    state,
+                    "BLK-101-B01",
+                    FrozenList<EffectChoice>.Create(new EffectChoice.Optional(optional.Id, true))
+                )
+            );
+        var cards = requested.State.PendingEffect!.Requirements.Single(value =>
             value.Kind == ChoiceRequirementKind.Cards
         );
-        var command = MatchScenario.AttackCommand(
-            state,
-            "BLK-101-B01",
+        var command = MatchScenario.ResolveEffectChoiceCommand(
+            requested.State,
             FrozenList<EffectChoice>.Create(
-                new EffectChoice.Optional(optional.Id, true),
                 new EffectChoice.Cards(
                     cards.Id,
                     FrozenList<CardInstanceId>.Create(firstTool.Id, secondTool.Id)
@@ -94,7 +101,7 @@ public sealed class ExceptionalEffectTests
             )
         );
 
-        var applied = MatchScenario.Applied(engine.Apply(state, command));
+        var applied = MatchScenario.Applied(engine.Apply(requested.State, command));
 
         await Assert.That(applied.Card(new CardInstanceId("defender")).Damage).IsEqualTo(100);
         await Assert.That(applied.Card(firstTool.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
@@ -162,14 +169,21 @@ public sealed class ExceptionalEffectTests
         var optional = missing.Rejection.ChoiceRequirements.Single(value =>
             value.Kind == ChoiceRequirementKind.Optional
         );
-        var target = missing.Rejection.ChoiceRequirements.Single(value =>
+        var requested = (CommandOutcome.Applied)
+            engine.Apply(
+                state,
+                PartyTrick(
+                    state,
+                    effect,
+                    FrozenList<EffectChoice>.Create(new EffectChoice.Optional(optional.Id, true))
+                )
+            );
+        var target = requested.State.PendingEffect!.Requirements.Single(value =>
             value.Kind == ChoiceRequirementKind.Cards
         );
-        var command = PartyTrick(
-            state,
-            effect,
+        var command = MatchScenario.ResolveEffectChoiceCommand(
+            requested.State,
             FrozenList<EffectChoice>.Create(
-                new EffectChoice.Optional(optional.Id, true),
                 new EffectChoice.Cards(
                     target.Id,
                     FrozenList<CardInstanceId>.Create(new CardInstanceId("defender"))
@@ -177,7 +191,7 @@ public sealed class ExceptionalEffectTests
             )
         );
 
-        var applied = MatchScenario.Applied(engine.Apply(state, command));
+        var applied = MatchScenario.Applied(engine.Apply(requested.State, command));
 
         await Assert.That(applied.Card(new CardInstanceId("defender")).Damage).IsEqualTo(20);
         await Assert
@@ -225,14 +239,21 @@ public sealed class ExceptionalEffectTests
         var optional = missing.Rejection.ChoiceRequirements.Single(value =>
             value.Kind == ChoiceRequirementKind.Optional
         );
-        var searched = missing.Rejection.ChoiceRequirements.Single(value =>
+        var requested = (CommandOutcome.Applied)
+            engine.Apply(
+                state,
+                PartyTrick(
+                    state,
+                    effect,
+                    FrozenList<EffectChoice>.Create(new EffectChoice.Optional(optional.Id, true))
+                )
+            );
+        var searched = requested.State.PendingEffect!.Requirements.Single(value =>
             value.Kind == ChoiceRequirementKind.Cards
         );
-        var command = PartyTrick(
-            state,
-            effect,
+        var command = MatchScenario.ResolveEffectChoiceCommand(
+            requested.State,
             FrozenList<EffectChoice>.Create(
-                new EffectChoice.Optional(optional.Id, true),
                 new EffectChoice.Cards(
                     searched.Id,
                     FrozenList<CardInstanceId>.Create(replacement.Id)
@@ -240,7 +261,7 @@ public sealed class ExceptionalEffectTests
             )
         );
 
-        var applied = MatchScenario.Applied(engine.Apply(state, command));
+        var applied = MatchScenario.Applied(engine.Apply(requested.State, command));
 
         await Assert.That(applied.Card(replacement.Id).Zone).IsEqualTo(CardZone.Oche);
         await Assert
@@ -287,7 +308,11 @@ public sealed class ExceptionalEffectTests
                 && use.Effect == new EffectId("KIT-006-R01")
             );
 
-        var applied = MatchScenario.Applied(engine.Apply(state, action.Command));
+        var requested = (CommandOutcome.Applied)engine.Apply(state, action.Command);
+        var cpu = new DeterministicCpu();
+        var decision = (CpuDecision.Selected)
+            cpu.Choose(engine, requested.State, MatchScenario.FirstPlayer);
+        var applied = MatchScenario.Applied(engine.Apply(requested.State, decision.Action.Command));
 
         await Assert.That(applied.Card(vim.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
         await Assert

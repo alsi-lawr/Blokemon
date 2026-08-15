@@ -145,8 +145,6 @@ public enum TemporaryEffectKind
     RestrictLocal,
     RestrictEmptiesRecovery,
     ScaleNextAttackDamage,
-    RecoverFromSendHome,
-    TriggeredPartyTrick,
     ContinuousPartyTrick,
     EndRoundEffect,
 }
@@ -186,10 +184,19 @@ public sealed record CardMechanicalTypes(
     FrozenList<BlokemonMechanicalType> Types
 );
 
-public sealed record PendingAttackResolution(
-    MatchCommand.Attack Attack,
+public sealed record PendingEffectResolution(
+    MatchCommand Command,
+    CardInstanceId Source,
+    EffectId Effect,
     PlayerId Chooser,
-    FrozenList<ChoiceRequirement> Requirements
+    FrozenList<ChoiceRequirement> Requirements,
+    FrozenList<bool> BeerMatResults,
+    bool AttackStarted
+);
+
+internal sealed record TriggerContext(
+    CardInstanceId? KnockedOutBloke = null,
+    CardInstanceId? AttackingBloke = null
 );
 
 public sealed record PendingKnockoutResolution(

@@ -128,6 +128,19 @@ internal static class MatchScenario
             choices
         );
 
+    public static MatchCommand.ResolveEffectChoice ResolveEffectChoiceCommand(
+        MatchState state,
+        FrozenList<EffectChoice> choices,
+        PlayerId? actor = null
+    ) =>
+        new(
+            new CommandId($"resolve:{state.Revision.Value}"),
+            state.Id,
+            actor ?? state.PendingEffect!.Chooser,
+            state.Revision,
+            choices
+        );
+
     public static CardState Card(
         string id,
         string mechanicalId,

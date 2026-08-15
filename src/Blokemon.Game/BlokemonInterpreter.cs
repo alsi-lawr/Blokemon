@@ -104,11 +104,22 @@ public sealed class BlokemonInterpreter
         PlayerId actor,
         CardState source,
         EffectId effect,
-        BlokemonEffectInstruction[] program
+        BlokemonEffectInstruction[] program,
+        TriggerContext? triggerContext = null
     )
     {
         var requirements = new List<ChoiceRequirement>();
-        InspectProgram(builder, actor, source, effect, program, "root", null, requirements);
+        InspectProgram(
+            builder,
+            actor,
+            source,
+            effect,
+            program,
+            "root",
+            null,
+            requirements,
+            triggerContext
+        );
         return FrozenList<ChoiceRequirement>.Create(
             requirements.DistinctBy(static requirement => requirement.Id)
         );
@@ -123,16 +134,23 @@ public sealed class BlokemonInterpreter
         FrozenList<EffectChoice> choices,
         bool isAttack,
         bool isHouseRule = false,
-        HashSet<EffectId>? copyStack = null
+        HashSet<EffectId>? copyStack = null,
+        FrozenList<bool> beerMatResults = default,
+        TriggerContext? triggerContext = null
     )
     {
-        var requirements = InspectChoices(builder, actor, source, effect, program);
+        var requirements = InspectChoices(builder, actor, source, effect, program, triggerContext);
         var scopedChoices = FrozenList<EffectChoice>.Create(
             choices.Where(choice =>
                 choice.Id.Value.StartsWith(effect.Value + ":", StringComparison.Ordinal)
             )
         );
-        var choiceValidation = ValidateChoices(scopedChoices, requirements);
+        var initialChoices = FrozenList<EffectChoice>.Create(
+            scopedChoices.Where(choice =>
+                requirements.Any(requirement => requirement.Id == choice.Id)
+            )
+        );
+        var choiceValidation = ValidateChoices(initialChoices, requirements);
         if (choiceValidation is not null)
         {
             return new InterpreterExecution(false, choiceValidation.Value, requirements);
@@ -147,12 +165,40 @@ public sealed class BlokemonInterpreter
             scopedChoices,
             isAttack,
             isHouseRule,
-            copyStack ?? []
+            copyStack ?? [],
+            beerMatResults,
+            triggerContext
         );
+        runtime.Use(requirements);
         ExecuteProgram(runtime, program, "root");
+        if (runtime.DeferredRequirements.Count > 0)
+        {
+            return new InterpreterExecution(
+                false,
+                CommandRejectionCode.ChoiceRequired,
+                runtime.DeferredRequirements,
+                BeerMatResults: runtime.BeerMatResults
+            );
+        }
+
         if (runtime.Rejection is { } rejection)
         {
-            return new InterpreterExecution(false, rejection, requirements);
+            return new InterpreterExecution(
+                false,
+                rejection,
+                requirements,
+                BeerMatResults: runtime.BeerMatResults
+            );
+        }
+
+        if (scopedChoices.Any(choice => !runtime.UsedChoiceIds.Contains(choice.Id)))
+        {
+            return new InterpreterExecution(
+                false,
+                CommandRejectionCode.InvalidChoice,
+                requirements,
+                BeerMatResults: runtime.BeerMatResults
+            );
         }
 
         ResolveDamage(runtime);
@@ -161,7 +207,36 @@ public sealed class BlokemonInterpreter
             null,
             requirements,
             FrozenList<CardInstanceId>.Create(runtime.ForcedSendHome.Order()),
-            runtime.SourceChucked
+            runtime.SourceChucked,
+            runtime.BeerMatResults
+        );
+    }
+
+    internal InterpreterExecution Plan(
+        MatchBuilder builder,
+        PlayerId actor,
+        CardState source,
+        EffectId effect,
+        BlokemonEffectInstruction[] program,
+        FrozenList<EffectChoice> choices,
+        bool isAttack,
+        bool isHouseRule = false,
+        FrozenList<bool> beerMatResults = default,
+        TriggerContext? triggerContext = null
+    )
+    {
+        var simulation = new MatchBuilder(builder.Snapshot(), _catalog);
+        return Execute(
+            simulation,
+            actor,
+            simulation.Card(source.Id),
+            effect,
+            program,
+            choices,
+            isAttack,
+            isHouseRule,
+            beerMatResults: beerMatResults,
+            triggerContext: triggerContext
         );
     }
 
@@ -289,7 +364,8 @@ public sealed class BlokemonInterpreter
         BlokemonEffectInstruction[] program,
         string parentPath,
         EffectChoiceId? optionalDependency,
-        List<ChoiceRequirement> requirements
+        List<ChoiceRequirement> requirements,
+        TriggerContext? triggerContext = null
     )
     {
         for (var index = 0; index < program.Length; index++)
@@ -329,8 +405,26 @@ public sealed class BlokemonInterpreter
                 instruction,
                 path,
                 dependency,
-                requirements
+                requirements,
+                triggerContext
             );
+            if (
+                instruction.Opcode
+                is BlokemonOpcode.BeerMatToss
+                    or BlokemonOpcode.RepeatUntilBlankSide
+            )
+            {
+                continue;
+            }
+
+            if (
+                instruction.Opcode == BlokemonOpcode.Conditional
+                && DeferConditionalBranches(effect)
+            )
+            {
+                continue;
+            }
+
             InspectProgram(
                 builder,
                 actor,
@@ -339,7 +433,8 @@ public sealed class BlokemonInterpreter
                 instruction.Then,
                 path + "/then",
                 dependency,
-                requirements
+                requirements,
+                triggerContext
             );
             InspectProgram(
                 builder,
@@ -349,7 +444,8 @@ public sealed class BlokemonInterpreter
                 instruction.Otherwise,
                 path + "/otherwise",
                 optionalDependency,
-                requirements
+                requirements,
+                triggerContext
             );
         }
     }
@@ -362,7 +458,8 @@ public sealed class BlokemonInterpreter
         BlokemonEffectInstruction instruction,
         string path,
         EffectChoiceId? dependency,
-        List<ChoiceRequirement> requirements
+        List<ChoiceRequirement> requirements,
+        TriggerContext? triggerContext = null
     )
     {
         if (
@@ -372,7 +469,7 @@ public sealed class BlokemonInterpreter
         {
             var eligibleVim = (
                 instruction.Sources is { Length: > 0 }
-                    ? ResolveCandidates(builder, actor, source, instruction)
+                    ? ResolveCandidates(builder, actor, source, instruction, triggerContext)
                     : builder
                         .CardsIn(actor, CardZone.Stack)
                         .Take(instruction.Amount)
@@ -383,7 +480,7 @@ public sealed class BlokemonInterpreter
             var eligibleTargets = (
                 instruction.Targets.Length > 0
                     ? instruction.Targets.SelectMany(target =>
-                        ResolveTarget(builder, actor, source, instruction, target)
+                        ResolveTarget(builder, actor, source, instruction, target, triggerContext)
                     )
                     : InPlay(builder, actor)
             )
@@ -395,6 +492,11 @@ public sealed class BlokemonInterpreter
             var required = instruction.Sources is { Length: > 0 }
                 ? Math.Min(instruction.Amount, eligibleVim.Length)
                 : eligibleVim.Length;
+            if (required == 0 || eligibleTargets.Length == 0)
+            {
+                return;
+            }
+
             requirements.Add(
                 new ChoiceRequirement(
                     ChoiceId(effect, path, "attachments"),
@@ -499,7 +601,7 @@ public sealed class BlokemonInterpreter
             return;
         }
 
-        var candidateCards = ResolveCandidates(builder, actor, source, instruction)
+        var candidateCards = ResolveCandidates(builder, actor, source, instruction, triggerContext)
             .Distinct()
             .OrderBy(static card => card.Id)
             .ToArray();
@@ -682,7 +784,13 @@ public sealed class BlokemonInterpreter
         string parentPath
     )
     {
-        for (var index = 0; index < program.Length && runtime.Rejection is null; index++)
+        for (
+            var index = 0;
+            index < program.Length
+                && runtime.Rejection is null
+                && runtime.DeferredRequirements.Count == 0;
+            index++
+        )
         {
             var instruction = program[index];
             if (
@@ -906,7 +1014,13 @@ public sealed class BlokemonInterpreter
                 }
                 break;
             case BlokemonOpcode.RecoverFromSendHome:
-                RegisterEffect(runtime, instruction, TemporaryEffectKind.RecoverFromSendHome);
+                var recovered = runtime.Builder.Card(runtime.Source.Id);
+                runtime.Builder.SetCard(
+                    recovered with
+                    {
+                        Damage = Math.Max(0, _catalog.StayingPower(recovered) - instruction.Amount),
+                    }
+                );
                 break;
             case BlokemonOpcode.CopyAttack:
                 ExecuteCopyAttack(runtime, path);
@@ -937,7 +1051,6 @@ public sealed class BlokemonInterpreter
                 }
                 break;
             case BlokemonOpcode.TriggeredPartyTrick:
-                RegisterEffect(runtime, instruction, TemporaryEffectKind.TriggeredPartyTrick);
                 break;
             case BlokemonOpcode.ContinuousPartyTrick:
                 RegisterEffect(runtime, instruction, TemporaryEffectKind.ContinuousPartyTrick);
@@ -976,7 +1089,7 @@ public sealed class BlokemonInterpreter
                 : null;
         for (var toss = 0; toss < instruction.Amount; toss++)
         {
-            var badge = runtime.Builder.Random.NextInt(2) == 1;
+            var badge = runtime.NextBeerMat();
             if (badge)
             {
                 runtime.BadgeSides++;
@@ -987,25 +1100,17 @@ public sealed class BlokemonInterpreter
                 runtime.FirstBeerMatIsBlank = !badge;
             }
 
-            runtime.Builder.Events.Add(
-                new PendingMatchEvent(
-                    MatchEventKind.BeerMatTossed,
-                    runtime.Actor,
-                    runtime.Source.Id,
-                    Effect: runtime.Effect,
-                    BadgeSide: badge
-                )
-            );
+            runtime.RecordBeerMatEvent(badge);
         }
 
-        if (runtime.BadgeSides > 0)
+        var branch = runtime.BadgeSides > 0 ? instruction.Then : instruction.Otherwise;
+        var branchPath = path + (runtime.BadgeSides > 0 ? "/then" : "/otherwise");
+        if (!RequireBranchChoices(runtime, branch, branchPath))
         {
-            ExecuteProgram(runtime, instruction.Then, path + "/then");
+            return;
         }
-        else
-        {
-            ExecuteProgram(runtime, instruction.Otherwise, path + "/otherwise");
-        }
+
+        ExecuteProgram(runtime, branch, branchPath);
     }
 
     private void ExecuteUntilBlank(
@@ -1018,17 +1123,9 @@ public sealed class BlokemonInterpreter
         runtime.TossCount = 0;
         while (true)
         {
-            var badge = runtime.Builder.Random.NextInt(2) == 1;
+            var badge = runtime.NextBeerMat();
             runtime.TossCount++;
-            runtime.Builder.Events.Add(
-                new PendingMatchEvent(
-                    MatchEventKind.BeerMatTossed,
-                    runtime.Actor,
-                    runtime.Source.Id,
-                    Effect: runtime.Effect,
-                    BadgeSide: badge
-                )
-            );
+            runtime.RecordBeerMatEvent(badge);
             if (!badge)
             {
                 runtime.FirstBeerMatIsBlank = runtime.TossCount == 1;
@@ -1038,7 +1135,54 @@ public sealed class BlokemonInterpreter
             runtime.BadgeSides++;
         }
 
-        ExecuteProgram(runtime, instruction.Then, path + "/then");
+        var branchPath = path + "/then";
+        if (RequireBranchChoices(runtime, instruction.Then, branchPath))
+        {
+            ExecuteProgram(runtime, instruction.Then, branchPath);
+        }
+    }
+
+    private bool RequireBranchChoices(
+        EffectRuntime runtime,
+        BlokemonEffectInstruction[] branch,
+        string branchPath
+    )
+    {
+        var requirements = new List<ChoiceRequirement>();
+        InspectProgram(
+            runtime.Builder,
+            runtime.Actor,
+            runtime.Source,
+            runtime.Effect,
+            branch,
+            branchPath,
+            null,
+            requirements,
+            runtime.TriggerContext
+        );
+        var distinct = FrozenList<ChoiceRequirement>.Create(
+            requirements.DistinctBy(static requirement => requirement.Id)
+        );
+        var branchChoices = FrozenList<EffectChoice>.Create(
+            runtime.Choices.Where(choice =>
+                distinct.Any(requirement => requirement.Id == choice.Id)
+            )
+        );
+        var validation = ValidateChoices(branchChoices, distinct);
+        if (validation == CommandRejectionCode.ChoiceRequired)
+        {
+            runtime.Defer(distinct);
+            return false;
+        }
+
+        if (validation is { } rejection)
+        {
+            runtime.Rejection = rejection;
+            return false;
+        }
+
+        runtime.Use(distinct);
+        return true;
     }
 
     private void ExecuteConditional(
@@ -1050,12 +1194,16 @@ public sealed class BlokemonInterpreter
         var passed = instruction.Predicates.All(predicate =>
             EvaluatePredicate(runtime, predicate, path)
         );
-        ExecuteProgram(
-            runtime,
-            passed ? instruction.Then : instruction.Otherwise,
-            path + (passed ? "/then" : "/otherwise")
-        );
+        var branch = passed ? instruction.Then : instruction.Otherwise;
+        var branchPath = path + (passed ? "/then" : "/otherwise");
+        if (RequireBranchChoices(runtime, branch, branchPath))
+        {
+            ExecuteProgram(runtime, branch, branchPath);
+        }
     }
+
+    private bool DeferConditionalBranches(EffectId effect) =>
+        _catalog.PartyTrick(effect)?.Trigger != BlokemonTrigger.OnPromotionFromMitt;
 
     private bool EvaluatePredicate(
         EffectRuntime runtime,
@@ -1133,7 +1281,13 @@ public sealed class BlokemonInterpreter
             BlokemonCondition.OtherBoothExists => runtime
                 .Builder.CardsIn(runtime.Builder.Other(runtime.Actor), CardZone.Booth)
                 .Any(),
-            BlokemonCondition.OwnBlokeSentHomeByOtherAttackDamage => false,
+            BlokemonCondition.BoothHasSpace => runtime
+                .Builder.CardsIn(runtime.Actor, CardZone.Booth)
+                .Count() < runtime.Catalog.Manifest.BaseRules.Opening.BoothLimit,
+            BlokemonCondition.OwnBlokeSentHomeByOtherAttackDamage => runtime
+                .TriggerContext
+                ?.KnockedOutBloke
+                is not null,
             BlokemonCondition.OtherSentHomeByThisAttackDamage => PendingSendsHome(runtime),
             BlokemonCondition.OwnersFirstRound => runtime
                 .Builder.Player(runtime.Actor)
@@ -1348,6 +1502,16 @@ public sealed class BlokemonInterpreter
             }
 
             runtime.Builder.MoveCard(card.Id, zone);
+            if (zone == CardZone.Booth && card.Kind == CardKind.Bloke)
+            {
+                runtime.Builder.SetCard(
+                    runtime.Builder.Card(card.Id) with
+                    {
+                        EnteredAtOwnerRound = runtime.Builder.Player(card.Owner).RoundsStarted,
+                    }
+                );
+            }
+
             if (
                 destination
                 is BlokemonEffectDestination.BottomOfOwnStack
@@ -1409,7 +1573,30 @@ public sealed class BlokemonInterpreter
             );
             if (choice is null)
             {
-                runtime.Rejection = CommandRejectionCode.ChoiceRequired;
+                var eligibleVim = ResolveCandidates(
+                        runtime.Builder,
+                        runtime.Actor,
+                        runtime.Source,
+                        instruction,
+                        runtime.TriggerContext
+                    )
+                    .Any(static card => card.Kind == CardKind.Vim);
+                var eligibleTarget = instruction.Targets.Any(target =>
+                    ResolveTarget(
+                            runtime.Builder,
+                            runtime.Actor,
+                            runtime.Source,
+                            instruction,
+                            target,
+                            runtime.TriggerContext
+                        )
+                        .Any(IsInPlay)
+                );
+                if (eligibleVim && eligibleTarget)
+                {
+                    runtime.Rejection = CommandRejectionCode.ChoiceRequired;
+                }
+
                 return;
             }
 
@@ -1453,7 +1640,8 @@ public sealed class BlokemonInterpreter
                             runtime.Actor,
                             runtime.Source,
                             instruction,
-                            target
+                            target,
+                            runtime.TriggerContext
                         )
                     )
                     .Where(IsInPlay)
@@ -1987,7 +2175,8 @@ public sealed class BlokemonInterpreter
                 runtime.Builder,
                 runtime.Actor,
                 runtime.Source,
-                instruction
+                instruction,
+                runtime.TriggerContext
             )
             .ToArray();
         if (instruction.Selection == BlokemonSelection.BeerMat && runtime.BadgeSides == 0)
@@ -2054,7 +2243,8 @@ public sealed class BlokemonInterpreter
         MatchBuilder builder,
         PlayerId actor,
         CardState source,
-        BlokemonEffectInstruction instruction
+        BlokemonEffectInstruction instruction,
+        TriggerContext? triggerContext = null
     )
     {
         var declaredSources = instruction.Sources is { Length: > 0 }
@@ -2064,7 +2254,7 @@ public sealed class BlokemonInterpreter
             declaredSources.Length == 0
                 ? ResolveImplicitCandidates(builder, actor, source, instruction)
                 : declaredSources.SelectMany(target =>
-                    ResolveTarget(builder, actor, source, instruction, target)
+                    ResolveTarget(builder, actor, source, instruction, target, triggerContext)
                 );
         if (
             instruction.Opcode == BlokemonOpcode.ChuckVim
@@ -2090,7 +2280,8 @@ public sealed class BlokemonInterpreter
         PlayerId actor,
         CardState source,
         BlokemonEffectInstruction instruction,
-        BlokemonTarget target
+        BlokemonTarget target,
+        TriggerContext? triggerContext = null
     ) =>
         target switch
         {
@@ -2132,6 +2323,16 @@ public sealed class BlokemonInterpreter
                 .Yield()
                 .SelectMany(card => card.Attachments.Select(builder.Card))
                 .Where(static card => card.Kind == CardKind.Vim),
+            BlokemonTarget.KnockedOutBlokeAttachedVim => triggerContext?.KnockedOutBloke
+                is { } knockedOut
+                ? builder
+                    .Card(knockedOut)
+                    .Attachments.Select(builder.Card)
+                    .Where(static card => card.Kind == CardKind.Vim)
+                : [],
+            BlokemonTarget.AttackingBloke => triggerContext?.AttackingBloke is { } attacker
+                ? [builder.Card(attacker)]
+                : [],
             BlokemonTarget.BarChits => builder.CardsIn(actor, CardZone.BarChit),
             BlokemonTarget.LocalInPlay => builder.Cards.Where(card => card.Zone == CardZone.Local),
             _ => throw new UnreachableException(),
@@ -2502,7 +2703,8 @@ public sealed class BlokemonInterpreter
         CommandRejectionCode? Rejection,
         FrozenList<ChoiceRequirement> Requirements,
         FrozenList<CardInstanceId> ForcedSendHome = default,
-        bool SourceChucked = false
+        bool SourceChucked = false,
+        FrozenList<bool> BeerMatResults = default
     );
 
     private sealed class EffectRuntime(
@@ -2514,9 +2716,14 @@ public sealed class BlokemonInterpreter
         FrozenList<EffectChoice> choices,
         bool isAttack,
         bool isHouseRule,
-        HashSet<EffectId> copyStack
+        HashSet<EffectId> copyStack,
+        FrozenList<bool> beerMatResults,
+        TriggerContext? triggerContext
     )
     {
+        private readonly List<bool> _beerMatResults = [.. beerMatResults];
+        private int _replayedBeerMats;
+
         public MatchBuilder Builder { get; } = builder;
 
         public AuthorityCatalog Catalog { get; } = catalog;
@@ -2534,6 +2741,14 @@ public sealed class BlokemonInterpreter
         public bool IsHouseRule { get; } = isHouseRule;
 
         public HashSet<EffectId> CopyStack { get; } = copyStack;
+
+        public TriggerContext? TriggerContext { get; } = triggerContext;
+
+        public FrozenList<ChoiceRequirement> DeferredRequirements { get; private set; } = [];
+
+        public HashSet<EffectChoiceId> UsedChoiceIds { get; } = [];
+
+        public FrozenList<bool> BeerMatResults => FrozenList<bool>.Create(_beerMatResults);
 
         public List<PendingDamage> PendingAttackDamage { get; } = [];
 
@@ -2564,6 +2779,50 @@ public sealed class BlokemonInterpreter
         public bool DeferringEndRound { get; set; }
 
         public CommandRejectionCode? Rejection { get; set; }
+
+        private bool LastBeerMatWasReplayed { get; set; }
+
+        public bool NextBeerMat()
+        {
+            if (_replayedBeerMats < _beerMatResults.Count)
+            {
+                LastBeerMatWasReplayed = true;
+                return _beerMatResults[_replayedBeerMats++];
+            }
+
+            LastBeerMatWasReplayed = false;
+            var result = Builder.Random.NextInt(2) == 1;
+            _beerMatResults.Add(result);
+            _replayedBeerMats++;
+            return result;
+        }
+
+        public void RecordBeerMatEvent(bool badge)
+        {
+            if (!LastBeerMatWasReplayed)
+            {
+                Builder.Events.Add(
+                    new PendingMatchEvent(
+                        MatchEventKind.BeerMatTossed,
+                        Actor,
+                        Source.Id,
+                        Effect: Effect,
+                        BadgeSide: badge
+                    )
+                );
+            }
+        }
+
+        public void Defer(FrozenList<ChoiceRequirement> requirements) =>
+            DeferredRequirements = requirements;
+
+        public void Use(FrozenList<ChoiceRequirement> requirements)
+        {
+            foreach (var requirement in requirements)
+            {
+                UsedChoiceIds.Add(requirement.Id);
+            }
+        }
 
         public TChoice? Choice<TChoice>(EffectChoiceId id)
             where TChoice : EffectChoice =>
