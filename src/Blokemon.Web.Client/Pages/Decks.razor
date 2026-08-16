@@ -30,20 +30,35 @@ else
             <small>A deck must have 60 cards.</small>
         </div>
         <div class="deck-top-actions">
+            <button class="secondary" @onclick="StartNewDeck" disabled="@_working">New deck</button>
             <button class="secondary" @onclick="RestoreStarter" disabled="@(_working || ClaimedStarter() is null)">Restore starter list</button>
-            <button class="primary" @onclick="Save" disabled="@_working">@(_working ? "Saving…" : "Save changes")</button>
+            <button class="primary" @onclick="Save" disabled="@_working">@(_working ? "Saving…" : SaveLabel())</button>
         </div>
     </header>
 
-    @if (_view.Decks.Length > 1)
+    @if (ShowDeckTabs())
     {
         <div class="deck-tabs" aria-label="Saved decks">
             @foreach (var deck in _view.Decks)
             {
                 <button class="quiet @(deck.Id == _saved?.Id ? "selected" : null)"
-                        @onclick="() => SelectDeck(deck)"
+                        @onclick="() => OpenDeck(deck)"
                         disabled="@_working">@deck.Name</button>
             }
+            @if (_saved is null)
+            {
+                <span class="quiet selected deck-draft-tab">@_deckName · Unsaved</span>
+            }
+        </div>
+    }
+    @if (_pendingSwitch is { } pending)
+    {
+        <div class="deck-notice deck-switch" role="alert">
+            <strong>Discard the unsaved changes to @_deckName?</strong>
+            <div class="actions">
+                <button class="secondary" @onclick="CancelSwitch" disabled="@_working">Keep editing</button>
+                <button class="primary" @onclick="ConfirmSwitch" disabled="@_working">@(pending.Deck is { } target ? $"Discard and open {target.Name}" : "Discard and start a new deck")</button>
+            </div>
         </div>
     }
     @if (_operationError is not null)
@@ -188,6 +203,7 @@ else
     private bool _working;
     private bool _hasUnsavedChanges;
     private Guid? _commandId;
+    private PendingSwitch? _pendingSwitch;
 
     private void ShowCard(CardView card, ElementReference trigger) =>
         _cardShowcase?.Show(card, trigger);
@@ -212,6 +228,48 @@ else
         }
     }
 
+    // Switching away from an edited deck asks before it throws the edits away.
+    private void OpenDeck(DeckView deck)
+    {
+        if (_hasUnsavedChanges && deck.Id != _saved?.Id)
+        {
+            _pendingSwitch = new(deck);
+            return;
+        }
+
+        SelectDeck(deck);
+    }
+
+    private void StartNewDeck()
+    {
+        if (_hasUnsavedChanges)
+        {
+            _pendingSwitch = new(null);
+            return;
+        }
+
+        BeginNewDeck();
+    }
+
+    private void ConfirmSwitch()
+    {
+        if (_pendingSwitch is not { } pending)
+        {
+            return;
+        }
+
+        if (pending.Deck is { } deck)
+        {
+            SelectDeck(deck);
+        }
+        else
+        {
+            BeginNewDeck();
+        }
+    }
+
+    private void CancelSwitch() => _pendingSwitch = null;
+
     private void SelectDeck(DeckView deck)
     {
         _saved = deck;
@@ -223,7 +281,43 @@ else
         }
         _hasUnsavedChanges = false;
         _operationError = null;
+        _pendingSwitch = null;
+        _commandId = null;
     }
+
+    // A new deck carries no saved id, so Save creates it instead of revising one.
+    private void BeginNewDeck()
+    {
+        _saved = null;
+        _deckName = NewDeckName();
+        _entries.Clear();
+        foreach (var entry in ClaimedStarter()?.Entries ?? [])
+        {
+            _entries[entry.CardId] = entry.Quantity;
+        }
+        _hasUnsavedChanges = true;
+        _operationError = null;
+        _pendingSwitch = null;
+        _commandId = null;
+    }
+
+    private string NewDeckName()
+    {
+        var taken = (_view?.Decks ?? [])
+            .Select(static deck => deck.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var name = "New deck";
+        for (var suffix = 2; taken.Contains(name); suffix++)
+        {
+            name = $"New deck {suffix}";
+        }
+
+        return name;
+    }
+
+    private bool ShowDeckTabs() => (_view?.Decks.Length ?? 0) + (_saved is null ? 1 : 0) > 1;
+
+    private string SaveLabel() => _saved is null ? "Create deck" : "Save changes";
 
     private void RestoreStarter()
     {
@@ -334,16 +428,20 @@ else
             return;
         }
 
-        _commandId = null;
         _view = response.Value;
-        var saved = request.DeckId is { } deckId
-            ? _view?.Decks.SingleOrDefault(deck => deck.Id == deckId)
-            : _view?.Decks.OrderByDescending(static deck => deck.Revision).FirstOrDefault();
-        if (saved is not null)
+        // A created deck takes its id from the command that created it.
+        var savedId = request.DeckId ?? request.CommandId;
+        if (_view?.Decks.SingleOrDefault(deck => deck.Id == savedId) is { } saved)
         {
             SelectDeck(saved);
+        }
+        else
+        {
+            _commandId = null;
         }
     }
 
     private sealed record DeckListEntry(string CardId, int Quantity, CardKindView Kind);
+
+    private sealed record PendingSwitch(DeckView? Deck);
 }

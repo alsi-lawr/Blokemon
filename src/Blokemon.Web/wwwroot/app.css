@@ -1402,6 +1402,18 @@ small,
   overflow: auto;
 }
 
+.deck-draft-tab {
+  white-space: nowrap;
+}
+
+.deck-switch {
+  margin-bottom: 20px;
+}
+
+.deck-switch .actions {
+  margin-top: 11px;
+}
+
 .deck-builder-layout {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr) 330px;

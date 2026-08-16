@@ -311,6 +311,146 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
+    public async Task DeckBuilder_CreatesAnExtraDeckUnderItsCommandIdAndRevisesEachDeckSeparately()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Local(catalogue, documents, EconomyRules.Unlimited);
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("b1111111-1111-1111-1111-111111111111"), "Deck Builder")
+            )
+        );
+        var claimed = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("b1222222-2222-2222-2222-222222222222"), "growroom")
+            )
+        );
+        var starter = claimed.Decks.Single();
+        var createCommandId = Guid.Parse("b1333333-3333-3333-3333-333333333333");
+        var create = new SaveDeckRequest(
+            createCommandId,
+            null,
+            null,
+            "Second deck",
+            starter.Entries
+        );
+
+        var created = Value(await application.SaveDeck(create));
+        var retried = Value(await application.SaveDeck(create));
+        var createdDeck = created.Decks.Single(deck => deck.Id != starter.Id);
+        var revised = Value(
+            await application.SaveDeck(
+                new(
+                    Guid.Parse("b1444444-4444-4444-4444-444444444444"),
+                    createdDeck.Id,
+                    createdDeck.Revision,
+                    "Renamed second deck",
+                    createdDeck.Entries
+                )
+            )
+        );
+        var restored = Value(await Local(catalogue, documents, EconomyRules.Unlimited).State());
+
+        created.Decks.Length.ShouldBe(2);
+        createdDeck.Id.ShouldBe(createCommandId);
+        createdDeck.Revision.ShouldBe(starter.Revision);
+        createdDeck.IsLegal.ShouldBeTrue();
+        retried
+            .Decks.Select(static deck => deck.Id)
+            .ShouldBe(created.Decks.Select(static deck => deck.Id));
+        revised
+            .Decks.Single(deck => deck.Id == createdDeck.Id)
+            .Revision.ShouldBe(createdDeck.Revision + 1);
+        revised
+            .Decks.Single(deck => deck.Id == createdDeck.Id)
+            .Name.ShouldBe("Renamed second deck");
+        revised.Decks.Single(deck => deck.Id == starter.Id).Revision.ShouldBe(starter.Revision);
+        restored
+            .Decks.Select(static deck => deck.Name)
+            .ShouldBe([starter.Name, "Renamed second deck"], ignoreOrder: true);
+    }
+
+    [Test]
+    public async Task NewDeck_FailsTheSameLegalityAndOwnershipChecksAsARevisionWithoutSavingIt()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Local(catalogue, documents, EconomyRules.Unlimited);
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("b2111111-1111-1111-1111-111111111111"), "Deck Builder")
+            )
+        );
+        var claimed = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("b2222222-2222-2222-2222-222222222222"), "growroom")
+            )
+        );
+        var starter = claimed.Decks.Single();
+        var kinds = claimed.Cards.ToDictionary(
+            static card => card.Id,
+            static card => card.Kind,
+            StringComparer.Ordinal
+        );
+        var energy = starter.Entries.First(entry => kinds[entry.CardId] == CardKindView.BasicVim);
+        var unowned = claimed.Cards.First(card =>
+            card.Kind == CardKindView.Blokemon
+            && card.OwnedQuantity == 0
+            && starter.Entries.All(entry => entry.CardId != card.Id)
+        );
+        var borrowed = starter
+            .Entries.Select(entry =>
+                entry.CardId == energy.CardId ? entry with { Quantity = entry.Quantity - 2 } : entry
+            )
+            .Append(new DeckEntryView(unowned.Id, 2))
+            .ToArray();
+        var incomplete = starter.Entries.Take(3).ToArray();
+
+        var createdIncomplete = await application.SaveDeck(
+            new(
+                Guid.Parse("b2333333-3333-3333-3333-333333333333"),
+                null,
+                null,
+                "Short deck",
+                incomplete
+            )
+        );
+        var revisedIncomplete = await application.SaveDeck(
+            new(
+                Guid.Parse("b2444444-4444-4444-4444-444444444444"),
+                starter.Id,
+                starter.Revision,
+                starter.Name,
+                incomplete
+            )
+        );
+        var createdBorrowed = await application.SaveDeck(
+            new(
+                Guid.Parse("b2555555-5555-5555-5555-555555555555"),
+                null,
+                null,
+                "Borrowed deck",
+                borrowed
+            )
+        );
+        var state = Value(await application.State());
+
+        createdIncomplete.Succeeded.ShouldBeFalse();
+        createdIncomplete.Error!.Code.ShouldBe("deck.invalid");
+        revisedIncomplete.Succeeded.ShouldBeFalse();
+        revisedIncomplete.Error!.Code.ShouldBe(createdIncomplete.Error.Code);
+        revisedIncomplete.Error.Message.ShouldBe(createdIncomplete.Error.Message);
+        createdBorrowed.Succeeded.ShouldBeFalse();
+        createdBorrowed.Error!.Code.ShouldBe("deck.invalid");
+        createdBorrowed.Error.Message.ShouldBe(
+            $"{unowned.Id} requests 2 copies, but only 0 are owned."
+        );
+        state.Decks.Single().Id.ShouldBe(starter.Id);
+        state.Decks.Single().Revision.ShouldBe(starter.Revision);
+    }
+
+    [Test]
     public async Task ServerApi_StillPersistsAProfileInItsOwnSqliteDatabase()
     {
         var dataDirectory = Path.Combine(
@@ -516,12 +656,10 @@ public sealed class BrowserLocalApplicationTests
             Configuration([new(EconomyConfiguration.ModeKey, "ClassicScarcity")])
         );
         var classicConfigured = EconomyConfiguration.Resolve(
-            Configuration(
-                [
-                    new(EconomyConfiguration.ModeKey, "ClassicScarcity"),
-                    new(EconomyConfiguration.PackAllowanceKey, "3"),
-                ]
-            )
+            Configuration([
+                new(EconomyConfiguration.ModeKey, "ClassicScarcity"),
+                new(EconomyConfiguration.PackAllowanceKey, "3"),
+            ])
         );
 
         unlimited.ShouldBe(EconomyRules.Unlimited);
@@ -536,12 +674,10 @@ public sealed class BrowserLocalApplicationTests
         );
         Should.Throw<InvalidOperationException>(() =>
             EconomyConfiguration.Resolve(
-                Configuration(
-                    [
-                        new(EconomyConfiguration.ModeKey, "ClassicScarcity"),
-                        new(EconomyConfiguration.PackAllowanceKey, "-1"),
-                    ]
-                )
+                Configuration([
+                    new(EconomyConfiguration.ModeKey, "ClassicScarcity"),
+                    new(EconomyConfiguration.PackAllowanceKey, "-1"),
+                ])
             )
         );
     }
@@ -555,12 +691,10 @@ public sealed class BrowserLocalApplicationTests
                 Catalogue(),
                 new PlayModeAvailability(ServerBacked: false),
                 EconomyConfiguration.Resolve(
-                    Configuration(
-                        [
-                            new(EconomyConfiguration.ModeKey, "ClassicScarcity"),
-                            new(EconomyConfiguration.PackAllowanceKey, "4"),
-                        ]
-                    )
+                    Configuration([
+                        new(EconomyConfiguration.ModeKey, "ClassicScarcity"),
+                        new(EconomyConfiguration.PackAllowanceKey, "4"),
+                    ])
                 )
             )
             .BuildServiceProvider();
