@@ -1,0 +1,48 @@
+name: Build and test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dotnet:
+    name: Restore, format, build, and test
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.302
+      - name: Restore local tools
+        run: dotnet tool restore
+      - name: Restore the solution
+        run: dotnet restore Blokemon.slnx
+      - name: Check C# formatting
+        run: dotnet csharpier check .
+      - name: Check F# formatting
+        run: dotnet fantomas --check .
+      - name: Build the solution
+        run: >-
+          dotnet build Blokemon.slnx
+          --configuration Release
+          --no-restore
+          -p:TreatWarningsAsErrors=true
+      - name: Test the core library
+        run: dotnet run --project tests/Blokemon.Core.Tests -c Release --no-build
+      - name: Test the game engine
+        run: dotnet run --project tests/Blokemon.Game.Tests -c Release --no-build
+      - name: Test the product rules
+        run: dotnet run --project tests/Blokemon.Product.Tests -c Release --no-build
+      - name: Test the web application
+        run: dotnet run --project tests/Blokemon.Web.Tests -c Release --no-build

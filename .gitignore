@@ -2,6 +2,8 @@
 **/obj/
 /artifacts/
 /out/
+/result
+/result-*
 TestResults/
 *.binlog
 *.nupkg

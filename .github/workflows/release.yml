@@ -1,0 +1,228 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*.*.*
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/alsi-lawr/blokemon-server
+
+jobs:
+  version:
+    name: Validate and compare the release version
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      revision: ${{ steps.version.outputs.revision }}
+    steps:
+      - name: Check out the release commit
+        uses: actions/checkout@v7
+      - name: Install pinned Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: experimental-features = nix-command flakes
+      - name: Derive one strict X.Y.Z version
+        id: version
+        run: |
+          tag="$GITHUB_REF_NAME"
+          if [[ ! "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Tag is not strict vX.Y.Z: $tag" >&2
+            exit 1
+          fi
+          version="${tag#v}"
+          test "v$version" = "$tag"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "revision=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+      - name: Compare the Nix package versions
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          for attribute in blokemon-site blokemon-server; do
+            test "$(nix eval --impure --raw ".#packages.x86_64-linux.$attribute.version")" = "$VERSION"
+          done
+
+  browser-bundle:
+    name: Build the standalone browser bundle
+    needs: version
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
+    steps:
+      - name: Check out the release commit
+        uses: actions/checkout@v7
+      - name: Install pinned Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: experimental-features = nix-command flakes
+      - name: Build the static browser site
+        run: nix build --impure .#blokemon-site --out-link result-site
+      - name: Assemble the release archive and checksum
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          test -f result-site/index.html
+          mkdir -p artifacts/release
+          tar -czf "artifacts/release/blokemon-browser-${VERSION}.tar.gz" \
+            --dereference \
+            --owner=0 --group=0 --numeric-owner \
+            --mtime='@0' --sort=name \
+            -C result-site/ .
+          (cd artifacts/release && sha256sum "blokemon-browser-${VERSION}.tar.gz" > checksums_sha256.txt)
+      - name: Generate release asset provenance
+        uses: actions/attest@v4
+        with:
+          subject-checksums: artifacts/release/checksums_sha256.txt
+      - name: Upload release assets
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-assets-${{ needs.version.outputs.version }}
+          path: artifacts/release
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+  github-release:
+    name: Create the immutable GitHub release
+    needs:
+      - version
+      - browser-bundle
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@v8
+        with:
+          name: release-assets-${{ needs.version.outputs.version }}
+          path: artifacts/release
+      - name: Create the release or verify its final assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "Release v$VERSION already exists; verifying its assets."
+            gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" --json assets \
+              --jq '.assets[].name' | sort > existing-assets.txt
+            (cd artifacts/release && ls) | sort > expected-assets.txt
+            diff expected-assets.txt existing-assets.txt
+          else
+            gh release create "v$VERSION" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Blokemon v$VERSION" \
+              --generate-notes \
+              --verify-tag \
+              artifacts/release/*
+          fi
+
+  server-images:
+    name: Build, smoke, and publish the ${{ matrix.arch }} server image
+    needs:
+      - version
+      - github-release
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-26.04
+          - arch: arm64
+            runner: ubuntu-26.04-arm
+    steps:
+      - name: Check out the release commit
+        uses: actions/checkout@v7
+      - name: Install pinned Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: experimental-features = nix-command flakes
+      - name: Build and smoke the Nix image
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          nix build --impure .#blokemon-server-image --out-link result-image
+          loaded=$(docker load < result-image | sed -n 's/^Loaded image: //p' | tail -n 1)
+          docker run --detach --name blokemon-smoke --publish 127.0.0.1:8082:8082 "$loaded"
+          for _ in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:8082/healthz > /dev/null; then
+              healthy=1
+              break
+            fi
+            sleep 2
+          done
+          docker logs blokemon-smoke
+          docker rm --force blokemon-smoke
+          test -n "${healthy-}"
+          docker tag "$loaded" "${IMAGE}:${VERSION}-${ARCH}"
+      - name: Log in to GHCR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "$GH_TOKEN" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
+      - name: Push the architecture tag
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          ARCH: ${{ matrix.arch }}
+        run: docker push "${IMAGE}:${VERSION}-${ARCH}"
+
+  server-manifest:
+    name: Publish the multi-architecture server image
+    needs:
+      - version
+      - server-images
+    runs-on: ubuntu-26.04
+    permissions:
+      packages: write
+    steps:
+      - name: Log in to GHCR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "$GH_TOKEN" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
+      - name: Publish the multi-architecture version tag
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          docker buildx imagetools create \
+            --tag "${IMAGE}:${VERSION}" \
+            "${IMAGE}:${VERSION}-amd64" \
+            "${IMAGE}:${VERSION}-arm64"
+
+  promote-latest:
+    name: Promote the release version to latest
+    needs:
+      - version
+      - github-release
+      - server-manifest
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Log in to GHCR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "$GH_TOKEN" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
+      - name: Promote the GHCR version tag
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: docker buildx imagetools create --tag "${IMAGE}:latest" "${IMAGE}:${VERSION}"
+      - name: Promote the GitHub release to Latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: gh release edit "v$VERSION" --repo "$GITHUB_REPOSITORY" --latest
