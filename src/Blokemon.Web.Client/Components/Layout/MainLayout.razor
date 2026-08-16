@@ -1,5 +1,6 @@
 @inherits LayoutComponentBase
 @inject PlayModeApplication Modes
+@inject CardArtWarmup ArtWarmup
 
 <div class="app-shell">
     <header class="appbar">
@@ -34,6 +35,15 @@
     private PlayModeState? _mode;
 
     protected override async Task OnInitializedAsync() => _mode = await Modes.Mode();
+
+    // The shell is on screen before any card art is warmed, so warming never delays first paint.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ArtWarmup.Start();
+        }
+    }
 
     private string ModeName() =>
         _mode?.Selected switch

@@ -29,6 +29,7 @@ public static class ClientComposition
         services.AddScoped<IBlokemonApplication>(static provider =>
             provider.GetRequiredService<PlayModeApplication>()
         );
+        services.AddScoped<CardArtWarmup>();
         return services;
     }
 }
