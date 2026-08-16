@@ -1,7 +1,8 @@
 <Project>
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <LangVersion>14.0</LangVersion>
+    <!-- The F# compiler rejects a C# language version outright, so this stays C#-scoped. -->
+    <LangVersion Condition="'$(MSBuildProjectExtension)' == '.csproj'">14.0</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AnalysisLevel>latest</AnalysisLevel>
@@ -9,5 +10,16 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!--
+      The F# SDK adds the SDK's own FSharp.Core package to the restore sources of .fsproj files
+      only, so a C# project referencing one cannot resolve that transitive dependency where no
+      other feed exists. Adding the same folder everywhere keeps the offline nix restore working
+      without pinning FSharp.Core in packaging/nix/deps.json.
+    -->
+    <FSharpCoreLibraryPacks>$([MSBuild]::NormalizeDirectory('$(MSBuildSDKsPath)', '..', 'FSharp', 'library-packs'))</FSharpCoreLibraryPacks>
+    <RestoreAdditionalProjectSources Condition="Exists('$(FSharpCoreLibraryPacks)')"
+      >$(RestoreAdditionalProjectSources);$(FSharpCoreLibraryPacks)</RestoreAdditionalProjectSources>
   </PropertyGroup>
 </Project>

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Blokemon.PackGen</RootNamespace>
+    <AssemblyName>Blokemon.PackGen</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Domain/PackStock.fs" />
+    <Compile Include="Domain/PackFormat.fs" />
+    <Compile Include="Domain/Pack.fs" />
+    <Compile Include="Domain/PackProfile.fs" />
+    <Compile Include="Catalogue/PackCatalogue.fs" />
+    <Compile Include="Rendering/Svg.fs" />
+    <Compile Include="Rendering/Document.fs" />
+    <Compile Include="Rendering/Palette.fs" />
+    <Compile Include="Rendering/PrintedFace.fs" />
+    <Compile Include="Rendering/WrapperArt.fs" />
+    <Compile Include="Rendering/CartonArt.fs" />
+    <Compile Include="Rendering/PackArt.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      Central package management sets DisableImplicitFSharpCoreReference, so without this
+      reference the project builds green and fails at runtime with a missing FSharp.Core.
+    -->
+    <PackageReference Include="FSharp.Core" />
+  </ItemGroup>
+</Project>

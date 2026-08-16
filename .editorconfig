@@ -19,7 +19,12 @@ dotnet_diagnostic.IDE0055.severity = none
 dotnet_diagnostic.CA1711.severity = none
 dotnet_diagnostic.CA1716.severity = none
 
-[*.{csproj,props,targets,slnx}]
+[*.{fs,fsi,fsx}]
+indent_size = 4
+tab_width = 4
+max_line_length = 100
+
+[*.{csproj,fsproj,props,targets,slnx}]
 indent_size = 2
 
 [tests/**/*.cs]

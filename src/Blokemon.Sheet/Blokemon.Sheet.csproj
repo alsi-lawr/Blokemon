@@ -6,6 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Blokemon.CardGen/Blokemon.CardGen.csproj" />
-    <ProjectReference Include="../Blokemon.PackGen/Blokemon.PackGen.csproj" />
+    <ProjectReference Include="../Blokemon.PackGen/Blokemon.PackGen.fsproj" />
   </ItemGroup>
 </Project>

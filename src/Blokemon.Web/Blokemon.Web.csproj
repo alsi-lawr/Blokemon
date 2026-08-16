@@ -11,7 +11,7 @@
     <ProjectReference Include="..\Blokemon.CardGen\Blokemon.CardGen.csproj" />
     <ProjectReference Include="..\Blokemon.Core\Blokemon.Core.csproj" />
     <ProjectReference Include="..\Blokemon.Game\Blokemon.Game.csproj" />
-    <ProjectReference Include="..\Blokemon.PackGen\Blokemon.PackGen.csproj" />
+    <ProjectReference Include="..\Blokemon.PackGen\Blokemon.PackGen.fsproj" />
     <ProjectReference Include="..\Blokemon.Product\Blokemon.Product.csproj" />
     <ProjectReference Include="..\Blokemon.Web.Client\Blokemon.Web.Client.csproj" />
     <ProjectReference Include="..\Blokemon.Web.Content\Blokemon.Web.Content.csproj" />
