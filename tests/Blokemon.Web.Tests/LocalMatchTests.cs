@@ -97,8 +97,7 @@ public sealed class LocalMatchTests
         starterEntries.ShouldNotBeEmpty();
         foreach (var entry in starterEntries)
         {
-            ownedAfterAgain[entry.CardId]
-                .ShouldBe(ownedAfterFirst[entry.CardId] + entry.Quantity);
+            ownedAfterAgain[entry.CardId].ShouldBe(ownedAfterFirst[entry.CardId] + entry.Quantity);
         }
         again.Decks.ShouldHaveSingleItem();
         again.Profile!.StarterDeckId.ShouldBe("growroom");
@@ -234,7 +233,8 @@ public sealed class LocalMatchTests
         restored.Decks.Single().Id.ShouldBe(_firstDeckCommand);
         restored.Match!.Frame.Id.ShouldBe(applied.Match!.Frame.Id);
         applied.Match.Frame.Player.Active!.Card.Id.ShouldBe(selectedOche.Card.Id);
-        applied.Match.Frame.Player.Bench.Select(static card => card.Card.Id)
+        applied
+            .Match.Frame.Player.Bench.Select(static card => card.Card.Id)
             .ShouldContain(selectedBooth.Card.Id);
         await AssertEquivalent(restored.Match, applied.Match);
         restored.MatchError.ShouldBeNull();
@@ -274,9 +274,11 @@ public sealed class LocalMatchTests
             .Single(cue => cue.Kind == MatchAnimationKindView.Play);
 
         playingMatch.Frame.Player.Hand.Select(static card => card.Id).ShouldContain(cardId);
-        played.Application.Match!.Frame.Player.Hand.Select(static card => card.Id)
+        played
+            .Application.Match!.Frame.Player.Hand.Select(static card => card.Id)
             .ShouldNotContain(cardId);
-        played.Application.Match.Frame.Player.Bench.Select(static card => card.Id)
+        played
+            .Application.Match.Frame.Player.Bench.Select(static card => card.Id)
             .ShouldContain(cardId);
         playCue.SourceCardInstanceId.ShouldBe(cardId);
         playCue.ActorIsLocalPlayer.ShouldBe(true);
@@ -380,15 +382,14 @@ public sealed class LocalMatchTests
         prizesBefore.ShouldBeGreaterThan(0);
         reveal.RevealedCards.Length.ShouldBe(prizesBefore);
         reveal.TargetCardInstanceIds.Length.ShouldBe(prizesBefore);
-        reveal.RevealedCards.All(static card => !string.IsNullOrEmpty(card.FaceHtml))
+        reveal
+            .RevealedCards.All(static card => !string.IsNullOrEmpty(card.FaceHtml))
             .ShouldBeTrue();
         afterReveal!.Match!.Frame.Player.PrizeCards.ShouldBe(prizesBefore);
         var leakedCues = presentations
             .SelectMany(static presentation => presentation.Steps)
             .SelectMany(static step => step.Events)
-            .Where(static cue =>
-                cue.RevealedCards.Length > 0 && cue.ActorIsLocalPlayer != true
-            )
+            .Where(static cue => cue.RevealedCards.Length > 0 && cue.ActorIsLocalPlayer != true)
             .Select(static cue =>
                 $"{cue.Kind}|{cue.Label}|actorLocal:{cue.ActorIsLocalPlayer}|faces:{cue.RevealedCards.Length}"
             )

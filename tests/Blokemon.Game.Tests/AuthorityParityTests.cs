@@ -95,16 +95,20 @@ public sealed class AuthorityParityTests
 
         var actions = MatchScenario.Engine().GetLegalActions(attacked, MatchScenario.SecondPlayer);
 
-        actions.Any(action =>
-            action.Kind == LegalActionKind.PlayKit
-            && action.Command is MatchCommand.PlayKit command
-            && command.Kit == item.Id
-        ).ShouldBeFalse();
-        actions.Any(action =>
-            action.Kind == LegalActionKind.PlayKit
-            && action.Command is MatchCommand.PlayKit command
-            && command.Kit == supporter.Id
-        ).ShouldBeTrue();
+        actions
+            .Any(action =>
+                action.Kind == LegalActionKind.PlayKit
+                && action.Command is MatchCommand.PlayKit command
+                && command.Kit == item.Id
+            )
+            .ShouldBeFalse();
+        actions
+            .Any(action =>
+                action.Kind == LegalActionKind.PlayKit
+                && action.Command is MatchCommand.PlayKit command
+                && command.Kit == supporter.Id
+            )
+            .ShouldBeTrue();
     }
 
     [Test]
@@ -160,10 +164,12 @@ public sealed class AuthorityParityTests
             )
         );
 
-        ownerEnded.Effects.Any(effect =>
-            effect.SourceEffect == new EffectId("BLK-137-B01")
-            && effect.TargetCard == new CardInstanceId("defender")
-        ).ShouldBeTrue();
+        ownerEnded
+            .Effects.Any(effect =>
+                effect.SourceEffect == new EffectId("BLK-137-B01")
+                && effect.TargetCard == new CardInstanceId("defender")
+            )
+            .ShouldBeTrue();
     }
 
     [Test]
@@ -241,10 +247,12 @@ public sealed class AuthorityParityTests
         active.Damage.ShouldBe(100);
         active.Attachments.ShouldBe([opposingVim.Id]);
         applied.Card(opposingVim.Id).AttachedTo.ShouldBe(active.Id);
-        applied.Effects.Any(effect =>
-            effect.TargetCard == returned.Id
-            && effect.Duration == EffectDuration.WhileTargetInPlay
-        ).ShouldBeFalse();
+        applied
+            .Effects.Any(effect =>
+                effect.TargetCard == returned.Id
+                && effect.Duration == EffectDuration.WhileTargetInPlay
+            )
+            .ShouldBeFalse();
     }
 
     [Test]
@@ -340,7 +348,8 @@ public sealed class AuthorityParityTests
             effect.SourceEffect == new EffectId("KIT-014-R01")
         );
 
-        effects.Select(static effect => effect.SourceCard)
+        effects
+            .Select(static effect => effect.SourceCard)
             .ShouldBe([firstTool.Id, secondTool.Id], ignoreOrder: true);
     }
 
@@ -551,8 +560,7 @@ public sealed class AuthorityParityTests
         matching
             .CardsIn(MatchScenario.FirstPlayer, CardZone.Mitt)
             .Single(card => card.Id == new CardInstanceId("mitt-vim"))
-            .Zone
-            .ShouldBe(CardZone.Mitt);
+            .Zone.ShouldBe(CardZone.Mitt);
     }
 
     [Test]
@@ -636,11 +644,13 @@ public sealed class AuthorityParityTests
                 )
             );
 
-        ended.Events.Any(matchEvent =>
-            matchEvent.Kind == MatchEventKind.DamagePlaced
-            && matchEvent.TargetCards.Contains(new CardInstanceId("defender"))
-            && matchEvent.Amount == 120
-        ).ShouldBeTrue();
+        ended
+            .Events.Any(matchEvent =>
+                matchEvent.Kind == MatchEventKind.DamagePlaced
+                && matchEvent.TargetCards.Contains(new CardInstanceId("defender"))
+                && matchEvent.Amount == 120
+            )
+            .ShouldBeTrue();
     }
 
     [Test]

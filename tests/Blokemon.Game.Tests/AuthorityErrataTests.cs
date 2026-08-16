@@ -103,9 +103,11 @@ public sealed class AuthorityErrataTests
         var dayTwo = ApplyAttack(engine, state, MatchScenario.FirstPlayer, "BLK-054-B01");
         var opponent = ApplyAttack(engine, dayTwo.State, MatchScenario.SecondPlayer, "BLK-001-B01");
 
-        dayTwo.Events.Any(matchEvent => matchEvent.Kind == MatchEventKind.BeerMatTossed)
+        dayTwo
+            .Events.Any(matchEvent => matchEvent.Kind == MatchEventKind.BeerMatTossed)
             .ShouldBeFalse();
-        opponent.Events.Any(matchEvent => matchEvent.Kind == MatchEventKind.AttackCancelled)
+        opponent
+            .Events.Any(matchEvent => matchEvent.Kind == MatchEventKind.AttackCancelled)
             .ShouldBeTrue();
         opponent.State.Card(new CardInstanceId("attacker")).Damage.ShouldBe(0);
     }
@@ -178,7 +180,8 @@ public sealed class AuthorityErrataTests
         var reply = ApplyAttack(engine, switched.State, MatchScenario.SecondPlayer, "BLK-001-B01");
 
         reply.State.Card(new CardInstanceId("attacker")).Zone.ShouldBe(CardZone.Booth);
-        reply.Events.Any(matchEvent => matchEvent.Kind == MatchEventKind.AttackCancelled)
+        reply
+            .Events.Any(matchEvent => matchEvent.Kind == MatchEventKind.AttackCancelled)
             .ShouldBeTrue();
         reply.State.Card(replacement.Id).Damage.ShouldBe(0);
     }
@@ -214,19 +217,23 @@ public sealed class AuthorityErrataTests
         var applied = ApplyAttack(engine, state, MatchScenario.FirstPlayer, "BLK-088-B01");
         var target = new CardInstanceId("defender");
 
-        applied.State.Effects.Any(effect =>
-            effect.TargetCard == target && effect.Kind == TemporaryEffectKind.ModifyTaxiFare
-        ).ShouldBeTrue();
-        applied.State.Effects.Any(effect =>
-            effect.TargetCard == target
-            && effect.Kind == TemporaryEffectKind.ModifyAttackCost
-        ).ShouldBeFalse();
+        applied
+            .State.Effects.Any(effect =>
+                effect.TargetCard == target && effect.Kind == TemporaryEffectKind.ModifyTaxiFare
+            )
+            .ShouldBeTrue();
+        applied
+            .State.Effects.Any(effect =>
+                effect.TargetCard == target && effect.Kind == TemporaryEffectKind.ModifyAttackCost
+            )
+            .ShouldBeFalse();
         engine
             .GetLegalActions(applied.State, MatchScenario.SecondPlayer)
             .Any(action =>
                 action.Command is MatchCommand.Attack attack
                 && attack.AttackId == new EffectId("BLK-001-B01")
-            ).ShouldBeTrue();
+            )
+            .ShouldBeTrue();
     }
 
     [Test]
@@ -242,19 +249,23 @@ public sealed class AuthorityErrataTests
         var applied = ApplyAttack(engine, state, MatchScenario.FirstPlayer, "BLK-089-B01");
         var target = new CardInstanceId("defender");
 
-        applied.State.Effects.Any(effect =>
-            effect.TargetCard == target
-            && effect.Kind == TemporaryEffectKind.ModifyAttackCost
-        ).ShouldBeTrue();
-        applied.State.Effects.Any(effect =>
-            effect.TargetCard == target && effect.Kind == TemporaryEffectKind.ModifyTaxiFare
-        ).ShouldBeTrue();
+        applied
+            .State.Effects.Any(effect =>
+                effect.TargetCard == target && effect.Kind == TemporaryEffectKind.ModifyAttackCost
+            )
+            .ShouldBeTrue();
+        applied
+            .State.Effects.Any(effect =>
+                effect.TargetCard == target && effect.Kind == TemporaryEffectKind.ModifyTaxiFare
+            )
+            .ShouldBeTrue();
         engine
             .GetLegalActions(applied.State, MatchScenario.SecondPlayer)
             .Any(action =>
                 action.Command is MatchCommand.Attack attack
                 && attack.AttackId == new EffectId("BLK-001-B01")
-            ).ShouldBeFalse();
+            )
+            .ShouldBeFalse();
     }
 
     [Test]
@@ -328,12 +339,14 @@ public sealed class AuthorityErrataTests
             "BLK-001-B01"
         );
 
-        firstAttack.Events.Count(matchEvent =>
-            matchEvent.Kind == MatchEventKind.BeerMatTossed
-        ).ShouldBe(0);
-        reply.Events.Count(matchEvent => matchEvent.Kind == MatchEventKind.BeerMatTossed)
+        firstAttack
+            .Events.Count(matchEvent => matchEvent.Kind == MatchEventKind.BeerMatTossed)
+            .ShouldBe(0);
+        reply
+            .Events.Count(matchEvent => matchEvent.Kind == MatchEventKind.BeerMatTossed)
             .ShouldBe(2);
-        reply.Events.Any(matchEvent => matchEvent.Kind == MatchEventKind.AttackCancelled)
+        reply
+            .Events.Any(matchEvent => matchEvent.Kind == MatchEventKind.AttackCancelled)
             .ShouldBeTrue();
     }
 
@@ -425,12 +438,14 @@ public sealed class AuthorityErrataTests
         var reply = ApplyAttack(engine, mirror.State, MatchScenario.SecondPlayer, "BLK-001-B01");
 
         reply.State.Card(new CardInstanceId("attacker")).Zone.ShouldBe(CardZone.EmptiesTray);
-        reply.Events.Any(matchEvent =>
-            matchEvent.Kind == MatchEventKind.DamagePlaced
-            && matchEvent.DamageKind == DamageKind.PlacedCounter
-            && matchEvent.Amount == 20
-            && matchEvent.TargetCards.Contains(new CardInstanceId("defender"))
-        ).ShouldBeTrue();
+        reply
+            .Events.Any(matchEvent =>
+                matchEvent.Kind == MatchEventKind.DamagePlaced
+                && matchEvent.DamageKind == DamageKind.PlacedCounter
+                && matchEvent.Amount == 20
+                && matchEvent.TargetCards.Contains(new CardInstanceId("defender"))
+            )
+            .ShouldBeTrue();
     }
 
     public static IEnumerable<ProtectionCase> ProtectionCases() =>

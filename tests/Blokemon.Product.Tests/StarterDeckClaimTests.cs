@@ -60,17 +60,20 @@ public sealed class StarterDeckClaimTests
         claimed.Claim.Id.ShouldBe(fixture.Definition.Id);
         claimed.Claim.CommandId.ShouldBe(commandId);
         claimed.Claim.CollectibleGrants.Length.ShouldBe(2);
-        claimed.Claim.CollectibleGrants
-            .Single(grant => grant.CardId == fixture.CollectibleId)
+        claimed
+            .Claim.CollectibleGrants.Single(grant => grant.CardId == fixture.CollectibleId)
             .Quantity.ShouldBe(fixture.RequiredCollectibleQuantity);
-        claimed.Claim.CollectibleGrants
-            .Single(grant => grant.CardId == profile.GuaranteedRegularCollectibleId)
+        claimed
+            .Claim.CollectibleGrants.Single(grant =>
+                grant.CardId == profile.GuaranteedRegularCollectibleId
+            )
             .Quantity.ShouldBe(1);
-        claimed.Profile.OwnedCollectibleQuantity(fixture.CollectibleId)
+        claimed
+            .Profile.OwnedCollectibleQuantity(fixture.CollectibleId)
             .ShouldBe(fixture.RequiredCollectibleQuantity);
-        claimed.Profile.OwnedCollectibleQuantity(
-            claimed.Profile.GuaranteedRegularCollectibleId
-        ).ShouldBe(2);
+        claimed
+            .Profile.OwnedCollectibleQuantity(claimed.Profile.GuaranteedRegularCollectibleId)
+            .ShouldBe(2);
         claimed.Profile.OwnedCollectibleQuantity(fixture.KitId).ShouldBe(0);
         claimed.Profile.OwnedCollectibleQuantity(fixture.BasicVimId).ShouldBe(0);
 
@@ -123,7 +126,8 @@ public sealed class StarterDeckClaimTests
         retried.Profile.ShouldBeSameAs(claimed.Profile);
         retried.Claim.ShouldBeSameAs(claimed.Claim);
         retried.Profile.SavedDecks.Count.ShouldBe(1);
-        retried.Profile.OwnedCollectibleQuantity(fixture.CollectibleId)
+        retried
+            .Profile.OwnedCollectibleQuantity(fixture.CollectibleId)
             .ShouldBe(fixture.RequiredCollectibleQuantity);
         var conflict = commandConflict.ShouldBeOfType<StarterDeckClaimFailure.CommandConflict>();
         conflict.ClaimedStarterDeckId.ShouldBe(fixture.Definition.Id);
@@ -160,9 +164,11 @@ public sealed class StarterDeckClaimTests
         claimedBeta.Profile.LatestStarterDeckClaim.ShouldBeSameAs(claimedBeta.Claim);
         claimedBeta.Profile.SavedDecks.Count.ShouldBe(2);
         claimedBeta.Profile.SavedDecks[second.DeckId].Cards.Values.Sum().ShouldBe(60);
-        claimedBeta.Profile.OwnedCollectibleQuantity(fixture.CollectibleId)
+        claimedBeta
+            .Profile.OwnedCollectibleQuantity(fixture.CollectibleId)
             .ShouldBe(fixture.RequiredCollectibleQuantity + 1);
-        claimedBeta.Profile.OwnedCollectibleQuantity(profile.GuaranteedRegularCollectibleId)
+        claimedBeta
+            .Profile.OwnedCollectibleQuantity(profile.GuaranteedRegularCollectibleId)
             .ShouldBe(3);
     }
 
@@ -202,9 +208,11 @@ public sealed class StarterDeckClaimTests
         reclaimed.Profile.LatestStarterDeckClaim.ShouldBeSameAs(reclaimed.Claim);
         reclaimed.Profile.SavedDecks.Count.ShouldBe(1);
         reclaimed.Profile.SavedDecks[fixture.Definition.DeckId].ShouldBeSameAs(revised.Deck);
-        reclaimed.Profile.OwnedCollectibleQuantity(fixture.CollectibleId)
+        reclaimed
+            .Profile.OwnedCollectibleQuantity(fixture.CollectibleId)
             .ShouldBe(2 * fixture.RequiredCollectibleQuantity);
-        reclaimed.Profile.OwnedCollectibleQuantity(profile.GuaranteedRegularCollectibleId)
+        reclaimed
+            .Profile.OwnedCollectibleQuantity(profile.GuaranteedRegularCollectibleId)
             .ShouldBe(3);
     }
 
@@ -231,8 +239,10 @@ public sealed class StarterDeckClaimTests
         foreach (var claim in snapshot.StarterDeckClaims)
         {
             claim.CollectibleGrants.Length.ShouldBe(2);
-            claim.CollectibleGrants
-                .Single(grant => grant.CardId == persisted.Starter.CollectibleId.Value)
+            claim
+                .CollectibleGrants.Single(grant =>
+                    grant.CardId == persisted.Starter.CollectibleId.Value
+                )
                 .Quantity.ShouldBe(persisted.Starter.RequiredCollectibleQuantity);
         }
         snapshot.SavedDecks.Single().Revision.ShouldBe(2);
@@ -242,13 +252,15 @@ public sealed class StarterDeckClaimTests
         restoredRetry.Profile.ShouldBeSameAs(restored);
         restoredRetry.Claim.CommandId.ShouldBe(persisted.FirstCommandId);
         restoredRetry.Profile.SavedDecks.Count.ShouldBe(1);
-        restoredSnapshot.CollectibleOwnership.SequenceEqual(snapshot.CollectibleOwnership)
+        restoredSnapshot
+            .CollectibleOwnership.SequenceEqual(snapshot.CollectibleOwnership)
             .ShouldBeTrue();
         PackReceiptsEqual(restoredSnapshot.PackReceipts, snapshot.PackReceipts).ShouldBeTrue();
         StarterDeckClaimsEqual(restoredSnapshot.StarterDeckClaims, snapshot.StarterDeckClaims)
             .ShouldBeTrue();
-        restored.GuaranteedRegularCollectibleId
-            .ShouldBe(persisted.Profile.GuaranteedRegularCollectibleId);
+        restored.GuaranteedRegularCollectibleId.ShouldBe(
+            persisted.Profile.GuaranteedRegularCollectibleId
+        );
         restored.PackReceipts.Keys.ShouldBe(persisted.Profile.PackReceipts.Keys, ignoreOrder: true);
     }
 
@@ -376,8 +388,7 @@ public sealed class StarterDeckClaimTests
             )
         );
 
-        missingGrantHistory
-            .ShouldBeOfType<LocalProfileRestorationFailure.OwnershipHistoryMismatch>();
+        missingGrantHistory.ShouldBeOfType<LocalProfileRestorationFailure.OwnershipHistoryMismatch>();
         unknownGrant.ShouldBeOfType<LocalProfileRestorationFailure.UnknownCard>();
         unrecordedGrant.ShouldBeOfType<LocalProfileRestorationFailure.OwnershipHistoryMismatch>();
         nonPositiveGrant.ShouldBeOfType<LocalProfileRestorationFailure.NegativeQuantity>();
@@ -430,12 +441,13 @@ public sealed class StarterDeckClaimTests
     public async Task SnapshotRestore_AcceptsLegacySnapshotsWithoutStarterClaims()
     {
         var withPack = Success(
-            CreateProfile().OpenPack(
-                Value(CommandId.Create("pack-before-starter")),
-                Value(PackReceiptId.Create("pack-before-starter")),
-                _authority.Value,
-                new BlokemonSeededRandom(173)
-            )
+            CreateProfile()
+                .OpenPack(
+                    Value(CommandId.Create("pack-before-starter")),
+                    Value(PackReceiptId.Create("pack-before-starter")),
+                    _authority.Value,
+                    new BlokemonSeededRandom(173)
+                )
         ).Profile;
         var source = withPack.ToSnapshot();
         var legacySnapshot = new LocalProfileSnapshot(
@@ -453,7 +465,8 @@ public sealed class StarterDeckClaimTests
 
         restored.StarterDeckClaims.ShouldBeEmpty();
         restored.LatestStarterDeckClaim.ShouldBeNull();
-        restoredSnapshot.CollectibleOwnership.SequenceEqual(source.CollectibleOwnership)
+        restoredSnapshot
+            .CollectibleOwnership.SequenceEqual(source.CollectibleOwnership)
             .ShouldBeTrue();
         PackReceiptsEqual(restoredSnapshot.PackReceipts, source.PackReceipts).ShouldBeTrue();
         restoredSnapshot.SavedDecks.ShouldBeEmpty();
@@ -533,12 +546,13 @@ public sealed class StarterDeckClaimTests
     private static PersistedClaimFixture CreatePersistedClaimFixture()
     {
         var withPack = Success(
-            CreateProfile().OpenPack(
-                Value(CommandId.Create("pack-before-starter")),
-                Value(PackReceiptId.Create("pack-before-starter")),
-                _authority.Value,
-                new BlokemonSeededRandom(173)
-            )
+            CreateProfile()
+                .OpenPack(
+                    Value(CommandId.Create("pack-before-starter")),
+                    Value(PackReceiptId.Create("pack-before-starter")),
+                    _authority.Value,
+                    new BlokemonSeededRandom(173)
+                )
         ).Profile;
         var fixture = CreateStarterFixture(withPack);
         var firstCommandId = Value(CommandId.Create("persisted-starter-command"));

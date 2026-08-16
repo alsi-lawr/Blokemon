@@ -243,12 +243,12 @@ public sealed class CardSemanticsTests
             engine.Apply(allowed, MatchScenario.AttackCommand(allowed, "BLK-001-B01"))
         );
 
-        blockedOutcome.Events.Count(matchEvent =>
-            matchEvent.Kind == MatchEventKind.BeerMatTossed
-        ).ShouldBe(2);
-        blockedOutcome.Events.Any(matchEvent =>
-            matchEvent.Kind == MatchEventKind.AttackCancelled
-        ).ShouldBeTrue();
+        blockedOutcome
+            .Events.Count(matchEvent => matchEvent.Kind == MatchEventKind.BeerMatTossed)
+            .ShouldBe(2);
+        blockedOutcome
+            .Events.Any(matchEvent => matchEvent.Kind == MatchEventKind.AttackCancelled)
+            .ShouldBeTrue();
         blockedOutcome.State.Card(new CardInstanceId("defender")).Damage.ShouldBe(0);
         allowedOutcome.State.Card(new CardInstanceId("defender")).Damage.ShouldBe(20);
     }
@@ -275,8 +275,9 @@ public sealed class CardSemanticsTests
         var applied = MatchScenario.Applied(engine.Apply(state, play.Command));
 
         play.ChoiceRequirements.Any(requirement =>
-            requirement.Kind == ChoiceRequirementKind.Optional
-        ).ShouldBeFalse();
+                requirement.Kind == ChoiceRequirementKind.Optional
+            )
+            .ShouldBeFalse();
         applied.Card(fossil.Id).Zone.ShouldBe(CardZone.Booth);
         engine
             .GetLegalActions(applied, MatchScenario.FirstPlayer)
@@ -284,7 +285,8 @@ public sealed class CardSemanticsTests
                 action.Kind == LegalActionKind.ChuckFossil
                 && action.Command is MatchCommand.ChuckFossil command
                 && command.Fossil == fossil.Id
-            ).ShouldBeTrue();
+            )
+            .ShouldBeTrue();
     }
 
     [Test]
@@ -297,19 +299,19 @@ public sealed class CardSemanticsTests
                 .HouseRules.Single(houseRule => houseRule.MechanicalId == $"{fossilId}-R01");
 
             rule.Program.Select(instruction => instruction.Opcode)
-                .SequenceEqual(
-                    [
-                        BlokemonOpcode.ModifyTaxiFare,
-                        BlokemonOpcode.RestrictTaxi,
-                        BlokemonOpcode.PlayAsBloke,
-                        BlokemonOpcode.ChuckSelf,
-                    ]
-                ).ShouldBeTrue();
+                .SequenceEqual([
+                    BlokemonOpcode.ModifyTaxiFare,
+                    BlokemonOpcode.RestrictTaxi,
+                    BlokemonOpcode.PlayAsBloke,
+                    BlokemonOpcode.ChuckSelf,
+                ])
+                .ShouldBeTrue();
             rule.Program.All(instruction =>
-                instruction.Predicates.Length == 0
-                && instruction.Then.Length == 0
-                && instruction.Otherwise.Length == 0
-            ).ShouldBeTrue();
+                    instruction.Predicates.Length == 0
+                    && instruction.Then.Length == 0
+                    && instruction.Otherwise.Length == 0
+                )
+                .ShouldBeTrue();
         }
     }
 
@@ -362,10 +364,9 @@ public sealed class CardSemanticsTests
             .TargetCards.Select(static card => card.Value)
             .Order(StringComparer.Ordinal)
             .SequenceEqual(
-                prizes
-                    .Select(static prize => prize.Id.Value)
-                    .Order(StringComparer.Ordinal)
-            ).ShouldBeTrue();
+                prizes.Select(static prize => prize.Id.Value).Order(StringComparer.Ordinal)
+            )
+            .ShouldBeTrue();
         for (var index = 0; index < prizes.Length; index++)
         {
             var after = outcome.State.Card(prizes[index].Id);

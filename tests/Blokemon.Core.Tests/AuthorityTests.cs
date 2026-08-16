@@ -22,8 +22,7 @@ public sealed class AuthorityTests
         BlokemonSetValidator.ValidateRuntime(_mechanics.Value).IsValid.ShouldBeTrue();
         BlokemonPublicContentValidator
             .ValidateDocument(_publicContent.Value, _mechanics.Value)
-            .IsValid
-            .ShouldBeTrue();
+            .IsValid.ShouldBeTrue();
     }
 
     [Test]

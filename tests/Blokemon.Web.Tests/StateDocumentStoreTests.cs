@@ -165,10 +165,13 @@ public sealed class StateDocumentStoreTests
         );
 
         revised.Decks.Single().IsLegal.ShouldBeTrue();
-        revised.Decks.Single().Entries.Select(static entry => entry.CardId)
+        revised
+            .Decks.Single()
+            .Entries.Select(static entry => entry.CardId)
             .ShouldBe(["BLK-001", "VIM-DODGY"], ignoreOrder: true);
-        (persistedProfile["authorityManifestVersion"]!.GetValue<string>())
-            .ShouldBe("historical-manifest");
+        (persistedProfile["authorityManifestVersion"]!.GetValue<string>()).ShouldBe(
+            "historical-manifest"
+        );
         persistedDeck["revision"]!.GetValue<long>().ShouldBe(deck.Revision + 1);
         persistedCardIds.ShouldBe(["BLK-001", "VIM-DODGY"], ignoreOrder: true);
         Error(pack).Code.ShouldBe("pack.authority_changed");

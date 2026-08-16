@@ -18,7 +18,8 @@ public sealed class OpeningTests
 
         state.OpeningPlayer.ShouldBe(expectedOpening);
         state.Players.All(static player => player.BarChitsRemaining == 6).ShouldBeTrue();
-        state.Players.All(player => state.CardsIn(player.Id, CardZone.Mitt).Count() == 7)
+        state
+            .Players.All(player => state.CardsIn(player.Id, CardZone.Mitt).Count() == 7)
             .ShouldBeTrue();
 
         foreach (var player in new[] { MatchScenario.FirstPlayer, MatchScenario.SecondPlayer })

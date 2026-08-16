@@ -206,7 +206,14 @@ public static class CartonArt
             "tray-side" =>
                 $"""{Svg.Rect(0d, 0d, panel.Across, 1.4d, "#ffffff", " fill-opacity=\"0.26\"")}{Svg.Rect(0d, 0d, 1d, panel.Down, "#ffffff", " fill-opacity=\"0.18\"")}""",
             "tray-back" => Svg.Rect(0d, 0d, panel.Across, 1.4d, "#fffcf0", " fill-opacity=\"0.2\""),
-            "tray-left" => Svg.Rect(0d, 0d, panel.Across, 1.4d, "#fffcf0", " fill-opacity=\"0.16\""),
+            "tray-left" => Svg.Rect(
+                0d,
+                0d,
+                panel.Across,
+                1.4d,
+                "#fffcf0",
+                " fill-opacity=\"0.16\""
+            ),
             _ => string.Empty,
         };
 

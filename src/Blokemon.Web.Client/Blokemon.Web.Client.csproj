@@ -36,7 +36,13 @@
   <ItemGroup Condition="'$(StandaloneBrowser)' == 'true'">
     <Content Include="../Blokemon.Web/wwwroot/app.css" Link="wwwroot/app.css" />
     <Content Include="../Blokemon.Web/wwwroot/favicon.svg" Link="wwwroot/favicon.svg" />
-    <Content Include="../../content/art/**" Link="wwwroot/art/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Content Include="../../content/fonts/**" Link="wwwroot/fonts/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content
+      Include="../../content/art/**"
+      Link="wwwroot/art/%(RecursiveDir)%(Filename)%(Extension)"
+    />
+    <Content
+      Include="../../content/fonts/**"
+      Link="wwwroot/fonts/%(RecursiveDir)%(Filename)%(Extension)"
+    />
   </ItemGroup>
 </Project>

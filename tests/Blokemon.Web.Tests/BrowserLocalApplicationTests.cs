@@ -124,8 +124,7 @@ public sealed class BrowserLocalApplicationTests
         var selection = await application.SelectMode(PlayMode.BrowserLocal);
 
         mode.Selected.ShouldBeNull();
-        mode.BrowserStorageError
-            .ShouldNotBeNull()
+        mode.BrowserStorageError.ShouldNotBeNull()
             .ShouldContain("damaged or incompatible", Case.Sensitive);
         selection.Succeeded.ShouldBeFalse();
         (await documents.Read("settings")).ShouldBe(before);
@@ -211,7 +210,8 @@ public sealed class BrowserLocalApplicationTests
         restored.Profile.StarterDeckId.ShouldBe("growroom");
         restored.LastPack!.Id.ShouldBe(opened.LastPack!.Id);
         restored.Decks.Single().Name.ShouldBe("Browser starter");
-        JsonSerializer.Serialize(restored.Match)
+        JsonSerializer
+            .Serialize(restored.Match)
             .ShouldBe(JsonSerializer.Serialize(applied.Application.Match));
         restored.MatchError.ShouldBeNull();
         server.Requests.ShouldBeEmpty();

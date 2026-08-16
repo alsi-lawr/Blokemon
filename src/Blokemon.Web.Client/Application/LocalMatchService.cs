@@ -1578,9 +1578,7 @@ public sealed class LocalMatchService(BlokemonCatalogue catalogue, IStateDocumen
         CardView[] revealed =
             matchEvent.Kind == MatchEventKind.CardsRevealed
                 ? visibleTargets
-                    .Where(card =>
-                        state.Card(card).Zone is CardZone.Stack or CardZone.BarChit
-                    )
+                    .Where(card => state.Card(card).Zone is CardZone.Stack or CardZone.BarChit)
                     .Select(card => catalogue.Card(state.Card(card).MechanicalId.Value))
                     .ToArray()
                 : [];

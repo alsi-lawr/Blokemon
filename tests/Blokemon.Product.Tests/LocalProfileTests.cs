@@ -64,13 +64,14 @@ public sealed class LocalProfileTests
         retried.Receipt.ShouldBeSameAs(first.Receipt);
         retried.Receipt.Id.Value.ShouldBe("receipt-1");
         retried.Receipt.SampledCollectibleIds.Length.ShouldBe(11);
-        retried.Receipt.SampledCollectibleIds.SequenceEqual(
-            first.Receipt.SampledCollectibleIds
-        ).ShouldBeTrue();
+        retried
+            .Receipt.SampledCollectibleIds.SequenceEqual(first.Receipt.SampledCollectibleIds)
+            .ShouldBeTrue();
         foreach (var group in first.Receipt.SampledCollectibleIds.GroupBy(static id => id))
         {
             var initialQuantity = group.Key == profile.GuaranteedRegularCollectibleId ? 1 : 0;
-            first.Profile.OwnedCollectibleQuantity(group.Key)
+            first
+                .Profile.OwnedCollectibleQuantity(group.Key)
                 .ShouldBe(initialQuantity + group.Count());
         }
         retried.Profile.PackReceipts.Count.ShouldBe(1);
@@ -94,7 +95,8 @@ public sealed class LocalProfileTests
         }
 
         profile.PackReceipts.Count.ShouldBe(12);
-        profile.PackReceipts.Values.Select(static receipt => receipt.Sequence)
+        profile
+            .PackReceipts.Values.Select(static receipt => receipt.Sequence)
             .ShouldBe(Enumerable.Range(1, 12), ignoreOrder: true);
         profile.CollectibleOwnership.Values.Sum().ShouldBe(1 + 12 * 11);
     }
@@ -124,12 +126,12 @@ public sealed class LocalProfileTests
         );
 
         legal.IsValid.ShouldBeTrue();
-        overOwned.Any(static issue =>
-            issue is DeckValidationIssue.CollectibleQuantityNotOwned
-        ).ShouldBeTrue();
-        overMechanicalLimit.Any(static issue =>
-            issue is DeckValidationIssue.MechanicalCopyLimitExceeded
-        ).ShouldBeTrue();
+        overOwned
+            .Any(static issue => issue is DeckValidationIssue.CollectibleQuantityNotOwned)
+            .ShouldBeTrue();
+        overMechanicalLimit
+            .Any(static issue => issue is DeckValidationIssue.MechanicalCopyLimitExceeded)
+            .ShouldBeTrue();
     }
 
     [Test]
@@ -149,9 +151,9 @@ public sealed class LocalProfileTests
         );
 
         wrongCount.Any(static issue => issue is DeckValidationIssue.WrongCardCount).ShouldBeTrue();
-        noRegular.Any(static issue =>
-            issue is DeckValidationIssue.RegularCollectibleRequired
-        ).ShouldBeTrue();
+        noRegular
+            .Any(static issue => issue is DeckValidationIssue.RegularCollectibleRequired)
+            .ShouldBeTrue();
     }
 
     [Test]
@@ -237,26 +239,32 @@ public sealed class LocalProfileTests
         );
 
         restored.BoundAuthorityManifestVersion.ShouldBe(snapshot.AuthorityManifestVersion);
-        restoredSnapshot.CollectibleOwnership.SequenceEqual(snapshot.CollectibleOwnership)
+        restoredSnapshot
+            .CollectibleOwnership.SequenceEqual(snapshot.CollectibleOwnership)
             .ShouldBeTrue();
         restoredSnapshot.PackReceipts.Length.ShouldBe(2);
         for (var index = 0; index < snapshot.PackReceipts.Length; index++)
         {
-            restoredSnapshot.PackReceipts[index].ReceiptId
-                .ShouldBe(snapshot.PackReceipts[index].ReceiptId);
-            restoredSnapshot.PackReceipts[index].CommandId
-                .ShouldBe(snapshot.PackReceipts[index].CommandId);
+            restoredSnapshot
+                .PackReceipts[index]
+                .ReceiptId.ShouldBe(snapshot.PackReceipts[index].ReceiptId);
+            restoredSnapshot
+                .PackReceipts[index]
+                .CommandId.ShouldBe(snapshot.PackReceipts[index].CommandId);
             restoredSnapshot.PackReceipts[index].Sequence.ShouldBe(index + 1);
             restoredSnapshot
                 .PackReceipts[index]
                 .SampledCollectibleIds.SequenceEqual(
                     snapshot.PackReceipts[index].SampledCollectibleIds
-                ).ShouldBeTrue();
+                )
+                .ShouldBeTrue();
         }
         restoredSnapshot.SavedDecks.Length.ShouldBe(1);
         restoredSnapshot.SavedDecks[0].Revision.ShouldBe(2);
         restoredSnapshot.SavedDecks[0].Name.ShouldBe("Revised deck");
-        restoredSnapshot.SavedDecks[0].Cards.SequenceEqual(snapshot.SavedDecks[0].Cards)
+        restoredSnapshot
+            .SavedDecks[0]
+            .Cards.SequenceEqual(snapshot.SavedDecks[0].Cards)
             .ShouldBeTrue();
         retried.Disposition.ShouldBe(PackOpenDisposition.AlreadyOpened);
         restored.PackReceipts.Values.Max(static receipt => receipt.Sequence).ShouldBe(2);
@@ -331,17 +339,21 @@ public sealed class LocalProfileTests
         );
 
         restored.BoundAuthorityManifestVersion.ShouldBe("historical-manifest");
-        restoredSnapshot.CollectibleOwnership.Any(static item =>
-            item.CardId == historicalCardId && item.Quantity == 1
-        ).ShouldBeTrue();
-        restoredSnapshot.PackReceipts[0].SampledCollectibleIds.Contains(historicalCardId)
+        restoredSnapshot
+            .CollectibleOwnership.Any(static item =>
+                item.CardId == historicalCardId && item.Quantity == 1
+            )
+            .ShouldBeTrue();
+        restoredSnapshot
+            .PackReceipts[0]
+            .SampledCollectibleIds.Contains(historicalCardId)
             .ShouldBeTrue();
         restoredSnapshot
             .SavedDecks[0]
-            .Cards.Any(static card =>
-                card.CardId == "HISTORICAL-DECK-CARD" && card.Quantity == 59
-            ).ShouldBeTrue();
-        revised.Deck.Cards.Keys.Select(static cardId => cardId.Value)
+            .Cards.Any(static card => card.CardId == "HISTORICAL-DECK-CARD" && card.Quantity == 59)
+            .ShouldBeTrue();
+        revised
+            .Deck.Cards.Keys.Select(static cardId => cardId.Value)
             .ShouldBe(
                 currentCards.Select(static selection => selection.CardId.Value),
                 ignoreOrder: true
@@ -454,10 +466,12 @@ public sealed class LocalProfileTests
         invalidIdentity.ShouldBeOfType<LocalProfileRestorationFailure.InvalidId>();
         negativeQuantity.ShouldBeOfType<LocalProfileRestorationFailure.NegativeQuantity>();
         duplicateReceipt.ShouldBeOfType<LocalProfileRestorationFailure.DuplicateValue>();
-        ((LocalProfileRestorationFailure.DuplicateValue)duplicateReceipt).Kind
-            .ShouldBe(SnapshotDuplicateKind.PackReceiptId);
-        ((LocalProfileRestorationFailure.DuplicateValue)duplicateCommand).Kind
-            .ShouldBe(SnapshotDuplicateKind.PackCommandId);
+        ((LocalProfileRestorationFailure.DuplicateValue)duplicateReceipt).Kind.ShouldBe(
+            SnapshotDuplicateKind.PackReceiptId
+        );
+        ((LocalProfileRestorationFailure.DuplicateValue)duplicateCommand).Kind.ShouldBe(
+            SnapshotDuplicateKind.PackCommandId
+        );
         duplicateSequence.ShouldBeOfType<LocalProfileRestorationFailure.InvalidPackSequence>();
         nonPositiveSequence.ShouldBeOfType<LocalProfileRestorationFailure.InvalidPackSequence>();
         gappedSequence.ShouldBeOfType<LocalProfileRestorationFailure.InvalidPackSequence>();

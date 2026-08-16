@@ -114,11 +114,13 @@ public sealed class CardFlowTests
             ),
         };
         var actions = engine.GetLegalActions(state, MatchScenario.FirstPlayer);
-        actions.Any(value =>
-            value.Kind == LegalActionKind.PlayKit
-            && value.Command is MatchCommand.PlayKit play
-            && play.Kit == kit.Id
-        ).ShouldBeTrue();
+        actions
+            .Any(value =>
+                value.Kind == LegalActionKind.PlayKit
+                && value.Command is MatchCommand.PlayKit play
+                && play.Kit == kit.Id
+            )
+            .ShouldBeTrue();
         var action = actions.Single(value =>
             value.Kind == LegalActionKind.PlayKit
             && value.Command is MatchCommand.PlayKit play

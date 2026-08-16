@@ -157,7 +157,9 @@ public sealed partial class LocalProfile
             var claimPath = $"{nameof(snapshot.StarterDeckClaims)}[{claimIndex}]";
             if (claimSnapshot is null)
             {
-                return RestorationFailed(new LocalProfileRestorationFailure.MissingEntry(claimPath));
+                return RestorationFailed(
+                    new LocalProfileRestorationFailure.MissingEntry(claimPath)
+                );
             }
 
             var starterDeckIdResult = StarterDeckId.Create(claimSnapshot.StarterDeckId);

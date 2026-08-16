@@ -81,11 +81,14 @@ public sealed class DamageAndRoughStateTests
         );
 
         checkedCard.Damage.ShouldBe(30);
-        checkedCard.RoughStates.Any(entry => entry.State == BlokemonRoughState.DodgyPint)
+        checkedCard
+            .RoughStates.Any(entry => entry.State == BlokemonRoughState.DodgyPint)
             .ShouldBeTrue();
-        checkedCard.RoughStates.Any(entry => entry.State == BlokemonRoughState.Legless)
+        checkedCard
+            .RoughStates.Any(entry => entry.State == BlokemonRoughState.Legless)
             .ShouldBeFalse();
-        damageEvents.Select(static matchEvent => matchEvent.Amount)
+        damageEvents
+            .Select(static matchEvent => matchEvent.Amount)
             .ShouldBe([10, 20], ignoreOrder: true);
     }
 }

@@ -385,7 +385,9 @@ public sealed class ExceptionalEffectTests
         applied.State.ShouldBe(repeated.State);
         applied.Events.ShouldBe(repeated.Events);
         applied.State.Card(kit.Id).Zone.ShouldBe(CardZone.EmptiesTray);
-        topCards.Append(outsideWindow).Select(card => applied.State.Card(card.Id).Zone)
+        topCards
+            .Append(outsideWindow)
+            .Select(card => applied.State.Card(card.Id).Zone)
             .ShouldBe(Enumerable.Repeat(CardZone.Stack, 9));
     }
 

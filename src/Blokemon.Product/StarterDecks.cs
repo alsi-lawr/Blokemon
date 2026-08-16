@@ -159,8 +159,8 @@ public sealed partial class LocalProfile
         ArgumentNullException.ThrowIfNull(currentAuthority);
 
         if (
-            _starterDeckClaims.FirstOrDefault(claim => claim.CommandId == commandId)
-            is { } existingClaim
+            _starterDeckClaims.FirstOrDefault(claim => claim.CommandId == commandId) is
+            { } existingClaim
         )
         {
             return definition.Id == existingClaim.Id
@@ -231,7 +231,9 @@ public sealed partial class LocalProfile
         var claim = new StarterDeckClaim(definition.Id, commandId, grants);
         var profile = Copy(
             collectibleOwnership: ownership,
-            savedDecks: _savedDecks.ContainsKey(deck.Id) ? _savedDecks : _savedDecks.Add(deck.Id, deck),
+            savedDecks: _savedDecks.ContainsKey(deck.Id)
+                ? _savedDecks
+                : _savedDecks.Add(deck.Id, deck),
             starterDeckClaims: _starterDeckClaims.Add(claim)
         );
 
