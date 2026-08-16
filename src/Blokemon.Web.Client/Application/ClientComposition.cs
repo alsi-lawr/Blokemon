@@ -18,6 +18,7 @@ public static class ClientComposition
         services.AddSingleton(http);
         services.AddSingleton(catalogue);
         services.AddSingleton(playModes);
+        services.AddSingleton(BrowserEconomy.Default);
         services.AddScoped<IStateDocumentStore, IndexedDbStateDocumentStore>();
         services.AddScoped<LocalMatchService>();
         services.AddScoped<LocalApplicationService>();

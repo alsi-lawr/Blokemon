@@ -37,8 +37,18 @@ public sealed record LocalProfileSnapshot(
     ImmutableArray<CollectibleOwnershipSnapshot> CollectibleOwnership,
     ImmutableArray<PackReceiptSnapshot> PackReceipts,
     ImmutableArray<SavedDeckSnapshot> SavedDecks,
-    ImmutableArray<StarterDeckClaimSnapshot> StarterDeckClaims = default
+    ImmutableArray<StarterDeckClaimSnapshot> StarterDeckClaims = default,
+    EconomyMode Economy = EconomyMode.Unlimited,
+    int EconomyPackAllowance = 0
 );
+
+public enum EconomyViolationKind
+{
+    UnknownMode,
+    InvalidPackAllowance,
+    PackAllowanceExceeded,
+    StarterDeckClaimAllowanceExceeded,
+}
 
 public enum SnapshotDuplicateKind
 {
@@ -69,7 +79,8 @@ public abstract record LocalProfileRestorationFailure
         Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
         Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
         Func<DeckId, long, TResult> onInvalidDeckRevision,
-        Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+        Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+        Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
     );
 
     public sealed record InvalidId(string Path, TextValueFailure Failure)
@@ -88,7 +99,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onInvalidId(Path, Failure);
     }
 
@@ -108,7 +120,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onInvalidDisplayName(Failure);
     }
 
@@ -127,7 +140,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onMissingEntry(Path);
     }
 
@@ -147,7 +161,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onNegativeQuantity(Path, Quantity);
     }
 
@@ -167,7 +182,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onDuplicateValue(Kind, Value);
     }
 
@@ -186,7 +202,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onUnknownCard(Path, CardId);
     }
 
@@ -205,7 +222,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onStarterNotRegular(CardId);
     }
 
@@ -225,7 +243,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onInvalidPackCardCount(ReceiptId, Actual);
     }
 
@@ -245,7 +264,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onInvalidPackSequence(ReceiptId, Sequence);
     }
 
@@ -265,7 +285,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onOwnershipHistoryMismatch(CardId, Actual, Expected);
     }
 
@@ -285,7 +306,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onInvalidDeckName(DeckId, Failure);
     }
 
@@ -305,7 +327,8 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onInvalidDeckRevision(DeckId, Revision);
     }
 
@@ -325,7 +348,29 @@ public abstract record LocalProfileRestorationFailure
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
             Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
             Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
         ) => onInvalidSavedDeck(DeckId, Issues);
+    }
+
+    public sealed record EconomyRuleViolation(EconomyViolationKind Kind, int Actual, int Allowed)
+        : LocalProfileRestorationFailure
+    {
+        public override TResult Match<TResult>(
+            Func<string, TextValueFailure, TResult> onInvalidId,
+            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
+            Func<string, TResult> onMissingEntry,
+            Func<string, int, TResult> onNegativeQuantity,
+            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
+            Func<string, CardId, TResult> onUnknownCard,
+            Func<CardId, TResult> onStarterNotRegular,
+            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
+            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
+            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
+            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
+            Func<DeckId, long, TResult> onInvalidDeckRevision,
+            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck,
+            Func<EconomyViolationKind, int, int, TResult> onEconomyRuleViolation
+        ) => onEconomyRuleViolation(Kind, Actual, Allowed);
     }
 }

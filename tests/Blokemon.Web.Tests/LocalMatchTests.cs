@@ -1391,14 +1391,24 @@ public sealed class LocalMatchTests
                 catalogue,
                 database,
                 store,
-                new(catalogue, store, new LocalMatchService(catalogue, store))
+                new(
+                    catalogue,
+                    store,
+                    new LocalMatchService(catalogue, store),
+                    EconomyRules.Unlimited
+                )
             );
         }
 
         public LocalApplicationService Restart()
         {
             var store = new StateDocumentStore(Database);
-            return new(Catalogue, store, new LocalMatchService(Catalogue, store));
+            return new(
+                Catalogue,
+                store,
+                new LocalMatchService(Catalogue, store),
+                EconomyRules.Unlimited
+            );
         }
     }
 

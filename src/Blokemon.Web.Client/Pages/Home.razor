@@ -136,6 +136,10 @@ else
             <div class="panel metrics">
                 <div class="metric"><b>@owned</b><span>Owned</span></div>
                 <div class="metric"><b>@_view.Decks.Length</b><span>Decks</span></div>
+                @if (_view.Profile.RemainingPacks is { } remainingPacks)
+                {
+                    <div class="metric"><b>@remainingPacks</b><span>Packs left</span></div>
+                }
             </div>
             <div class="panel">
                 <div class="panel-head"><h2>Recently pulled</h2><a class="quiet button" href="collection">See all</a></div>
@@ -219,7 +223,7 @@ else
                 <div>
                     <span class="eyebrow">Starter Deck</span>
                     <h1 id="starter-heading">@(_view!.Profile!.StarterDeckId is null ? "Choose your first deck." : "Open another Starter Deck.")</h1>
-                    <p>Each starter has 60 cards. Every box you open adds its cards to your collection.</p>
+                    <p>@StarterIntro()</p>
                 </div>
                 <div class="starter-boxes" aria-label="Starter Deck boxes">
                     <div><PackagingArt Markup="@_view.PackPresentation.Gloss.StarterDeckSvgMarkup" Label="Foil Starter Deck box" /><span>Foil</span></div>
@@ -253,7 +257,7 @@ else
                         <p>@starter.Description</p>
                         <button class="primary full"
                                 @onclick="() => Claim(starter.Id)"
-                                disabled="@_working">
+                                disabled="@(_working || StarterClaimUsed())">
                             @(_working && _claimingStarterId == starter.Id ? "Opening deck…" : $"Open {starter.Name}")
                         </button>
                     </article>
@@ -386,6 +390,13 @@ else
         _ceremonyStage = DeckOpeningStage.Spread;
         _focusCeremonyDone = true;
     }
+
+    private bool StarterClaimUsed() => _view!.Profile!.StarterClaimUsed is true;
+
+    private string StarterIntro() =>
+        StarterClaimUsed()
+            ? "Each starter has 60 cards. This game allows one Starter Deck, and yours is open."
+            : "Each starter has 60 cards. Every box you open adds its cards to your collection.";
 
     private IEnumerable<CardView> CeremonyCards()
     {

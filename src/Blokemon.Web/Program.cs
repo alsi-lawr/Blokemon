@@ -16,6 +16,7 @@ var catalogue = BlokemonCatalogueBuilder.Load(contentRoot);
 var databasePath = LocalDataPath.Resolve(builder.Configuration);
 
 builder.Services.AddSingleton(catalogue);
+builder.Services.AddSingleton(EconomyConfiguration.Resolve(builder.Configuration));
 builder.Services.AddPooledDbContextFactory<BlokemonDbContext>(options =>
     options.UseSqlite($"Data Source={databasePath}")
 );

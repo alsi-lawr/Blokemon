@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Blokemon.Product;
 using Blokemon.Web.Application;
 using Blokemon.Web.Client.Api;
 using Blokemon.Web.Client.Application;
@@ -350,6 +351,260 @@ public sealed class BrowserLocalApplicationTests
         }
     }
 
+    [Test]
+    public async Task UnlimitedEconomy_KeepsUncappedPacksAndStartersWithoutAllowanceSignals()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Local(catalogue, documents, EconomyRules.Unlimited);
+        var created = Value(
+            await application.CreateProfile(
+                new(Guid.Parse("a1111111-1111-1111-1111-111111111111"), "Unlimited Player")
+            )
+        );
+
+        var firstPack = Value(
+            await application.OpenPack(new(Guid.Parse("a1222222-2222-2222-2222-222222222222")))
+        );
+        var secondPack = Value(
+            await application.OpenPack(new(Guid.Parse("a1333333-3333-3333-3333-333333333333")))
+        );
+        Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("a1444444-4444-4444-4444-444444444444"), "growroom")
+            )
+        );
+        var secondClaim = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("a1555555-5555-5555-5555-555555555555"), "early-shift")
+            )
+        );
+
+        created.Profile!.RemainingPacks.ShouldBeNull();
+        created.Profile.StarterClaimUsed.ShouldBeNull();
+        firstPack.Profile!.RemainingPacks.ShouldBeNull();
+        secondPack.LastPack!.Sequence.ShouldBe(2);
+        secondClaim.Profile!.StarterClaimUsed.ShouldBeNull();
+        secondClaim.StarterDecks.Count(static starter => starter.IsClaimed).ShouldBe(2);
+    }
+
+    [Test]
+    public async Task ClassicEconomy_CapsPacksAndStarterClaimsWithVisibleRemainingAllowances()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Local(catalogue, documents, Classic(2));
+        var created = Value(
+            await application.CreateProfile(
+                new(Guid.Parse("a2111111-1111-1111-1111-111111111111"), "Classic Player")
+            )
+        );
+
+        var firstPack = Value(
+            await application.OpenPack(new(Guid.Parse("a2222222-2222-2222-2222-222222222222")))
+        );
+        var secondPack = Value(
+            await application.OpenPack(new(Guid.Parse("a2333333-3333-3333-3333-333333333333")))
+        );
+        var exhausted = await application.OpenPack(
+            new(Guid.Parse("a2444444-4444-4444-4444-444444444444"))
+        );
+        var retriedSecondPack = Value(
+            await application.OpenPack(new(Guid.Parse("a2333333-3333-3333-3333-333333333333")))
+        );
+        var claimed = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("a2555555-5555-5555-5555-555555555555"), "growroom")
+            )
+        );
+        var secondClaim = await application.ClaimStarterDeck(
+            new(Guid.Parse("a2666666-6666-6666-6666-666666666666"), "early-shift")
+        );
+        var retriedClaim = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("a2555555-5555-5555-5555-555555555555"), "growroom")
+            )
+        );
+
+        created.Profile!.RemainingPacks.ShouldBe(2);
+        created.Profile.StarterClaimUsed.ShouldBe(false);
+        firstPack.Profile!.RemainingPacks.ShouldBe(1);
+        secondPack.Profile!.RemainingPacks.ShouldBe(0);
+        exhausted.Succeeded.ShouldBeFalse();
+        exhausted.Error!.Code.ShouldBe("pack.allowance");
+        retriedSecondPack.LastPack!.Id.ShouldBe(secondPack.LastPack!.Id);
+        retriedSecondPack.Profile!.RemainingPacks.ShouldBe(0);
+        claimed.Profile!.StarterClaimUsed.ShouldBe(true);
+        secondClaim.Succeeded.ShouldBeFalse();
+        secondClaim.Error!.Code.ShouldBe("starter.already_claimed");
+        retriedClaim.StarterDecks.Count(static starter => starter.IsClaimed).ShouldBe(1);
+        retriedClaim.Profile!.StarterDeckId.ShouldBe("growroom");
+    }
+
+    [Test]
+    public async Task ClassicProfile_KeepsItsInheritedModeWhenTheConfiguredModeChanges()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var classic = Local(catalogue, documents, Classic(1));
+        Value(
+            await classic.CreateProfile(
+                new(Guid.Parse("a3111111-1111-1111-1111-111111111111"), "Classic Player")
+            )
+        );
+        Value(await classic.OpenPack(new(Guid.Parse("a3222222-2222-2222-2222-222222222222"))));
+
+        var unlimited = Local(catalogue, documents, EconomyRules.Unlimited);
+        var restored = Value(await unlimited.State());
+        var blocked = await unlimited.OpenPack(
+            new(Guid.Parse("a3333333-3333-3333-3333-333333333333"))
+        );
+
+        restored.Profile!.RemainingPacks.ShouldBe(0);
+        restored.Profile.StarterClaimUsed.ShouldBe(false);
+        restored.LastPack!.Sequence.ShouldBe(1);
+        blocked.Succeeded.ShouldBeFalse();
+        blocked.Error!.Code.ShouldBe("pack.allowance");
+    }
+
+    [Test]
+    public async Task ProfileDocumentWithoutEconomyFields_RestoresAsUnlimitedOnSchemaVersionTwo()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var classic = Local(catalogue, documents, Classic(1));
+        Value(
+            await classic.CreateProfile(
+                new(Guid.Parse("a4111111-1111-1111-1111-111111111111"), "Legacy Player")
+            )
+        );
+        Value(await classic.OpenPack(new(Guid.Parse("a4222222-2222-2222-2222-222222222222"))));
+        var stored = (await documents.Read("profile"))!;
+        var document = JsonNode.Parse(stored.Json)!.AsObject();
+        var profile = document["profile"]!.AsObject();
+        var persistedMode = profile["economy"]!.GetValue<int>();
+        var persistedAllowance = profile["economyPackAllowance"]!.GetValue<int>();
+        profile.Remove("economy");
+        profile.Remove("economyPackAllowance");
+        await documents.Update("profile", stored.Revision, document.ToJsonString());
+
+        var unlimited = Local(catalogue, documents, EconomyRules.Unlimited);
+        var restored = Value(await unlimited.State());
+        var opened = Value(
+            await unlimited.OpenPack(new(Guid.Parse("a4333333-3333-3333-3333-333333333333")))
+        );
+
+        document["schemaVersion"]!.GetValue<int>().ShouldBe(2);
+        persistedMode.ShouldBe((int)EconomyMode.ClassicScarcity);
+        persistedAllowance.ShouldBe(1);
+        restored.Profile!.RemainingPacks.ShouldBeNull();
+        restored.Profile.StarterClaimUsed.ShouldBeNull();
+        opened.LastPack!.Sequence.ShouldBe(2);
+        opened.Profile!.RemainingPacks.ShouldBeNull();
+    }
+
+    [Test]
+    public void EconomyConfiguration_DefaultsToUnlimitedAndReadsTheClassicSettings()
+    {
+        var unlimited = EconomyConfiguration.Resolve(Configuration([]));
+        var explicitUnlimited = EconomyConfiguration.Resolve(
+            Configuration([new(EconomyConfiguration.ModeKey, "Unlimited")])
+        );
+        var classicDefault = EconomyConfiguration.Resolve(
+            Configuration([new(EconomyConfiguration.ModeKey, "ClassicScarcity")])
+        );
+        var classicConfigured = EconomyConfiguration.Resolve(
+            Configuration(
+                [
+                    new(EconomyConfiguration.ModeKey, "ClassicScarcity"),
+                    new(EconomyConfiguration.PackAllowanceKey, "3"),
+                ]
+            )
+        );
+
+        unlimited.ShouldBe(EconomyRules.Unlimited);
+        unlimited.PackAllowance.ShouldBeNull();
+        explicitUnlimited.ShouldBe(EconomyRules.Unlimited);
+        classicDefault.Mode.ShouldBe(EconomyMode.ClassicScarcity);
+        classicDefault.PackAllowance.ShouldBe(EconomyRules.DefaultClassicPackAllowance);
+        classicDefault.StarterDeckClaimAllowance.ShouldBe(1);
+        classicConfigured.PackAllowance.ShouldBe(3);
+        Should.Throw<InvalidOperationException>(() =>
+            EconomyConfiguration.Resolve(Configuration([new(EconomyConfiguration.ModeKey, "Free")]))
+        );
+        Should.Throw<InvalidOperationException>(() =>
+            EconomyConfiguration.Resolve(
+                Configuration(
+                    [
+                        new(EconomyConfiguration.ModeKey, "ClassicScarcity"),
+                        new(EconomyConfiguration.PackAllowanceKey, "-1"),
+                    ]
+                )
+            )
+        );
+    }
+
+    [Test]
+    public async Task ServerApi_AppliesTheClassicEconomyConfiguredInItsSettings()
+    {
+        var dataDirectory = Path.Combine(
+            AppContext.BaseDirectory,
+            $"classic-economy-{Guid.NewGuid():N}"
+        );
+        try
+        {
+            using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Production");
+                builder.UseSetting("Blokemon:DataDirectory", dataDirectory);
+                builder.UseSetting(EconomyConfiguration.ModeKey, "ClassicScarcity");
+                builder.UseSetting(EconomyConfiguration.PackAllowanceKey, "1");
+            });
+            using var client = factory.CreateClient();
+
+            var createdResponse = await client.PostAsJsonAsync(
+                "/api/profile",
+                new CreateProfileRequest(
+                    Guid.Parse("a5111111-1111-1111-1111-111111111111"),
+                    "Classic Server Player"
+                )
+            );
+            var created = await createdResponse.Content.ReadFromJsonAsync<
+                ApiResponse<ApplicationView>
+            >();
+            var openedResponse = await client.PostAsJsonAsync(
+                "/api/packs/open",
+                new OpenPackRequest(Guid.Parse("a5222222-2222-2222-2222-222222222222"))
+            );
+            var opened = await openedResponse.Content.ReadFromJsonAsync<
+                ApiResponse<ApplicationView>
+            >();
+            var exhaustedResponse = await client.PostAsJsonAsync(
+                "/api/packs/open",
+                new OpenPackRequest(Guid.Parse("a5333333-3333-3333-3333-333333333333"))
+            );
+            var exhausted = await exhaustedResponse.Content.ReadFromJsonAsync<
+                ApiResponse<ApplicationView>
+            >();
+
+            created!.Value!.Profile!.RemainingPacks.ShouldBe(1);
+            created.Value.Profile.StarterClaimUsed.ShouldBe(false);
+            opened!.Value!.Profile!.RemainingPacks.ShouldBe(0);
+            exhausted!.Succeeded.ShouldBeFalse();
+            exhausted.Error!.Code.ShouldBe("pack.allowance");
+        }
+        finally
+        {
+            if (Directory.Exists(dataDirectory))
+            {
+                Directory.Delete(dataDirectory, recursive: true);
+            }
+        }
+    }
+
+    private static IConfiguration Configuration(KeyValuePair<string, string?>[] settings) =>
+        new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
+
     private static BlokemonCatalogue Catalogue() =>
         BlokemonCatalogueBuilder.Load(Path.Combine(AppContext.BaseDirectory, "content"));
 
@@ -361,18 +616,28 @@ public sealed class BrowserLocalApplicationTests
     )
     {
         var http = new HttpClient(handler) { BaseAddress = new Uri("https://server.invalid/") };
-        var local = new LocalApplicationService(
-            catalogue,
-            documents,
-            new LocalMatchService(catalogue, documents)
-        );
         return new(
             new BlokemonApiClient(http),
-            local,
+            Local(catalogue, documents, EconomyRules.Unlimited),
             documents,
             new PlayModeAvailability(serverBackedAvailable)
         );
     }
+
+    private static LocalApplicationService Local(
+        BlokemonCatalogue catalogue,
+        MemoryDocumentStore documents,
+        EconomyRules economy
+    ) => new(catalogue, documents, new LocalMatchService(catalogue, documents), economy);
+
+    private static EconomyRules Classic(int packAllowance) =>
+        EconomyRules
+            .Classic(packAllowance)
+            .Match(
+                static rules => rules,
+                static failure =>
+                    throw new InvalidOperationException($"Expected classic rules, got {failure}.")
+            );
 
     private static ApplyMatchActionRequest RequestFor(MatchView match, MatchActionView action) =>
         new(

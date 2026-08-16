@@ -13,6 +13,7 @@ public enum PackOpenFailure
     ReceiptIdAlreadyUsed,
     ElevenCardPackUnavailable,
     AuthorityVersionMismatch,
+    PackAllowanceExhausted,
 }
 
 public enum PackOpenDisposition
@@ -64,6 +65,7 @@ public sealed partial class LocalProfile
         DisplayName displayName,
         string authorityManifestVersion,
         CardId guaranteedRegularCollectibleId,
+        EconomyRules economy,
         ImmutableDictionary<CardId, int> collectibleOwnership,
         ImmutableDictionary<CommandId, PackReceipt> receiptsByCommand,
         ImmutableDictionary<PackReceiptId, PackReceipt> receiptsById,
@@ -75,6 +77,7 @@ public sealed partial class LocalProfile
         DisplayName = displayName;
         BoundAuthorityManifestVersion = authorityManifestVersion;
         GuaranteedRegularCollectibleId = guaranteedRegularCollectibleId;
+        Economy = economy;
         _collectibleOwnership = collectibleOwnership;
         _receiptsByCommand = receiptsByCommand;
         _receiptsById = receiptsById;
@@ -90,6 +93,14 @@ public sealed partial class LocalProfile
 
     public CardId GuaranteedRegularCollectibleId { get; }
 
+    public EconomyRules Economy { get; }
+
+    public int? RemainingPackAllowance =>
+        EconomyRules.Remaining(Economy.PackAllowance, _receiptsById.Count);
+
+    public int? RemainingStarterDeckClaimAllowance =>
+        EconomyRules.Remaining(Economy.StarterDeckClaimAllowance, _starterDeckClaims.Length);
+
     public IReadOnlyDictionary<CardId, int> CollectibleOwnership => _collectibleOwnership;
 
     public IReadOnlyDictionary<PackReceiptId, PackReceipt> PackReceipts => _receiptsById;
@@ -104,7 +115,8 @@ public sealed partial class LocalProfile
     public static DomainResult<LocalProfile, LocalProfileCreationFailure> Create(
         ProfileId id,
         DisplayName displayName,
-        BlokemonRuntimeManifest authority
+        BlokemonRuntimeManifest authority,
+        EconomyRules? economy = null
     )
     {
         ArgumentNullException.ThrowIfNull(id);
@@ -129,6 +141,7 @@ public sealed partial class LocalProfile
                 displayName,
                 authority.ManifestVersion,
                 regularId,
+                economy ?? EconomyRules.Unlimited,
                 ImmutableDictionary<CardId, int>.Empty.Add(regularId, 1),
                 ImmutableDictionary<CommandId, PackReceipt>.Empty,
                 ImmutableDictionary<PackReceiptId, PackReceipt>.Empty,
@@ -180,6 +193,13 @@ public sealed partial class LocalProfile
         {
             return DomainResult<PackOpenTransition, PackOpenFailure>.Failure(
                 PackOpenFailure.ReceiptIdAlreadyUsed
+            );
+        }
+
+        if (Economy.PackAllowance is { } packAllowance && _receiptsById.Count >= packAllowance)
+        {
+            return DomainResult<PackOpenTransition, PackOpenFailure>.Failure(
+                PackOpenFailure.PackAllowanceExhausted
             );
         }
 
@@ -327,6 +347,7 @@ public sealed partial class LocalProfile
             DisplayName,
             BoundAuthorityManifestVersion,
             GuaranteedRegularCollectibleId,
+            Economy,
             collectibleOwnership ?? _collectibleOwnership,
             receiptsByCommand ?? _receiptsByCommand,
             receiptsById ?? _receiptsById,

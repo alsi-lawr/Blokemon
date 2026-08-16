@@ -11,7 +11,10 @@ public sealed record ProfileView(
     Guid Id,
     string DisplayName,
     long Revision,
-    string? StarterDeckId
+    string? StarterDeckId,
+    // Both allowances are null in the unlimited economy and set in the classic one.
+    int? RemainingPacks = null,
+    bool? StarterClaimUsed = null
 );
 
 public enum CardKindView

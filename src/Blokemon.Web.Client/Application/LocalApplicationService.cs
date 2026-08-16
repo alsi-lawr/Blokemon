@@ -15,7 +15,8 @@ namespace Blokemon.Web.Application;
 public sealed class LocalApplicationService(
     BlokemonCatalogue catalogue,
     IStateDocumentStore documents,
-    LocalMatchService matches
+    LocalMatchService matches,
+    EconomyRules economy
 ) : IBlokemonApplication
 {
     private const string _profileKey = "profile";
@@ -72,7 +73,8 @@ public sealed class LocalApplicationService(
         var created = LocalProfile.Create(
             profileId,
             ((DomainResult<DisplayName, DisplayNameCreationFailure>.Succeeded)displayName).Value,
-            catalogue.Mechanics
+            catalogue.Mechanics,
+            economy
         );
         if (created is DomainResult<LocalProfile, LocalProfileCreationFailure>.Failed)
         {
@@ -541,7 +543,11 @@ public sealed class LocalApplicationService(
                 loaded.Ids.Profile,
                 loaded.Profile.DisplayName.Value,
                 loaded.Revision,
-                loaded.Profile.LatestStarterDeckClaim?.Id.Value
+                loaded.Profile.LatestStarterDeckClaim?.Id.Value,
+                loaded.Profile.RemainingPackAllowance,
+                loaded.Profile.RemainingStarterDeckClaimAllowance is { } remainingClaims
+                    ? remainingClaims == 0
+                    : null
             ),
             cards,
             decks,
@@ -728,6 +734,11 @@ public sealed class LocalApplicationService(
                     "starter.command_conflict",
                     "This request conflicts with a saved choice. Choose the starter deck again."
                 ),
+            static (_, _) =>
+                new(
+                    "starter.already_claimed",
+                    "This player already opened its Starter Deck. This game allows one."
+                ),
             static issues => new("starter.invalid", string.Join(" ", issues.Select(DeckIssue)))
         );
 
@@ -745,6 +756,10 @@ public sealed class LocalApplicationService(
             PackOpenFailure.AuthorityVersionMismatch => new(
                 "pack.authority_changed",
                 "The card set changed. Reload the page before you open a pack."
+            ),
+            PackOpenFailure.PackAllowanceExhausted => new(
+                "pack.allowance",
+                "You have opened every pack this player is allowed."
             ),
             _ => throw new ArgumentOutOfRangeException(nameof(failure)),
         };

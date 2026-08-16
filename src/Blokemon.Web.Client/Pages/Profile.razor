@@ -31,7 +31,13 @@ else if (_error is not null)
 }
 else if (_view!.Profile is not null)
 {
-    <header class="topline"><div><span class="eyebrow">Player</span><h1>@_view.Profile.DisplayName</h1></div></header>
+    <header class="topline">
+        <div><span class="eyebrow">Player</span><h1>@_view.Profile.DisplayName</h1></div>
+        @if (_view.Profile.RemainingPacks is { } remainingPacks)
+        {
+            <span class="dev-badge">@remainingPacks packs left · @(_view.Profile.StarterClaimUsed is true ? "Starter Deck opened" : "Starter Deck available")</span>
+        }
+    </header>
     <div class="panel setup-card">
         <h2>@(_mode?.StorageLocation ?? "Save location unavailable")</h2>
         <p>Changing games does not move or replace either player.</p>

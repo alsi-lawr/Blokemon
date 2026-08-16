@@ -33,7 +33,9 @@ public sealed partial class LocalProfile
                 .Values.OrderBy(static deck => deck.Id.Value, StringComparer.Ordinal)
                 .Select(ToSavedDeckSnapshot)
                 .ToImmutableArray(),
-            _starterDeckClaims.Select(ToStarterDeckClaimSnapshot).ToImmutableArray()
+            _starterDeckClaims.Select(ToStarterDeckClaimSnapshot).ToImmutableArray(),
+            Economy.Mode,
+            Economy.PersistedPackAllowance
         );
 
     public static DomainResult<LocalProfile, LocalProfileRestorationFailure> Restore(
@@ -93,6 +95,25 @@ public sealed partial class LocalProfile
             );
         }
         var starterId = ((DomainResult<CardId, TextValueFailure>.Succeeded)starterIdResult).Value;
+
+        var economyResult = EconomyRules.Create(snapshot.Economy, snapshot.EconomyPackAllowance);
+        if (economyResult is DomainResult<EconomyRules, EconomyRulesFailure>.Failed invalidEconomy)
+        {
+            return RestorationFailed(
+                new LocalProfileRestorationFailure.EconomyRuleViolation(
+                    invalidEconomy.Error == EconomyRulesFailure.UnknownMode
+                        ? EconomyViolationKind.UnknownMode
+                        : EconomyViolationKind.InvalidPackAllowance,
+                    invalidEconomy.Error == EconomyRulesFailure.UnknownMode
+                        ? (int)snapshot.Economy
+                        : snapshot.EconomyPackAllowance,
+                    0
+                )
+            );
+        }
+        var economy = (
+            (DomainResult<EconomyRules, EconomyRulesFailure>.Succeeded)economyResult
+        ).Value;
 
         var ownershipSnapshots = OrEmpty(snapshot.CollectibleOwnership);
         var receiptSnapshots = OrEmpty(snapshot.PackReceipts);
@@ -503,11 +524,36 @@ public sealed partial class LocalProfile
             }
         }
 
+        if (economy.PackAllowance is { } packAllowance && receiptsById.Count > packAllowance)
+        {
+            return RestorationFailed(
+                new LocalProfileRestorationFailure.EconomyRuleViolation(
+                    EconomyViolationKind.PackAllowanceExceeded,
+                    receiptsById.Count,
+                    packAllowance
+                )
+            );
+        }
+        if (
+            economy.StarterDeckClaimAllowance is { } claimAllowance
+            && parsedClaims.Count > claimAllowance
+        )
+        {
+            return RestorationFailed(
+                new LocalProfileRestorationFailure.EconomyRuleViolation(
+                    EconomyViolationKind.StarterDeckClaimAllowanceExceeded,
+                    parsedClaims.Count,
+                    claimAllowance
+                )
+            );
+        }
+
         var baseProfile = new LocalProfile(
             profileId,
             displayName,
             snapshot.AuthorityManifestVersion,
             starterId,
+            economy,
             ownership.ToImmutableDictionary(),
             receiptsByCommand.ToImmutableDictionary(),
             receiptsById.ToImmutableDictionary(),

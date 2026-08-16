@@ -138,6 +138,7 @@ public abstract record StarterDeckClaimFailure
 
     public abstract TResult Match<TResult>(
         Func<CommandId, StarterDeckId, StarterDeckId, TResult> onCommandConflict,
+        Func<StarterDeckId, StarterDeckId, TResult> onAlreadyClaimed,
         Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck
     );
 
@@ -149,8 +150,21 @@ public abstract record StarterDeckClaimFailure
     {
         public override TResult Match<TResult>(
             Func<CommandId, StarterDeckId, StarterDeckId, TResult> onCommandConflict,
+            Func<StarterDeckId, StarterDeckId, TResult> onAlreadyClaimed,
             Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck
         ) => onCommandConflict(CommandId, ClaimedStarterDeckId, RequestedStarterDeckId);
+    }
+
+    public sealed record AlreadyClaimed(
+        StarterDeckId ClaimedStarterDeckId,
+        StarterDeckId RequestedStarterDeckId
+    ) : StarterDeckClaimFailure
+    {
+        public override TResult Match<TResult>(
+            Func<CommandId, StarterDeckId, StarterDeckId, TResult> onCommandConflict,
+            Func<StarterDeckId, StarterDeckId, TResult> onAlreadyClaimed,
+            Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck
+        ) => onAlreadyClaimed(ClaimedStarterDeckId, RequestedStarterDeckId);
     }
 
     public sealed record InvalidDeck(ImmutableArray<DeckValidationIssue> Issues)
@@ -158,6 +172,7 @@ public abstract record StarterDeckClaimFailure
     {
         public override TResult Match<TResult>(
             Func<CommandId, StarterDeckId, StarterDeckId, TResult> onCommandConflict,
+            Func<StarterDeckId, StarterDeckId, TResult> onAlreadyClaimed,
             Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck
         ) => onInvalidDeck(Issues);
     }
@@ -191,6 +206,17 @@ public sealed partial class LocalProfile
                         definition.Id
                     )
                 );
+        }
+
+        if (
+            Economy.StarterDeckClaimAllowance is { } claimAllowance
+            && _starterDeckClaims.Length >= claimAllowance
+        )
+        {
+            var claimedId = LatestStarterDeckClaim?.Id ?? definition.Id;
+            return DomainResult<StarterDeckClaimOutcome, StarterDeckClaimFailure>.Failure(
+                new StarterDeckClaimFailure.AlreadyClaimed(claimedId, definition.Id)
+            );
         }
 
         // Opening a starter always grants its full collectible contents, however many

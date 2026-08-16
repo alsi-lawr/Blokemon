@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Blokemon.Product;
 using Blokemon.Web.Application;
 using Blokemon.Web.Client.Api;
 using Blokemon.Web.Content;
@@ -21,7 +22,8 @@ public sealed class StateDocumentStoreTests
         var application = new LocalApplicationService(
             catalogue,
             store,
-            new LocalMatchService(catalogue, store)
+            new LocalMatchService(catalogue, store),
+            EconomyRules.Unlimited
         );
         var createCommand = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var packCommand = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -48,7 +50,8 @@ public sealed class StateDocumentStoreTests
         var restarted = new LocalApplicationService(
             catalogue,
             restartedStore,
-            new LocalMatchService(catalogue, restartedStore)
+            new LocalMatchService(catalogue, restartedStore),
+            EconomyRules.Unlimited
         );
         var restored = Value(await restarted.State());
 
@@ -379,7 +382,7 @@ public sealed class StateDocumentStoreTests
     private static LocalApplicationService Application(
         BlokemonCatalogue catalogue,
         StateDocumentStore store
-    ) => new(catalogue, store, new LocalMatchService(catalogue, store));
+    ) => new(catalogue, store, new LocalMatchService(catalogue, store), EconomyRules.Unlimited);
 
     private static ApplicationView Value(ApiResponse<MatchMutationView> response) =>
         Value<MatchMutationView>(response).Application;

@@ -21,7 +21,7 @@ else
 {
     <header class="topline pack-topline">
         <div><span class="eyebrow">The Oche · 11 cards</span><h1>Choose a pack.</h1></div>
-        <span class="pack-count-badge">Unlimited</span>
+        <span class="pack-count-badge">@AllowanceBadge()</span>
     </header>
 
     @if (_operationError is not null)
@@ -52,7 +52,7 @@ else
                 <input type="checkbox" checked="@_skipAnimations" @onchange="SkipAnimationsChanged" />
                 <span>Skip opening animation</span>
             </label>
-            <button class="primary" @onclick="Open" disabled="@(_opening || _stage != PackOpeningStage.Closed)">@PackButton()</button>
+            <button class="primary" @onclick="Open" disabled="@(_opening || _stage != PackOpeningStage.Closed || AllowanceExhausted())">@PackButton()</button>
         </div>
     </section>
 
@@ -360,7 +360,13 @@ else
         return $"--stack-x: {step * direction * 3}px; --stack-y: {depth}px; --stack-angle: {step * direction}deg";
     }
 
-    private string PackButton() => _opening ? "Opening…" : "Open pack";
+    private string AllowanceBadge() =>
+        _view!.Profile!.RemainingPacks is { } remaining ? $"{remaining} left" : "Unlimited";
+
+    private bool AllowanceExhausted() => _view!.Profile!.RemainingPacks == 0;
+
+    private string PackButton() =>
+        _opening ? "Opening…" : AllowanceExhausted() ? "No packs left" : "Open pack";
 
     public async ValueTask DisposeAsync()
     {
