@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Blokemon.Product;
@@ -11,6 +12,7 @@ using Blokemon.Web.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
 namespace Blokemon.Web.Tests;
@@ -545,6 +547,69 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
+    public void BrowserComposition_TakesTheEconomyResolvedFromTheBrowserConfiguration()
+    {
+        var services = new ServiceCollection()
+            .AddBlokemonClient(
+                new HttpClient { BaseAddress = new Uri("https://browser.invalid/") },
+                Catalogue(),
+                new PlayModeAvailability(ServerBacked: false),
+                EconomyConfiguration.Resolve(
+                    Configuration(
+                        [
+                            new(EconomyConfiguration.ModeKey, "ClassicScarcity"),
+                            new(EconomyConfiguration.PackAllowanceKey, "4"),
+                        ]
+                    )
+                )
+            )
+            .BuildServiceProvider();
+
+        var economy = services.GetRequiredService<EconomyRules>();
+
+        economy.Mode.ShouldBe(EconomyMode.ClassicScarcity);
+        economy.PackAllowance.ShouldBe(4);
+        economy.StarterDeckClaimAllowance.ShouldBe(1);
+    }
+
+    [Test]
+    public async Task BrowserBuild_ShipsUnlimitedSettingsAndAClassicEnvironmentOverlay()
+    {
+        var dataDirectory = Path.Combine(
+            AppContext.BaseDirectory,
+            $"browser-settings-{Guid.NewGuid():N}"
+        );
+        try
+        {
+            using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Production");
+                builder.UseSetting("Blokemon:DataDirectory", dataDirectory);
+            });
+            using var client = factory.CreateClient();
+
+            var shipped = await client.GetStringAsync("appsettings.json");
+            var classicOverlay = await client.GetStringAsync("appsettings.Classic.json");
+            var shippedEconomy = EconomyConfiguration.Resolve(BrowserConfiguration(shipped));
+            var classicEconomy = EconomyConfiguration.Resolve(
+                BrowserConfiguration(shipped, classicOverlay)
+            );
+
+            shippedEconomy.ShouldBe(EconomyRules.Unlimited);
+            classicEconomy.Mode.ShouldBe(EconomyMode.ClassicScarcity);
+            classicEconomy.PackAllowance.ShouldBe(10);
+            classicEconomy.StarterDeckClaimAllowance.ShouldBe(1);
+        }
+        finally
+        {
+            if (Directory.Exists(dataDirectory))
+            {
+                Directory.Delete(dataDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Test]
     public async Task ServerApi_AppliesTheClassicEconomyConfiguredInItsSettings()
     {
         var dataDirectory = Path.Combine(
@@ -604,6 +669,18 @@ public sealed class BrowserLocalApplicationTests
 
     private static IConfiguration Configuration(KeyValuePair<string, string?>[] settings) =>
         new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
+
+    // The browser host layers appsettings.json and appsettings.<environment>.json the same way.
+    private static IConfiguration BrowserConfiguration(params string[] documents)
+    {
+        var builder = new ConfigurationBuilder();
+        foreach (var document in documents)
+        {
+            builder.AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(document)));
+        }
+
+        return builder.Build();
+    }
 
     private static BlokemonCatalogue Catalogue() =>
         BlokemonCatalogueBuilder.Load(Path.Combine(AppContext.BaseDirectory, "content"));

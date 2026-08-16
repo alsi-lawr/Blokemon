@@ -12,6 +12,16 @@
     <DefineConstants>$(DefineConstants);BLOKEMON_STANDALONE_BROWSER</DefineConstants>
   </PropertyGroup>
 
+  <!--
+    The browser reads its economy from wwwroot/appsettings.json, the same settings the server
+    reads from its own configuration, and overlays wwwroot/appsettings.<environment>.json.
+    The shipped default is unlimited; a classic-scarcity browser build selects the Classic
+    environment, which overlays wwwroot/appsettings.Classic.json:
+      dotnet publish src/Blokemon.Web.Client -p:StandaloneBrowser=true
+        -p:WasmApplicationEnvironmentName=Classic
+    Settings are validated when the browser host starts, so invalid values fail fast.
+  -->
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <ProjectReference Include="../Blokemon.Core/Blokemon.Core.csproj" />

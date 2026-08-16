@@ -1,3 +1,4 @@
+using Blokemon.Product;
 using Blokemon.Web.Application;
 using Blokemon.Web.Client.Api;
 using Blokemon.Web.Content;
@@ -12,13 +13,14 @@ public static class ClientComposition
         this IServiceCollection services,
         HttpClient http,
         BlokemonCatalogue catalogue,
-        PlayModeAvailability playModes
+        PlayModeAvailability playModes,
+        EconomyRules economy
     )
     {
         services.AddSingleton(http);
         services.AddSingleton(catalogue);
         services.AddSingleton(playModes);
-        services.AddSingleton(BrowserEconomy.Default);
+        services.AddSingleton(economy);
         services.AddScoped<IStateDocumentStore, IndexedDbStateDocumentStore>();
         services.AddScoped<LocalMatchService>();
         services.AddScoped<LocalApplicationService>();

@@ -138,7 +138,7 @@ public abstract record StarterDeckClaimFailure
 
     public abstract TResult Match<TResult>(
         Func<CommandId, StarterDeckId, StarterDeckId, TResult> onCommandConflict,
-        Func<StarterDeckId, StarterDeckId, TResult> onAlreadyClaimed,
+        Func<StarterDeckId, StarterDeckId, TResult> onAllowanceExhausted,
         Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck
     );
 
@@ -150,21 +150,21 @@ public abstract record StarterDeckClaimFailure
     {
         public override TResult Match<TResult>(
             Func<CommandId, StarterDeckId, StarterDeckId, TResult> onCommandConflict,
-            Func<StarterDeckId, StarterDeckId, TResult> onAlreadyClaimed,
+            Func<StarterDeckId, StarterDeckId, TResult> onAllowanceExhausted,
             Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck
         ) => onCommandConflict(CommandId, ClaimedStarterDeckId, RequestedStarterDeckId);
     }
 
-    public sealed record AlreadyClaimed(
+    public sealed record AllowanceExhausted(
         StarterDeckId ClaimedStarterDeckId,
         StarterDeckId RequestedStarterDeckId
     ) : StarterDeckClaimFailure
     {
         public override TResult Match<TResult>(
             Func<CommandId, StarterDeckId, StarterDeckId, TResult> onCommandConflict,
-            Func<StarterDeckId, StarterDeckId, TResult> onAlreadyClaimed,
+            Func<StarterDeckId, StarterDeckId, TResult> onAllowanceExhausted,
             Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck
-        ) => onAlreadyClaimed(ClaimedStarterDeckId, RequestedStarterDeckId);
+        ) => onAllowanceExhausted(ClaimedStarterDeckId, RequestedStarterDeckId);
     }
 
     public sealed record InvalidDeck(ImmutableArray<DeckValidationIssue> Issues)
@@ -172,7 +172,7 @@ public abstract record StarterDeckClaimFailure
     {
         public override TResult Match<TResult>(
             Func<CommandId, StarterDeckId, StarterDeckId, TResult> onCommandConflict,
-            Func<StarterDeckId, StarterDeckId, TResult> onAlreadyClaimed,
+            Func<StarterDeckId, StarterDeckId, TResult> onAllowanceExhausted,
             Func<ImmutableArray<DeckValidationIssue>, TResult> onInvalidDeck
         ) => onInvalidDeck(Issues);
     }
@@ -215,7 +215,7 @@ public sealed partial class LocalProfile
         {
             var claimedId = LatestStarterDeckClaim?.Id ?? definition.Id;
             return DomainResult<StarterDeckClaimOutcome, StarterDeckClaimFailure>.Failure(
-                new StarterDeckClaimFailure.AlreadyClaimed(claimedId, definition.Id)
+                new StarterDeckClaimFailure.AllowanceExhausted(claimedId, definition.Id)
             );
         }
 

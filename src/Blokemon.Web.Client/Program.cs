@@ -1,3 +1,4 @@
+using Blokemon.Web.Application;
 using Blokemon.Web.Client.Application;
 using Blokemon.Web.Content;
 using Microsoft.AspNetCore.Components.Web;
@@ -20,7 +21,8 @@ public static class ClientProgram
         builder.Services.AddBlokemonClient(
             http,
             BlokemonCatalogue.FromBootstrapJson(bootstrap),
-            playModes
+            playModes,
+            EconomyConfiguration.Resolve(builder.Configuration)
         );
 
 #if BLOKEMON_STANDALONE_BROWSER

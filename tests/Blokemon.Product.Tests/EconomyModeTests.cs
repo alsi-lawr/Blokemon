@@ -98,10 +98,10 @@ public sealed class EconomyModeTests
 
         profile.RemainingStarterDeckClaimAllowance.ShouldBe(1);
         claimed.Profile.RemainingStarterDeckClaimAllowance.ShouldBe(0);
-        secondStarter.ShouldBeOfType<StarterDeckClaimFailure.AlreadyClaimed>();
-        var alreadyClaimed = (StarterDeckClaimFailure.AlreadyClaimed)secondStarter;
-        alreadyClaimed.ClaimedStarterDeckId.Value.ShouldBe("starter-alpha");
-        alreadyClaimed.RequestedStarterDeckId.Value.ShouldBe("starter-beta");
+        secondStarter.ShouldBeOfType<StarterDeckClaimFailure.AllowanceExhausted>();
+        var allowanceExhausted = (StarterDeckClaimFailure.AllowanceExhausted)secondStarter;
+        allowanceExhausted.ClaimedStarterDeckId.Value.ShouldBe("starter-alpha");
+        allowanceExhausted.RequestedStarterDeckId.Value.ShouldBe("starter-beta");
         retried.ShouldBeOfType<StarterDeckClaimOutcome.AlreadyClaimed>();
         commandConflict.ShouldBeOfType<StarterDeckClaimFailure.CommandConflict>();
         claimed.Profile.StarterDeckClaims.ShouldHaveSingleItem();
