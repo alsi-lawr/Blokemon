@@ -228,10 +228,16 @@ else
         }
     }
 
-    // Switching away from an edited deck asks before it throws the edits away.
+    // Nothing here may reset edits without asking: reselecting the open deck does nothing,
+    // and switching away from an edited deck asks before it throws the edits away.
     private void OpenDeck(DeckView deck)
     {
-        if (_hasUnsavedChanges && deck.Id != _saved?.Id)
+        if (deck.Id == _saved?.Id)
+        {
+            return;
+        }
+
+        if (_hasUnsavedChanges)
         {
             _pendingSwitch = new(deck);
             return;
