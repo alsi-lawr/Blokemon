@@ -192,6 +192,32 @@ public sealed class LocalProfileTests
     }
 
     [Test]
+    public async Task DeletingADeck_RemovesOnlyThatDeckAndTypesAnUnknownOne()
+    {
+        var profile = CreatePopulatedProfile();
+        var deckId = Value(DeckId.Create("snapshot-deck"));
+        var secondId = Value(DeckId.Create("second-deck"));
+        var withSecond = Success(
+            profile.CreateDeck(
+                secondId,
+                Value(DeckName.Create("Second deck")),
+                LegalCards(profile),
+                _authority.Value
+            )
+        ).Profile;
+
+        var deleted = Success(withSecond.DeleteDeck(deckId));
+        var missing = Failure(deleted.Profile.DeleteDeck(deckId));
+
+        deleted.Deck.Name.Value.ShouldBe("Revised deck");
+        deleted.Profile.SavedDecks.Keys.ShouldBe([secondId]);
+        deleted.Profile.CollectibleOwnership.ShouldBe(withSecond.CollectibleOwnership);
+        deleted.Profile.PackReceipts.Keys.ShouldBe(withSecond.PackReceipts.Keys, ignoreOrder: true);
+        missing.ShouldBe(DeckDeleteFailure.NotFound);
+        withSecond.SavedDecks.Count.ShouldBe(2);
+    }
+
+    [Test]
     public async Task SnapshotRestore_RehydratesReceiptsOwnershipAndRevisedDecks()
     {
         var profile = CreatePopulatedProfile();

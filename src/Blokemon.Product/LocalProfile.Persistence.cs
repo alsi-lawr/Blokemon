@@ -149,13 +149,7 @@ public sealed partial class LocalProfile
         }
 
         var claimSnapshots = OrEmpty(snapshot.StarterDeckClaims);
-        var parsedClaims =
-            new List<(
-                StarterDeckId StarterDeckId,
-                CommandId CommandId,
-                SavedDeckSnapshot Deck,
-                ImmutableArray<StarterCollectibleGrant> Grants
-            )>(claimSnapshots.Length);
+        var parsedClaims = new List<StarterDeckClaim>(claimSnapshots.Length);
         var claimCommandIds = new HashSet<CommandId>();
         for (var claimIndex = 0; claimIndex < claimSnapshots.Length; claimIndex++)
         {
@@ -204,15 +198,6 @@ public sealed partial class LocalProfile
                     new LocalProfileRestorationFailure.DuplicateValue(
                         SnapshotDuplicateKind.StarterClaimCommandId,
                         starterClaimCommandId.Value
-                    )
-                );
-            }
-
-            if (claimSnapshot.Deck is null)
-            {
-                return RestorationFailed(
-                    new LocalProfileRestorationFailure.MissingEntry(
-                        $"{claimPath}.{nameof(claimSnapshot.Deck)}"
                     )
                 );
             }
@@ -283,10 +268,9 @@ public sealed partial class LocalProfile
             }
 
             parsedClaims.Add(
-                (
+                new StarterDeckClaim(
                     claimedStarterDeckId,
                     starterClaimCommandId,
-                    claimSnapshot.Deck,
                     grants.MoveToImmutable()
                 )
             );
@@ -496,7 +480,7 @@ public sealed partial class LocalProfile
 
         foreach (var parsedClaim in parsedClaims)
         {
-            foreach (var grant in parsedClaim.Grants)
+            foreach (var grant in parsedClaim.CollectibleGrants)
             {
                 expectedOwnership[grant.CardId] =
                     expectedOwnership.GetValueOrDefault(grant.CardId) + grant.Quantity;
@@ -595,106 +579,10 @@ public sealed partial class LocalProfile
             }
         }
 
-        var starterDeckClaims = ImmutableArray.CreateBuilder<StarterDeckClaim>(parsedClaims.Count);
-        for (var claimIndex = 0; claimIndex < parsedClaims.Count; claimIndex++)
-        {
-            var parsedClaim = parsedClaims[claimIndex];
-            var claimPath = $"{nameof(snapshot.StarterDeckClaims)}[{claimIndex}]";
-            var claimDeckResult = RestoreDeckSnapshot(
-                parsedClaim.Deck,
-                $"{claimPath}.Deck",
-                baseProfile,
-                currentAuthority,
-                true
-            );
-            if (
-                claimDeckResult
-                is DomainResult<SavedDeck, LocalProfileRestorationFailure>.Failed invalidClaimDeck
-            )
-            {
-                return RestorationFailed(invalidClaimDeck.Error);
-            }
-            var claimDeck = (
-                (DomainResult<SavedDeck, LocalProfileRestorationFailure>.Succeeded)claimDeckResult
-            ).Value;
-
-            if (claimDeck.Revision != DeckRevision.Initial)
-            {
-                return RestorationFailed(
-                    new LocalProfileRestorationFailure.InvalidDeckRevision(
-                        claimDeck.Id,
-                        claimDeck.Revision.Value
-                    )
-                );
-            }
-            if (!savedDecks.TryGetValue(claimDeck.Id, out var savedClaimDeck))
-            {
-                return RestorationFailed(
-                    new LocalProfileRestorationFailure.MissingEntry(
-                        $"SavedDecks[{claimDeck.Id.Value}]"
-                    )
-                );
-            }
-            if (
-                savedClaimDeck.Revision == DeckRevision.Initial
-                && !SavedDecksMatch(savedClaimDeck, claimDeck)
-            )
-            {
-                return RestorationFailed(
-                    new LocalProfileRestorationFailure.InvalidSavedDeck(
-                        claimDeck.Id,
-                        ImmutableArray<DeckValidationIssue>.Empty
-                    )
-                );
-            }
-
-            // Every claim grants the starter's full collectible contents, so its
-            // recorded grants must equal the claim deck's collectible quantities.
-            var expectedGrants = claimDeck
-                .Cards.Where(entry => authorityCollectibles.ContainsKey(entry.Key.Value))
-                .ToDictionary(static entry => entry.Key, static entry => entry.Value);
-            var recordedGrants = parsedClaim.Grants.ToDictionary(
-                static grant => grant.CardId,
-                static grant => grant.Quantity
-            );
-            if (
-                recordedGrants.Count != expectedGrants.Count
-                || recordedGrants.Any(entry =>
-                    expectedGrants.GetValueOrDefault(entry.Key) != entry.Value
-                )
-            )
-            {
-                var mismatched = recordedGrants
-                    .Keys.Concat(expectedGrants.Keys)
-                    .Distinct()
-                    .OrderBy(static cardId => cardId.Value, StringComparer.Ordinal)
-                    .First(cardId =>
-                        recordedGrants.GetValueOrDefault(cardId)
-                        != expectedGrants.GetValueOrDefault(cardId)
-                    );
-                return RestorationFailed(
-                    new LocalProfileRestorationFailure.OwnershipHistoryMismatch(
-                        mismatched,
-                        recordedGrants.GetValueOrDefault(mismatched),
-                        expectedGrants.GetValueOrDefault(mismatched)
-                    )
-                );
-            }
-
-            starterDeckClaims.Add(
-                new StarterDeckClaim(
-                    parsedClaim.StarterDeckId,
-                    parsedClaim.CommandId,
-                    claimDeck,
-                    parsedClaim.Grants
-                )
-            );
-        }
-
         return DomainResult<LocalProfile, LocalProfileRestorationFailure>.Success(
             baseProfile.Copy(
                 savedDecks: savedDecks.ToImmutableDictionary(),
-                starterDeckClaims: starterDeckClaims.MoveToImmutable()
+                starterDeckClaims: [.. parsedClaims]
             )
         );
     }
@@ -713,7 +601,6 @@ public sealed partial class LocalProfile
         new(
             claim.Id.Value,
             claim.CommandId.Value,
-            ToSavedDeckSnapshot(claim.Deck),
             claim
                 .CollectibleGrants.OrderBy(
                     static grant => grant.CardId.Value,
@@ -851,15 +738,6 @@ public sealed partial class LocalProfile
             new SavedDeck(deckId, deckName, revision, deckCards.ToImmutableDictionary())
         );
     }
-
-    private static bool SavedDecksMatch(SavedDeck left, SavedDeck right) =>
-        left.Id == right.Id
-        && left.Name == right.Name
-        && left.Revision == right.Revision
-        && left.Cards.Count == right.Cards.Count
-        && left.Cards.All(entry =>
-            right.Cards.TryGetValue(entry.Key, out var quantity) && entry.Value == quantity
-        );
 
     private static ImmutableArray<T> OrEmpty<T>(ImmutableArray<T> values) =>
         values.IsDefault ? ImmutableArray<T>.Empty : values;

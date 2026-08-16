@@ -418,3 +418,10 @@ public abstract record DeckSaveFailure
 }
 
 public sealed record DeckSaveTransition(LocalProfile Profile, SavedDeck Deck);
+
+public enum DeckDeleteFailure
+{
+    NotFound,
+}
+
+public sealed record DeckDeleteTransition(LocalProfile Profile, SavedDeck Deck);

@@ -35,36 +35,6 @@ public sealed class StarterDeckDefinition
     public DeckName DeckName { get; }
 
     public ImmutableArray<DeckCardSelection> Cards { get; }
-
-    internal bool Matches(StarterDeckClaim claim)
-    {
-        if (Id != claim.Id || DeckId != claim.Deck.Id || DeckName != claim.Deck.Name)
-        {
-            return false;
-        }
-
-        var quantities = new Dictionary<CardId, long>();
-        foreach (var selection in Cards)
-        {
-            if (selection.Quantity <= 0)
-            {
-                return false;
-            }
-
-            var current = quantities.GetValueOrDefault(selection.CardId);
-            if (current > long.MaxValue - selection.Quantity)
-            {
-                return false;
-            }
-
-            quantities[selection.CardId] = current + selection.Quantity;
-        }
-
-        return quantities.Count == claim.Deck.Cards.Count
-            && quantities.All(entry =>
-                claim.Deck.Cards.TryGetValue(entry.Key, out var quantity) && entry.Value == quantity
-            );
-    }
 }
 
 public sealed class StarterCollectibleGrant
@@ -80,26 +50,24 @@ public sealed class StarterCollectibleGrant
     public int Quantity { get; }
 }
 
+// A claim records only that a starter was claimed. The deck it created is an ordinary
+// saved deck from that moment on: editable, deletable, and never referenced from here.
 public sealed class StarterDeckClaim
 {
     internal StarterDeckClaim(
         StarterDeckId id,
         CommandId commandId,
-        SavedDeck deck,
         ImmutableArray<StarterCollectibleGrant> collectibleGrants
     )
     {
         Id = id;
         CommandId = commandId;
-        Deck = deck;
         CollectibleGrants = collectibleGrants;
     }
 
     public StarterDeckId Id { get; }
 
     public CommandId CommandId { get; }
-
-    public SavedDeck Deck { get; }
 
     public ImmutableArray<StarterCollectibleGrant> CollectibleGrants { get; }
 }
@@ -195,7 +163,7 @@ public sealed partial class LocalProfile
             is { } existingClaim
         )
         {
-            return definition.Matches(existingClaim)
+            return definition.Id == existingClaim.Id
                 ? DomainResult<StarterDeckClaimOutcome, StarterDeckClaimFailure>.Success(
                     new StarterDeckClaimOutcome.AlreadyClaimed(this, existingClaim)
                 )
@@ -260,7 +228,7 @@ public sealed partial class LocalProfile
             DeckRevision.Initial,
             validatedDeck.Cards
         );
-        var claim = new StarterDeckClaim(definition.Id, commandId, deck, grants);
+        var claim = new StarterDeckClaim(definition.Id, commandId, grants);
         var profile = Copy(
             collectibleOwnership: ownership,
             savedDecks: _savedDecks.ContainsKey(deck.Id) ? _savedDecks : _savedDecks.Add(deck.Id, deck),

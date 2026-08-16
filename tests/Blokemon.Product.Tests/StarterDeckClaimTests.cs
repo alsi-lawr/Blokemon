@@ -17,6 +17,8 @@ public sealed class StarterDeckClaimTests
     [Test]
     public async Task ClaimStarterDeck_AtomicallyGrantsFullCollectibleContentsAndCreatesEditableDeck()
     {
+        // The claim records that a starter was claimed and what it granted. The deck it
+        // creates is an ordinary saved deck, so revising it leaves the claim untouched.
         var profile = CreateProfile();
         var fixture = CreateStarterFixture(profile);
         var commandId = Value(CommandId.Create("starter-command"));
@@ -52,9 +54,11 @@ public sealed class StarterDeckClaimTests
         claimed.Profile.StarterDeckClaims.ShouldHaveSingleItem();
         claimed.Profile.LatestStarterDeckClaim.ShouldBeSameAs(claimed.Claim);
         claimed.Profile.SavedDecks.Count.ShouldBe(1);
-        claimed.Profile.SavedDecks[fixture.Definition.DeckId].ShouldBeSameAs(claimed.Claim.Deck);
-        claimed.Claim.Deck.Revision.ShouldBe(DeckRevision.Initial);
-        claimed.Claim.Deck.Cards.Values.Sum().ShouldBe(60);
+        var starterDeck = claimed.Profile.SavedDecks[fixture.Definition.DeckId];
+        starterDeck.Revision.ShouldBe(DeckRevision.Initial);
+        starterDeck.Cards.Values.Sum().ShouldBe(60);
+        claimed.Claim.Id.ShouldBe(fixture.Definition.Id);
+        claimed.Claim.CommandId.ShouldBe(commandId);
         claimed.Claim.CollectibleGrants.Length.ShouldBe(2);
         claimed.Claim.CollectibleGrants
             .Single(grant => grant.CardId == fixture.CollectibleId)
@@ -73,7 +77,7 @@ public sealed class StarterDeckClaimTests
         var revised = Success(
             claimed.Profile.ReviseDeck(
                 fixture.Definition.DeckId,
-                claimed.Claim.Deck.Revision,
+                starterDeck.Revision,
                 Value(DeckName.Create("Edited starter")),
                 fixture.Definition.Cards,
                 _authority.Value
@@ -83,7 +87,7 @@ public sealed class StarterDeckClaimTests
         revised.Deck.Revision.Value.ShouldBe(2);
         revised.Deck.Name.Value.ShouldBe("Edited starter");
         revised.Profile.LatestStarterDeckClaim.ShouldBeSameAs(claimed.Claim);
-        revised.Profile.LatestStarterDeckClaim!.Deck.Revision.Value.ShouldBe(1);
+        revised.Profile.StarterDeckClaims.ShouldHaveSingleItem();
     }
 
     [Test]
@@ -95,10 +99,13 @@ public sealed class StarterDeckClaimTests
         var claimed = (StarterDeckClaimOutcome.Claimed)Success(
             profile.ClaimStarterDeck(commandId, fixture.Definition, _authority.Value)
         );
+        // Replaying the command identifies the claim by its starter alone: the same starter
+        // is the same claim however its deck payload is spelled, a different starter is a
+        // conflicting reuse of the command id.
         var equivalentDefinition = new StarterDeckDefinition(
             fixture.Definition.Id,
             fixture.Definition.DeckId,
-            fixture.Definition.DeckName,
+            Value(DeckName.Create("Renamed starter payload")),
             fixture.Definition.Cards.Reverse()
         );
 
@@ -108,12 +115,7 @@ public sealed class StarterDeckClaimTests
         var commandConflict = Failure(
             claimed.Profile.ClaimStarterDeck(
                 commandId,
-                new StarterDeckDefinition(
-                    fixture.Definition.Id,
-                    fixture.Definition.DeckId,
-                    Value(DeckName.Create("Changed command payload")),
-                    fixture.Definition.Cards
-                ),
+                SecondStarterDefinition(profile, fixture),
                 _authority.Value
             )
         );
@@ -123,7 +125,9 @@ public sealed class StarterDeckClaimTests
         retried.Profile.SavedDecks.Count.ShouldBe(1);
         retried.Profile.OwnedCollectibleQuantity(fixture.CollectibleId)
             .ShouldBe(fixture.RequiredCollectibleQuantity);
-        commandConflict.ShouldBeOfType<StarterDeckClaimFailure.CommandConflict>();
+        var conflict = commandConflict.ShouldBeOfType<StarterDeckClaimFailure.CommandConflict>();
+        conflict.ClaimedStarterDeckId.ShouldBe(fixture.Definition.Id);
+        conflict.RequestedStarterDeckId.Value.ShouldBe("starter-beta");
         claimed.Profile.StarterDeckClaims.ShouldHaveSingleItem();
         claimed.Profile.SavedDecks.Count.ShouldBe(1);
         claimed.Profile.LatestStarterDeckClaim.ShouldBeSameAs(claimed.Claim);
@@ -155,8 +159,7 @@ public sealed class StarterDeckClaimTests
         claimedBeta.Profile.StarterDeckClaims[0].ShouldBeSameAs(claimedAlpha.Claim);
         claimedBeta.Profile.LatestStarterDeckClaim.ShouldBeSameAs(claimedBeta.Claim);
         claimedBeta.Profile.SavedDecks.Count.ShouldBe(2);
-        claimedBeta.Profile.SavedDecks[second.DeckId].ShouldBeSameAs(claimedBeta.Claim.Deck);
-        claimedBeta.Claim.Deck.Cards.Values.Sum().ShouldBe(60);
+        claimedBeta.Profile.SavedDecks[second.DeckId].Cards.Values.Sum().ShouldBe(60);
         claimedBeta.Profile.OwnedCollectibleQuantity(fixture.CollectibleId)
             .ShouldBe(fixture.RequiredCollectibleQuantity + 1);
         claimedBeta.Profile.OwnedCollectibleQuantity(profile.GuaranteedRegularCollectibleId)
@@ -178,7 +181,7 @@ public sealed class StarterDeckClaimTests
         var revised = Success(
             claimed.Profile.ReviseDeck(
                 fixture.Definition.DeckId,
-                claimed.Claim.Deck.Revision,
+                DeckRevision.Initial,
                 Value(DeckName.Create("Edited starter")),
                 fixture.Definition.Cards,
                 _authority.Value
@@ -197,7 +200,6 @@ public sealed class StarterDeckClaimTests
         reclaimed.Profile.StarterDeckClaims.Length.ShouldBe(2);
         reclaimed.Profile.StarterDeckClaims[0].ShouldBeSameAs(claimed.Claim);
         reclaimed.Profile.LatestStarterDeckClaim.ShouldBeSameAs(reclaimed.Claim);
-        reclaimed.Claim.Deck.Revision.ShouldBe(DeckRevision.Initial);
         reclaimed.Profile.SavedDecks.Count.ShouldBe(1);
         reclaimed.Profile.SavedDecks[fixture.Definition.DeckId].ShouldBeSameAs(revised.Deck);
         reclaimed.Profile.OwnedCollectibleQuantity(fixture.CollectibleId)
@@ -228,7 +230,6 @@ public sealed class StarterDeckClaimTests
         snapshot.StarterDeckClaims[1].CommandId.ShouldBe(persisted.SecondCommandId.Value);
         foreach (var claim in snapshot.StarterDeckClaims)
         {
-            claim.Deck!.Revision.ShouldBe(1);
             claim.CollectibleGrants.Length.ShouldBe(2);
             claim.CollectibleGrants
                 .Single(grant => grant.CardId == persisted.Starter.CollectibleId.Value)
@@ -302,17 +303,10 @@ public sealed class StarterDeckClaimTests
                 _authority.Value
             )
         );
-        var excessiveGrant = Failure(
+        var unrecordedGrant = Failure(
             LocalProfile.Restore(
                 snapshot with
                 {
-                    CollectibleOwnership = snapshot.CollectibleOwnership.SetItem(
-                        ownershipIndex,
-                        snapshot.CollectibleOwnership[ownershipIndex] with
-                        {
-                            Quantity = snapshot.CollectibleOwnership[ownershipIndex].Quantity + 1,
-                        }
-                    ),
                     StarterDeckClaims = snapshot.StarterDeckClaims.SetItem(
                         0,
                         firstClaim with
@@ -330,18 +324,38 @@ public sealed class StarterDeckClaimTests
                 _authority.Value
             )
         );
-        var mismatchedUneditedDeck = Failure(
+        var nonPositiveGrant = Failure(
             LocalProfile.Restore(
                 snapshot with
                 {
-                    SavedDecks =
-                    [
-                        snapshot.SavedDecks.Single() with
+                    StarterDeckClaims = snapshot.StarterDeckClaims.SetItem(
+                        0,
+                        firstClaim with
                         {
-                            Name = "Different initial deck",
-                            Revision = 1,
-                        },
-                    ],
+                            CollectibleGrants = firstClaim.CollectibleGrants.SetItem(
+                                grantIndex,
+                                grant with
+                                {
+                                    Quantity = 0,
+                                }
+                            ),
+                        }
+                    ),
+                },
+                _authority.Value
+            )
+        );
+        var duplicateGrantCard = Failure(
+            LocalProfile.Restore(
+                snapshot with
+                {
+                    StarterDeckClaims = snapshot.StarterDeckClaims.SetItem(
+                        0,
+                        firstClaim with
+                        {
+                            CollectibleGrants = firstClaim.CollectibleGrants.Add(grant),
+                        }
+                    ),
                 },
                 _authority.Value
             )
@@ -365,11 +379,51 @@ public sealed class StarterDeckClaimTests
         missingGrantHistory
             .ShouldBeOfType<LocalProfileRestorationFailure.OwnershipHistoryMismatch>();
         unknownGrant.ShouldBeOfType<LocalProfileRestorationFailure.UnknownCard>();
-        excessiveGrant.ShouldBeOfType<LocalProfileRestorationFailure.OwnershipHistoryMismatch>();
-        mismatchedUneditedDeck.ShouldBeOfType<LocalProfileRestorationFailure.InvalidSavedDeck>();
-        duplicateClaimCommand.ShouldBeOfType<LocalProfileRestorationFailure.DuplicateValue>();
-        ((LocalProfileRestorationFailure.DuplicateValue)duplicateClaimCommand).Kind
-            .ShouldBe(SnapshotDuplicateKind.StarterClaimCommandId);
+        unrecordedGrant.ShouldBeOfType<LocalProfileRestorationFailure.OwnershipHistoryMismatch>();
+        nonPositiveGrant.ShouldBeOfType<LocalProfileRestorationFailure.NegativeQuantity>();
+        duplicateGrantCard
+            .ShouldBeOfType<LocalProfileRestorationFailure.DuplicateValue>()
+            .Kind.ShouldBe(SnapshotDuplicateKind.StarterGrantCardId);
+        duplicateClaimCommand
+            .ShouldBeOfType<LocalProfileRestorationFailure.DuplicateValue>()
+            .Kind.ShouldBe(SnapshotDuplicateKind.StarterClaimCommandId);
+    }
+
+    [Test]
+    public async Task DeletingTheStarterCreatedDeck_KeepsItsClaimAndOwnedCardsAcrossRestore()
+    {
+        var persisted = CreatePersistedClaimFixture();
+        var deckId = persisted.Starter.Definition.DeckId;
+        var ownershipBefore = persisted.Profile.CollectibleOwnership.ToDictionary(
+            static entry => entry.Key,
+            static entry => entry.Value
+        );
+
+        var deleted = Success(persisted.Profile.DeleteDeck(deckId)).Profile;
+        var snapshot = deleted.ToSnapshot();
+        var restored = Success(LocalProfile.Restore(snapshot, _authority.Value));
+
+        deleted.SavedDecks.ShouldBeEmpty();
+        deleted.StarterDeckClaims.Length.ShouldBe(2);
+        deleted
+            .CollectibleOwnership.ToDictionary(
+                static entry => entry.Key,
+                static entry => entry.Value
+            )
+            .ShouldBe(ownershipBefore);
+        snapshot.SavedDecks.ShouldBeEmpty();
+        snapshot.StarterDeckClaims.Length.ShouldBe(2);
+        restored.SavedDecks.ShouldBeEmpty();
+        restored.StarterDeckClaims.Length.ShouldBe(2);
+        restored.LatestStarterDeckClaim!.CommandId.ShouldBe(persisted.SecondCommandId);
+        restored
+            .CollectibleOwnership.ToDictionary(
+                static entry => entry.Key,
+                static entry => entry.Value
+            )
+            .ShouldBe(ownershipBefore);
+        StarterDeckClaimsEqual(restored.ToSnapshot().StarterDeckClaims, snapshot.StarterDeckClaims)
+            .ShouldBeTrue();
     }
 
     [Test]
@@ -494,7 +548,7 @@ public sealed class StarterDeckClaimTests
         var revised = Success(
             claimed.Profile.ReviseDeck(
                 fixture.Definition.DeckId,
-                claimed.Claim.Deck.Revision,
+                DeckRevision.Initial,
                 Value(DeckName.Create("Persisted edit")),
                 fixture.Definition.Cards,
                 _authority.Value
@@ -547,17 +601,6 @@ public sealed class StarterDeckClaimTests
                 && pair.First.SampledCollectibleIds.SequenceEqual(pair.Second.SampledCollectibleIds)
             );
 
-    private static bool SavedDeckSnapshotsEqual(
-        SavedDeckSnapshot? left,
-        SavedDeckSnapshot? right
-    ) =>
-        left is not null
-        && right is not null
-        && left.DeckId == right.DeckId
-        && left.Name == right.Name
-        && left.Revision == right.Revision
-        && left.Cards.SequenceEqual(right.Cards);
-
     private static bool StarterDeckClaimsEqual(
         ImmutableArray<StarterDeckClaimSnapshot> left,
         ImmutableArray<StarterDeckClaimSnapshot> right
@@ -567,7 +610,6 @@ public sealed class StarterDeckClaimTests
             .All(pair =>
                 pair.First.StarterDeckId == pair.Second.StarterDeckId
                 && pair.First.CommandId == pair.Second.CommandId
-                && SavedDeckSnapshotsEqual(pair.First.Deck, pair.Second.Deck)
                 && pair.First.CollectibleGrants.SequenceEqual(pair.Second.CollectibleGrants)
             );
 

@@ -25,7 +25,6 @@ public sealed record StarterCollectibleGrantSnapshot(string? CardId, int Quantit
 public sealed record StarterDeckClaimSnapshot(
     string? StarterDeckId,
     string? CommandId,
-    SavedDeckSnapshot? Deck,
     ImmutableArray<StarterCollectibleGrantSnapshot> CollectibleGrants
 );
 

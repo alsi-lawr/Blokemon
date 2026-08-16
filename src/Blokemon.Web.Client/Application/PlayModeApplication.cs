@@ -143,6 +143,11 @@ public sealed class PlayModeApplication(
         CancellationToken cancellationToken = default
     ) => Invoke((application, token) => application.SaveDeck(request, token), cancellationToken);
 
+    public Task<ApiResponse<ApplicationView>> DeleteDeck(
+        DeleteDeckRequest request,
+        CancellationToken cancellationToken = default
+    ) => Invoke((application, token) => application.DeleteDeck(request, token), cancellationToken);
+
     public Task<ApiResponse<MatchMutationView>> StartMatch(
         StartMatchRequest request,
         CancellationToken cancellationToken = default

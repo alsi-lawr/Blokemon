@@ -32,6 +32,7 @@ else
         <div class="deck-top-actions">
             <button class="secondary" @onclick="StartNewDeck" disabled="@_working">New deck</button>
             <button class="secondary" @onclick="RestoreStarter" disabled="@(_working || ClaimedStarter() is null)">Restore starter list</button>
+            <button class="secondary" @onclick="StartDelete" disabled="@(_working || _saved is null)">Delete deck</button>
             <button class="primary" @onclick="Save" disabled="@_working">@(_working ? "Saving…" : SaveLabel())</button>
         </div>
     </header>
@@ -58,6 +59,17 @@ else
             <div class="actions">
                 <button class="secondary" @onclick="CancelSwitch" disabled="@_working">Keep editing</button>
                 <button class="primary" @onclick="ConfirmSwitch" disabled="@_working">@(pending.Deck is { } target ? $"Discard and open {target.Name}" : "Discard and start a new deck")</button>
+            </div>
+        </div>
+    }
+    @if (_pendingDelete is { } deleting)
+    {
+        <div class="deck-notice deck-switch" role="alert">
+            <strong>Delete @deleting.Name?</strong>
+            <p>You keep every card you own. Only this deck list goes.</p>
+            <div class="actions">
+                <button class="secondary" @onclick="CancelDelete" disabled="@_working">Keep deck</button>
+                <button class="primary" @onclick="ConfirmDelete" disabled="@_working">@(_working ? "Deleting…" : $"Delete {deleting.Name}")</button>
             </div>
         </div>
     }
@@ -204,6 +216,7 @@ else
     private bool _hasUnsavedChanges;
     private Guid? _commandId;
     private PendingSwitch? _pendingSwitch;
+    private DeckView? _pendingDelete;
 
     private void ShowCard(CardView card, ElementReference trigger) =>
         _cardShowcase?.Show(card, trigger);
@@ -237,6 +250,7 @@ else
             return;
         }
 
+        _pendingDelete = null;
         if (_hasUnsavedChanges)
         {
             _pendingSwitch = new(deck);
@@ -248,6 +262,7 @@ else
 
     private void StartNewDeck()
     {
+        _pendingDelete = null;
         if (_hasUnsavedChanges)
         {
             _pendingSwitch = new(null);
@@ -276,6 +291,55 @@ else
 
     private void CancelSwitch() => _pendingSwitch = null;
 
+    // Deleting a deck throws away its list, never the cards it used, so the confirmation is
+    // the only guard: it does not ask about unsaved edits to a deck that is about to go.
+    private void StartDelete()
+    {
+        if (_saved is not { } deck)
+        {
+            return;
+        }
+
+        _pendingSwitch = null;
+        _pendingDelete = deck;
+    }
+
+    private void CancelDelete() => _pendingDelete = null;
+
+    private async Task ConfirmDelete()
+    {
+        if (_pendingDelete is not { } deck)
+        {
+            return;
+        }
+
+        _working = true;
+        _operationError = null;
+        var response = await Api.DeleteDeck(new(Guid.NewGuid(), deck.Id));
+        // A deck that is already gone is the outcome the player asked for, so a repeated
+        // delete settles on the current state instead of reporting a failure.
+        if (!response.Succeeded && response.Error?.Code == "deck.not_found")
+        {
+            response = await Api.State();
+        }
+        _working = false;
+        if (response.Value is not { } view)
+        {
+            _operationError = response.Error?.Message;
+            return;
+        }
+
+        _view = view;
+        if (view.Decks.FirstOrDefault() is { } remaining)
+        {
+            SelectDeck(remaining);
+        }
+        else
+        {
+            BeginNewDeck();
+        }
+    }
+
     private void SelectDeck(DeckView deck)
     {
         _saved = deck;
@@ -288,6 +352,7 @@ else
         _hasUnsavedChanges = false;
         _operationError = null;
         _pendingSwitch = null;
+        _pendingDelete = null;
         _commandId = null;
     }
 
@@ -300,6 +365,7 @@ else
         _hasUnsavedChanges = true;
         _operationError = null;
         _pendingSwitch = null;
+        _pendingDelete = null;
         _commandId = null;
     }
 

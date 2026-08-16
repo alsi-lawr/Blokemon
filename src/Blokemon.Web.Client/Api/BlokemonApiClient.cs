@@ -279,6 +279,8 @@ public sealed record SaveDeckRequest(
     DeckEntryView[] Entries
 );
 
+public sealed record DeleteDeckRequest(Guid CommandId, Guid DeckId);
+
 public sealed record StartMatchRequest(Guid CommandId, Guid DeckId);
 
 public sealed record ApplyMatchActionRequest(
@@ -328,6 +330,11 @@ public interface IBlokemonApplication
         CancellationToken cancellationToken = default
     );
 
+    Task<ApiResponse<ApplicationView>> DeleteDeck(
+        DeleteDeckRequest request,
+        CancellationToken cancellationToken = default
+    );
+
     Task<ApiResponse<MatchMutationView>> StartMatch(
         StartMatchRequest request,
         CancellationToken cancellationToken = default
@@ -372,6 +379,11 @@ public sealed class BlokemonApiClient(HttpClient http) : IBlokemonApplication
         SaveDeckRequest request,
         CancellationToken cancellationToken = default
     ) => Post<SaveDeckRequest, ApplicationView>("api/decks", request, cancellationToken);
+
+    public Task<ApiResponse<ApplicationView>> DeleteDeck(
+        DeleteDeckRequest request,
+        CancellationToken cancellationToken = default
+    ) => Post<DeleteDeckRequest, ApplicationView>("api/decks/delete", request, cancellationToken);
 
     public Task<ApiResponse<MatchMutationView>> StartMatch(
         StartMatchRequest request,

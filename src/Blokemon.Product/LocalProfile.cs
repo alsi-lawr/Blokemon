@@ -307,6 +307,24 @@ public sealed partial class LocalProfile
             );
     }
 
+    // Deleting a deck removes only the deck. Collectible ownership, pack receipts and
+    // starter claims are permanent history and are left exactly as they were.
+    public DomainResult<DeckDeleteTransition, DeckDeleteFailure> DeleteDeck(DeckId deckId)
+    {
+        ArgumentNullException.ThrowIfNull(deckId);
+
+        if (!_savedDecks.TryGetValue(deckId, out var deck))
+        {
+            return DomainResult<DeckDeleteTransition, DeckDeleteFailure>.Failure(
+                DeckDeleteFailure.NotFound
+            );
+        }
+
+        return DomainResult<DeckDeleteTransition, DeckDeleteFailure>.Success(
+            new DeckDeleteTransition(Copy(savedDecks: _savedDecks.Remove(deckId)), deck)
+        );
+    }
+
     private DomainResult<DeckSaveTransition, DeckSaveFailure> SaveNewDeck(
         DeckId deckId,
         DeckName name,

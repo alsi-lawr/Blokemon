@@ -48,6 +48,14 @@ public static class ApplicationEndpoints
             ) => application.SaveDeck(request, cancellationToken)
         );
         api.MapPost(
+            "/decks/delete",
+            (
+                DeleteDeckRequest request,
+                LocalApplicationService application,
+                CancellationToken cancellationToken
+            ) => application.DeleteDeck(request, cancellationToken)
+        );
+        api.MapPost(
             "/matches",
             (
                 StartMatchRequest request,

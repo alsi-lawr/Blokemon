@@ -1374,7 +1374,7 @@ public sealed class LocalMatchTests
             var fixture = FromExisting(database, catalogue);
             var profile = CreateChoiceProfile(catalogue);
             var document = JsonSerializer.Serialize(
-                new PersistedProfileDocument(2, _profileCommand, profile.ToSnapshot()),
+                new PersistedProfileDocument(3, _profileCommand, profile.ToSnapshot()),
                 new JsonSerializerOptions(JsonSerializerDefaults.Web)
             );
             if (await fixture.Store.Create("profile", document) is not DocumentWriteResult.Written)

@@ -460,6 +460,111 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
+    public async Task DeckBuilder_DeletesDecksWithoutChangingOwnedCardsAndKeepsThemDeleted()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Local(catalogue, documents, EconomyRules.Unlimited);
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("b3111111-1111-1111-1111-111111111111"), "Deck Builder")
+            )
+        );
+        var claimed = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("b3222222-2222-2222-2222-222222222222"), "growroom")
+            )
+        );
+        var starter = claimed.Decks.Single();
+        var withSecond = Value(
+            await application.SaveDeck(
+                new(
+                    Guid.Parse("b3333333-3333-3333-3333-333333333333"),
+                    null,
+                    null,
+                    "Second deck",
+                    starter.Entries
+                )
+            )
+        );
+        var ownershipBefore = Ownership(withSecond);
+        // The match froze its own copy of the deck, so deleting that deck must not disturb it.
+        var started = Value(
+            await application.StartMatch(
+                new(Guid.Parse("b3777777-7777-7777-7777-777777777777"), starter.Id)
+            )
+        ).Application;
+
+        var deletedStarter = Value(
+            await application.DeleteDeck(
+                new(Guid.Parse("b3444444-4444-4444-4444-444444444444"), starter.Id)
+            )
+        );
+        var retried = await application.DeleteDeck(
+            new(Guid.Parse("b3555555-5555-5555-5555-555555555555"), starter.Id)
+        );
+        var restored = Value(await Local(catalogue, documents, EconomyRules.Unlimited).State());
+        var deletedLast = Value(
+            await application.DeleteDeck(
+                new(Guid.Parse("b3666666-6666-6666-6666-666666666666"), restored.Decks.Single().Id)
+            )
+        );
+
+        deletedStarter.Decks.Single().Name.ShouldBe("Second deck");
+        Ownership(deletedStarter).ShouldBe(ownershipBefore);
+        deletedStarter.Match!.Frame.Id.ShouldBe(started.Match!.Frame.Id);
+        restored.Match!.Frame.Id.ShouldBe(started.Match.Frame.Id);
+        deletedStarter.Profile!.StarterDeckId.ShouldBe("growroom");
+        deletedStarter.StarterDecks.Count(static starter => starter.IsClaimed).ShouldBe(1);
+        retried.Succeeded.ShouldBeFalse();
+        retried.Error!.Code.ShouldBe("deck.not_found");
+        restored.Decks.Single().Name.ShouldBe("Second deck");
+        deletedLast.Decks.ShouldBeEmpty();
+        Ownership(deletedLast).ShouldBe(ownershipBefore);
+        Value(await Local(catalogue, documents, EconomyRules.Unlimited).State())
+            .Decks.ShouldBeEmpty();
+    }
+
+    [Test]
+    public async Task ProfileDocumentFromTheSupersededSchema_IsReportedWithoutBeingReplaced()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Local(catalogue, documents, EconomyRules.Unlimited);
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("b4111111-1111-1111-1111-111111111111"), "Legacy Player")
+            )
+        );
+        Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("b4222222-2222-2222-2222-222222222222"), "growroom")
+            )
+        );
+        var stored = (await documents.Read("profile"))!;
+        var document = JsonNode.Parse(stored.Json)!.AsObject();
+        var profile = document["profile"]!.AsObject();
+        // Schema 2 recorded the claimed starter's deck inside the claim itself.
+        document["schemaVersion"] = 2;
+        var claim = profile["starterDeckClaims"]![0]!.AsObject();
+        claim["deck"] = profile["savedDecks"]![0]!.DeepClone();
+        await documents.Update("profile", stored.Revision, document.ToJsonString());
+        var legacy = (await documents.Read("profile"))!;
+
+        var restarted = Local(catalogue, documents, EconomyRules.Unlimited);
+        var state = await restarted.State();
+        var opened = await restarted.OpenPack(
+            new(Guid.Parse("b4333333-3333-3333-3333-333333333333"))
+        );
+
+        state.Succeeded.ShouldBeFalse();
+        state.Error!.Code.ShouldBe("state.invalid");
+        opened.Succeeded.ShouldBeFalse();
+        opened.Error!.Code.ShouldBe("state.invalid");
+        (await documents.Read("profile")).ShouldBe(legacy);
+    }
+
+    [Test]
     public async Task ServerApi_StillPersistsAProfileInItsOwnSqliteDatabase()
     {
         var dataDirectory = Path.Combine(
@@ -492,6 +597,70 @@ public sealed class BrowserLocalApplicationTests
             restored!.Succeeded.ShouldBeTrue();
             restored.Value!.Profile!.Id.ShouldBe(created.Value!.Profile!.Id);
             File.Exists(Path.Combine(dataDirectory, "blokemon.db")).ShouldBeTrue();
+        }
+        finally
+        {
+            if (Directory.Exists(dataDirectory))
+            {
+                Directory.Delete(dataDirectory, recursive: true);
+            }
+        }
+    }
+
+    [Test]
+    public async Task ServerApi_DeletesASavedDeckThroughItsOwnEndpoint()
+    {
+        var dataDirectory = Path.Combine(
+            AppContext.BaseDirectory,
+            $"server-deck-delete-{Guid.NewGuid():N}"
+        );
+        try
+        {
+            using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Production");
+                builder.UseSetting("Blokemon:DataDirectory", dataDirectory);
+            });
+            using var client = factory.CreateClient();
+            await client.PostAsJsonAsync(
+                "/api/profile",
+                new CreateProfileRequest(
+                    Guid.Parse("b5111111-1111-1111-1111-111111111111"),
+                    "Server Player"
+                )
+            );
+            var claimedResponse = await client.PostAsJsonAsync(
+                "/api/starter-decks/claim",
+                new ClaimStarterDeckRequest(
+                    Guid.Parse("b5222222-2222-2222-2222-222222222222"),
+                    "growroom"
+                )
+            );
+            var claimed = await claimedResponse.Content.ReadFromJsonAsync<
+                ApiResponse<ApplicationView>
+            >();
+            var starter = claimed!.Value!.Decks.Single();
+
+            var deletedResponse = await client.PostAsJsonAsync(
+                "/api/decks/delete",
+                new DeleteDeckRequest(
+                    Guid.Parse("b5333333-3333-3333-3333-333333333333"),
+                    starter.Id
+                )
+            );
+            var deleted = await deletedResponse.Content.ReadFromJsonAsync<
+                ApiResponse<ApplicationView>
+            >();
+            var restored = await client.GetFromJsonAsync<ApiResponse<ApplicationView>>(
+                "/api/state"
+            );
+
+            deletedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+            deleted!.Succeeded.ShouldBeTrue();
+            deleted.Value!.Decks.ShouldBeEmpty();
+            Ownership(deleted.Value).ShouldBe(Ownership(claimed.Value));
+            restored!.Value!.Decks.ShouldBeEmpty();
+            restored.Value.Profile!.StarterDeckId.ShouldBe("growroom");
         }
         finally
         {
@@ -619,7 +788,7 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
-    public async Task ProfileDocumentWithoutEconomyFields_RestoresAsUnlimitedOnSchemaVersionTwo()
+    public async Task ProfileDocumentWithoutEconomyFields_RestoresAsUnlimitedOnTheCurrentSchema()
     {
         var catalogue = Catalogue();
         var documents = new MemoryDocumentStore();
@@ -645,7 +814,7 @@ public sealed class BrowserLocalApplicationTests
             await unlimited.OpenPack(new(Guid.Parse("a4333333-3333-3333-3333-333333333333")))
         );
 
-        document["schemaVersion"]!.GetValue<int>().ShouldBe(2);
+        document["schemaVersion"]!.GetValue<int>().ShouldBe(3);
         persistedMode.ShouldBe((int)EconomyMode.ClassicScarcity);
         persistedAllowance.ShouldBe(1);
         restored.Profile!.RemainingPacks.ShouldBeNull();
@@ -824,6 +993,15 @@ public sealed class BrowserLocalApplicationTests
 
         return builder.Build();
     }
+
+    private static Dictionary<string, int> Ownership(ApplicationView view) =>
+        view
+            .Cards.Where(static card => card.OwnedQuantity > 0)
+            .ToDictionary(
+                static card => card.Id,
+                static card => card.OwnedQuantity,
+                StringComparer.Ordinal
+            );
 
     private static BlokemonCatalogue Catalogue() =>
         BlokemonCatalogueBuilder.Load(Path.Combine(AppContext.BaseDirectory, "content"));

@@ -20,7 +20,10 @@ public sealed class LocalApplicationService(
 ) : IBlokemonApplication
 {
     private const string _profileKey = "profile";
-    private const int _productSchemaVersion = 2;
+
+    // Version 3 dropped the starter claim's deck snapshot. Older documents fail the version
+    // check in LoadProfile and take the damaged-document recovery path; there is no migration.
+    private const int _productSchemaVersion = 3;
 
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web)
     {
@@ -318,6 +321,43 @@ public sealed class LocalApplicationService(
         {
             Profile = saved.Profile,
             Document = loaded.Profile.Document with { Profile = saved.Profile.ToSnapshot() },
+        };
+        return await Save(updated, cancellationToken);
+    }
+
+    public async Task<ApiResponse<ApplicationView>> DeleteDeck(
+        DeleteDeckRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var loaded = await LoadProfile(cancellationToken);
+        if (loaded.Error is not null)
+        {
+            return Failure<ApplicationView>(loaded.Error);
+        }
+        if (loaded.Profile is null)
+        {
+            return Failure<ApplicationView>(
+                new("profile.required", "Create a player before you delete a deck.")
+            );
+        }
+
+        var deckId = Required(DeckId.Create(request.DeckId.ToString("D")));
+        var transition = loaded.Profile.Profile.DeleteDeck(deckId);
+        if (transition is DomainResult<DeckDeleteTransition, DeckDeleteFailure>.Failed)
+        {
+            return Failure<ApplicationView>(
+                new("deck.not_found", "The saved deck no longer exists.")
+            );
+        }
+
+        var deleted = (
+            (DomainResult<DeckDeleteTransition, DeckDeleteFailure>.Succeeded)transition
+        ).Value;
+        var updated = loaded.Profile with
+        {
+            Profile = deleted.Profile,
+            Document = loaded.Profile.Document with { Profile = deleted.Profile.ToSnapshot() },
         };
         return await Save(updated, cancellationToken);
     }
