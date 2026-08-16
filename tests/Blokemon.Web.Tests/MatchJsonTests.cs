@@ -140,7 +140,8 @@ public sealed class MatchJsonTests
                 player,
                 revision,
                 true
-            )
+            ),
+            new MatchCommand.Resign(new("resign"), match, player, revision)
         );
 
         var json = JsonSerializer.Serialize(commands, MatchJson.Options);

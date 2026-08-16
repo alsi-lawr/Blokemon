@@ -182,6 +182,7 @@ public enum MatchActionKindView
     ResolveChoice,
     ResolveKnockout,
     TakePrize,
+    Resign,
 }
 
 public sealed record MatchAttackView(

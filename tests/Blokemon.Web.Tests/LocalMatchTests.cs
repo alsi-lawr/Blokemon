@@ -877,6 +877,45 @@ public sealed class LocalMatchTests
     }
 
     [Test]
+    public async Task Resigning_AppendsOneActionAndReloadsAsACompletedMatchWithTheRecordedWinner()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = await ReadyFixture.Create(database);
+        var started = Value(
+            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
+        );
+        var match = started.Match!;
+        var resign = match.LegalActions.Single(static action =>
+            action.Kind == MatchActionKindView.Resign
+        );
+        var before = await fixture.Store.Read("match");
+
+        var resigned = Value(
+            await fixture.Application.ApplyMatchAction(
+                match.Frame.Id,
+                RequestFor(match, resign, Guid.NewGuid())
+            )
+        );
+        var after = await fixture.Store.Read("match");
+        var restored = Value(await fixture.Restart().State());
+        var rejected = await fixture.Application.ApplyMatchAction(
+            match.Frame.Id,
+            RequestFor(match, resign, Guid.NewGuid())
+        );
+
+        resigned.Match!.Frame.IsComplete.ShouldBeTrue();
+        resigned.Match.Frame.Winner.ShouldBe("The Regular");
+        resigned.Match.LegalActions.ShouldBeEmpty();
+        after!.Revision.ShouldBe(before!.Revision + 1);
+        after.Json.ShouldContain("\"$command\":\"resign\"");
+        restored.Match!.Frame.IsComplete.ShouldBeTrue();
+        restored.Match.Frame.Winner.ShouldBe("The Regular");
+        restored.MatchError.ShouldBeNull();
+        await AssertEquivalent(restored.Match, resigned.Match);
+        Error(rejected).Code.ShouldBe("match.complete");
+    }
+
+    [Test]
     public async Task CompletedMatchCanBeReplacedByANewStart()
     {
         await using var database = await TestDatabase.Create();

@@ -49,6 +49,7 @@ internal static class MatchJson
                     new(typeof(MatchCommand.ResolveEffectChoice), "resolveEffectChoice"),
                     new(typeof(MatchCommand.ResolveKnockoutTrigger), "resolveKnockoutTrigger"),
                     new(typeof(MatchCommand.ResolveBarChitTrigger), "resolveBarChitTrigger"),
+                    new(typeof(MatchCommand.Resign), "resign"),
                 },
             };
             return;

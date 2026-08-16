@@ -861,6 +861,7 @@ public sealed class LocalMatchService(BlokemonCatalogue catalogue, IStateDocumen
             static value => HasValue(value.BoothBloke.Value),
             static _ => true,
             static value => value.Vim is null || HasValue(value.Vim.Value.Value),
+            static _ => true,
             static _ => true
         );
     }
@@ -1060,6 +1061,7 @@ public sealed class LocalMatchService(BlokemonCatalogue catalogue, IStateDocumen
                     Choices = frozenChoices,
                 },
             value => value with { Id = commandId, ExpectedRevision = state.Revision },
+            value => value with { Id = commandId, ExpectedRevision = state.Revision },
             value => value with { Id = commandId, ExpectedRevision = state.Revision }
         );
         return new(command, null);
@@ -1243,7 +1245,10 @@ public sealed class LocalMatchService(BlokemonCatalogue catalogue, IStateDocumen
                     .Select(card => CardInstance(state, human, name, card.Id))
                     .ToArray()
                 : [],
-            _engine.GetLegalActions(state, player).Count > 0
+            // Resignation is always available, so it cannot decide whose turn it is.
+            _engine
+                .GetLegalActions(state, player)
+                .Any(static action => action.Kind != LegalActionKind.Resign)
         );
     }
 
@@ -1444,6 +1449,7 @@ public sealed class LocalMatchService(BlokemonCatalogue catalogue, IStateDocumen
             LegalActionKind.ResolveEffectChoice => MatchActionKindView.ResolveChoice,
             LegalActionKind.ResolveKnockoutTrigger => MatchActionKindView.ResolveKnockout,
             LegalActionKind.ResolveBarChitTrigger => MatchActionKindView.TakePrize,
+            LegalActionKind.Resign => MatchActionKindView.Resign,
             _ => throw new UnreachableException(),
         };
 
@@ -1463,6 +1469,7 @@ public sealed class LocalMatchService(BlokemonCatalogue catalogue, IStateDocumen
             static value => new(value.BoothBloke.Value, null, null),
             static _ => new(null, null, null),
             static value => new(value.Vim?.Value, null, null),
+            static _ => new(null, null, null),
             static _ => new(null, null, null)
         );
 
@@ -1489,7 +1496,8 @@ public sealed class LocalMatchService(BlokemonCatalogue catalogue, IStateDocumen
                 value.Vim is null
                     ? "Do not attach Energy"
                     : $"Attach {CardName(state, value.Vim.Value)}",
-            value => value.PutOntoBooth ? "Put the card on the Bench" : "Put the card in your Hand"
+            value => value.PutOntoBooth ? "Put the card on the Bench" : "Put the card in your Hand",
+            _ => "Resign the battle"
         );
 
     private string EventLabel(

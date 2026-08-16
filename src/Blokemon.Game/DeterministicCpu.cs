@@ -48,8 +48,11 @@ public sealed class DeterministicCpu
 
     public CpuDecision Choose(MatchEngine engine, MatchState state, PlayerId actor)
     {
+        // Resignation is voluntary and never automated, so the policy sees exactly the action
+        // set it saw before resignation existed.
         var selected = engine
             .GetLegalActions(state, actor)
+            .Where(static action => action.Kind != LegalActionKind.Resign)
             .OrderBy(action => _priority[action.Kind])
             .ThenBy(static action => action.StableKey, StringComparer.Ordinal)
             .FirstOrDefault();

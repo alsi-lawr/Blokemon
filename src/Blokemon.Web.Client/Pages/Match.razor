@@ -871,12 +871,16 @@ else
         action.SourceCardInstanceId is null
         && action.Kind
             is not MatchActionKindView.EndTurn
-            and not MatchActionKindView.ChooseMulliganBonus;
+            and not MatchActionKindView.ChooseMulliganBonus
+            and not MatchActionKindView.Resign;
 
     private static MatchActionView[] TurnActions(MatchView match) =>
         match.LegalActions
             .Where(static action =>
-                action.Kind is MatchActionKindView.EndTurn or MatchActionKindView.ChooseMulliganBonus
+                action.Kind
+                    is MatchActionKindView.EndTurn
+                        or MatchActionKindView.ChooseMulliganBonus
+                        or MatchActionKindView.Resign
             )
             .ToArray();
 
@@ -913,6 +917,7 @@ else
         {
             MatchActionKindView.Attack => $"Use {SimpleActionName(action.Label)}?",
             MatchActionKindView.EndTurn => "End your turn?",
+            MatchActionKindView.Resign => "Resign and lose this battle?",
             _ => $"{PublicText(action.Label)}?",
         };
 
@@ -935,6 +940,7 @@ else
             MatchActionKindView.Attack => "Attack",
             MatchActionKindView.Retreat => "Retreat",
             MatchActionKindView.EndTurn => "End turn",
+            MatchActionKindView.Resign => "Resign",
             MatchActionKindView.ChooseOpening => "Start battle",
             MatchActionKindView.ChooseReplacement => "Choose",
             MatchActionKindView.ResolveChoice

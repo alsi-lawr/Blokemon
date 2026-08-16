@@ -103,7 +103,8 @@ public sealed class MatchEngine
             value => ChooseReplacement(builder, value),
             value => ResolveEffectChoice(builder, value),
             value => ResolveKnockoutTrigger(builder, value),
-            value => ResolveBarChitTrigger(builder, value)
+            value => ResolveBarChitTrigger(builder, value),
+            value => Resign(builder, value)
         );
         if (result.Rejection is { } handlerRejection)
         {
@@ -140,8 +141,11 @@ public sealed class MatchEngine
             MatchPhase.Complete => [],
             _ => throw new UnreachableException(),
         };
+        // Resignation sits outside the phase switch: it is legal for either player in every
+        // phase this method still serves, because Complete already returned above.
         return FrozenList<LegalAction>.Create(
             proposed
+                .Append(ResignAction(state, actor))
                 .Where(action => Apply(state, action.Command) is CommandOutcome.Applied)
                 .OrderBy(static action => action.Kind)
                 .ThenBy(static action => action.StableKey, StringComparer.Ordinal)
@@ -1900,6 +1904,26 @@ public sealed class MatchEngine
         return HandlerResult.Accepted;
     }
 
+    private static HandlerResult Resign(MatchBuilder builder, MatchCommand.Resign command)
+    {
+        // An immediate unconditional loss: no phase or turn gate applies, so every outstanding
+        // requirement is abandoned before the opponent takes the win.
+        builder.PendingEffect = null;
+        builder.PendingKnockout = null;
+        foreach (var pending in builder.PendingBarChits.ToArray())
+        {
+            builder.RemoveBarChit(pending);
+        }
+
+        builder.ReplacementPlayer = null;
+        builder.PendingRoundEnd = false;
+        var winner = builder.Other(command.Actor);
+        builder.Winner = winner;
+        builder.Phase = MatchPhase.Complete;
+        builder.Events.Add(new PendingMatchEvent(MatchEventKind.MatchWon, winner));
+        return HandlerResult.Accepted;
+    }
+
     private HandlerResult ChuckFossil(MatchBuilder builder, MatchCommand.ChuckFossil command)
     {
         var turn = ValidatePlayingTurn(builder, command.Actor);
@@ -2950,6 +2974,19 @@ public sealed class MatchEngine
             putOntoBooth ? "bar-chit:0:booth" : "bar-chit:1:mitt"
         ));
     }
+
+    private static LegalAction ResignAction(MatchState state, PlayerId actor) =>
+        new(
+            LegalActionKind.Resign,
+            new MatchCommand.Resign(
+                CpuCommandId(state, $"resign:{actor.Value}"),
+                state.Id,
+                actor,
+                state.Revision
+            ),
+            [],
+            "resign"
+        );
 
     private IEnumerable<LegalAction> PlayingActions(MatchState state, PlayerId actor)
     {

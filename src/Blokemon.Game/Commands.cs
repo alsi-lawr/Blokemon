@@ -244,6 +244,16 @@ public abstract record MatchCommand
         public override FrozenList<EffectChoice> Choices { get; init; } = [];
     }
 
+    public sealed record Resign(
+        CommandId Id,
+        MatchId MatchId,
+        PlayerId Actor,
+        MatchRevision ExpectedRevision
+    ) : MatchCommand
+    {
+        public override FrozenList<EffectChoice> Choices { get; init; } = [];
+    }
+
     public TResult Match<TResult>(
         Func<ChooseMulliganBonus, TResult> chooseMulliganBonus,
         Func<ChooseOpening, TResult> chooseOpening,
@@ -259,7 +269,8 @@ public abstract record MatchCommand
         Func<ChooseReplacement, TResult> chooseReplacement,
         Func<ResolveEffectChoice, TResult> resolveEffectChoice,
         Func<ResolveKnockoutTrigger, TResult> resolveKnockoutTrigger,
-        Func<ResolveBarChitTrigger, TResult> resolveBarChitTrigger
+        Func<ResolveBarChitTrigger, TResult> resolveBarChitTrigger,
+        Func<Resign, TResult> resign
     ) =>
         this switch
         {
@@ -278,6 +289,7 @@ public abstract record MatchCommand
             ResolveEffectChoice value => resolveEffectChoice(value),
             ResolveKnockoutTrigger value => resolveKnockoutTrigger(value),
             ResolveBarChitTrigger value => resolveBarChitTrigger(value),
+            Resign value => resign(value),
             _ => throw new UnreachableException(),
         };
 }
@@ -325,6 +337,7 @@ public enum LegalActionKind
     ResolveEffectChoice,
     ResolveKnockoutTrigger,
     ResolveBarChitTrigger,
+    Resign,
 }
 
 public sealed record LegalAction(

@@ -264,6 +264,50 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
+    public async Task BrowserJourney_ResignsTheSavedBattleAndReloadsItWithTheRecordedWinner()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var server = new ServerHandler(null);
+        var application = Application(catalogue, documents, server);
+        Value(await application.SelectMode(PlayMode.BrowserLocal));
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("96111111-1111-1111-1111-111111111111"), "Browser Player")
+            )
+        );
+        var claimed = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("96222222-2222-2222-2222-222222222222"), "growroom")
+            )
+        );
+        var started = Value(
+            await application.StartMatch(
+                new(Guid.Parse("96333333-3333-3333-3333-333333333333"), claimed.Decks.Single().Id)
+            )
+        ).Application;
+        var match = started.Match!;
+        var resign = match.LegalActions.Single(static action =>
+            action.Kind == MatchActionKindView.Resign
+        );
+
+        var resigned = Value(
+            await application.ApplyMatchAction(match.Frame.Id, RequestFor(match, resign))
+        ).Application;
+        var stored = await documents.Read("match");
+        var restored = Value(await Application(catalogue, documents, server).State());
+
+        resigned.Match!.Frame.IsComplete.ShouldBeTrue();
+        resigned.Match.Frame.Winner.ShouldBe("The Regular");
+        stored!.Json.ShouldContain("\"$command\":\"resign\"", Case.Sensitive);
+        restored.Match!.Frame.IsComplete.ShouldBeTrue();
+        restored.Match.Frame.Winner.ShouldBe("The Regular");
+        restored.MatchError.ShouldBeNull();
+        JsonSerializer.Serialize(restored.Match).ShouldBe(JsonSerializer.Serialize(resigned.Match));
+        server.Requests.ShouldBeEmpty();
+    }
+
+    [Test]
     public async Task BrowserJourney_RejectsAMismatchedDuplicateHistoryEntryWithoutReplacingTheMatch()
     {
         var catalogue = Catalogue();
