@@ -32,6 +32,14 @@ public static class ApplicationEndpoints
             ) => application.OpenPack(request, cancellationToken)
         );
         api.MapPost(
+            "/starter-decks/claim",
+            (
+                ClaimStarterDeckRequest request,
+                LocalApplicationService application,
+                CancellationToken cancellationToken
+            ) => application.ClaimStarterDeck(request, cancellationToken)
+        );
+        api.MapPost(
             "/decks",
             (
                 SaveDeckRequest request,
@@ -55,6 +63,11 @@ public static class ApplicationEndpoints
                 LocalApplicationService application,
                 CancellationToken cancellationToken
             ) => application.ApplyMatchAction(matchId, request, cancellationToken)
+        );
+        api.MapPost(
+            "/purge",
+            (LocalApplicationService application, CancellationToken cancellationToken) =>
+                application.PurgeData(cancellationToken)
         );
         return endpoints;
     }

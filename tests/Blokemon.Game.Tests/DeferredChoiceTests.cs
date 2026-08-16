@@ -1,4 +1,5 @@
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -45,11 +46,11 @@ public sealed class DeferredChoiceTests
             engine.Apply(requested.State, decision.Action.Command)
         );
 
-        await Assert.That(requested.State.Phase).IsEqualTo(MatchPhase.AwaitingEffectChoice);
-        await Assert.That(requirement.Chooser).IsEqualTo(MatchScenario.SecondPlayer);
-        await Assert.That(requirement.Minimum).IsEqualTo(2);
-        await Assert.That(resolved.Card(first.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
-        await Assert.That(resolved.Card(second.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
+        requested.State.Phase.ShouldBe(MatchPhase.AwaitingEffectChoice);
+        requirement.Chooser.ShouldBe(MatchScenario.SecondPlayer);
+        requirement.Minimum.ShouldBe(2);
+        resolved.Card(first.Id).Zone.ShouldBe(CardZone.EmptiesTray);
+        resolved.Card(second.Id).Zone.ShouldBe(CardZone.EmptiesTray);
     }
 
     [Test]
@@ -74,11 +75,9 @@ public sealed class DeferredChoiceTests
         var requested = (CommandOutcome.Applied)
             engine.Apply(initial, MatchScenario.AttackCommand(initial, "BLK-012-B01"));
 
-        await Assert.That(requested.State.Phase).IsEqualTo(MatchPhase.AwaitingEffectChoice);
-        await Assert.That(requested.State.PendingEffect).IsNotNull();
-        await Assert
-            .That(requested.State.Card(new CardInstanceId("defender")).Zone)
-            .IsEqualTo(CardZone.Oche);
+        requested.State.Phase.ShouldBe(MatchPhase.AwaitingEffectChoice);
+        requested.State.PendingEffect.ShouldNotBeNull();
+        requested.State.Card(new CardInstanceId("defender")).Zone.ShouldBe(CardZone.Oche);
 
         var requirement = requested.State.PendingEffect!.Requirements.Single();
         var wrongChooser = new MatchCommand.ResolveEffectChoice(
@@ -95,8 +94,8 @@ public sealed class DeferredChoiceTests
         );
         var rejected = (CommandOutcome.Rejected)engine.Apply(requested.State, wrongChooser);
 
-        await Assert.That(rejected.Rejection.Code).IsEqualTo(CommandRejectionCode.WrongChooser);
-        await Assert.That(rejected.State).IsEqualTo(requested.State);
+        rejected.Rejection.Code.ShouldBe(CommandRejectionCode.WrongChooser);
+        rejected.State.ShouldBe(requested.State);
 
         var cpu = new DeterministicCpu();
         var decision = (CpuDecision.Selected)
@@ -104,13 +103,9 @@ public sealed class DeferredChoiceTests
         var resolved = (CommandOutcome.Applied)
             engine.Apply(requested.State, decision.Action.Command);
 
-        await Assert.That(decision.Action.Kind).IsEqualTo(LegalActionKind.ResolveEffectChoice);
-        await Assert.That(resolved.State.PendingEffect).IsNull();
-        await Assert
-            .That(resolved.State.Card(new CardInstanceId("defender-bench")).Zone)
-            .IsEqualTo(CardZone.Oche);
-        await Assert
-            .That(resolved.State.Card(new CardInstanceId("defender")).Zone)
-            .IsEqualTo(CardZone.Booth);
+        decision.Action.Kind.ShouldBe(LegalActionKind.ResolveEffectChoice);
+        resolved.State.PendingEffect.ShouldBeNull();
+        resolved.State.Card(new CardInstanceId("defender-bench")).Zone.ShouldBe(CardZone.Oche);
+        resolved.State.Card(new CardInstanceId("defender")).Zone.ShouldBe(CardZone.Booth);
     }
 }

@@ -140,10 +140,13 @@ public enum TemporaryEffectKind
     IgnoreStubbornStreak,
     IgnoreSoftSpotAndStubbornStreak,
     RestrictAttack,
+    RestrictAttackOnBeerMat,
     RestrictTaxi,
     RestrictKit,
     RestrictLocal,
     RestrictEmptiesRecovery,
+    ForceBeerMatBlank,
+    ReflectAttackDamage,
     ScaleNextAttackDamage,
     ContinuousPartyTrick,
     EndRoundEffect,
@@ -155,6 +158,7 @@ public enum EffectDuration
     UntilEndOfRound,
     UntilEndOfOpponentsNextRound,
     WhileSourceInPlay,
+    WhileTargetInPlay,
 }
 
 public sealed record RoughStateEntry(BlokemonRoughState State, int AppliedAtOwnerRound);
@@ -208,7 +212,9 @@ public sealed record PendingKnockoutResolution(
     PlayerId Chooser,
     FrozenList<CardInstanceId> EligibleVim,
     CardInstanceId AttackingCard,
-    bool FinishRoundAfterResolution
+    bool FinishRoundAfterResolution,
+    FrozenList<CardInstanceId> AttackDamageTargets,
+    int ExtraBarChits
 );
 
 public sealed record PendingBarChitResolution(

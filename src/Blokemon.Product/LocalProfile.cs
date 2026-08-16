@@ -10,7 +10,6 @@ public enum LocalProfileCreationFailure
 
 public enum PackOpenFailure
 {
-    EntitlementUnavailable,
     ReceiptIdAlreadyUsed,
     ElevenCardPackUnavailable,
     AuthorityVersionMismatch,
@@ -54,34 +53,33 @@ public sealed record PackOpenTransition(
 
 public sealed partial class LocalProfile
 {
-    public const int InitialPackEntitlementCount = 10;
-
     private readonly ImmutableDictionary<CardId, int> _collectibleOwnership;
     private readonly ImmutableDictionary<CommandId, PackReceipt> _receiptsByCommand;
     private readonly ImmutableDictionary<PackReceiptId, PackReceipt> _receiptsById;
     private readonly ImmutableDictionary<DeckId, SavedDeck> _savedDecks;
+    private readonly ImmutableArray<StarterDeckClaim> _starterDeckClaims;
 
     private LocalProfile(
         ProfileId id,
         DisplayName displayName,
         string authorityManifestVersion,
         CardId guaranteedRegularCollectibleId,
-        int availablePackEntitlements,
         ImmutableDictionary<CardId, int> collectibleOwnership,
         ImmutableDictionary<CommandId, PackReceipt> receiptsByCommand,
         ImmutableDictionary<PackReceiptId, PackReceipt> receiptsById,
-        ImmutableDictionary<DeckId, SavedDeck> savedDecks
+        ImmutableDictionary<DeckId, SavedDeck> savedDecks,
+        ImmutableArray<StarterDeckClaim> starterDeckClaims
     )
     {
         Id = id;
         DisplayName = displayName;
         BoundAuthorityManifestVersion = authorityManifestVersion;
         GuaranteedRegularCollectibleId = guaranteedRegularCollectibleId;
-        AvailablePackEntitlements = availablePackEntitlements;
         _collectibleOwnership = collectibleOwnership;
         _receiptsByCommand = receiptsByCommand;
         _receiptsById = receiptsById;
         _savedDecks = savedDecks;
+        _starterDeckClaims = starterDeckClaims;
     }
 
     public ProfileId Id { get; }
@@ -92,13 +90,16 @@ public sealed partial class LocalProfile
 
     public CardId GuaranteedRegularCollectibleId { get; }
 
-    public int AvailablePackEntitlements { get; }
-
     public IReadOnlyDictionary<CardId, int> CollectibleOwnership => _collectibleOwnership;
 
     public IReadOnlyDictionary<PackReceiptId, PackReceipt> PackReceipts => _receiptsById;
 
     public IReadOnlyDictionary<DeckId, SavedDeck> SavedDecks => _savedDecks;
+
+    public ImmutableArray<StarterDeckClaim> StarterDeckClaims => _starterDeckClaims;
+
+    public StarterDeckClaim? LatestStarterDeckClaim =>
+        _starterDeckClaims.IsEmpty ? null : _starterDeckClaims[^1];
 
     public static DomainResult<LocalProfile, LocalProfileCreationFailure> Create(
         ProfileId id,
@@ -128,11 +129,11 @@ public sealed partial class LocalProfile
                 displayName,
                 authority.ManifestVersion,
                 regularId,
-                InitialPackEntitlementCount,
                 ImmutableDictionary<CardId, int>.Empty.Add(regularId, 1),
                 ImmutableDictionary<CommandId, PackReceipt>.Empty,
                 ImmutableDictionary<PackReceiptId, PackReceipt>.Empty,
-                ImmutableDictionary<DeckId, SavedDeck>.Empty
+                ImmutableDictionary<DeckId, SavedDeck>.Empty,
+                ImmutableArray<StarterDeckClaim>.Empty
             )
         );
     }
@@ -182,13 +183,6 @@ public sealed partial class LocalProfile
             );
         }
 
-        if (AvailablePackEntitlements == 0)
-        {
-            return DomainResult<PackOpenTransition, PackOpenFailure>.Failure(
-                PackOpenFailure.EntitlementUnavailable
-            );
-        }
-
         if (!CanSampleEleven(authority))
         {
             return DomainResult<PackOpenTransition, PackOpenFailure>.Failure(
@@ -208,7 +202,6 @@ public sealed partial class LocalProfile
 
         var receipt = new PackReceipt(receiptId, commandId, _receiptsById.Count + 1, sampledIds);
         var profile = Copy(
-            availablePackEntitlements: AvailablePackEntitlements - 1,
             collectibleOwnership: ownership,
             receiptsByCommand: _receiptsByCommand.Add(commandId, receipt),
             receiptsById: _receiptsById.Add(receiptId, receipt)
@@ -323,21 +316,21 @@ public sealed partial class LocalProfile
         );
 
     private LocalProfile Copy(
-        int? availablePackEntitlements = null,
         ImmutableDictionary<CardId, int>? collectibleOwnership = null,
         ImmutableDictionary<CommandId, PackReceipt>? receiptsByCommand = null,
         ImmutableDictionary<PackReceiptId, PackReceipt>? receiptsById = null,
-        ImmutableDictionary<DeckId, SavedDeck>? savedDecks = null
+        ImmutableDictionary<DeckId, SavedDeck>? savedDecks = null,
+        ImmutableArray<StarterDeckClaim>? starterDeckClaims = null
     ) =>
         new(
             Id,
             DisplayName,
             BoundAuthorityManifestVersion,
             GuaranteedRegularCollectibleId,
-            availablePackEntitlements ?? AvailablePackEntitlements,
             collectibleOwnership ?? _collectibleOwnership,
             receiptsByCommand ?? _receiptsByCommand,
             receiptsById ?? _receiptsById,
-            savedDecks ?? _savedDecks
+            savedDecks ?? _savedDecks,
+            starterDeckClaims ?? _starterDeckClaims
         );
 }

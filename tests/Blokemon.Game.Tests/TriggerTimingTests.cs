@@ -1,4 +1,5 @@
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -48,12 +49,10 @@ public sealed class TriggerTimingTests
         var applied = (CommandOutcome.Applied)
             engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-026-B01"));
 
-        await Assert.That(applied.State.Card(firstPrize.Id).Zone).IsEqualTo(CardZone.Mitt);
-        await Assert.That(applied.State.Card(secondPrize.Id).Zone).IsEqualTo(CardZone.Mitt);
-        await Assert
-            .That(applied.State.Player(MatchScenario.FirstPlayer).BarChitsRemaining)
-            .IsEqualTo(0);
-        await Assert.That(applied.State.Winner).IsEqualTo(MatchScenario.FirstPlayer);
+        applied.State.Card(firstPrize.Id).Zone.ShouldBe(CardZone.Mitt);
+        applied.State.Card(secondPrize.Id).Zone.ShouldBe(CardZone.Mitt);
+        applied.State.Player(MatchScenario.FirstPlayer).BarChitsRemaining.ShouldBe(0);
+        applied.State.Winner.ShouldBe(MatchScenario.FirstPlayer);
     }
 
     [Test]
@@ -71,8 +70,8 @@ public sealed class TriggerTimingTests
             engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-076-B02"));
 
         var defender = applied.State.Card(new CardInstanceId("defender"));
-        await Assert.That(defender.Zone).IsEqualTo(CardZone.Oche);
-        await Assert.That(defender.Damage).IsEqualTo(170);
+        defender.Zone.ShouldBe(CardZone.Oche);
+        defender.Damage.ShouldBe(170);
     }
 
     [Test]
@@ -84,7 +83,7 @@ public sealed class TriggerTimingTests
         var applied = (CommandOutcome.Applied)
             engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-076-B01"));
 
-        await Assert.That(applied.State.Card(new CardInstanceId("attacker")).Damage).IsEqualTo(30);
+        applied.State.Card(new CardInstanceId("attacker")).Damage.ShouldBe(30);
     }
 
     [Test]
@@ -142,8 +141,8 @@ public sealed class TriggerTimingTests
         var attacked = (CommandOutcome.Applied)
             engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-003-B01"));
 
-        await Assert.That(attacked.State.Phase).IsEqualTo(MatchPhase.AwaitingTriggerChoice);
-        await Assert.That(attacked.State.PendingBarChits.Count).IsEqualTo(1);
+        attacked.State.Phase.ShouldBe(MatchPhase.AwaitingTriggerChoice);
+        attacked.State.PendingBarChits.Count.ShouldBe(1);
 
         var cpu = new DeterministicCpu();
         var decision = (CpuDecision.Selected)
@@ -151,10 +150,10 @@ public sealed class TriggerTimingTests
         var resolved = (CommandOutcome.Applied)
             engine.Apply(attacked.State, decision.Action.Command);
 
-        await Assert.That(decision.Action.Kind).IsEqualTo(LegalActionKind.ResolveBarChitTrigger);
-        await Assert.That(resolved.State.Card(triggeredPrize.Id).Zone).IsEqualTo(CardZone.Booth);
-        await Assert.That(resolved.State.Card(extraPrize.Id).Zone).IsEqualTo(CardZone.Mitt);
-        await Assert.That(resolved.State.Winner).IsEqualTo(MatchScenario.FirstPlayer);
+        decision.Action.Kind.ShouldBe(LegalActionKind.ResolveBarChitTrigger);
+        resolved.State.Card(triggeredPrize.Id).Zone.ShouldBe(CardZone.Booth);
+        resolved.State.Card(extraPrize.Id).Zone.ShouldBe(CardZone.Mitt);
+        resolved.State.Winner.ShouldBe(MatchScenario.FirstPlayer);
     }
 
     [Test]
@@ -221,14 +220,10 @@ public sealed class TriggerTimingTests
         var attacked = (CommandOutcome.Applied)
             engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-003-B01"));
 
-        await Assert.That(attacked.State.Phase).IsEqualTo(MatchPhase.AwaitingTriggerChoice);
-        await Assert.That(attacked.State.PendingKnockout).IsNotNull();
-        await Assert
-            .That(attacked.State.Card(movableVim.Id).AttachedTo)
-            .IsEqualTo(new CardInstanceId("defender"));
-        await Assert
-            .That(attacked.State.Card(new CardInstanceId("defender")).Zone)
-            .IsEqualTo(CardZone.Oche);
+        attacked.State.Phase.ShouldBe(MatchPhase.AwaitingTriggerChoice);
+        attacked.State.PendingKnockout.ShouldNotBeNull();
+        attacked.State.Card(movableVim.Id).AttachedTo.ShouldBe(new CardInstanceId("defender"));
+        attacked.State.Card(new CardInstanceId("defender")).Zone.ShouldBe(CardZone.Oche);
 
         var cpu = new DeterministicCpu();
         var decision = (CpuDecision.Selected)
@@ -236,13 +231,9 @@ public sealed class TriggerTimingTests
         var resolved = (CommandOutcome.Applied)
             engine.Apply(attacked.State, decision.Action.Command);
 
-        await Assert.That(decision.Action.Kind).IsEqualTo(LegalActionKind.ResolveKnockoutTrigger);
-        await Assert
-            .That(resolved.State.Card(movableVim.Id).AttachedTo)
-            .IsEqualTo(triggerSource.Id);
-        await Assert
-            .That(resolved.State.Card(new CardInstanceId("defender")).Zone)
-            .IsEqualTo(CardZone.EmptiesTray);
-        await Assert.That(resolved.State.Card(prize.Id).Zone).IsEqualTo(CardZone.Mitt);
+        decision.Action.Kind.ShouldBe(LegalActionKind.ResolveKnockoutTrigger);
+        resolved.State.Card(movableVim.Id).AttachedTo.ShouldBe(triggerSource.Id);
+        resolved.State.Card(new CardInstanceId("defender")).Zone.ShouldBe(CardZone.EmptiesTray);
+        resolved.State.Card(prize.Id).Zone.ShouldBe(CardZone.Mitt);
     }
 }

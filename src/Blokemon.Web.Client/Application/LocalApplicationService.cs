@@ -14,12 +14,12 @@ namespace Blokemon.Web.Application;
 
 public sealed class LocalApplicationService(
     BlokemonCatalogue catalogue,
-    StateDocumentStore documents,
+    IStateDocumentStore documents,
     LocalMatchService matches
-)
+) : IBlokemonApplication
 {
     private const string _profileKey = "profile";
-    private const int _productSchemaVersion = 1;
+    private const int _productSchemaVersion = 2;
 
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web)
     {
@@ -79,7 +79,7 @@ public sealed class LocalApplicationService(
             return Failure<ApplicationView>(
                 new(
                     "profile.authority",
-                    "The current card authority does not contain a Regular starter Blokemon."
+                    "The current card set does not contain a starter Blokemon."
                 )
             );
         }
@@ -162,6 +162,67 @@ public sealed class LocalApplicationService(
         return await Save(updated, cancellationToken);
     }
 
+    public async Task<ApiResponse<ApplicationView>> ClaimStarterDeck(
+        ClaimStarterDeckRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var loaded = await LoadProfile(cancellationToken);
+        if (loaded.Error is not null)
+        {
+            return Failure<ApplicationView>(loaded.Error);
+        }
+        if (loaded.Profile is null)
+        {
+            return Failure<ApplicationView>(
+                new("profile.required", "Create a player before you choose a starter deck.")
+            );
+        }
+        if (request.CommandId == Guid.Empty)
+        {
+            return Failure<ApplicationView>(
+                new("starter.command_id", "Choose the starter deck again.")
+            );
+        }
+        if (catalogue.StarterDecks.Find(request.StarterDeckId) is not { } selected)
+        {
+            return Failure<ApplicationView>(
+                new("starter.not_found", "Choose one of the available starter decks.")
+            );
+        }
+
+        var commandId = Required(CommandId.Create(request.CommandId.ToString("D")));
+        var definition = StarterDefinition(selected);
+        var transition = loaded.Profile.Profile.ClaimStarterDeck(
+            commandId,
+            definition,
+            catalogue.Mechanics
+        );
+        if (
+            transition
+            is DomainResult<StarterDeckClaimOutcome, StarterDeckClaimFailure>.Failed failed
+        )
+        {
+            return Failure<ApplicationView>(StarterFailure(failed.Error));
+        }
+
+        var outcome = (
+            (DomainResult<StarterDeckClaimOutcome, StarterDeckClaimFailure>.Succeeded)transition
+        ).Value;
+        if (outcome is StarterDeckClaimOutcome.AlreadyClaimed)
+        {
+            return Success(await ToView(loaded.Profile, cancellationToken));
+        }
+
+        var claimed = (StarterDeckClaimOutcome.Claimed)outcome;
+        var updated = loaded.Profile with
+        {
+            Profile = claimed.Profile,
+            Document = loaded.Profile.Document with { Profile = claimed.Profile.ToSnapshot() },
+        };
+        return await Save(updated, cancellationToken);
+    }
+
     public async Task<ApiResponse<ApplicationView>> SaveDeck(
         SaveDeckRequest request,
         CancellationToken cancellationToken = default
@@ -175,7 +236,7 @@ public sealed class LocalApplicationService(
         if (loaded.Profile is null)
         {
             return Failure<ApplicationView>(
-                new("profile.required", "Create a local profile before saving a deck.")
+                new("profile.required", "Create a player before you save a deck.")
             );
         }
 
@@ -192,7 +253,7 @@ public sealed class LocalApplicationService(
             if (cardId is DomainResult<CardId, TextValueFailure>.Failed)
             {
                 return Failure<ApplicationView>(
-                    new("deck.card_id", "Every deck entry must identify a card.")
+                    new("deck.card_id", "The deck contains an unknown card.")
                 );
             }
             selections.Add(
@@ -227,14 +288,14 @@ public sealed class LocalApplicationService(
             if (request.ExpectedRevision is null)
             {
                 return Failure<ApplicationView>(
-                    new("deck.revision", "The saved deck revision is required.")
+                    new("deck.revision", "The saved deck changed. Reload the page.")
                 );
             }
             var revision = DeckRevision.Create(request.ExpectedRevision.Value);
             if (revision is DomainResult<DeckRevision, DeckRevisionFailure>.Failed)
             {
                 return Failure<ApplicationView>(
-                    new("deck.revision", "The saved deck revision is invalid.")
+                    new("deck.revision", "The saved deck changed. Reload the page.")
                 );
             }
             transition = loaded.Profile.Profile.ReviseDeck(
@@ -259,7 +320,7 @@ public sealed class LocalApplicationService(
         return await Save(updated, cancellationToken);
     }
 
-    public async Task<ApiResponse<ApplicationView>> StartMatch(
+    public async Task<ApiResponse<MatchMutationView>> StartMatch(
         StartMatchRequest request,
         CancellationToken cancellationToken = default
     )
@@ -267,11 +328,11 @@ public sealed class LocalApplicationService(
         var loaded = await LoadProfile(cancellationToken);
         if (loaded.Error is not null)
         {
-            return Failure<ApplicationView>(loaded.Error);
+            return Failure<MatchMutationView>(loaded.Error);
         }
         if (loaded.Profile is null)
         {
-            return Failure<ApplicationView>(
+            return Failure<MatchMutationView>(
                 new("profile.required", "Create a local profile before starting a match.")
             );
         }
@@ -283,11 +344,16 @@ public sealed class LocalApplicationService(
             cancellationToken
         );
         return match.Error is not null
-            ? Failure<ApplicationView>(match.Error)
-            : Success(await ToView(loaded.Profile, cancellationToken, match));
+            ? Failure<MatchMutationView>(match.Error)
+            : Success<MatchMutationView>(
+                new MatchMutationView(
+                    await ToView(loaded.Profile, cancellationToken, match),
+                    match.Presentation
+                )
+            );
     }
 
-    public async Task<ApiResponse<ApplicationView>> ApplyMatchAction(
+    public async Task<ApiResponse<MatchMutationView>> ApplyMatchAction(
         Guid matchId,
         ApplyMatchActionRequest request,
         CancellationToken cancellationToken = default
@@ -296,11 +362,11 @@ public sealed class LocalApplicationService(
         var loaded = await LoadProfile(cancellationToken);
         if (loaded.Error is not null)
         {
-            return Failure<ApplicationView>(loaded.Error);
+            return Failure<MatchMutationView>(loaded.Error);
         }
         if (loaded.Profile is null)
         {
-            return Failure<ApplicationView>(
+            return Failure<MatchMutationView>(
                 new("profile.required", "Create a local profile before playing a match.")
             );
         }
@@ -313,8 +379,13 @@ public sealed class LocalApplicationService(
             cancellationToken
         );
         return match.Error is not null
-            ? Failure<ApplicationView>(match.Error)
-            : Success(await ToView(loaded.Profile, cancellationToken, match));
+            ? Failure<MatchMutationView>(match.Error)
+            : Success<MatchMutationView>(
+                new MatchMutationView(
+                    await ToView(loaded.Profile, cancellationToken, match),
+                    match.Presentation
+                )
+            );
     }
 
     private async Task<ApiResponse<ApplicationView>> Save(
@@ -346,6 +417,15 @@ public sealed class LocalApplicationService(
                 )
             )
             : Failure<ApplicationView>(Conflict());
+    }
+
+    public async Task<ApiResponse<ApplicationView>> PurgeData(
+        CancellationToken cancellationToken = default
+    )
+    {
+        await matches.PurgeSavedMatches(cancellationToken);
+        await documents.Delete(_profileKey, cancellationToken);
+        return Success(await ToView(null, cancellationToken));
     }
 
     private async Task<ProfileLoad> LoadProfile(CancellationToken cancellationToken)
@@ -394,10 +474,13 @@ public sealed class LocalApplicationService(
     {
         if (loaded is null)
         {
+            var emptyCards = catalogue.CardsWithOwnership(new Dictionary<string, int>());
             return new(
                 null,
-                catalogue.CardsWithOwnership(new Dictionary<string, int>()),
+                emptyCards,
                 [],
+                StarterViews(new HashSet<string>(StringComparer.Ordinal), emptyCards),
+                catalogue.PackPresentation,
                 null,
                 null,
                 null
@@ -458,10 +541,17 @@ public sealed class LocalApplicationService(
                 loaded.Ids.Profile,
                 loaded.Profile.DisplayName.Value,
                 loaded.Revision,
-                loaded.Profile.AvailablePackEntitlements
+                loaded.Profile.LatestStarterDeckClaim?.Id.Value
             ),
             cards,
             decks,
+            StarterViews(
+                loaded
+                    .Profile.StarterDeckClaims.Select(static claim => claim.Id.Value)
+                    .ToHashSet(StringComparer.Ordinal),
+                cards
+            ),
+            catalogue.PackPresentation,
             lastPack,
             match.View,
             match.Error
@@ -478,6 +568,7 @@ public sealed class LocalApplicationService(
         var issues = validation is DeckValidationResult.Invalid invalid
             ? invalid.Issues.Select(DeckIssue).ToArray()
             : [];
+        var warnings = issues.Length == 0 ? DeckWarnings(deck) : [];
         return new(
             deckId,
             deck.Name.Value,
@@ -486,11 +577,78 @@ public sealed class LocalApplicationService(
                 .Select(static entry => new DeckEntryView(entry.Key.Value, entry.Value))
                 .ToArray(),
             issues.Length == 0,
-            issues
+            issues,
+            warnings
         );
     }
 
-    private static CardView CurrentCard(
+    private StarterDeckView[] StarterViews(
+        IReadOnlySet<string> claimedIds,
+        IReadOnlyCollection<CardView> cards
+    )
+    {
+        var currentCards = cards.ToDictionary(static card => card.Id, StringComparer.Ordinal);
+        return catalogue
+            .StarterDecks.Decks.OrderBy(static deck => deck.Id, StringComparer.Ordinal)
+            .Select(deck => new StarterDeckView(
+                deck.Id,
+                deck.Name,
+                deck.Type,
+                deck.Role,
+                deck.Description,
+                currentCards[deck.LeaderCardId],
+                deck.Entries.Select(static entry => new DeckEntryView(entry.CardId, entry.Quantity))
+                    .ToArray(),
+                deck.Entries.Where(entry =>
+                        currentCards[entry.CardId].Kind == CardKindView.Blokemon
+                    )
+                    .Sum(static entry => entry.Quantity),
+                deck.Entries.Where(entry => currentCards[entry.CardId].Kind == CardKindView.Kit)
+                    .Sum(static entry => entry.Quantity),
+                deck.Entries.Where(entry =>
+                        currentCards[entry.CardId].Kind == CardKindView.BasicVim
+                    )
+                    .Sum(static entry => entry.Quantity),
+                claimedIds.Contains(deck.Id)
+            ))
+            .ToArray();
+    }
+
+    private string[] DeckWarnings(SavedDeck deck)
+    {
+        var includedEnergy = deck
+            .Cards.Keys.Select(static id => id.Value)
+            .Where(static id => id.StartsWith("VIM-", StringComparison.Ordinal))
+            .Select(id =>
+                catalogue.Mechanics.BasicVim.Single(card =>
+                    string.Equals(card.Id, id, StringComparison.Ordinal)
+                )
+            )
+            .Select(static energy => energy.MechanicalType)
+            .ToHashSet();
+        if (includedEnergy.Count == 0)
+        {
+            return ["This deck has no Basic Energy. Its Blokemon cannot attack."];
+        }
+
+        var hasPayableAttack = deck
+            .Cards.Keys.Select(static id => id.Value)
+            .Where(static id => id.StartsWith("BLK-", StringComparison.Ordinal))
+            .Select(id =>
+                catalogue.Mechanics.Collectibles.Single(card =>
+                    string.Equals(card.Id, id, StringComparison.Ordinal)
+                )
+            )
+            .SelectMany(static card => card.Attacks)
+            .Any(attack =>
+                attack.VimCost.All(cost =>
+                    cost == BlokemonMechanicalType.Colorless || includedEnergy.Contains(cost)
+                )
+            );
+        return hasPayableAttack ? [] : ["The Basic Energy in this deck cannot pay for an attack."];
+    }
+
+    private CardView CurrentCard(
         string id,
         IReadOnlyDictionary<string, int> ownership,
         IReadOnlyDictionary<string, CardView> currentCards
@@ -505,8 +663,9 @@ public sealed class LocalApplicationService(
                 "Unavailable card",
                 CardKindView.Blokemon,
                 "Historical",
-                "Not in the current authority",
-                "/art/card-back.svg",
+                "Not in the current card set",
+                catalogue.ReverseFaceHtml,
+                [],
                 ownership.GetValueOrDefault(id),
                 false
             );
@@ -532,10 +691,10 @@ public sealed class LocalApplicationService(
         issue.Match(
             static (cardId, _) => $"{cardId.Value} must have a positive quantity.",
             static (actual, required) =>
-                $"The deck has {actual} cards; exactly {required} are required.",
-            static cardId => $"{cardId.Value} is not in the current card authority.",
+                $"The deck has {actual} cards. It must have {required} cards.",
+            static cardId => $"{cardId.Value} is not in the current card set.",
             static (cardId, actual, allowed) =>
-                $"{cardId.Value} has {actual} copies; at most {allowed} are allowed.",
+                $"{cardId.Value} has {actual} copies. The limit is {allowed}.",
             static () => "The deck needs at least one Regular Blokemon.",
             static (cardId, requested, owned) =>
                 $"{cardId.Value} requests {requested} copies, but only {owned} are owned.",
@@ -546,33 +705,46 @@ public sealed class LocalApplicationService(
         failure.Match<ApiError>(
             static _ => new("deck.exists", "That deck already exists."),
             static _ => new("deck.not_found", "The saved deck no longer exists."),
+            static (_, _, _) => new("deck.stale", "The saved deck changed. Reload the page."),
+            static issues => new("deck.invalid", string.Join(" ", issues.Select(DeckIssue))),
+            static _ => new("deck.revision", "The saved deck changed. Reload the page.")
+        );
+
+    private static StarterDeckDefinition StarterDefinition(StarterDeck starter) =>
+        new(
+            Required(StarterDeckId.Create(starter.Id)),
+            Required(DeckId.Create(starter.SavedDeckId.ToString("D"))),
+            Required(DeckName.Create(starter.Name)),
+            starter.Entries.Select(entry => new DeckCardSelection(
+                Required(CardId.Create(entry.CardId)),
+                entry.Quantity
+            ))
+        );
+
+    private static ApiError StarterFailure(StarterDeckClaimFailure failure) =>
+        failure.Match<ApiError>(
             static (_, _, _) =>
                 new(
-                    "deck.stale",
-                    "The deck changed in another operation. Reload it before saving."
+                    "starter.command_conflict",
+                    "This request conflicts with a saved choice. Choose the starter deck again."
                 ),
-            static issues => new("deck.invalid", string.Join(" ", issues.Select(DeckIssue))),
-            static _ => new("deck.revision", "The deck revision cannot advance.")
+            static issues => new("starter.invalid", string.Join(" ", issues.Select(DeckIssue)))
         );
 
     private static ApiError PackFailure(PackOpenFailure failure) =>
         failure switch
         {
-            PackOpenFailure.EntitlementUnavailable => new(
-                "pack.empty",
-                "No unopened packs remain."
-            ),
             PackOpenFailure.ReceiptIdAlreadyUsed => new(
                 "pack.receipt",
-                "That pack receipt ID is already in use."
+                "This pack was already opened."
             ),
             PackOpenFailure.ElevenCardPackUnavailable => new(
                 "pack.authority",
-                "The current authority cannot supply an eleven-card pack."
+                "The current card set cannot supply an 11-card pack."
             ),
             PackOpenFailure.AuthorityVersionMismatch => new(
                 "pack.authority_changed",
-                "The card authority changed. Revalidate the profile before opening packs."
+                "The card set changed. Reload the page before you open a pack."
             ),
             _ => throw new ArgumentOutOfRangeException(nameof(failure)),
         };
@@ -597,12 +769,12 @@ public sealed class LocalApplicationService(
     private static ApiResponse<T> Failure<T>(ApiError error) => new(false, default, error);
 
     private static ApiError Conflict() =>
-        new("state.conflict", "The local state changed in another operation. Retry this action.");
+        new("state.conflict", "The saved data changed. Select the action again.");
 
     private static ProfileLoad InvalidState() => new(null, InvalidStateError());
 
     private static ApiError InvalidStateError() =>
-        new("state.invalid", "The persisted local profile is invalid and was left unchanged.");
+        new("state.invalid", "The saved player data is damaged. No data changed.");
 
     private sealed record ProductDocument(
         int SchemaVersion,

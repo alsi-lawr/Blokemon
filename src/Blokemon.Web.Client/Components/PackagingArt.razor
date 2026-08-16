@@ -1,0 +1,19 @@
+<div class="packaging-art @Class"
+     aria-label="@(Decorative ? null : Label)"
+     aria-hidden="@(Decorative ? "true" : null)">
+    @((MarkupString)Markup)
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required string Markup { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string Label { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public bool Decorative { get; set; }
+}

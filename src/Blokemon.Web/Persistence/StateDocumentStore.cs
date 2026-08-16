@@ -2,18 +2,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Blokemon.Web.Persistence;
 
-public sealed record StoredDocument(long Revision, string Json);
-
-public abstract record DocumentWriteResult
-{
-    private DocumentWriteResult() { }
-
-    public sealed record Written(long Revision) : DocumentWriteResult;
-
-    public sealed record Conflict : DocumentWriteResult;
-}
-
 public sealed class StateDocumentStore(IDbContextFactory<BlokemonDbContext> contexts)
+    : IStateDocumentStore
 {
     public async Task<StoredDocument?> Read(
         string key,
@@ -65,5 +55,13 @@ public sealed class StateDocumentStore(IDbContextFactory<BlokemonDbContext> cont
         return rows == 1
             ? new DocumentWriteResult.Written(expectedRevision + 1)
             : new DocumentWriteResult.Conflict();
+    }
+
+    public async Task Delete(string key, CancellationToken cancellationToken = default)
+    {
+        await using var context = await contexts.CreateDbContextAsync(cancellationToken);
+        await context
+            .StateDocuments.Where(row => row.Key == key)
+            .ExecuteDeleteAsync(cancellationToken);
     }
 }

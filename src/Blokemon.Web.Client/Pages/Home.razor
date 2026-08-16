@@ -88,52 +88,7 @@ else if (_view!.Profile is null)
 }
 else if (_view.Profile.StarterDeckId is null)
 {
-    <section class="starter-shell" aria-labelledby="starter-heading">
-        <div class="starter-intro">
-            <div>
-                <span class="eyebrow">Starter Deck</span>
-                <h1 id="starter-heading">Choose your first deck.</h1>
-                <p>Each starter has 60 cards. You can edit the deck after you choose it.</p>
-            </div>
-            <div class="starter-boxes" aria-label="Starter Deck boxes">
-                <div><PackagingArt Markup="@_view.PackPresentation.Gloss.StarterDeckSvgMarkup" Label="Foil Starter Deck box" /><span>Foil</span></div>
-                <div><PackagingArt Markup="@_view.PackPresentation.Kraft.StarterDeckSvgMarkup" Label="Kraft Starter Deck box" /><span>Kraft</span></div>
-            </div>
-        </div>
-        @if (_operationError is not null)
-        {
-            <FailurePanel Message="@_operationError" />
-        }
-        <div class="starter-grid">
-            @foreach (var starter in _view.StarterDecks)
-            {
-                <article class="starter-option @TypeClass(starter.Type)">
-                    <div class="starter-title">
-                        <div>
-                            <span class="eyebrow">@starter.Type · @starter.Role</span>
-                            <h2>@starter.Name</h2>
-                            <small>Led by @starter.Leader.Name</small>
-                        </div>
-                        <i class="type-dot" aria-hidden="true"></i>
-                    </div>
-                    <div class="leader-stage">
-                        <CardFace Card="starter.Leader" Size="CardFaceSize.Leader" />
-                    </div>
-                    <div class="deck-numbers" aria-label="Deck composition">
-                        <span><b>@starter.BlokemonCount</b><small>Blokemon</small></span>
-                        <span><b>@starter.TrainerCount</b><small>Trainer</small></span>
-                        <span><b>@starter.EnergyCount</b><small>Energy</small></span>
-                    </div>
-                    <p>@starter.Description</p>
-                    <button class="primary full"
-                            @onclick="() => Claim(starter.Id)"
-                            disabled="@_working">
-                        @(_working && _claimingStarterId == starter.Id ? "Claiming deck…" : $"Choose {starter.Name}")
-                    </button>
-                </article>
-            }
-        </div>
-    </section>
+    @StarterCatalogue
 }
 else
 {
@@ -179,7 +134,6 @@ else
         </div>
         <div class="grid">
             <div class="panel metrics">
-                <div class="metric"><b>@_view.Profile.UnopenedPacks</b><span>Packs left</span></div>
                 <div class="metric"><b>@owned</b><span>Owned</span></div>
                 <div class="metric"><b>@_view.Decks.Length</b><span>Decks</span></div>
             </div>
@@ -204,6 +158,7 @@ else
             </div>
         </div>
     </div>
+    @StarterCatalogue
 }
 
 @if (_ceremonyStage != DeckOpeningStage.Closed && _ceremonyStarter is not null && _view is not null)
@@ -258,6 +213,54 @@ else
 }
 
 @code {
+    private RenderFragment StarterCatalogue =>
+        @<section class="starter-shell" aria-labelledby="starter-heading">
+            <div class="starter-intro">
+                <div>
+                    <span class="eyebrow">Starter Deck</span>
+                    <h1 id="starter-heading">@(_view!.Profile!.StarterDeckId is null ? "Choose your first deck." : "Open another Starter Deck.")</h1>
+                    <p>Each starter has 60 cards. Every box you open adds its cards to your collection.</p>
+                </div>
+                <div class="starter-boxes" aria-label="Starter Deck boxes">
+                    <div><PackagingArt Markup="@_view.PackPresentation.Gloss.StarterDeckSvgMarkup" Label="Foil Starter Deck box" /><span>Foil</span></div>
+                    <div><PackagingArt Markup="@_view.PackPresentation.Kraft.StarterDeckSvgMarkup" Label="Kraft Starter Deck box" /><span>Kraft</span></div>
+                </div>
+            </div>
+            @if (_operationError is not null)
+            {
+                <FailurePanel Message="@_operationError" />
+            }
+            <div class="starter-grid">
+                @foreach (var starter in _view.StarterDecks)
+                {
+                    <article class="starter-option @TypeClass(starter.Type)">
+                        <div class="starter-title">
+                            <div>
+                                <span class="eyebrow">@starter.Type · @starter.Role</span>
+                                <h2>@starter.Name</h2>
+                                <small>Led by @starter.Leader.Name@(starter.IsClaimed ? " · Opened" : null)</small>
+                            </div>
+                            <i class="type-dot" aria-hidden="true"></i>
+                        </div>
+                        <div class="leader-stage">
+                            <CardFace Card="starter.Leader" Size="CardFaceSize.Leader" />
+                        </div>
+                        <div class="deck-numbers" aria-label="Deck composition">
+                            <span><b>@starter.BlokemonCount</b><small>Blokemon</small></span>
+                            <span><b>@starter.TrainerCount</b><small>Trainer</small></span>
+                            <span><b>@starter.EnergyCount</b><small>Energy</small></span>
+                        </div>
+                        <p>@starter.Description</p>
+                        <button class="primary full"
+                                @onclick="() => Claim(starter.Id)"
+                                disabled="@_working">
+                            @(_working && _claimingStarterId == starter.Id ? "Opening deck…" : $"Open {starter.Name}")
+                        </button>
+                    </article>
+                }
+            </div>
+        </section>;
+
     // Delays pace the deck-opening lid, pull, and fan animations in app.css.
     private const int BoxMilliseconds = 950;
     private const int UnboxMilliseconds = 900;
@@ -360,7 +363,9 @@ else
         _commandId = null;
         _claimingStarterId = null;
         _view = response.Value;
-        var starter = _view?.StarterDecks.FirstOrDefault(static starter => starter.IsClaimed);
+        var starter = _view?.StarterDecks.FirstOrDefault(candidate =>
+            string.Equals(candidate.Id, starterDeckId, StringComparison.Ordinal)
+        );
         if (starter is not null && !_skipAnimations)
         {
             await PlayDeckOpening(starter);

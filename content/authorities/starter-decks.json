@@ -1,0 +1,316 @@
+{
+  "schemaVersion": 1,
+  "starterDeckVersion": "kanto-ex-starters-1.0.0",
+  "mechanicalManifestVersion": "sv151-candidate.14",
+  "decks": [
+    {
+      "id": "growroom",
+      "savedDeckId": "b16430b9-0c41-5bbf-a201-1ed29d1d9378",
+      "name": "The Growroom",
+      "type": "Blazed",
+      "role": "Healing and control",
+      "description": "Heal your Blokemon, disrupt the opponent, and move Energy to your next attacker.",
+      "leaderCardId": "BLK-003",
+      "entries": [
+        {
+          "cardId": "BLK-001",
+          "quantity": 3
+        },
+        {
+          "cardId": "BLK-002",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-003",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-043",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-044",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-114",
+          "quantity": 1
+        },
+        {
+          "cardId": "BLK-123",
+          "quantity": 1
+        },
+        {
+          "cardId": "BLK-127",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-132",
+          "quantity": 1
+        },
+        {
+          "cardId": "BLK-143",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-001",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-002",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-004",
+          "quantity": 3
+        },
+        {
+          "cardId": "KIT-005",
+          "quantity": 4
+        },
+        {
+          "cardId": "KIT-006",
+          "quantity": 3
+        },
+        {
+          "cardId": "KIT-007",
+          "quantity": 3
+        },
+        {
+          "cardId": "KIT-008",
+          "quantity": 3
+        },
+        {
+          "cardId": "KIT-009",
+          "quantity": 2
+        },
+        {
+          "cardId": "KIT-010",
+          "quantity": 3
+        },
+        {
+          "cardId": "KIT-011",
+          "quantity": 2
+        },
+        {
+          "cardId": "KIT-012",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-014",
+          "quantity": 2
+        },
+        {
+          "cardId": "VIM-BLAZED",
+          "quantity": 15
+        }
+      ]
+    },
+    {
+      "id": "brick-lane-heat",
+      "savedDeckId": "594b0402-2358-5c12-ad8e-7d3d2ad8489c",
+      "name": "Brick Lane Heat",
+      "type": "Curry",
+      "role": "Heavy damage",
+      "description": "Build the Bench, move Energy forward, and finish with a high-damage attack.",
+      "leaderCardId": "BLK-006",
+      "entries": [
+        {
+          "cardId": "BLK-004",
+          "quantity": 3
+        },
+        {
+          "cardId": "BLK-005",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-006",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-058",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-059",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-084",
+          "quantity": 3
+        },
+        {
+          "cardId": "BLK-085",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-115",
+          "quantity": 1
+        },
+        {
+          "cardId": "BLK-126",
+          "quantity": 1
+        },
+        {
+          "cardId": "BLK-146",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-001",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-004",
+          "quantity": 2
+        },
+        {
+          "cardId": "KIT-005",
+          "quantity": 4
+        },
+        {
+          "cardId": "KIT-006",
+          "quantity": 3
+        },
+        {
+          "cardId": "KIT-007",
+          "quantity": 3
+        },
+        {
+          "cardId": "KIT-008",
+          "quantity": 2
+        },
+        {
+          "cardId": "KIT-009",
+          "quantity": 2
+        },
+        {
+          "cardId": "KIT-010",
+          "quantity": 3
+        },
+        {
+          "cardId": "KIT-011",
+          "quantity": 2
+        },
+        {
+          "cardId": "KIT-012",
+          "quantity": 2
+        },
+        {
+          "cardId": "KIT-014",
+          "quantity": 2
+        },
+        {
+          "cardId": "VIM-CURRY",
+          "quantity": 15
+        }
+      ]
+    },
+    {
+      "id": "early-shift",
+      "savedDeckId": "51bb23b2-d314-56a4-9336-fa30bca9ce4c",
+      "name": "The Early Shift",
+      "type": "Sober",
+      "role": "Energy recovery",
+      "description": "Fill the Bench, return Energy to your hand, and use it for extra damage.",
+      "leaderCardId": "BLK-009",
+      "entries": [
+        {
+          "cardId": "BLK-007",
+          "quantity": 3
+        },
+        {
+          "cardId": "BLK-008",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-009",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-084",
+          "quantity": 3
+        },
+        {
+          "cardId": "BLK-085",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-090",
+          "quantity": 1
+        },
+        {
+          "cardId": "BLK-091",
+          "quantity": 1
+        },
+        {
+          "cardId": "BLK-131",
+          "quantity": 2
+        },
+        {
+          "cardId": "BLK-144",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-001",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-002",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-003",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-004",
+          "quantity": 2
+        },
+        {
+          "cardId": "KIT-005",
+          "quantity": 4
+        },
+        {
+          "cardId": "KIT-006",
+          "quantity": 3
+        },
+        {
+          "cardId": "KIT-007",
+          "quantity": 3
+        },
+        {
+          "cardId": "KIT-008",
+          "quantity": 2
+        },
+        {
+          "cardId": "KIT-009",
+          "quantity": 2
+        },
+        {
+          "cardId": "KIT-010",
+          "quantity": 3
+        },
+        {
+          "cardId": "KIT-011",
+          "quantity": 2
+        },
+        {
+          "cardId": "KIT-012",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-013",
+          "quantity": 1
+        },
+        {
+          "cardId": "KIT-014",
+          "quantity": 2
+        },
+        {
+          "cardId": "VIM-SOBER",
+          "quantity": 15
+        }
+      ]
+    }
+  ]
+}

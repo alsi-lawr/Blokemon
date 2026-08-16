@@ -1,0 +1,47 @@
+@inherits LayoutComponentBase
+@inject PlayModeApplication Modes
+
+<div class="app-shell">
+    <header class="appbar">
+        <a class="brand" href="/" aria-label="Blokemon home">
+            <span class="brand-mark" aria-hidden="true">B</span>
+            <span><strong>Blokemon</strong><small>Local league</small></span>
+        </a>
+        <nav class="mainnav" aria-label="Primary">
+            <NavLink href="/" Match="NavLinkMatch.All" data-icon="⌂">Home</NavLink>
+            <NavLink href="packs" data-icon="▣">Packs</NavLink>
+            <NavLink href="collection" data-icon="▦">Collection</NavLink>
+            <NavLink href="decks" data-icon="▤">Decks</NavLink>
+            <NavLink href="match" data-icon="⚔">Battle</NavLink>
+            <NavLink href="profile" data-icon="●">Profile</NavLink>
+        </nav>
+        <a class="profile-chip" href="profile">
+            <span class="avatar" aria-hidden="true">L</span>
+            <span><strong>@ModeName()</strong><small>@ModeLocation()</small></span>
+        </a>
+    </header>
+    <main>@Body</main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    The local table hit an unexpected error.
+    <a href="." class="reload">Reload the table</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+
+@code {
+    private PlayModeState? _mode;
+
+    protected override async Task OnInitializedAsync() => _mode = await Modes.Mode();
+
+    private string ModeName() =>
+        _mode?.Selected switch
+        {
+            PlayMode.BrowserLocal => "Browser game",
+            PlayMode.ServerBacked => "Server game",
+            _ => "Choose your game",
+        };
+
+    private string ModeLocation() => _mode?.StorageLocation ?? "No player loaded";
+}

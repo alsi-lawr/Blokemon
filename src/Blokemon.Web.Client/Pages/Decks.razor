@@ -1,6 +1,5 @@
 @page "/decks"
-@rendermode InteractiveAuto
-@inject BlokemonApiClient Api
+@inject IBlokemonApplication Api
 
 <PageTitle>Decks · Blokemon</PageTitle>
 
@@ -14,46 +13,159 @@ else if (_error is not null)
 }
 else if (_view!.Profile is null)
 {
-    <FailurePanel Title="Create a profile first." Message="Decks belong to the local profile on this machine." />
+    <FailurePanel Title="Create a player first." Message="Your decks belong to this player." />
+}
+else if (_view.Profile.StarterDeckId is null)
+{
+    <header class="topline"><div><span class="eyebrow">Deck builder</span><h1>Choose a starter first.</h1></div></header>
+    <div class="panel hero"><div class="hero-copy"><p>Choose a starter deck. You can edit it here.</p><div class="actions"><a class="primary button" href="/">Choose a starter</a></div></div></div>
 }
 else
 {
-    <header class="topline"><div><span class="eyebrow">Deck builder</span><h1>@_deckName</h1></div><button class="primary" @onclick="Save" disabled="@_saving">@(_saving ? "Saving…" : "Save deck")</button></header>
+    <header class="deck-top">
+        <div>
+            <span class="eyebrow">Deck builder @(_hasUnsavedChanges ? "· Unsaved changes" : null)</span>
+            <label class="visually-hidden" for="deck-name">Deck name</label>
+            <input id="deck-name" class="deck-name-input" maxlength="48" @bind="_deckName" @bind:after="MarkChanged" />
+            <small>A deck must have 60 cards.</small>
+        </div>
+        <div class="deck-top-actions">
+            <button class="secondary" @onclick="RestoreStarter" disabled="@(_working || ClaimedStarter() is null)">Restore starter list</button>
+            <button class="primary" @onclick="Save" disabled="@_working">@(_working ? "Saving…" : "Save changes")</button>
+        </div>
+    </header>
+
+    @if (_view.Decks.Length > 1)
+    {
+        <div class="deck-tabs" aria-label="Saved decks">
+            @foreach (var deck in _view.Decks)
+            {
+                <button class="quiet @(deck.Id == _saved?.Id ? "selected" : null)"
+                        @onclick="() => SelectDeck(deck)"
+                        disabled="@_working">@deck.Name</button>
+            }
+        </div>
+    }
     @if (_operationError is not null)
     {
         <FailurePanel Message="@_operationError" />
     }
-    <div class="deck-layout">
-        <div>
-            <div class="toolbar"><input class="search" placeholder="Find a card" @bind="_search" @bind:event="oninput" /><button class="secondary selected">Available</button></div>
-            <div class="card-grid">
+
+    <div class="deck-builder-layout">
+        <aside class="deck-panel starter-summary">
+            @if (ClaimedStarter() is { } starter)
+            {
+                ElementReference leaderTrigger = default;
+                <div class="leader-row">
+                    <button type="button"
+                            class="card-showcase-trigger"
+                            aria-label="@($"Show a large view of {starter.Leader.Name}")"
+                            @ref="leaderTrigger"
+                            @onclick="() => ShowCard(starter.Leader, leaderTrigger)">
+                        <CardFace Card="starter.Leader"
+                                  Size="CardFaceSize.Tiny"
+                                  Decorative="true"
+                                  ShowTitle="false" />
+                    </button>
+                    <div><span class="eyebrow">@DeckStateLabel()</span><h3>@_deckName</h3><small>@CardCount() / 60 cards</small></div>
+                </div>
+            }
+            <div class="progress" aria-label="@($"{CardCount()} of 60 cards")"><i style="@($"width:{Math.Min(100, CardCount() * 100 / 60)}%")"></i></div>
+            <div class="composition">
+                <div><span>Blokemon</span><b>@KindCount(CardKindView.Blokemon)</b></div>
+                <div><span>Trainer cards</span><b>@KindCount(CardKindView.Kit)</b></div>
+                <div><span>Basic Energy</span><b>@KindCount(CardKindView.BasicVim)</b></div>
+            </div>
+
+            @if (_hasUnsavedChanges)
+            {
+                <div class="deck-notice">Save the deck to check it.</div>
+            }
+            else if (_saved is not null)
+            {
+                @if (_saved.Errors.Length > 0)
+                {
+                    <div class="deck-validation is-error" role="alert"><strong>Deck errors</strong><ul>@foreach (var error in _saved.Errors){<li>@error</li>}</ul></div>
+                }
+                @if (_saved.Warnings.Length > 0)
+                {
+                    <div class="deck-validation is-warning" role="status"><strong>Deck warning</strong><ul>@foreach (var warning in _saved.Warnings){<li>@warning</li>}</ul></div>
+                }
+                @if (_saved.IsLegal && _saved.Warnings.Length == 0)
+                {
+                    <div class="deck-validation is-ready" role="status">Ready to battle.</div>
+                }
+            }
+
+            <div class="filters" aria-label="Card type filters">
+                <button class="filter @(_kindFilter is null ? "active" : null)" @onclick="() => Filter(null)">All available <b>@AvailableCount(null)</b></button>
+                <button class="filter @(_kindFilter == CardKindView.Blokemon ? "active" : null)" @onclick="() => Filter(CardKindView.Blokemon)">Blokemon <b>@AvailableCount(CardKindView.Blokemon)</b></button>
+                <button class="filter @(_kindFilter == CardKindView.Kit ? "active" : null)" @onclick="() => Filter(CardKindView.Kit)">Trainer <b>@AvailableCount(CardKindView.Kit)</b></button>
+                <button class="filter @(_kindFilter == CardKindView.BasicVim ? "active" : null)" @onclick="() => Filter(CardKindView.BasicVim)">Basic Energy <b>@AvailableCount(CardKindView.BasicVim)</b></button>
+            </div>
+        </aside>
+
+        <section class="catalogue" aria-label="Available cards">
+            <div class="catalogue-toolbar">
+                <label class="visually-hidden" for="deck-search">Search cards</label>
+                <input id="deck-search" class="search" placeholder="Search names, attacks, or effects" @bind="_search" @bind:event="oninput" />
+            </div>
+            <div class="catalogue-grid">
                 @foreach (var card in AvailableCards())
                 {
                     var quantity = Quantity(card.Id);
-                    <article class="card-tile">
-                        <span class="qty">@(card.FreelyAvailable ? "Free" : $"{card.OwnedQuantity} owned")</span>
-                        <img src="@card.ArtUrl" alt="@card.Name" />
-                        <b>@card.Name</b><span>@quantity in deck</span>
-                        <div class="stepper"><button aria-label="Remove @card.Name" @onclick="() => Change(card, -1)" disabled="@(quantity == 0)">−</button><output>@quantity</output><button aria-label="Add @card.Name" @onclick="() => Change(card, 1)" disabled="@(!CanAdd(card))">+</button></div>
+                    ElementReference cardTrigger = default;
+                    <article class="catalogue-card">
+                        <span class="count-pill">@quantity / @MaximumLabel(card)</span>
+                        <button type="button"
+                                class="card-showcase-trigger"
+                                aria-label="@($"Show a large view of {card.Name}")"
+                                @ref="cardTrigger"
+                                @onclick="() => ShowCard(card, cardTrigger)">
+                            <CardFace Card="card"
+                                      Size="CardFaceSize.Catalogue"
+                                      Decorative="true"
+                                      ShowTitle="false" />
+                        </button>
+                        <div class="catalogue-card-name"><b>@card.Name</b><small>@PublicKind(card.Kind) · @card.Type</small></div>
+                        <div class="stepper">
+                            <button aria-label="Remove @card.Name" @onclick="() => Change(card, -1)" disabled="@(quantity == 0 || _working)">−</button>
+                            <output aria-label="@($"{quantity} copies of {card.Name} in deck")">@quantity</output>
+                            <button aria-label="Add @card.Name" @onclick="() => Change(card, 1)" disabled="@(!CanAdd(card) || _working)">+</button>
+                        </div>
                     </article>
                 }
             </div>
-        </div>
-        <aside class="panel deck-summary">
-            <div class="panel-head"><div><span class="eyebrow">@(_saved?.IsLegal == true ? "Legal deck" : "Working deck")</span><h2>@CardCount() / 60 cards</h2></div>@if (_saved?.IsLegal == true){<span class="valid">Ready</span>}</div>
-            <div class="progress"><i style="@($"width:{Math.Min(100, CardCount() * 100 / 60)}%")"></i></div>
-            @if (_saved is not null && !_saved.IsLegal)
+        </section>
+
+        <aside class="deck-panel decklist">
+            <div class="panel-head"><h3>Deck list</h3><b>@CardCount()</b></div>
+            @foreach (var group in DeckGroups())
             {
-                <ul class="validation-list">@foreach (var error in _saved.Errors){<li>@error</li>}</ul>
+                <section class="deck-group">
+                    <div class="deck-group-title"><span>@PublicKind(group.Key)</span><b>@group.Sum(static entry => entry.Quantity)</b></div>
+                    @foreach (var entry in group)
+                    {
+                        var card = Card(entry.CardId);
+                        ElementReference deckListTrigger = default;
+                        <div class="deck-line">
+                            <button type="button"
+                                    class="card-showcase-trigger"
+                                    aria-label="@($"Show a large view of {card.Name}")"
+                                    @ref="deckListTrigger"
+                                    @onclick="() => ShowCard(card, deckListTrigger)">
+                                <CardFace Card="card"
+                                          Size="CardFaceSize.Tiny"
+                                          Decorative="true"
+                                          ShowTitle="false" />
+                            </button>
+                            <span><b>@card.Name</b><small>@card.Detail · @card.Type</small></span>
+                            <b>×@entry.Quantity</b>
+                        </div>
+                    }
+                </section>
             }
-            <div class="deck-lines">
-                @foreach (var entry in _entries.Where(static entry => entry.Value > 0).OrderBy(static entry => entry.Key))
-                {
-                    var card = Card(entry.Key);
-                    <div class="deck-line"><img class="mini-art" src="@card.ArtUrl" alt="" /><span><b>@card.Name</b><small>@card.Detail</small></span><span>×@entry.Value</span></div>
-                }
-            </div>
-            @if (_saved?.IsLegal == true)
+            @if (_saved?.IsLegal == true && !_hasUnsavedChanges)
             {
                 <a class="primary button full" href="match">Play this deck</a>
             }
@@ -61,16 +173,24 @@ else
     </div>
 }
 
+<CardShowcase @ref="_cardShowcase" />
+
 @code {
     private ApplicationView? _view;
     private DeckView? _saved;
+    private CardShowcase? _cardShowcase;
     private readonly Dictionary<string, int> _entries = new(StringComparer.Ordinal);
-    private string _deckName = "The Friday stack";
+    private string _deckName = "My deck";
     private string _search = string.Empty;
     private string? _error;
     private string? _operationError;
-    private bool _saving;
+    private CardKindView? _kindFilter;
+    private bool _working;
+    private bool _hasUnsavedChanges;
     private Guid? _commandId;
+
+    private void ShowCard(CardView card, ElementReference trigger) =>
+        _cardShowcase?.Show(card, trigger);
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,61 +200,150 @@ else
             _error = response.Error?.Message;
             return;
         }
+
         _view = response.Value;
-        _saved = _view?.Decks.FirstOrDefault();
-        if (_saved is null)
+        if (_view?.Decks.FirstOrDefault() is { } firstDeck)
         {
-            return;
+            SelectDeck(firstDeck);
         }
-        _deckName = _saved.Name;
-        foreach (var entry in _saved.Entries)
+        else
         {
-            _entries[entry.CardId] = entry.Quantity;
+            RestoreStarter();
         }
     }
 
+    private void SelectDeck(DeckView deck)
+    {
+        _saved = deck;
+        _deckName = deck.Name;
+        _entries.Clear();
+        foreach (var entry in deck.Entries)
+        {
+            _entries[entry.CardId] = entry.Quantity;
+        }
+        _hasUnsavedChanges = false;
+        _operationError = null;
+    }
+
+    private void RestoreStarter()
+    {
+        if (ClaimedStarter() is not { } starter)
+        {
+            return;
+        }
+
+        _deckName = starter.Name;
+        _entries.Clear();
+        foreach (var entry in starter.Entries)
+        {
+            _entries[entry.CardId] = entry.Quantity;
+        }
+        _hasUnsavedChanges = true;
+    }
+
+    private StarterDeckView? ClaimedStarter() =>
+        _view?.StarterDecks.FirstOrDefault(static starter => starter.IsClaimed);
+
     private IEnumerable<CardView> AvailableCards() =>
-        (_view?.Cards ?? [])
-            .Where(card =>
-                card.FreelyAvailable || card.OwnedQuantity > 0 || Quantity(card.Id) > 0
-            )
+        AvailableCardsWithoutSearch()
+            .Where(card => _kindFilter is null || card.Kind == _kindFilter)
             .Where(card =>
                 string.IsNullOrWhiteSpace(_search)
                 || card.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
-            );
+                || card.Type.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                || card.Detail.Contains(_search, StringComparison.OrdinalIgnoreCase)
+            )
+            .OrderBy(static card => card.Kind)
+            .ThenBy(static card => card.Id, StringComparer.Ordinal);
+
+    private IEnumerable<CardView> AvailableCardsWithoutSearch() =>
+        (_view?.Cards ?? []).Where(card =>
+            card.FreelyAvailable || card.OwnedQuantity > 0 || Quantity(card.Id) > 0
+        );
+
+    private int AvailableCount(CardKindView? kind) =>
+        AvailableCardsWithoutSearch().Count(card => kind is null || card.Kind == kind);
 
     private CardView Card(string id) => _view!.Cards.Single(card => card.Id == id);
     private int Quantity(string id) => _entries.GetValueOrDefault(id);
     private int CardCount() => _entries.Values.Sum();
+    private int KindCount(CardKindView kind) =>
+        _entries.Where(entry => Card(entry.Key).Kind == kind).Sum(static entry => entry.Value);
+
     private bool CanAdd(CardView card) =>
-        CardCount() < 60 && (card.FreelyAvailable || Quantity(card.Id) < card.OwnedQuantity);
-    private void Change(CardView card, int delta) =>
+        CardCount() < 60
+        && (card.Kind == CardKindView.BasicVim || Quantity(card.Id) < 4)
+        && (card.FreelyAvailable || Quantity(card.Id) < card.OwnedQuantity);
+
+    private void Change(CardView card, int delta)
+    {
         _entries[card.Id] = Math.Max(0, Quantity(card.Id) + delta);
+        _hasUnsavedChanges = true;
+    }
+
+    private void MarkChanged() => _hasUnsavedChanges = true;
+    private void Filter(CardKindView? kind) => _kindFilter = kind;
+
+    private IEnumerable<IGrouping<CardKindView, DeckListEntry>> DeckGroups() =>
+        _entries
+            .Where(static entry => entry.Value > 0)
+            .Select(entry => new DeckListEntry(entry.Key, entry.Value, Card(entry.Key).Kind))
+            .OrderBy(static entry => entry.Kind)
+            .ThenBy(static entry => entry.CardId, StringComparer.Ordinal)
+            .GroupBy(static entry => entry.Kind);
+
+    private string DeckStateLabel() =>
+        _hasUnsavedChanges
+            ? "Unsaved"
+            : _saved?.IsLegal == true
+                ? "Ready"
+                : "Fix deck";
+
+    private static string MaximumLabel(CardView card) =>
+        card.Kind == CardKindView.BasicVim ? "∞" : "4";
+
+    private static string PublicKind(CardKindView kind) =>
+        kind switch
+        {
+            CardKindView.Blokemon => "Blokemon",
+            CardKindView.Kit => "Trainer",
+            CardKindView.BasicVim => "Energy",
+            _ => kind.ToString(),
+        };
 
     private async Task Save()
     {
-        _saving = true;
+        _working = true;
         _operationError = null;
         _commandId ??= Guid.NewGuid();
         var request = new SaveDeckRequest(
             _commandId.Value,
             _saved?.Id,
             _saved?.Revision,
-            _deckName,
+            _deckName.Trim(),
             _entries
                 .Where(static row => row.Value > 0)
                 .Select(static row => new DeckEntryView(row.Key, row.Value))
                 .ToArray()
         );
         var response = await Api.SaveDeck(request);
-        _saving = false;
+        _working = false;
         if (!response.Succeeded)
         {
             _operationError = response.Error?.Message;
             return;
         }
+
         _commandId = null;
         _view = response.Value;
-        _saved = _view?.Decks.FirstOrDefault();
+        var saved = request.DeckId is { } deckId
+            ? _view?.Decks.SingleOrDefault(deck => deck.Id == deckId)
+            : _view?.Decks.OrderByDescending(static deck => deck.Revision).FirstOrDefault();
+        if (saved is not null)
+        {
+            SelectDeck(saved);
+        }
     }
+
+    private sealed record DeckListEntry(string CardId, int Quantity, CardKindView Kind);
 }

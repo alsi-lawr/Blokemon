@@ -1,0 +1,23 @@
+<div class="card-face-host card-face--@Size.ToString().ToLowerInvariant() @Class"
+     aria-label="@(Decorative ? null : Card.Name)"
+     aria-hidden="@(Decorative ? "true" : null)"
+     title="@(ShowTitle ? Card.Name : null)">
+    @((MarkupString)Card.FaceHtml)
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required CardView Card { get; set; }
+
+    [Parameter]
+    public CardFaceSize Size { get; set; } = CardFaceSize.Catalogue;
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public bool Decorative { get; set; }
+
+    [Parameter]
+    public bool ShowTitle { get; set; } = true;
+}

@@ -4,6 +4,7 @@ using Blokemon.Web.Client.Api;
 using Blokemon.Web.Content;
 using Blokemon.Web.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Shouldly;
 
 namespace Blokemon.Web.Tests;
 
@@ -13,7 +14,9 @@ public sealed class StateDocumentStoreTests
     public async Task ProductFlow_RestartsWithoutDoubleApplyingAPack()
     {
         await using var database = await TestDatabase.Create();
-        var catalogue = BlokemonCatalogue.Load(Path.Combine(AppContext.BaseDirectory, "content"));
+        var catalogue = BlokemonCatalogueBuilder.Load(
+            Path.Combine(AppContext.BaseDirectory, "content")
+        );
         var store = new StateDocumentStore(database);
         var application = new LocalApplicationService(
             catalogue,
@@ -49,21 +52,20 @@ public sealed class StateDocumentStoreTests
         );
         var restored = Value(await restarted.State());
 
-        await Assert.That(created.Profile!.DisplayName).IsEqualTo("Local Player");
-        await Assert.That(opened.Profile!.UnopenedPacks).IsEqualTo(9);
-        await Assert.That(retried.Profile!.UnopenedPacks).IsEqualTo(9);
-        await Assert.That(retried.LastPack!.Id).IsEqualTo(opened.LastPack!.Id);
-        await Assert.That(saved.Decks.Single().IsLegal).IsTrue();
-        await Assert.That(restored.Profile!.UnopenedPacks).IsEqualTo(9);
-        await Assert.That(restored.LastPack!.Sequence).IsEqualTo(1);
-        await Assert.That(restored.Decks.Single().CardCount).IsEqualTo(60);
+        created.Profile!.DisplayName.ShouldBe("Local Player");
+        retried.LastPack!.Id.ShouldBe(opened.LastPack!.Id);
+        saved.Decks.Single().IsLegal.ShouldBeTrue();
+        restored.LastPack!.Sequence.ShouldBe(1);
+        restored.Decks.Single().CardCount.ShouldBe(60);
     }
 
     [Test]
     public async Task UnavailableHistoricalDeckCard_RemainsVisibleAndCanBePersistentlyReplaced()
     {
         await using var database = await TestDatabase.Create();
-        var catalogue = BlokemonCatalogue.Load(Path.Combine(AppContext.BaseDirectory, "content"));
+        var catalogue = BlokemonCatalogueBuilder.Load(
+            Path.Combine(AppContext.BaseDirectory, "content")
+        );
         var store = new StateDocumentStore(database);
         var application = Application(catalogue, store);
         var profileCommand = Guid.Parse("41111111-1111-1111-1111-111111111111");
@@ -122,23 +124,19 @@ public sealed class StateDocumentStoreTests
         );
         var historicalDeckCard = restored.Cards.Single(card => card.Id == historicalDeckCardId);
 
-        await Assert.That(deck.IsLegal).IsFalse();
+        deck.IsLegal.ShouldBeFalse();
         foreach (var entry in deck.Entries)
         {
-            await Assert.That(restored.Cards.Count(card => card.Id == entry.CardId)).IsEqualTo(1);
+            restored.Cards.Count(card => card.Id == entry.CardId).ShouldBe(1);
         }
-        await Assert.That(historicalCollectible.OwnedQuantity).IsEqualTo(1);
-        await Assert.That(historicalCollectible.ArtUrl).IsEqualTo("/art/card-back.svg");
-        await Assert.That(historicalDeckCard.OwnedQuantity).IsEqualTo(0);
-        await Assert.That(historicalDeckCard.FreelyAvailable).IsFalse();
-        await Assert.That(historicalDeckCard.ArtUrl).IsEqualTo("/art/card-back.svg");
-        await Assert
-            .That(restored.LastPack!.Cards.Any(card => card.Id == historicalCollectibleId))
-            .IsTrue();
-        await Assert
-            .That(restored.Cards.Single(card => card.Id == "BLK-001").Type)
-            .IsNotEqualTo("Historical");
-        await Assert.That(after).IsEqualTo(historical);
+        historicalCollectible.OwnedQuantity.ShouldBe(1);
+        historicalCollectible.FaceHtml.ShouldBe(catalogue.ReverseFaceHtml);
+        historicalDeckCard.OwnedQuantity.ShouldBe(0);
+        historicalDeckCard.FreelyAvailable.ShouldBeFalse();
+        historicalDeckCard.FaceHtml.ShouldBe(catalogue.ReverseFaceHtml);
+        restored.LastPack!.Cards.Any(card => card.Id == historicalCollectibleId).ShouldBeTrue();
+        restored.Cards.Single(card => card.Id == "BLK-001").Type.ShouldNotBe("Historical");
+        after.ShouldBe(historical);
 
         var revised = Value(
             await restarted.SaveDeck(
@@ -163,24 +161,24 @@ public sealed class StateDocumentStoreTests
             new(Guid.Parse("45555555-5555-5555-5555-555555555555"))
         );
 
-        await Assert.That(revised.Decks.Single().IsLegal).IsTrue();
-        await Assert
-            .That(revised.Decks.Single().Entries.Select(static entry => entry.CardId))
-            .IsEquivalentTo(["BLK-001", "VIM-DODGY"]);
-        await Assert
-            .That(persistedProfile["authorityManifestVersion"]!.GetValue<string>())
-            .IsEqualTo("historical-manifest");
-        await Assert.That(persistedDeck["revision"]!.GetValue<long>()).IsEqualTo(deck.Revision + 1);
-        await Assert.That(persistedCardIds).IsEquivalentTo(["BLK-001", "VIM-DODGY"]);
-        await Assert.That(Error(pack).Code).IsEqualTo("pack.authority_changed");
-        await Assert.That(await store.Read("profile")).IsEqualTo(persisted);
+        revised.Decks.Single().IsLegal.ShouldBeTrue();
+        revised.Decks.Single().Entries.Select(static entry => entry.CardId)
+            .ShouldBe(["BLK-001", "VIM-DODGY"], ignoreOrder: true);
+        (persistedProfile["authorityManifestVersion"]!.GetValue<string>())
+            .ShouldBe("historical-manifest");
+        persistedDeck["revision"]!.GetValue<long>().ShouldBe(deck.Revision + 1);
+        persistedCardIds.ShouldBe(["BLK-001", "VIM-DODGY"], ignoreOrder: true);
+        Error(pack).Code.ShouldBe("pack.authority_changed");
+        (await store.Read("profile")).ShouldBe(persisted);
     }
 
     [Test]
     public async Task HistoricalProfile_CurrentDeckSupportsRevisionCasAndStartsMatch()
     {
         await using var database = await TestDatabase.Create();
-        var catalogue = BlokemonCatalogue.Load(Path.Combine(AppContext.BaseDirectory, "content"));
+        var catalogue = BlokemonCatalogueBuilder.Load(
+            Path.Combine(AppContext.BaseDirectory, "content")
+        );
         var store = new StateDocumentStore(database);
         var application = Application(catalogue, store);
         Value(
@@ -235,13 +233,13 @@ public sealed class StateDocumentStoreTests
             )
         );
 
-        await Assert.That(currentDeck.IsLegal).IsTrue();
-        await Assert.That(currentDeck.Errors).IsEmpty();
-        await Assert.That(revised.Decks.Single().Revision).IsEqualTo(currentDeck.Revision + 1);
-        await Assert.That(Error(stale).Code).IsEqualTo("deck.stale");
-        await Assert.That(await store.Read("profile")).IsEqualTo(afterRevision);
-        await Assert.That(started.Match).IsNotNull();
-        await Assert.That(afterRevision).IsNotEqualTo(historical);
+        currentDeck.IsLegal.ShouldBeTrue();
+        currentDeck.Errors.ShouldBeEmpty();
+        revised.Decks.Single().Revision.ShouldBe(currentDeck.Revision + 1);
+        Error(stale).Code.ShouldBe("deck.stale");
+        (await store.Read("profile")).ShouldBe(afterRevision);
+        started.Match.ShouldNotBeNull();
+        afterRevision.ShouldNotBe(historical);
     }
 
     [Test]
@@ -251,7 +249,9 @@ public sealed class StateDocumentStoreTests
     public async Task PersistedNonGuidWebIdentity_IsTypedAndNonMutating(string identity)
     {
         await using var database = await TestDatabase.Create();
-        var catalogue = BlokemonCatalogue.Load(Path.Combine(AppContext.BaseDirectory, "content"));
+        var catalogue = BlokemonCatalogueBuilder.Load(
+            Path.Combine(AppContext.BaseDirectory, "content")
+        );
         var store = new StateDocumentStore(database);
         var application = Application(catalogue, store);
         Value(
@@ -295,10 +295,10 @@ public sealed class StateDocumentStoreTests
         var response = await Application(catalogue, store).State();
         var after = await store.Read("profile");
 
-        await Assert.That(response.Succeeded).IsFalse();
-        await Assert.That(response.Error!.Code).IsEqualTo("state.invalid");
-        await Assert.That(response.Value).IsNull();
-        await Assert.That(after).IsEqualTo(invalid);
+        response.Succeeded.ShouldBeFalse();
+        response.Error!.Code.ShouldBe("state.invalid");
+        response.Value.ShouldBeNull();
+        after.ShouldBe(invalid);
     }
 
     [Test]
@@ -312,10 +312,10 @@ public sealed class StateDocumentStoreTests
         var stale = await store.Update("profile", 1, """{"name":"Stale"}""");
         var stored = await store.Read("profile");
 
-        await Assert.That(created).IsEqualTo(new DocumentWriteResult.Written(1));
-        await Assert.That(committed).IsEqualTo(new DocumentWriteResult.Written(2));
-        await Assert.That(stale).IsTypeOf<DocumentWriteResult.Conflict>();
-        await Assert.That(stored).IsEqualTo(new StoredDocument(2, """{"name":"Committed"}"""));
+        created.ShouldBe(new DocumentWriteResult.Written(1));
+        committed.ShouldBe(new DocumentWriteResult.Written(2));
+        stale.ShouldBeOfType<DocumentWriteResult.Conflict>();
+        stored.ShouldBe(new StoredDocument(2, """{"name":"Committed"}"""));
     }
 
     [Test]
@@ -328,9 +328,9 @@ public sealed class StateDocumentStoreTests
         var duplicate = await store.Create("profile", """{"name":"Duplicate"}""");
         var stored = await store.Read("profile");
 
-        await Assert.That(first).IsEqualTo(new DocumentWriteResult.Written(1));
-        await Assert.That(duplicate).IsTypeOf<DocumentWriteResult.Conflict>();
-        await Assert.That(stored).IsEqualTo(new StoredDocument(1, """{"name":"First"}"""));
+        first.ShouldBe(new DocumentWriteResult.Written(1));
+        duplicate.ShouldBeOfType<DocumentWriteResult.Conflict>();
+        stored.ShouldBe(new StoredDocument(1, """{"name":"First"}"""));
     }
 
     private sealed class TestDatabase : IDbContextFactory<BlokemonDbContext>, IAsyncDisposable
@@ -380,6 +380,9 @@ public sealed class StateDocumentStoreTests
         BlokemonCatalogue catalogue,
         StateDocumentStore store
     ) => new(catalogue, store, new LocalMatchService(catalogue, store));
+
+    private static ApplicationView Value(ApiResponse<MatchMutationView> response) =>
+        Value<MatchMutationView>(response).Application;
 
     private static T Value<T>(ApiResponse<T> response)
         where T : class

@@ -1,0 +1,68 @@
+<div class="battle-card-shell @(Compact ? "is-compact" : null) @(Selected ? "is-selected" : null) @CueClass()">
+    <CardFace Card="Instance.Card"
+              Size="@(Compact ? CardFaceSize.Bench : CardFaceSize.Battle)"
+              ShowTitle="false" />
+    @if (Instance.Damage > 0)
+    {
+        <span class="damage-badge" aria-label="@Instance.Damage damage">@Instance.Damage</span>
+    }
+    @if (Instance.AttachedEnergy.Length > 0)
+    {
+        <div class="attached-energy" aria-label="@($"{Instance.AttachedEnergy.Length} attached Energy")">
+            @foreach (var energy in Instance.AttachedEnergy)
+            {
+                <CardFace Card="energy" Size="CardFaceSize.Tiny" ShowTitle="true" />
+            }
+        </div>
+    }
+    @if (Instance.AttachedTools.Length > 0)
+    {
+        <div class="attached-tools" aria-label="@($"{Instance.AttachedTools.Length} attached Tool")">
+            @foreach (var tool in Instance.AttachedTools)
+            {
+                <CardFace Card="tool" Size="CardFaceSize.Tiny" ShowTitle="true" />
+            }
+        </div>
+    }
+    @if (Instance.Conditions.Length > 0)
+    {
+        <div class="condition-row" aria-label="Conditions">
+            @foreach (var condition in Instance.Conditions)
+            {
+                <span>@condition</span>
+            }
+        </div>
+    }
+    <span class="hp-badge">@(Math.Max(0, Instance.HitPoints - Instance.Damage)) / @Instance.HitPoints HP</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required MatchCardInstanceView Instance { get; set; }
+
+    [Parameter]
+    public bool Compact { get; set; }
+
+    [Parameter]
+    public bool Selected { get; set; }
+
+    [Parameter]
+    public string? CueSourceCardInstanceId { get; set; }
+
+    [Parameter]
+    public string[] CueTargetCardInstanceIds { get; set; } = [];
+
+    private string? CueClass()
+    {
+        var classes = new List<string>(2);
+        if (Instance.Id == CueSourceCardInstanceId)
+        {
+            classes.Add("is-cue-source");
+        }
+        if (CueTargetCardInstanceIds.Contains(Instance.Id, StringComparer.Ordinal))
+        {
+            classes.Add("is-cue-target");
+        }
+        return classes.Count == 0 ? null : string.Join(' ', classes);
+    }
+}

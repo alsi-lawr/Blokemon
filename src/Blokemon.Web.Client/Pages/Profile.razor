@@ -1,6 +1,6 @@
 @page "/profile"
-@rendermode InteractiveAuto
-@inject BlokemonApiClient Api
+@inject IBlokemonApplication Api
+@inject PlayModeApplication Modes
 @inject NavigationManager Navigation
 
 <PageTitle>Profile · Blokemon</PageTitle>
@@ -12,44 +12,133 @@
 else if (_error is not null)
 {
     <FailurePanel Message="@_error" />
+    <div class="panel setup-card">
+        <h2>Choose another game.</h2>
+        <p>Changing games does not move or replace either player.</p>
+        <div class="actions">
+            @if (_mode?.ServerBackedAvailable is true)
+            {
+                <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">Use this server</button>
+            }
+            <button class="secondary" @onclick="() => ChangeMode(PlayMode.BrowserLocal)" disabled="@(_saving || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)">Use this browser</button>
+        </div>
+        @if (_validation is not null)
+        {
+            <span class="field-error" role="alert">@_validation</span>
+        }
+    </div>
+    @PurgePanel
 }
 else if (_view!.Profile is not null)
 {
-    <header class="topline"><div><span class="eyebrow">Local profile</span><h1>@_view.Profile.DisplayName</h1></div></header>
+    <header class="topline"><div><span class="eyebrow">Player</span><h1>@_view.Profile.DisplayName</h1></div></header>
     <div class="panel setup-card">
-        <h2>Stored on this machine</h2>
-        <p>Your provider-neutral profile ID is <code>@_view.Profile.Id</code>. Collection and match state remain after restart.</p>
-        <dl class="facts"><div><dt>Unopened packs</dt><dd>@_view.Profile.UnopenedPacks</dd></div><div><dt>Revision</dt><dd>@_view.Profile.Revision</dd></div></dl>
+        <h2>@(_mode?.StorageLocation ?? "Save location unavailable")</h2>
+        <p>Changing games does not move or replace either player.</p>
+        <div class="actions">
+            @if (_mode?.ServerBackedAvailable is true)
+            {
+                <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">Use this server</button>
+            }
+            <button class="secondary" @onclick="() => ChangeMode(PlayMode.BrowserLocal)" disabled="@(_saving || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)">Use this browser</button>
+        </div>
+        @if (_validation is not null)
+        {
+            <span class="field-error" role="alert">@_validation</span>
+        }
     </div>
+    @PurgePanel
 }
 else
 {
     <div class="profile-setup">
         <div class="panel setup-card">
-            <span class="eyebrow">First round</span>
-            <h1>Pull up a chair.</h1>
-            <p>Create the local profile kept on this machine. No account, password or provider connection required.</p>
+            <span class="eyebrow">First game</span>
+            <h1>Create a player.</h1>
+            <p>@StorageDescription()</p>
+            <div class="actions" aria-label="Save location">
+                @if (_mode?.ServerBackedAvailable is true)
+                {
+                    <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">Use this server</button>
+                }
+                <button class="secondary" @onclick="() => ChangeMode(PlayMode.BrowserLocal)" disabled="@(_saving || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)">Use this browser</button>
+            </div>
+            @if (_mode?.BrowserStorageError is not null)
+            {
+                <span class="field-error" role="alert">@_mode.BrowserStorageError</span>
+            }
             <label for="display-name">Display name</label>
             <input id="display-name" maxlength="32" autocomplete="nickname" @bind="_displayName" disabled="@_saving" />
             @if (_validation is not null)
             {
                 <span class="field-error" role="alert">@_validation</span>
             }
-            <button class="primary full" @onclick="Create" disabled="@_saving">@(_saving ? "Creating…" : "Create local profile")</button>
-            <p><small>Your collection and matches are stored locally and stay after restart.</small></p>
+            <button class="primary full" @onclick="Create" disabled="@_saving">@(_saving ? "Creating…" : "Create player")</button>
         </div>
     </div>
 }
 
 @code {
+    private RenderFragment PurgePanel =>
+        @<div class="panel setup-card">
+            <h2>Purge saved data.</h2>
+            <p>Deletes the player, cards, decks, and battles saved in the current game. This cannot be undone.</p>
+            @if (!_confirmingPurge)
+            {
+                <div class="actions">
+                    <button class="secondary" @onclick="() => _confirmingPurge = true" disabled="@_saving">Purge data</button>
+                </div>
+            }
+            else
+            {
+                <p><strong>Really delete everything in this game?</strong></p>
+                <div class="actions">
+                    <button class="secondary" @onclick="() => _confirmingPurge = false" disabled="@_saving">Keep my data</button>
+                    <button class="primary" @onclick="Purge" disabled="@_saving">@(_saving ? "Purging…" : "Delete everything")</button>
+                </div>
+            }
+            @if (_purgeError is not null)
+            {
+                <span class="field-error" role="alert">@_purgeError</span>
+            }
+        </div>;
+
     private ApplicationView? _view;
+    private PlayModeState? _mode;
     private string? _error;
     private string? _validation;
+    private string? _purgeError;
     private string _displayName = string.Empty;
     private bool _saving;
+    private bool _confirmingPurge;
     private Guid? _commandId;
 
+    private async Task Purge()
+    {
+        _saving = true;
+        _purgeError = null;
+        var response = await Api.PurgeData();
+        _saving = false;
+        _confirmingPurge = false;
+        if (!response.Succeeded)
+        {
+            _purgeError = response.Error?.Message;
+            return;
+        }
+
+        _error = null;
+        _validation = null;
+        _displayName = string.Empty;
+        _view = response.Value;
+    }
+
     protected override async Task OnInitializedAsync()
+    {
+        _mode = await Modes.Mode();
+        await Load();
+    }
+
+    private async Task Load()
     {
         var response = await Api.State();
         if (response.Succeeded)
@@ -61,6 +150,29 @@ else
             _error = response.Error?.Message;
         }
     }
+
+    private async Task ChangeMode(PlayMode mode)
+    {
+        _saving = true;
+        _validation = null;
+        var response = await Modes.SelectMode(mode);
+        _saving = false;
+        if (!response.Succeeded)
+        {
+            _validation = response.Error?.Message;
+            return;
+        }
+
+        _mode = response.Value;
+        _view = null;
+        _error = null;
+        await Load();
+    }
+
+    private string StorageDescription() =>
+        _mode?.Selected == PlayMode.BrowserLocal || _mode?.ServerBackedAvailable is false
+            ? "Your player, cards, decks, and battles stay in this browser only."
+            : "Your player, cards, decks, and battles are saved by this server.";
 
     private async Task Create()
     {

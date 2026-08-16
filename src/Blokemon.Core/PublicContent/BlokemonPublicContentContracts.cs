@@ -5,7 +5,7 @@ namespace Blokemon.Core.PublicContent;
 
 public enum BlokemonPublicContentApprovalStatus
 {
-    AwaitingApproval,
+    Accepted,
 }
 
 public enum BlokemonPublicTermCategory
@@ -42,7 +42,7 @@ public sealed record BlokemonPublicIllustration(string Brief, string Prompt, str
 
 public enum BlokemonPublicArtStatus
 {
-    Placeholder,
+    Accepted,
 }
 
 public sealed record BlokemonPublicArtReference(BlokemonPublicArtStatus Status, string Authority);

@@ -169,9 +169,11 @@ internal sealed class MatchBuilder
         return FrozenList<CardInstanceId>.Create(drawn);
     }
 
-    public void Shuffle(PlayerId player)
+    public void Shuffle(PlayerId player, FrozenList<CardInstanceId> excludedCards = default)
     {
-        var stack = CardsIn(player, CardZone.Stack).ToArray();
+        var stack = CardsIn(player, CardZone.Stack)
+            .Where(card => !excludedCards.Contains(card.Id))
+            .ToArray();
         for (var index = stack.Length - 1; index > 0; index--)
         {
             var swapIndex = Random.NextInt(index + 1);
@@ -425,14 +427,37 @@ internal sealed class MatchBuilder
         );
     }
 
-    public void RemoveEffectsFor(CardInstanceId card)
+    public bool TossBeerMat(PlayerId player, bool applyPlayerEffects = true)
     {
-        _effects.RemoveAll(effect => effect.SourceCard == card || effect.TargetCard == card);
+        var badge = Random.NextInt(2) == 1;
+        return
+            applyPlayerEffects
+            && Effects.Any(effect =>
+                effect.Owner != player
+                && effect.Kind == TemporaryEffectKind.ForceBeerMatBlank
+                && effect.AppliesFromRound <= RoundNumber
+            )
+            ? false
+            : badge;
     }
 
-    public void RemoveEffects(EffectId sourceEffect)
+    public void RemoveEffectsFor(CardInstanceId card, bool preserveDelayedTarget = false)
     {
-        _effects.RemoveAll(effect => effect.SourceEffect == sourceEffect);
+        _effects.RemoveAll(effect =>
+            effect.SourceCard == card
+                && effect.Kind != TemporaryEffectKind.EndRoundEffect
+                && effect.Kind != TemporaryEffectKind.ForceBeerMatBlank
+                && effect.Duration != EffectDuration.WhileTargetInPlay
+            || effect.TargetCard == card
+                && (!preserveDelayedTarget || effect.Kind != TemporaryEffectKind.EndRoundEffect)
+        );
+    }
+
+    public void RemoveEffects(EffectId sourceEffect, CardInstanceId sourceCard)
+    {
+        _effects.RemoveAll(effect =>
+            effect.SourceEffect == sourceEffect && effect.SourceCard == sourceCard
+        );
     }
 
     public void RemoveEffect(TemporaryEffect effect)
@@ -444,6 +469,7 @@ internal sealed class MatchBuilder
     {
         _effects.RemoveAll(effect =>
             effect.Duration != EffectDuration.WhileSourceInPlay
+            && effect.Duration != EffectDuration.WhileTargetInPlay
             && effect.Duration != EffectDuration.CurrentResolution
             && effect.ExpiresAfterRound <= completedRound
         );

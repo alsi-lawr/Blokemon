@@ -256,18 +256,6 @@
   vertical-align: baseline;
 }
 
-/*
-  The card's ambient shadow falls outside its own 750 by 1050 face, and a foreignObject clips to its
-  own box, so the face sits inside a slightly larger one with exactly the room the shadow needs:
-  13px either side, 4px above and 22px below, rounded up.
-*/
-.blokemon-card-bleed {
-  position: relative;
-  width: 778px;
-  height: 1080px;
-  padding: 6px 14px 24px;
-}
-
 .blokemon-card-scale {
   position: relative;
   width: calc(var(--blokemon-card-w) * var(--blokemon-card-scale));

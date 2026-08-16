@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Blokemon.Core.PublicContent;
 using Blokemon.Core.SetDesign;
+using Shouldly;
 
 namespace Blokemon.Core.Tests;
 
@@ -18,14 +19,11 @@ public sealed class AuthorityTests
     [Test]
     public async Task CurrentAuthorities_PassOwnedValidation()
     {
-        await Assert.That(BlokemonSetValidator.ValidateRuntime(_mechanics.Value).IsValid).IsTrue();
-        await Assert
-            .That(
-                BlokemonPublicContentValidator
-                    .ValidateDocument(_publicContent.Value, _mechanics.Value)
-                    .IsValid
-            )
-            .IsTrue();
+        BlokemonSetValidator.ValidateRuntime(_mechanics.Value).IsValid.ShouldBeTrue();
+        BlokemonPublicContentValidator
+            .ValidateDocument(_publicContent.Value, _mechanics.Value)
+            .IsValid
+            .ShouldBeTrue();
     }
 
     [Test]
@@ -40,29 +38,20 @@ public sealed class AuthorityTests
             var pack = BlokemonPackSampler.SampleEleven(_mechanics.Value, first);
             var repeated = BlokemonPackSampler.SampleEleven(_mechanics.Value, replay);
 
-            await Assert.That(pack.SequenceEqual(repeated)).IsTrue();
-            await Assert.That(pack.Distinct(StringComparer.Ordinal).Count()).IsEqualTo(11);
-            await Assert
-                .That(
-                    pack.Select(id => cards[id])
-                        .Count(static card => card.ProductBucket == BlokemonProductBucket.Rare)
-                )
-                .IsEqualTo(1);
-            await Assert
-                .That(
-                    pack.Select(id => cards[id])
-                        .Count(static card => card.ProductBucket == BlokemonProductBucket.Uncommon)
-                )
-                .IsEqualTo(3);
-            await Assert
-                .That(
-                    pack.Select(id => cards[id])
-                        .Count(static card => card.ProductBucket == BlokemonProductBucket.Common)
-                )
-                .IsEqualTo(7);
+            pack.SequenceEqual(repeated).ShouldBeTrue();
+            pack.Distinct(StringComparer.Ordinal).Count().ShouldBe(11);
+            pack.Select(id => cards[id])
+                .Count(static card => card.ProductBucket == BlokemonProductBucket.Rare)
+                .ShouldBe(1);
+            pack.Select(id => cards[id])
+                .Count(static card => card.ProductBucket == BlokemonProductBucket.Uncommon)
+                .ShouldBe(3);
+            pack.Select(id => cards[id])
+                .Count(static card => card.ProductBucket == BlokemonProductBucket.Common)
+                .ShouldBe(7);
         }
 
-        await Assert.That(first.ConsumptionIndex).IsEqualTo(replay.ConsumptionIndex);
+        first.ConsumptionIndex.ShouldBe(replay.ConsumptionIndex);
     }
 
     [Test]
@@ -83,10 +72,8 @@ public sealed class AuthorityTests
 
         var result = BlokemonSetValidator.ValidateRuntime(changed);
 
-        await Assert.That(result.IsValid).IsFalse();
-        await Assert
-            .That(result.Issues.Any(static issue => issue.Code == "runtime.roadie-soft-spots"))
-            .IsTrue();
+        result.IsValid.ShouldBeFalse();
+        result.Issues.Any(static issue => issue.Code == "runtime.roadie-soft-spots").ShouldBeTrue();
     }
 
     [Test]
@@ -95,9 +82,7 @@ public sealed class AuthorityTests
         var document = JsonNode.Parse(ReadAuthority("mechanics.json"))!.AsObject();
         document["unsupported"] = true;
 
-        await Assert
-            .That(() => BlokemonSetJson.RuntimeManifest(document.ToJsonString()))
-            .Throws<JsonException>();
+        Should.Throw<JsonException>(() => BlokemonSetJson.RuntimeManifest(document.ToJsonString()));
     }
 
     private static string ReadAuthority(string name) =>

@@ -1,0 +1,76 @@
+@inject IJSRuntime Js
+@implements IAsyncDisposable
+
+<dialog @ref="_dialog" class="card-showcase" aria-labelledby="@_titleId">
+    @if (_card is { } card)
+    {
+        <div class="card-showcase__surface">
+            <header class="card-showcase__header">
+                <h2 id="@_titleId" class="card-showcase__title">@card.Name</h2>
+                <form method="dialog" class="card-showcase__close-form">
+                    <button type="submit"
+                            value="close"
+                            class="card-showcase__close"
+                            aria-label="@($"Close {card.Name} card")"
+                            autofocus>
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </form>
+            </header>
+            <div class="card-showcase__card">
+                <CardFace Card="card"
+                          Size="CardFaceSize.Showcase"
+                          Class="card-showcase__face"
+                          ShowTitle="false" />
+            </div>
+        </div>
+    }
+</dialog>
+
+@code {
+    private readonly string _titleId = $"card-showcase-title-{Guid.NewGuid():N}";
+    private CardView? _card;
+    private IJSObjectReference? _module;
+    private ElementReference _dialog;
+    private ElementReference _returnFocusTo;
+    private bool _showAfterRender;
+
+    public void Show(CardView card, ElementReference returnFocusTo)
+    {
+        _card = card;
+        _returnFocusTo = returnFocusTo;
+        _showAfterRender = true;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_showAfterRender)
+        {
+            return;
+        }
+
+        _showAfterRender = false;
+        var returnFocusTo = _returnFocusTo;
+        _module ??= await Js.InvokeAsync<IJSObjectReference>("import", "./cardShowcase.js");
+        await _module.InvokeVoidAsync("show", _dialog, returnFocusTo);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _module.InvokeVoidAsync("dispose", _dialog);
+            await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // A disconnected circuit has already released the browser-side module.
+        }
+    }
+}

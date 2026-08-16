@@ -2092,6 +2092,32 @@ small,
   font: 900 32px "Gillius ADF", serif;
 }
 
+.card-reveal-overlay {
+  position: absolute;
+  z-index: 150;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 18px;
+  background: radial-gradient(circle, rgb(15 20 12 / 88%), rgb(7 9 6 / 56%) 58%, transparent 82%);
+  animation: major-overlay-in 0.6s both;
+}
+
+.card-reveal-overlay .eyebrow {
+  font: 900 26px "Gillius ADF", serif;
+  color: #fff4c9;
+  text-shadow: 0 8px 30px #000;
+}
+
+.card-reveal-overlay .revealed-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  max-width: min(92vw, 900px);
+}
+
 .turn-change-overlay {
   color: #fff4c9;
   background: radial-gradient(ellipse, rgb(37 45 27 / 72%), transparent 64%);

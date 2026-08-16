@@ -1,0 +1,14 @@
+<div class="blokemon-chip-result @(BadgeSide ? "is-badge" : "is-blank")" role="img" aria-label="@(BadgeSide ? "The Blokemon chip landed on badge" : "The Blokemon chip landed on blank")">
+    <div class="blokemon-chip-toss">
+        <div class="blokemon-chip">
+            <span class="blokemon-chip-face blokemon-chip-badge" aria-hidden="true">B</span>
+            <span class="blokemon-chip-face blokemon-chip-blank" aria-hidden="true"></span>
+        </div>
+    </div>
+    <strong>@(BadgeSide ? "BADGE" : "BLANK")</strong>
+</div>
+
+@code {
+    [Parameter]
+    public bool BadgeSide { get; set; }
+}

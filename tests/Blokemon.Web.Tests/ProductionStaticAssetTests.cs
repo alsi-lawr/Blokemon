@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Shouldly;
 
 namespace Blokemon.Web.Tests;
 
@@ -36,15 +37,13 @@ public sealed partial class ProductionStaticAssetTests
                 .Select(static match => match.Groups[1].Value)
                 .Distinct(StringComparer.Ordinal)
                 .ToArray();
-            await Assert.That(assets.Length).IsGreaterThanOrEqualTo(4);
+            assets.Length.ShouldBeGreaterThanOrEqualTo(4);
 
             foreach (var asset in assets)
             {
                 using var response = await client.GetAsync(asset);
-                await Assert.That(response.IsSuccessStatusCode).IsTrue();
-                await Assert
-                    .That(response.Content.Headers.ContentType?.MediaType)
-                    .IsNotEqualTo("text/html");
+                response.IsSuccessStatusCode.ShouldBeTrue();
+                (response.Content.Headers.ContentType?.MediaType).ShouldNotBe("text/html");
             }
         }
         finally

@@ -1,6 +1,6 @@
 {
   "reconciliationVersion": "blokemon-sv151-authority-reconciliation-1.0.0",
-  "authorityVersion": "sv151-candidate.12",
+  "authorityVersion": "sv151-candidate.14",
   "canonicalCandidate": "blokemon-sv151-parody-1.0.0-candidate.6",
   "canonicalReferenceCommit": "718be3f2",
   "inventory": {
@@ -14,8 +14,8 @@
     "BLK-027-T01": "Replace candidate marker operations with the continuous discard-recovery restriction stated by the canonical card text.",
     "BLK-031-B01": "Declare the Basic/Regular attacking-card qualifier required by the canonical prevention text.",
     "BLK-034-T01": "Declare the printed attack-cost ability as continuous.",
-    "BLK-044-T01": "Represent the top-three window and required Basic Energy distribution explicitly.",
-    "BLK-045-T01": "Represent the top-eight window and required Basic Energy distribution explicitly.",
+    "BLK-044-T01": "Represent the top-three window and optional Basic Energy distribution explicitly.",
+    "BLK-045-T01": "Represent the top-eight window and optional Basic Energy distribution explicitly.",
     "BLK-080-B02": "Retain the evolution-turn no-damage condition omitted from candidate.6 program but required by its canonical operands and text.",
     "BLK-104-T01": "Target Last Orders on the owner side rather than the opposing Active card.",
     "BLK-107-B01": "Remove the immediate +60 adjustment; the canonical text schedules +60 only for this card next turn.",
@@ -42,10 +42,10 @@
     "BLK-131-B01": "Restrict the search to Blokes and declare the owner mitt destination.",
     "BLK-132-T01": "Represent Steve as an exclusion while searching for another Regular Bloke.",
     "BLK-133-B01": "Restrict the search to Blokes with pairwise different mechanical types and declare the mitt destination.",
-    "BLK-138-B01": "Declare the opponent Active Vim return and the separate own-mitt Vim attachment.",
+    "BLK-138-B01": "Return an Energy card from the opposing Active Blokemon to the opponent's hand without adding an unrelated self-attachment.",
     "BLK-143-T01": "Declare named Bar Kit recovery from the owner empties tray to the mitt.",
     "KIT-005-R01": "Represent the top-eight window, Bloke filter, chosen subset and mitt destination.",
-    "KIT-010-R01": "Declare opponent Active Vim return and separate own-mitt Vim attachment.",
+    "KIT-010-R01": "Attach an Energy card from the player's hand only after an Energy card was returned from the opposing Active Blokemon.",
     "KIT-011-R01": "Reveal the opponent mitt and bottom-deck a chosen Bloke from it.",
     "BLK-005-B02": "Make the required self-Energy discard a player selection over attached Energy.",
     "BLK-006-B02": "Make all three required self-Energy discards explicit selections over attached Energy.",
@@ -93,7 +93,18 @@
     "BLK-026-T01": "Declare the knocked-out Blokemon as the source of the chosen Lightning Vim moved to Donni.",
     "BLK-107-T01": "Target the attacking Blokemon when placing reactive damage counters.",
     "BLK-110-T01": "Target the attacking Blokemon when the knockout retaliation succeeds.",
-    "BLK-052-B01": "Nest the opposing Booth choice under the successful beer-mat result."
+    "BLK-052-B01": "Nest the opposing Booth choice under the successful beer-mat result.",
+    "BLK-012-B02": "Return the chosen opposing Benched Blokemon and this Blokemon, with all attached cards, to their owners' shuffled Decks.",
+    "BLK-018-B02": "On heads, prevent both Attack damage and Attack effects affecting this Blokemon during the opponent's next turn.",
+    "BLK-054-B01": "Force the opponent's coin flips to land tails during their next turn instead of flipping immediately.",
+    "BLK-057-B01": "Apply Confused to this Blokemon after damage without requiring it to be Confused already.",
+    "BLK-088-B01": "Increase only the opposing Active Blokemon's Retreat Cost; do not increase its Attack cost.",
+    "BLK-112-B02": "Require The Guv'nor, not any Supporter, for the attack's additional damage.",
+    "BLK-114-B01": "Require The Matchmaker, not any Supporter, for the attack's additional damage.",
+    "BLK-117-B01": "Require two successful coin flips before the defending Blokemon can attack on the opponent's next turn; do not flip immediately.",
+    "BLK-119-B01": "On heads, prevent both Attack damage and Attack effects affecting this Blokemon during the opponent's next turn.",
+    "BLK-150-B01": "During the opponent's next turn, reflect the actual Attack damage done to this Blokemon back to the attacker, including damage that Knocks it Out.",
+    "BLK-009-B01": "Allow only Basic Sober Energy cards, not Sober Blokemon, to be discarded from the hand for additional damage."
   },
   "effects": [
     {
@@ -321,8 +332,8 @@
       "sourceMechanicalSha256": "78fbc0e8becbc780386d577d092c0b661bebc08d10ceb4b5583b813e2e0a1dff",
       "sourceTextSha256": "64e4d1c3383b59158841cc2857e4986a030dd109ff9f4907bb714f435d74ec6c",
       "candidateProgramSha256": "3c64c72e72fb1562d4ce96f4c75be12f4bc21ab082d5f23e0b164a40ba1904b4",
-      "authorityProgramSha256": "3c64c72e72fb1562d4ce96f4c75be12f4bc21ab082d5f23e0b164a40ba1904b4",
-      "disposition": "Candidate6Mapped"
+      "authorityProgramSha256": "b436cfcd6a845daba744ab87abe058ba9835bd2bba8dd13f414d382dc5d7e244",
+      "disposition": "CorrectedFromCandidate6"
     },
     {
       "mechanicalId": "BLK-009-R01",
@@ -393,8 +404,8 @@
       "sourceMechanicalSha256": "51f97319ec187089d3d3bef05c109d967ff7ad512a31b0b03ec9e481d94a901d",
       "sourceTextSha256": "49587184ab81a41d6b47ed16048e5867843f6e259e4608c15f147e36ae07ad3b",
       "candidateProgramSha256": "741f72c3bbc18ce178fc5d3a1a96d6d60ab330a2c5d649178de7a590036a07cb",
-      "authorityProgramSha256": "741f72c3bbc18ce178fc5d3a1a96d6d60ab330a2c5d649178de7a590036a07cb",
-      "disposition": "Candidate6Mapped"
+      "authorityProgramSha256": "c8c929bad34f94f890c850ce539647ea3f02254433eb45122f0eca1bcac03b08",
+      "disposition": "CorrectedFromCandidate6"
     },
     {
       "mechanicalId": "BLK-013-B01",
@@ -525,8 +536,8 @@
       "sourceMechanicalSha256": "be5fbcde6eccd0c3c58992ef5e0c5c58fc41bddb9581ccad4a00a273c681a52c",
       "sourceTextSha256": "deee791fcca4cae3fa7a6184ad718b7638e664b56375093cb818f5bea7c9a40f",
       "candidateProgramSha256": "7e835f8d8855dded6730a324eba43339b87100379183e6386547972ad5364fcc",
-      "authorityProgramSha256": "7e835f8d8855dded6730a324eba43339b87100379183e6386547972ad5364fcc",
-      "disposition": "Candidate6Mapped"
+      "authorityProgramSha256": "231a7dec9b47157d8522cb3f2f1bfea7a58664c05e98d48c014b1ba9447bf6b4",
+      "disposition": "CorrectedFromCandidate6"
     },
     {
       "mechanicalId": "BLK-019-B01",
@@ -1317,8 +1328,8 @@
       "sourceMechanicalSha256": "faeeab86062d843d8900e57d8ce7242132f18899a72890da516cd8f89f6902a7",
       "sourceTextSha256": "ed384cf151c1e98dd029a4bf2eb51296e12a80285f768e994da80a932ce42e64",
       "candidateProgramSha256": "e0a37db666f442348f8b489078be26d937b78e6ee78cb141683604c69f0b4859",
-      "authorityProgramSha256": "e0a37db666f442348f8b489078be26d937b78e6ee78cb141683604c69f0b4859",
-      "disposition": "Candidate6Mapped"
+      "authorityProgramSha256": "955e44c22b50af773adc023190be260acd220aab9daa7ddff640a3c1f013a6b5",
+      "disposition": "CorrectedFromCandidate6"
     },
     {
       "mechanicalId": "BLK-054-B02",
@@ -1377,8 +1388,8 @@
       "sourceMechanicalSha256": "490eb5e2700759e9b71d2efdc0afe3a9ce12bb0e5e233ef3a9d100bb34ce60b4",
       "sourceTextSha256": "c61ebcff5c82a5057774ab579f1c0adacf9130ff07f05d39a851e2e227d64b96",
       "candidateProgramSha256": "683173737dda6ad55f00a8e8c86244d8d5d1ebfea69ee2934acd2c870c9f65f4",
-      "authorityProgramSha256": "683173737dda6ad55f00a8e8c86244d8d5d1ebfea69ee2934acd2c870c9f65f4",
-      "disposition": "Candidate6Mapped"
+      "authorityProgramSha256": "149b9d093664b216d2ec3bcd7e68e1d94aeac618fb6f09f0495c075c94942db4",
+      "disposition": "CorrectedFromCandidate6"
     },
     {
       "mechanicalId": "BLK-057-B02",
@@ -2061,8 +2072,8 @@
       "sourceMechanicalSha256": "ce517bff6e684d032de543268cacc1d180578599922d65f3edc9abc7a759d005",
       "sourceTextSha256": "3b6412b561f56e330babaf83194d9dc4552b31e27fcb3fc476cbc700c4e88aa0",
       "candidateProgramSha256": "e3446b4e3672a54308c6248b95db5649eaedcc196f6263efac04dd2bf663c41d",
-      "authorityProgramSha256": "e3446b4e3672a54308c6248b95db5649eaedcc196f6263efac04dd2bf663c41d",
-      "disposition": "Candidate6Mapped"
+      "authorityProgramSha256": "9fbf8a791eb5087d7f01d460ff9f3b5bdd516881b6db3d206093587eacaebd22",
+      "disposition": "CorrectedFromCandidate6"
     },
     {
       "mechanicalId": "BLK-089-B01",
@@ -2361,7 +2372,7 @@
       "sourceMechanicalSha256": "b8de5ac3ade4b4cae4cc23ebea5dd0b52ef79aa08040081810ae75809b4a233e",
       "sourceTextSha256": "f756aa1420e5a392aa962494d2b73ea18203250af47e81affad2b5c26f17870c",
       "candidateProgramSha256": "31964f912e7adaabc898d6a1c6e967abf6628f973067acb15421f780fdb8cdb5",
-      "authorityProgramSha256": "cbbaf9ac83ae0f304ddcdb21e4e42bb6dfe7b2f023a7c176daacb2cb66876699",
+      "authorityProgramSha256": "497041d6d4cdb51ca9d5bfe488b93aec196afa58555b130069ca4b9412cc2f0b",
       "disposition": "CorrectedFromCandidate6"
     },
     {
@@ -2541,8 +2552,8 @@
       "sourceMechanicalSha256": "3804ea50a94759347d4802b31f8c1d260d927215039352fc2d4da93be18d9e46",
       "sourceTextSha256": "d9c890592f37ca57fbdd55e1462d5127c3efee6a8d632f62e3222cee804c27ec",
       "candidateProgramSha256": "777d0d9a883318f6a24e7c64c66e2516fe49193d1ab23c3ab50e9156ead70e52",
-      "authorityProgramSha256": "777d0d9a883318f6a24e7c64c66e2516fe49193d1ab23c3ab50e9156ead70e52",
-      "disposition": "Candidate6Mapped"
+      "authorityProgramSha256": "68b7510f2c5a1581ca4104f303bb9ab839c60b67ec52f6ab14016ff385908937",
+      "disposition": "CorrectedFromCandidate6"
     },
     {
       "mechanicalId": "BLK-113-T01",
@@ -2577,8 +2588,8 @@
       "sourceMechanicalSha256": "1958d5000b69e8dd0934369caa2427c743dc2e7788d7407aa220fbac837cf9c9",
       "sourceTextSha256": "c135ed6c493707542581b4aae9d9873a8eed4f952b0bd63727883ce681b10f73",
       "candidateProgramSha256": "9875190909041e49e112711a844bedda34ce595d6ef13172eba663347d025fad",
-      "authorityProgramSha256": "9875190909041e49e112711a844bedda34ce595d6ef13172eba663347d025fad",
-      "disposition": "Candidate6Mapped"
+      "authorityProgramSha256": "2fcbd6f908d14b0cb6c7d4a72582bc9be542d7a2c863ef8232e6bbb6206c5bd7",
+      "disposition": "CorrectedFromCandidate6"
     },
     {
       "mechanicalId": "BLK-115-B01",
@@ -2649,8 +2660,8 @@
       "sourceMechanicalSha256": "41154285c56e08cfaf2c5061a61b2dff701a568bcd37cf980a58ddb21f414e50",
       "sourceTextSha256": "4f4468aac1b8ac46723b8a5f70d9da20ced51c5c45c66c1fec9f95bca6b50943",
       "candidateProgramSha256": "fe797e5df109e5a5b3fecc08cef585d1c5601a3cf99f79b122a8d433ce8067fa",
-      "authorityProgramSha256": "fe797e5df109e5a5b3fecc08cef585d1c5601a3cf99f79b122a8d433ce8067fa",
-      "disposition": "Candidate6Mapped"
+      "authorityProgramSha256": "e31d2dd0f86822d4504f41df0bccaa0b636c5f0a76ace20ec6f29fa08bb96758",
+      "disposition": "CorrectedFromCandidate6"
     },
     {
       "mechanicalId": "BLK-118-B01",
@@ -2685,8 +2696,8 @@
       "sourceMechanicalSha256": "210ffb2b270b2859f673fd387cddb3cfd1b57a1cdb77252222d8f70fd8343ff2",
       "sourceTextSha256": "7e38756c5c1a434ef839aa81adbf6ea29bd5ed1c6b149fc0867a006d6b46c0b5",
       "candidateProgramSha256": "9208a1325dd62eb063d5d5bdf2c8cef36b2b25b099dad436c902979a432718aa",
-      "authorityProgramSha256": "9208a1325dd62eb063d5d5bdf2c8cef36b2b25b099dad436c902979a432718aa",
-      "disposition": "Candidate6Mapped"
+      "authorityProgramSha256": "e42f005336c4fddd300ce3dd4d475323370627aaf6d26f106ca0097eea088002",
+      "disposition": "CorrectedFromCandidate6"
     },
     {
       "mechanicalId": "BLK-119-B02",
@@ -2697,7 +2708,7 @@
       "sourceMechanicalSha256": "210ffb2b270b2859f673fd387cddb3cfd1b57a1cdb77252222d8f70fd8343ff2",
       "sourceTextSha256": "87f938f9dcab45dbe92ca78c9da1915b733bb9607bae661895b169032e286ce5",
       "candidateProgramSha256": "80ead38dc49c1ed3f4c00b3c11304cb236324a07a8441d75ac668ec17cb88228",
-      "authorityProgramSha256": "83cc70bd4f2414c721510511ee14a61c6980f467bfd92e57ffa22b667c3e8e33",
+      "authorityProgramSha256": "28b292dde222c39842ae5be0638ca1503d47d40df44a96a3dffb1d6ba644bcb8",
       "disposition": "CorrectedFromCandidate6"
     },
     {
@@ -3117,7 +3128,7 @@
       "sourceMechanicalSha256": "c623b24525fa7befcc428c0003ff2a43d2c889c1391b6b645e9aef933623a0ee",
       "sourceTextSha256": "9ce800ac06a905abed6e8d2a7e6ef919d8e8096f31c0dcd9abf4be99271df81a",
       "candidateProgramSha256": "c50587b24334653d8e49a22dc8448bffef3dff803745fb07af7b63c2bc30a650",
-      "authorityProgramSha256": "695308773f99ca40a95d2b9033126294d52f4b5421dcc44cec7731590c024aa7",
+      "authorityProgramSha256": "71a6a435bb16b2e7ac617e6d535fe0794267fb73369a294dbb668e795e7bc32c",
       "disposition": "CorrectedFromCandidate6"
     },
     {
@@ -3393,8 +3404,8 @@
       "sourceMechanicalSha256": "d9c9a71d89044e299ff5aa116c1537fe43769718ec5d825a02ba8d534fd94b73",
       "sourceTextSha256": "f851eaa997b83fafcf3b7d2bec1ae4952084613a7c41aa450e3e29b6fd9b13de",
       "candidateProgramSha256": "c22f589d9f50f3f15b2989ff0b5983a054a935b15bd3bbcd6d074e134e76b1f0",
-      "authorityProgramSha256": "c22f589d9f50f3f15b2989ff0b5983a054a935b15bd3bbcd6d074e134e76b1f0",
-      "disposition": "Candidate6Mapped"
+      "authorityProgramSha256": "cba0d641ff68f7b5a98f1cf044dacd8daa6e8b5a8f69f8440a0a112e22e84edc",
+      "disposition": "CorrectedFromCandidate6"
     },
     {
       "mechanicalId": "BLK-150-B02",
@@ -3465,7 +3476,7 @@
       "sourceMechanicalSha256": "dd462e68a66dc9cad55481af82d8f4bf393d4c789c22363cade91052dd19600e",
       "sourceTextSha256": "98be34d52f0628f913b67b12439f5e6e3ae54f824c12735718aaf433fbdd3ff9",
       "candidateProgramSha256": "71b6fa6798ccac7005f4f84a4df2edd3478c1ac537cf2615b42a9fd50bc9c35b",
-      "authorityProgramSha256": "2e1fc6eeb18782fc72ee0cf02dbeb7ae9710f71bad8a65281aeb6736a6ebdf29",
+      "authorityProgramSha256": "3469ddb7bda2be97746531f261f2f5758b523162e8249109c96b926d783424de",
       "disposition": "CorrectedFromCandidate6"
     },
     {
@@ -3501,7 +3512,7 @@
       "sourceMechanicalSha256": "d6d84859150a5bd22842bf28c8b61b7457ec1c8b28dc3be86376e3787b2a0d01",
       "sourceTextSha256": "98be34d52f0628f913b67b12439f5e6e3ae54f824c12735718aaf433fbdd3ff9",
       "candidateProgramSha256": "71b6fa6798ccac7005f4f84a4df2edd3478c1ac537cf2615b42a9fd50bc9c35b",
-      "authorityProgramSha256": "2e1fc6eeb18782fc72ee0cf02dbeb7ae9710f71bad8a65281aeb6736a6ebdf29",
+      "authorityProgramSha256": "3469ddb7bda2be97746531f261f2f5758b523162e8249109c96b926d783424de",
       "disposition": "CorrectedFromCandidate6"
     },
     {
@@ -3537,7 +3548,7 @@
       "sourceMechanicalSha256": "251b39e5129f3561e06ecafb448808dd69bfac3eec45d202868bb343253cdfeb",
       "sourceTextSha256": "98be34d52f0628f913b67b12439f5e6e3ae54f824c12735718aaf433fbdd3ff9",
       "candidateProgramSha256": "71b6fa6798ccac7005f4f84a4df2edd3478c1ac537cf2615b42a9fd50bc9c35b",
-      "authorityProgramSha256": "2e1fc6eeb18782fc72ee0cf02dbeb7ae9710f71bad8a65281aeb6736a6ebdf29",
+      "authorityProgramSha256": "3469ddb7bda2be97746531f261f2f5758b523162e8249109c96b926d783424de",
       "disposition": "CorrectedFromCandidate6"
     },
     {
@@ -3705,7 +3716,7 @@
       "sourceMechanicalSha256": "af707b74789b241a57e178964ca4eb487a6bca52a18c06959c13481d58ec398d",
       "sourceTextSha256": "fe92ae91be4595fe7bc5a38107977a0744876268b3e6393383295d5c18a6b4a4",
       "candidateProgramSha256": "7e8e71ea848151902bf48559ea58444f69e3c72ed154bcdd4a1f98675e1ceceb",
-      "authorityProgramSha256": "44d409c40c2dfe6b820c4c4789ed6c33668f942cf3fe5678accc5fde9c7b22be",
+      "authorityProgramSha256": "2570c536eadd653606215517bd91472178875fbff51292a240bac96241b6c772",
       "disposition": "CorrectedFromCandidate6"
     },
     {

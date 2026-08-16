@@ -6,6 +6,7 @@ using Blokemon.Web.Client.Api;
 using Blokemon.Web.Content;
 using Blokemon.Web.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Shouldly;
 
 namespace Blokemon.Web.Tests;
 
@@ -21,6 +22,169 @@ public sealed class LocalMatchTests
         "20000000-0000-0000-0000-000000000002"
     );
     private static readonly Guid _matchCommand = Guid.Parse("30000000-0000-0000-0000-000000000001");
+
+    [Test]
+    public async Task StarterClaim_IsIdempotentAndPersistsTheGrantedEditableDeck()
+    {
+        await using var database = await TestDatabase.Create();
+        var catalogue = BlokemonCatalogueBuilder.Load(
+            Path.Combine(AppContext.BaseDirectory, "content")
+        );
+        var fixture = ReadyFixture.FromExisting(database, catalogue);
+        Value(await fixture.Application.CreateProfile(new(_profileCommand, "Local Player")));
+        var commandId = Guid.Parse("11000000-0000-0000-0000-000000000001");
+        var request = new ClaimStarterDeckRequest(commandId, "growroom");
+
+        var claimed = Value(await fixture.Application.ClaimStarterDeck(request));
+        var afterClaim = await fixture.Store.Read("profile");
+        var retried = Value(await fixture.Application.ClaimStarterDeck(request));
+        var afterRetry = await fixture.Store.Read("profile");
+        var second = Value(
+            await fixture.Application.ClaimStarterDeck(new(Guid.NewGuid(), "early-shift"))
+        );
+        var restored = Value(await fixture.Restart().State());
+
+        claimed.Profile!.StarterDeckId.ShouldBe("growroom");
+        claimed.StarterDecks.Single(static deck => deck.IsClaimed).Id.ShouldBe("growroom");
+        claimed.Decks.ShouldHaveSingleItem();
+        claimed.Decks[0].CardCount.ShouldBe(60);
+        claimed.Decks[0].IsLegal.ShouldBeTrue();
+        claimed.Decks[0].Warnings.ShouldBeEmpty();
+        retried.Profile!.Revision.ShouldBe(claimed.Profile.Revision);
+        afterRetry.ShouldBe(afterClaim);
+        second.Profile!.StarterDeckId.ShouldBe("early-shift");
+        second
+            .StarterDecks.Where(static deck => deck.IsClaimed)
+            .Select(static deck => deck.Id)
+            .ShouldBe(["early-shift", "growroom"], ignoreOrder: true);
+        second.Decks.Length.ShouldBe(2);
+        restored.Profile!.StarterDeckId.ShouldBe("early-shift");
+        restored.Decks.Length.ShouldBe(2);
+    }
+
+    [Test]
+    public async Task RepeatedStarterClaim_GrantsItsCardsAgainWithoutDuplicatingTheDeck()
+    {
+        await using var database = await TestDatabase.Create();
+        var catalogue = BlokemonCatalogueBuilder.Load(
+            Path.Combine(AppContext.BaseDirectory, "content")
+        );
+        var fixture = ReadyFixture.FromExisting(database, catalogue);
+        Value(await fixture.Application.CreateProfile(new(_profileCommand, "Local Player")));
+
+        var first = Value(
+            await fixture.Application.ClaimStarterDeck(
+                new(Guid.Parse("11000000-0000-0000-0000-000000000001"), "growroom")
+            )
+        );
+        var again = Value(
+            await fixture.Application.ClaimStarterDeck(
+                new(Guid.Parse("11000000-0000-0000-0000-000000000002"), "growroom")
+            )
+        );
+
+        var ownedAfterFirst = first
+            .Cards.Where(static card => card.OwnedQuantity > 0)
+            .ToDictionary(static card => card.Id, static card => card.OwnedQuantity);
+        var ownedAfterAgain = again
+            .Cards.Where(static card => card.OwnedQuantity > 0)
+            .ToDictionary(static card => card.Id, static card => card.OwnedQuantity);
+        var starterEntries = first
+            .StarterDecks.Single(static deck => deck.Id == "growroom")
+            .Entries.Where(entry => ownedAfterFirst.ContainsKey(entry.CardId))
+            .ToArray();
+
+        starterEntries.ShouldNotBeEmpty();
+        foreach (var entry in starterEntries)
+        {
+            ownedAfterAgain[entry.CardId]
+                .ShouldBe(ownedAfterFirst[entry.CardId] + entry.Quantity);
+        }
+        again.Decks.ShouldHaveSingleItem();
+        again.Profile!.StarterDeckId.ShouldBe("growroom");
+    }
+
+    [Test]
+    public async Task PurgeData_DeletesEveryStoredDocumentAndAllowsAFreshStart()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = await ReadyFixture.Create(database);
+        Value<MatchMutationView>(
+            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
+        );
+
+        var purged = Value(await fixture.Application.PurgeData());
+        var profileDocument = await fixture.Store.Read("profile");
+        var matchDocument = await fixture.Store.Read("match");
+        var historyDocument = await fixture.Store.Read("match-history");
+        var recreated = Value(
+            await fixture.Application.CreateProfile(new(Guid.NewGuid(), "Fresh Player"))
+        );
+
+        purged.Profile.ShouldBeNull();
+        purged.Match.ShouldBeNull();
+        profileDocument.ShouldBeNull();
+        matchDocument.ShouldBeNull();
+        historyDocument.ShouldBeNull();
+        recreated.Profile!.DisplayName.ShouldBe("Fresh Player");
+    }
+
+    [Test]
+    public async Task EnergylessLegalDeck_WarnsButStartsAgainstDistinctRedactedCpuStarter()
+    {
+        await using var database = await TestDatabase.Create();
+        var catalogue = BlokemonCatalogueBuilder.Load(
+            Path.Combine(AppContext.BaseDirectory, "content")
+        );
+        var fixture = ReadyFixture.FromExisting(database, catalogue);
+        Value(await fixture.Application.CreateProfile(new(_profileCommand, "Local Player")));
+        Value(
+            await fixture.Application.ClaimStarterDeck(
+                new(Guid.Parse("11000000-0000-0000-0000-000000000002"), "growroom")
+            )
+        );
+        var deckId = Guid.Parse("21000000-0000-0000-0000-000000000001");
+        var energyless = Value(
+            await fixture.Application.SaveDeck(
+                new(
+                    deckId,
+                    null,
+                    null,
+                    "Warning-only deck",
+                    [
+                        new("BLK-001", 3),
+                        new("BLK-002", 1),
+                        .. Enumerable
+                            .Range(1, 14)
+                            .Select(index => new DeckEntryView($"KIT-{index:D3}", 4)),
+                    ]
+                )
+            )
+        );
+        var saved = energyless.Decks.Single(deck => deck.Id == deckId);
+
+        var startResponse = await fixture.Application.StartMatch(new(_matchCommand, deckId));
+        var started = Value<MatchMutationView>(startResponse);
+        var match = started.Application.Match!;
+        var cues = started
+            .Presentation!.Steps.SelectMany(static step => step.Events)
+            .Select(static cue => cue.Sequence)
+            .ToArray();
+        var retried = Value<MatchMutationView>(
+            await fixture.Application.StartMatch(new(_matchCommand, deckId))
+        );
+
+        saved.IsLegal.ShouldBeTrue();
+        saved.Warnings.ShouldNotBeEmpty();
+        match.Frame.Player.DeckName.ShouldBe("Custom deck");
+        match.Frame.Opponent.DeckName.ShouldBe("Brick Lane Heat");
+        match.Frame.Opponent.DeckName.ShouldNotBe(match.Frame.Player.DeckName);
+        match.Frame.Opponent.Hand.ShouldBeEmpty();
+        match.Frame.Opponent.HandCount.ShouldBeGreaterThan(0);
+        match.Frame.Player.Hand.Length.ShouldBe(match.Frame.Player.HandCount);
+        cues.SequenceEqual(cues.Order()).ShouldBeTrue();
+        retried.Presentation.ShouldBeNull();
+    }
 
     [Test]
     public async Task Restart_PreservesNonEmptyHumanOpeningAndVisibleState()
@@ -45,7 +209,7 @@ public sealed class LocalMatchTests
         var eligibleBooth = boothRequirement
             .EligibleCards.Where(card => card.Id != selectedOche.Id)
             .ToArray();
-        await Assert.That(eligibleBooth.Length).IsGreaterThan(0);
+        eligibleBooth.Length.ShouldBeGreaterThan(0);
         var selectedBooth = eligibleBooth[0];
         var humanBoothSelection = SelectionFor(boothRequirement) with
         {
@@ -59,20 +223,194 @@ public sealed class LocalMatchTests
                 )
                 .ToArray(),
         };
-        var applied = Value(await fixture.Application.ApplyMatchAction(openingMatch.Id, request));
+        var applied = Value(
+            await fixture.Application.ApplyMatchAction(openingMatch.Frame.Id, request)
+        );
 
         var restarted = fixture.Restart();
         var restored = Value(await restarted.State());
 
-        await Assert.That(restored.Profile!.Id).IsEqualTo(applied.Profile!.Id);
-        await Assert.That(restored.Decks.Single().Id).IsEqualTo(_firstDeckCommand);
-        await Assert.That(restored.Match!.Id).IsEqualTo(applied.Match!.Id);
-        await Assert.That(applied.Match.Player.Oche!.Id).IsEqualTo(selectedOche.Card.Id);
-        await Assert
-            .That(applied.Match.Player.Booth.Select(static card => card.Id))
-            .Contains(selectedBooth.Card.Id);
+        restored.Profile!.Id.ShouldBe(applied.Profile!.Id);
+        restored.Decks.Single().Id.ShouldBe(_firstDeckCommand);
+        restored.Match!.Frame.Id.ShouldBe(applied.Match!.Frame.Id);
+        applied.Match.Frame.Player.Active!.Card.Id.ShouldBe(selectedOche.Card.Id);
+        applied.Match.Frame.Player.Bench.Select(static card => card.Card.Id)
+            .ShouldContain(selectedBooth.Card.Id);
         await AssertEquivalent(restored.Match, applied.Match);
-        await Assert.That(restored.MatchError).IsNull();
+        restored.MatchError.ShouldBeNull();
+    }
+
+    [Test]
+    public async Task PlayBlokemon_MovesTheSelectedHandCardToTheBench()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = await ReadyFixture.CreateOpeningChoice(database);
+        var started = Value(
+            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
+        );
+        var opening = await AdvanceToOpeningChoice(fixture.Application, started);
+        var openingMatch = opening.Match!;
+        var openingAction = OpeningAction(openingMatch);
+        var playing = Value(
+            await fixture.Application.ApplyMatchAction(
+                openingMatch.Frame.Id,
+                RequestFor(openingMatch, openingAction, Guid.NewGuid())
+            )
+        );
+        var playingMatch = playing.Match!;
+        var playAction = playingMatch.LegalActions.First(action =>
+            action.Kind == MatchActionKindView.PlayBlokemon
+        );
+        var cardId = playAction.SourceCardInstanceId!;
+
+        var played = Value<MatchMutationView>(
+            await fixture.Application.ApplyMatchAction(
+                playingMatch.Frame.Id,
+                RequestFor(playingMatch, playAction, Guid.NewGuid())
+            )
+        );
+        var playCue = played
+            .Presentation!.Steps.SelectMany(static step => step.Events)
+            .Single(cue => cue.Kind == MatchAnimationKindView.Play);
+
+        playingMatch.Frame.Player.Hand.Select(static card => card.Id).ShouldContain(cardId);
+        played.Application.Match!.Frame.Player.Hand.Select(static card => card.Id)
+            .ShouldNotContain(cardId);
+        played.Application.Match.Frame.Player.Bench.Select(static card => card.Id)
+            .ShouldContain(cardId);
+        playCue.SourceCardInstanceId.ShouldBe(cardId);
+        playCue.ActorIsLocalPlayer.ShouldBe(true);
+    }
+
+    [Test]
+    public async Task AuntieAtTheDoor_RevealsOnlyTheLocalPrizeFacesInTheCue()
+    {
+        await using var database = await TestDatabase.Create();
+        var catalogue = BlokemonCatalogueBuilder.Load(
+            Path.Combine(AppContext.BaseDirectory, "content")
+        );
+        var fixture = ReadyFixture.FromExisting(database, catalogue);
+        Value(await fixture.Application.CreateProfile(new(_profileCommand, "Local Player")));
+        var deckCommand = Guid.Parse("20000000-0000-0000-0000-000000000007");
+        Value(
+            await fixture.Application.SaveDeck(
+                new(
+                    deckCommand,
+                    null,
+                    null,
+                    "Auntie deck",
+                    [new("BLK-001", 1), new("KIT-007", 4), new("VIM-DODGY", 55)]
+                )
+            )
+        );
+
+        var matchCommands = Enumerable
+            .Range(1, 8)
+            .Select(static index => Guid.Parse($"40000000-0000-0000-0000-00000000000{index}"))
+            .ToArray();
+        var matchIndex = 0;
+        var current = await StartAuntieMatch(
+            fixture.Application,
+            matchCommands[matchIndex++],
+            deckCommand
+        );
+        var presentations = new List<MatchPresentationView>();
+        MatchEventCueView? reveal = null;
+        ApplicationView? afterReveal = null;
+        var prizesBefore = 0;
+
+        for (var attempt = 0; attempt < 400 && reveal is null; attempt++)
+        {
+            var match = current.Match!;
+            if (match.Frame.IsComplete)
+            {
+                if (matchIndex >= matchCommands.Length)
+                {
+                    break;
+                }
+                current = await StartAuntieMatch(
+                    fixture.Application,
+                    matchCommands[matchIndex++],
+                    deckCommand
+                );
+                continue;
+            }
+
+            var auntie = match.Frame.Player.Hand.FirstOrDefault(static card =>
+                card.Card.Id == "KIT-007"
+            );
+            var auntieAction = auntie is null
+                ? null
+                : match.LegalActions.FirstOrDefault(action =>
+                    action.Kind == MatchActionKindView.PlayTrainer
+                    && action.SourceCardInstanceId == auntie.Id
+                );
+            var action =
+                auntieAction
+                ?? match.LegalActions.FirstOrDefault(static candidate =>
+                    candidate.Kind == MatchActionKindView.EndTurn
+                )
+                ?? match.LegalActions[0];
+            if (auntieAction is not null)
+            {
+                prizesBefore = match.Frame.Player.PrizeCards;
+            }
+            var mutation = Value<MatchMutationView>(
+                await fixture.Application.ApplyMatchAction(
+                    match.Frame.Id,
+                    RequestFor(match, action, Guid.NewGuid())
+                )
+            );
+            if (mutation.Presentation is { } presentation)
+            {
+                presentations.Add(presentation);
+            }
+            current = mutation.Application;
+            if (auntieAction is not null)
+            {
+                reveal = mutation
+                    .Presentation!.Steps.SelectMany(static step => step.Events)
+                    .Single(static cue => cue.Kind == MatchAnimationKindView.Reveal);
+                afterReveal = mutation.Application;
+            }
+        }
+
+        reveal.ShouldNotBeNull();
+        reveal!.ActorIsLocalPlayer.ShouldBe(true);
+        prizesBefore.ShouldBeGreaterThan(0);
+        reveal.RevealedCards.Length.ShouldBe(prizesBefore);
+        reveal.TargetCardInstanceIds.Length.ShouldBe(prizesBefore);
+        reveal.RevealedCards.All(static card => !string.IsNullOrEmpty(card.FaceHtml))
+            .ShouldBeTrue();
+        afterReveal!.Match!.Frame.Player.PrizeCards.ShouldBe(prizesBefore);
+        var leakedCues = presentations
+            .SelectMany(static presentation => presentation.Steps)
+            .SelectMany(static step => step.Events)
+            .Where(static cue =>
+                cue.RevealedCards.Length > 0 && cue.ActorIsLocalPlayer != true
+            )
+            .Select(static cue =>
+                $"{cue.Kind}|{cue.Label}|actorLocal:{cue.ActorIsLocalPlayer}|faces:{cue.RevealedCards.Length}"
+            )
+            .ToArray();
+        leakedCues.ShouldBeEmpty();
+    }
+
+    private static async Task<ApplicationView> StartAuntieMatch(
+        LocalApplicationService application,
+        Guid matchCommand,
+        Guid deckCommand
+    )
+    {
+        var started = Value(await application.StartMatch(new(matchCommand, deckCommand)));
+        var opening = await AdvanceToOpeningChoice(application, started);
+        var openingMatch = opening.Match!;
+        return Value(
+            await application.ApplyMatchAction(
+                openingMatch.Frame.Id,
+                RequestFor(openingMatch, OpeningAction(openingMatch), Guid.NewGuid())
+            )
+        );
     }
 
     [Test]
@@ -91,9 +429,9 @@ public sealed class LocalMatchTests
         var afterConflict = await fixture.Store.Read("match");
 
         await AssertEquivalent(retried.Match!, started.Match!);
-        await Assert.That(afterRetry).IsEqualTo(afterStart);
-        await Assert.That(Error(conflict).Code).IsEqualTo("match.command_conflict");
-        await Assert.That(afterConflict).IsEqualTo(beforeConflict);
+        afterRetry.ShouldBe(afterStart);
+        Error(conflict).Code.ShouldBe("match.command_conflict");
+        afterConflict.ShouldBe(beforeConflict);
     }
 
     [Test]
@@ -109,11 +447,12 @@ public sealed class LocalMatchTests
             other.StartMatch(request)
         );
 
-        await Assert.That(responses.All(static response => response.Succeeded)).IsTrue();
-        await Assert
-            .That(responses.Select(static response => response.Value!.Match!.Id).Distinct())
-            .HasSingleItem();
-        await Assert.That((await fixture.Store.Read("match"))!.Revision).IsEqualTo(1);
+        responses.All(static response => response.Succeeded).ShouldBeTrue();
+        responses
+            .Select(static response => response.Value!.Application.Match!.Frame.Id)
+            .Distinct()
+            .ShouldHaveSingleItem();
+        (await fixture.Store.Read("match"))!.Revision.ShouldBe(1);
     }
 
     [Test]
@@ -128,13 +467,17 @@ public sealed class LocalMatchTests
         var commandId = Guid.Parse("40000000-0000-0000-0000-000000000001");
         var request = RequestFor(started.Match, action, commandId);
 
-        var applied = Value(await fixture.Application.ApplyMatchAction(started.Match.Id, request));
+        var applied = Value(
+            await fixture.Application.ApplyMatchAction(started.Match.Frame.Id, request)
+        );
         var afterApply = await fixture.Store.Read("match");
-        var retried = Value(await fixture.Application.ApplyMatchAction(started.Match.Id, request));
+        var retried = Value(
+            await fixture.Application.ApplyMatchAction(started.Match.Frame.Id, request)
+        );
         var afterRetry = await fixture.Store.Read("match");
         var beforeConflict = await fixture.Store.Read("match");
         var conflict = await fixture.Application.ApplyMatchAction(
-            started.Match.Id,
+            started.Match.Frame.Id,
             request with
             {
                 ActionId = "not-the-original-action",
@@ -143,9 +486,9 @@ public sealed class LocalMatchTests
         var afterConflict = await fixture.Store.Read("match");
 
         await AssertEquivalent(retried.Match!, applied.Match!);
-        await Assert.That(afterRetry).IsEqualTo(afterApply);
-        await Assert.That(Error(conflict).Code).IsEqualTo("match.command_conflict");
-        await Assert.That(afterConflict).IsEqualTo(beforeConflict);
+        afterRetry.ShouldBe(afterApply);
+        Error(conflict).Code.ShouldBe("match.command_conflict");
+        afterConflict.ShouldBe(beforeConflict);
     }
 
     [Test]
@@ -162,16 +505,17 @@ public sealed class LocalMatchTests
         var request = RequestFor(started.Match, action, Guid.NewGuid());
 
         var responses = await Task.WhenAll(
-            fixture.Application.ApplyMatchAction(started.Match.Id, request),
-            other.ApplyMatchAction(started.Match.Id, request)
+            fixture.Application.ApplyMatchAction(started.Match.Frame.Id, request),
+            other.ApplyMatchAction(started.Match.Frame.Id, request)
         );
         var after = await fixture.Store.Read("match");
 
-        await Assert.That(responses.All(static response => response.Succeeded)).IsTrue();
-        await Assert
-            .That(responses.Select(static response => response.Value!.Match!.Revision).Distinct())
-            .HasSingleItem();
-        await Assert.That(after!.Revision).IsEqualTo(before!.Revision + 1);
+        responses.All(static response => response.Succeeded).ShouldBeTrue();
+        responses
+            .Select(static response => response.Value!.Application.Match!.Frame.Revision)
+            .Distinct()
+            .ShouldHaveSingleItem();
+        after!.Revision.ShouldBe(before!.Revision + 1);
     }
 
     [Test]
@@ -186,21 +530,21 @@ public sealed class LocalMatchTests
         var original = await fixture.Store.Read("match");
 
         var stale = await fixture.Application.ApplyMatchAction(
-            started.Match.Id,
+            started.Match.Frame.Id,
             RequestFor(started.Match, action, Guid.NewGuid()) with
             {
-                ExpectedRevision = started.Match.Revision - 1,
+                ExpectedRevision = started.Match.Frame.Revision - 1,
             }
         );
         var illegal = await fixture.Application.ApplyMatchAction(
-            started.Match.Id,
-            new(Guid.NewGuid(), started.Match.Revision, "missing-action", [])
+            started.Match.Frame.Id,
+            new(Guid.NewGuid(), started.Match.Frame.Revision, "missing-action", [])
         );
         var after = await fixture.Store.Read("match");
 
-        await Assert.That(Error(stale).Code).IsEqualTo("match.stale");
-        await Assert.That(Error(illegal).Code).IsEqualTo("match.action_illegal");
-        await Assert.That(after).IsEqualTo(original);
+        Error(stale).Code.ShouldBe("match.stale");
+        Error(illegal).Code.ShouldBe("match.action_illegal");
+        after.ShouldBe(original);
     }
 
     [Test]
@@ -224,7 +568,7 @@ public sealed class LocalMatchTests
         };
 
         var invalid = await fixture.Application.ApplyMatchAction(
-            opening.Match!.Id,
+            opening.Match!.Frame.Id,
             validRequest with
             {
                 Choices = [invalidChoice],
@@ -232,7 +576,7 @@ public sealed class LocalMatchTests
         );
         var afterInvalid = await fixture.Store.Read("match");
         var malformed = await fixture.Application.ApplyMatchAction(
-            opening.Match.Id,
+            opening.Match.Frame.Id,
             validRequest with
             {
                 CommandId = Guid.NewGuid(),
@@ -241,7 +585,7 @@ public sealed class LocalMatchTests
         );
         var afterMalformed = await fixture.Store.Read("match");
         var missing = await fixture.Application.ApplyMatchAction(
-            opening.Match.Id,
+            opening.Match.Frame.Id,
             validRequest with
             {
                 CommandId = Guid.NewGuid(),
@@ -252,7 +596,7 @@ public sealed class LocalMatchTests
         );
         var afterMissing = await fixture.Store.Read("match");
         var extra = await fixture.Application.ApplyMatchAction(
-            opening.Match.Id,
+            opening.Match.Frame.Id,
             validRequest with
             {
                 CommandId = Guid.NewGuid(),
@@ -268,7 +612,7 @@ public sealed class LocalMatchTests
         );
         var afterExtra = await fixture.Store.Read("match");
         var wrongKind = await fixture.Application.ApplyMatchAction(
-            opening.Match.Id,
+            opening.Match.Frame.Id,
             validRequest with
             {
                 CommandId = Guid.NewGuid(),
@@ -288,21 +632,21 @@ public sealed class LocalMatchTests
         );
         var afterWrongKind = await fixture.Store.Read("match");
         var applied = Value(
-            await fixture.Application.ApplyMatchAction(opening.Match.Id, validRequest)
+            await fixture.Application.ApplyMatchAction(opening.Match.Frame.Id, validRequest)
         );
         var restored = Value(await fixture.Restart().State());
 
-        await Assert.That(Error(invalid).Code).IsEqualTo("match.choice_invalid");
-        await Assert.That(Error(malformed).Code).IsEqualTo("match.choice_invalid");
-        await Assert.That(Error(missing).Code).IsEqualTo("match.choice_required");
-        await Assert.That(Error(extra).Code).IsEqualTo("match.choice_invalid");
-        await Assert.That(Error(wrongKind).Code).IsEqualTo("match.choice_invalid");
-        await Assert.That(afterInvalid).IsEqualTo(original);
-        await Assert.That(afterMalformed).IsEqualTo(original);
-        await Assert.That(afterMissing).IsEqualTo(original);
-        await Assert.That(afterExtra).IsEqualTo(original);
-        await Assert.That(afterWrongKind).IsEqualTo(original);
-        await Assert.That(applied.Match!.Revision).IsGreaterThan(opening.Match.Revision);
+        Error(invalid).Code.ShouldBe("match.choice_invalid");
+        Error(malformed).Code.ShouldBe("match.choice_invalid");
+        Error(missing).Code.ShouldBe("match.choice_required");
+        Error(extra).Code.ShouldBe("match.choice_invalid");
+        Error(wrongKind).Code.ShouldBe("match.choice_invalid");
+        afterInvalid.ShouldBe(original);
+        afterMalformed.ShouldBe(original);
+        afterMissing.ShouldBe(original);
+        afterExtra.ShouldBe(original);
+        afterWrongKind.ShouldBe(original);
+        applied.Match!.Frame.Revision.ShouldBeGreaterThan(opening.Match.Frame.Revision);
         await AssertEquivalent(restored.Match!, applied.Match);
     }
 
@@ -317,14 +661,90 @@ public sealed class LocalMatchTests
     }
 
     [Test]
+    public async Task ZeroDamageAttack_PresentationNamesTheAttackAndReportsNoDamage()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = ChoiceMatchFixture.Create(database);
+        var (match, action) = await ReachCiggySamAttack(fixture);
+
+        var result = await fixture.Service.Apply(
+            fixture.Profile,
+            "Local Player",
+            match.Frame.Id,
+            RequestFor(match, action, Guid.NewGuid())
+        );
+        if (result.Error is not null || result.Presentation is null)
+        {
+            throw new InvalidOperationException(
+                result.Error?.Message ?? "No presentation returned."
+            );
+        }
+        var cue = result
+            .Presentation.Steps.SelectMany(static step => step.Events)
+            .Single(eventCue =>
+                eventCue.Kind == MatchAnimationKindView.Attack
+                && eventCue.ActorIsLocalPlayer == true
+            );
+
+        cue.Label.ShouldBe("Local Player used Bring a Mate.");
+        cue.Amount.ShouldBe(0);
+    }
+
+    [Test]
+    public async Task DamageAttack_PresentationReportsResolvedDamage()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = ChoiceMatchFixture.Create(database);
+        var (match, firstAttack) = await ReachCiggySamAttack(fixture);
+        var activeId = firstAttack.SourceCardInstanceId!;
+        var attach = match.LegalActions.First(action =>
+            action.Kind == MatchActionKindView.AttachEnergy
+            && action.TargetCardInstanceId == activeId
+        );
+        var attached = Match(
+            await fixture.Service.Apply(
+                fixture.Profile,
+                "Local Player",
+                match.Frame.Id,
+                RequestFor(match, attach, Guid.NewGuid())
+            )
+        );
+        var attack = attached.LegalActions.Single(action =>
+            action.Id == $"attack:{activeId}:BLK-016-B02"
+        );
+
+        var result = await fixture.Service.Apply(
+            fixture.Profile,
+            "Local Player",
+            attached.Frame.Id,
+            RequestFor(attached, attack, Guid.NewGuid())
+        );
+        if (result.Error is not null || result.Presentation is null)
+        {
+            throw new InvalidOperationException(
+                result.Error?.Message ?? "No presentation returned."
+            );
+        }
+        var cue = result
+            .Presentation.Steps.SelectMany(static step => step.Events)
+            .Single(eventCue =>
+                eventCue.Kind == MatchAnimationKindView.Attack
+                && eventCue.ActorIsLocalPlayer == true
+            );
+
+        cue.Label.ShouldBe("Local Player used Last Drag.");
+        cue.Amount.ShouldBeGreaterThan(0);
+    }
+
+    [Test]
     public async Task DeferredChoiceFailuresAndRestart_AreTotalAndNonMutating()
     {
         await using var database = await TestDatabase.Create();
         var fixture = ChoiceMatchFixture.Create(database);
         var (deferred, action) = await ReachCiggySamDeferredChoice(fixture);
         var requirement = action.ChoiceRequirements.Single();
-        await Assert.That(requirement.Kind).IsEqualTo(MatchChoiceKindView.Cards);
-        await Assert.That(requirement.EligibleCards.Length).IsGreaterThan(0);
+        requirement.Kind.ShouldBe(MatchChoiceKindView.Cards);
+        requirement.EligibleCards.Length.ShouldBeGreaterThan(0);
 
         await AssertChoiceFailuresDoNotMutate(fixture, deferred, action);
         var beforeRestart = await fixture.Store.Read("match");
@@ -332,7 +752,7 @@ public sealed class LocalMatchTests
         var restored = Match(await restartedService.State(fixture.Profile, "Local Player"));
         var afterRestart = await fixture.Store.Read("match");
         await AssertEquivalent(restored, deferred);
-        await Assert.That(afterRestart).IsEqualTo(beforeRestart);
+        afterRestart.ShouldBe(beforeRestart);
 
         var selection = SelectionFor(requirement) with
         {
@@ -340,7 +760,12 @@ public sealed class LocalMatchTests
         };
         var request = RequestFor(restored, action, Guid.NewGuid()) with { Choices = [selection] };
         var resolved = Match(
-            await restartedService.Apply(fixture.Profile, "Local Player", restored.Id, request)
+            await restartedService.Apply(
+                fixture.Profile,
+                "Local Player",
+                restored.Frame.Id,
+                request
+            )
         );
         var restoredResolution = Match(
             await fixture.Restart().State(fixture.Profile, "Local Player")
@@ -370,7 +795,7 @@ public sealed class LocalMatchTests
         var secondMatchDocument = await second.Store.Read("match");
 
         await AssertEquivalent(secondStarted.Match!, firstStarted.Match!);
-        await Assert.That(secondMatchDocument!.Json).IsEqualTo(firstMatchDocument!.Json);
+        secondMatchDocument!.Json.ShouldBe(firstMatchDocument!.Json);
     }
 
     [Test]
@@ -393,11 +818,11 @@ public sealed class LocalMatchTests
         var state = Value(await fixture.Restart().State());
         var after = await fixture.Store.Read("match");
 
-        await Assert.That(state.Match).IsNull();
-        await Assert.That(state.MatchError!.Code).IsEqualTo(errorCode);
-        await Assert.That(after).IsEqualTo(invalid);
-        await Assert.That(state.Profile).IsNotNull();
-        await Assert.That(state.Decks).HasSingleItem();
+        state.Match.ShouldBeNull();
+        state.MatchError!.Code.ShouldBe(errorCode);
+        after.ShouldBe(invalid);
+        state.Profile.ShouldNotBeNull();
+        state.Decks.ShouldHaveSingleItem();
     }
 
     [Test]
@@ -411,7 +836,7 @@ public sealed class LocalMatchTests
         var action = started.Match!.LegalActions[0];
         Value(
             await fixture.Application.ApplyMatchAction(
-                started.Match.Id,
+                started.Match.Frame.Id,
                 RequestFor(started.Match, action, Guid.NewGuid())
             )
         );
@@ -424,16 +849,16 @@ public sealed class LocalMatchTests
             + revisionMarker
             + "99}"
             + original.Json[(revisionEnd + 1)..];
-        await Assert.That(invalidJson).IsNotEqualTo(original.Json);
+        invalidJson.ShouldNotBe(original.Json);
         await fixture.Store.Update("match", original.Revision, invalidJson);
         var invalid = await fixture.Store.Read("match");
 
         var state = Value(await fixture.Restart().State());
         var after = await fixture.Store.Read("match");
 
-        await Assert.That(state.Match).IsNull();
-        await Assert.That(state.MatchError!.Code).IsEqualTo("match.replay_invalid");
-        await Assert.That(after).IsEqualTo(invalid);
+        state.Match.ShouldBeNull();
+        state.MatchError!.Code.ShouldBe("match.replay_invalid");
+        after.ShouldBe(invalid);
     }
 
     [Test]
@@ -447,8 +872,8 @@ public sealed class LocalMatchTests
         var rejected = await fixture.Application.StartMatch(new(Guid.NewGuid(), _firstDeckCommand));
         var after = await fixture.Store.Read("match");
 
-        await Assert.That(Error(rejected).Code).IsEqualTo("match.active");
-        await Assert.That(after).IsEqualTo(original);
+        Error(rejected).Code.ShouldBe("match.active");
+        after.ShouldBe(original);
     }
 
     [Test]
@@ -466,10 +891,10 @@ public sealed class LocalMatchTests
             await fixture.Application.StartMatch(new(nextCommand, _firstDeckCommand))
         );
 
-        await Assert.That(completed.Match!.IsComplete).IsTrue();
-        await Assert.That(completed.Match.Winner).IsNotNull();
-        await Assert.That(replaced.Match!.Id).IsEqualTo(nextCommand);
-        await Assert.That(replaced.Match.IsComplete).IsFalse();
+        completed.Match!.Frame.IsComplete.ShouldBeTrue();
+        completed.Match.Frame.Winner.ShouldNotBeNull();
+        replaced.Match!.Frame.Id.ShouldBe(nextCommand);
+        replaced.Match.Frame.IsComplete.ShouldBeFalse();
     }
 
     private static async Task<ApplicationView> AdvanceToOpeningChoice(
@@ -492,7 +917,7 @@ public sealed class LocalMatchTests
             var action = current.Match.LegalActions[0];
             current = Value(
                 await application.ApplyMatchAction(
-                    current.Match.Id,
+                    current.Match.Frame.Id,
                     RequestFor(current.Match, action, Guid.NewGuid())
                 )
             );
@@ -509,7 +934,7 @@ public sealed class LocalMatchTests
         var current = initial;
         for (var count = 0; count < 256; count++)
         {
-            if (current.Match!.IsComplete)
+            if (current.Match!.Frame.IsComplete)
             {
                 return current;
             }
@@ -518,10 +943,20 @@ public sealed class LocalMatchTests
                 throw new InvalidOperationException("The local player has no legal action.");
             }
 
-            var action = current.Match.LegalActions[0];
+            var action =
+                current.Match.LegalActions.FirstOrDefault(static action =>
+                    action.Kind == MatchActionKindView.Attack
+                )
+                ?? current.Match.LegalActions.FirstOrDefault(static action =>
+                    action.Kind == MatchActionKindView.AttachEnergy
+                )
+                ?? current.Match.LegalActions.FirstOrDefault(static action =>
+                    action.Kind == MatchActionKindView.EndTurn
+                )
+                ?? current.Match.LegalActions[0];
             current = Value(
                 await application.ApplyMatchAction(
-                    current.Match.Id,
+                    current.Match.Frame.Id,
                     RequestFor(current.Match, action, Guid.NewGuid())
                 )
             );
@@ -541,6 +976,26 @@ public sealed class LocalMatchTests
                 new(_matchCommand, _firstDeckCommand)
             )
         );
+        for (var count = 0; count < 8; count++)
+        {
+            if (
+                started.LegalActions.Any(action =>
+                    action.Id.StartsWith("opening:", StringComparison.Ordinal)
+                )
+            )
+            {
+                break;
+            }
+            var preliminary = started.LegalActions[0];
+            started = Match(
+                await fixture.Service.Apply(
+                    fixture.Profile,
+                    "Local Player",
+                    started.Frame.Id,
+                    RequestFor(started, preliminary, Guid.NewGuid())
+                )
+            );
+        }
         var openingCards = started
             .LegalActions.SelectMany(static action => action.ChoiceRequirements)
             .SelectMany(static requirement => requirement.EligibleCards)
@@ -549,23 +1004,16 @@ public sealed class LocalMatchTests
         var opening = started.LegalActions.First(action =>
             action.Id.StartsWith("opening:", StringComparison.Ordinal)
             && openingCards[action.Id["opening:".Length..]].Card.Id == "BLK-016"
-            && action
-                .ChoiceRequirements.Single(requirement => requirement.Id == "opening:booth")
-                .EligibleCards.Any(static card => card.Card.Id == "BLK-001")
         );
         var ocheId = opening.Id["opening:".Length..];
-        var boothRequirement = opening.ChoiceRequirements.Single(requirement =>
-            requirement.Id == "opening:booth"
-        );
-        var boothCard = boothRequirement.EligibleCards.Single(static card =>
-            card.Card.Id == "BLK-001"
-        );
-        var openingRequest = RequestFor(started, opening, Guid.NewGuid()) with
-        {
-            Choices = [SelectionFor(boothRequirement) with { CardInstanceIds = [boothCard.Id] }],
-        };
+        var openingRequest = RequestFor(started, opening, Guid.NewGuid());
         var opened = Match(
-            await fixture.Service.Apply(fixture.Profile, "Local Player", started.Id, openingRequest)
+            await fixture.Service.Apply(
+                fixture.Profile,
+                "Local Player",
+                started.Frame.Id,
+                openingRequest
+            )
         );
         var attach = opened.LegalActions.First(action =>
             action.Id.StartsWith("attach:", StringComparison.Ordinal)
@@ -575,7 +1023,7 @@ public sealed class LocalMatchTests
             await fixture.Service.Apply(
                 fixture.Profile,
                 "Local Player",
-                opened.Id,
+                opened.Frame.Id,
                 RequestFor(opened, attach, Guid.NewGuid())
             )
         );
@@ -584,7 +1032,7 @@ public sealed class LocalMatchTests
             await fixture.Service.Apply(
                 fixture.Profile,
                 "Local Player",
-                attached.Id,
+                attached.Frame.Id,
                 RequestFor(attached, endRound, Guid.NewGuid())
             )
         );
@@ -594,12 +1042,10 @@ public sealed class LocalMatchTests
         if (attack is null)
         {
             throw new InvalidOperationException(
-                $"The {nextRound.Player.Oche?.Id} attack was unavailable: {string.Join(", ", nextRound.LegalActions.Select(static action => action.Id))}"
+                $"The {nextRound.Frame.Player.Active?.Card.Id} attack was unavailable: {string.Join(", ", nextRound.LegalActions.Select(static action => action.Id))}"
             );
         }
-        await Assert
-            .That(attack.ChoiceRequirements.Single().Kind)
-            .IsEqualTo(MatchChoiceKindView.Optional);
+        attack.ChoiceRequirements.Single().Kind.ShouldBe(MatchChoiceKindView.Optional);
         return (nextRound, attack);
     }
 
@@ -615,7 +1061,7 @@ public sealed class LocalMatchTests
             Choices = [SelectionFor(optional) with { Accepted = true }],
         };
         var deferred = Match(
-            await fixture.Service.Apply(fixture.Profile, "Local Player", match.Id, request)
+            await fixture.Service.Apply(fixture.Profile, "Local Player", match.Frame.Id, request)
         );
         return (
             deferred,
@@ -685,13 +1131,13 @@ public sealed class LocalMatchTests
             var response = await fixture.Service.Apply(
                 fixture.Profile,
                 "Local Player",
-                match.Id,
+                match.Frame.Id,
                 candidate.Request
             );
             var after = await fixture.Store.Read("match");
-            await Assert.That(response.View).IsNull();
-            await Assert.That(response.Error!.Code).IsEqualTo(candidate.ErrorCode);
-            await Assert.That(after).IsEqualTo(original);
+            response.View.ShouldBeNull();
+            response.Error!.Code.ShouldBe(candidate.ErrorCode);
+            after.ShouldBe(original);
         }
     }
 
@@ -707,7 +1153,7 @@ public sealed class LocalMatchTests
     ) =>
         new(
             commandId,
-            match.Revision,
+            match.Frame.Revision,
             action.Id,
             action
                 .ChoiceRequirements.Where(static requirement => requirement.Chooser.IsLocalPlayer)
@@ -768,6 +1214,9 @@ public sealed class LocalMatchTests
     private static MatchChoiceSelectionRequest EmptySelection(
         MatchChoiceRequirementView requirement
     ) => new(requirement.Id, requirement.Kind, null, null, [], null, null, [], []);
+
+    private static ApplicationView Value(ApiResponse<MatchMutationView> response) =>
+        Value<MatchMutationView>(response).Application;
 
     private static T Value<T>(ApiResponse<T> response)
         where T : class
@@ -830,9 +1279,8 @@ public sealed class LocalMatchTests
                 ProductValue(DeckId.Create(_firstDeckCommand.ToString("D"))),
                 ProductValue(DeckName.Create("Choice deck")),
                 [
-                    new(ProductValue(CardId.Create("BLK-001")), 1),
                     new(ProductValue(CardId.Create("BLK-016")), 4),
-                    new(ProductValue(CardId.Create("VIM-DODGY")), 55),
+                    new(ProductValue(CardId.Create("VIM-DODGY")), 56),
                 ],
                 catalogue.Mechanics
             )
@@ -841,9 +1289,7 @@ public sealed class LocalMatchTests
 
     private static async Task AssertEquivalent(MatchView actual, MatchView expected)
     {
-        await Assert
-            .That(JsonSerializer.Serialize(actual))
-            .IsEqualTo(JsonSerializer.Serialize(expected));
+        JsonSerializer.Serialize(actual).ShouldBe(JsonSerializer.Serialize(expected));
     }
 
     private sealed record ChoiceFailureCase(ApplyMatchActionRequest Request, string ErrorCode);
@@ -864,7 +1310,7 @@ public sealed class LocalMatchTests
     {
         public static ChoiceMatchFixture Create(TestDatabase database)
         {
-            var catalogue = BlokemonCatalogue.Load(
+            var catalogue = BlokemonCatalogueBuilder.Load(
                 Path.Combine(AppContext.BaseDirectory, "content")
             );
             var profile = CreateChoiceProfile(catalogue);
@@ -887,7 +1333,7 @@ public sealed class LocalMatchTests
             bool includeSecondDeck = false
         )
         {
-            var catalogue = BlokemonCatalogue.Load(
+            var catalogue = BlokemonCatalogueBuilder.Load(
                 Path.Combine(AppContext.BaseDirectory, "content")
             );
             var fixture = FromExisting(database, catalogue);
@@ -922,13 +1368,13 @@ public sealed class LocalMatchTests
 
         public static async Task<ReadyFixture> CreateOpeningChoice(TestDatabase database)
         {
-            var catalogue = BlokemonCatalogue.Load(
+            var catalogue = BlokemonCatalogueBuilder.Load(
                 Path.Combine(AppContext.BaseDirectory, "content")
             );
             var fixture = FromExisting(database, catalogue);
             var profile = CreateChoiceProfile(catalogue);
             var document = JsonSerializer.Serialize(
-                new PersistedProfileDocument(1, _profileCommand, profile.ToSnapshot()),
+                new PersistedProfileDocument(2, _profileCommand, profile.ToSnapshot()),
                 new JsonSerializerOptions(JsonSerializerDefaults.Web)
             );
             if (await fixture.Store.Create("profile", document) is not DocumentWriteResult.Written)

@@ -1,5 +1,6 @@
 using Blokemon.Core.SetDesign;
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -44,10 +45,8 @@ public sealed class DamageAndRoughStateTests
             engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-001-B01"))
         );
 
-        await Assert.That(result.Card(new CardInstanceId("defender")).Damage).IsEqualTo(10);
-        await Assert
-            .That(result.CardsIn(MatchScenario.FirstPlayer, CardZone.Oche).Single().Damage)
-            .IsEqualTo(0);
+        result.Card(new CardInstanceId("defender")).Damage.ShouldBe(10);
+        result.CardsIn(MatchScenario.FirstPlayer, CardZone.Oche).Single().Damage.ShouldBe(0);
     }
 
     [Test]
@@ -81,15 +80,12 @@ public sealed class DamageAndRoughStateTests
             && matchEvent.TargetCards.Contains(new CardInstanceId("attacker"))
         );
 
-        await Assert.That(checkedCard.Damage).IsEqualTo(30);
-        await Assert
-            .That(checkedCard.RoughStates.Any(entry => entry.State == BlokemonRoughState.DodgyPint))
-            .IsTrue();
-        await Assert
-            .That(checkedCard.RoughStates.Any(entry => entry.State == BlokemonRoughState.Legless))
-            .IsFalse();
-        await Assert
-            .That(damageEvents.Select(static matchEvent => matchEvent.Amount))
-            .IsEquivalentTo([10, 20]);
+        checkedCard.Damage.ShouldBe(30);
+        checkedCard.RoughStates.Any(entry => entry.State == BlokemonRoughState.DodgyPint)
+            .ShouldBeTrue();
+        checkedCard.RoughStates.Any(entry => entry.State == BlokemonRoughState.Legless)
+            .ShouldBeFalse();
+        damageEvents.Select(static matchEvent => matchEvent.Amount)
+            .ShouldBe([10, 20], ignoreOrder: true);
     }
 }

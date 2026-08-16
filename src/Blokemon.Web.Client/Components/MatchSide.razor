@@ -1,7 +1,74 @@
-<section class="side @(Opponent ? "opponent" : "player") @(Side.HasTurn ? "has-turn" : null)">
-    <div class="match-meta"><strong>@Side.Name</strong>@if (Side.HasTurn){<span class="turn-marker">Choosing now</span>}<span>Stack @Side.StackCount · Mitt @Side.MittCount</span><div class="chits" aria-label="@Side.BarChits bar chits">@for (var index = 0; index < Side.BarChits; index++){<i></i>}</div></div>
-    <div class="oche">@if (Side.Oche is not null){<img class="battle-card" src="@Side.Oche.ArtUrl" alt="@Side.Oche.Name" />}</div>
-    <div class="bench">@foreach (var card in Side.Booth){<img src="@card.ArtUrl" alt="@card.Name" />}</div>
+<section class="side-zone @(Opponent ? "opponent-zone" : "player-zone") @(Side.HasTurn ? "has-turn" : null)"
+         aria-label="@(Opponent ? $"Opponent, {Side.Name}" : $"You, {Side.Name}")">
+    <div class="deck-stack" aria-label="@($"Deck, {Side.DeckCount} cards")">
+        <div class="deck-card-back"><CardBack /></div>
+        <b>Deck @Side.DeckCount</b>
+        <small>Hand @Side.HandCount</small>
+    </div>
+
+    <div class="field-center">
+        <div class="active-slot">
+            @if (Side.Active is null)
+            {
+                <span class="empty-slot">Active</span>
+            }
+            else
+            {
+                <button type="button"
+                        class="field-card-button @TargetClass(Side.Active.Id)"
+                        aria-label="@CardLabel(Side.Active, "Active Blokemon")"
+                        aria-pressed="@TargetPressed(Side.Active.Id)"
+                        @onclick:stopPropagation="true"
+                        @onclick="() => Select(Side.Active.Id)">
+                    <BattleCard Instance="Side.Active"
+                                Selected="@(Side.Active.Id == SelectedCardInstanceId)"
+                                CueSourceCardInstanceId="CueSourceCardInstanceId"
+                                CueTargetCardInstanceIds="CueTargetCardInstanceIds" />
+                </button>
+            }
+        </div>
+        <div class="bench-row" aria-label="Bench">
+            @foreach (var card in Side.Bench)
+            {
+                <button type="button"
+                        class="field-card-button @TargetClass(card.Id)"
+                        aria-label="@CardLabel(card, "Benched Blokemon")"
+                        aria-pressed="@TargetPressed(card.Id)"
+                        @onclick:stopPropagation="true"
+                        @onclick="() => Select(card.Id)">
+                    <BattleCard Instance="card"
+                                Compact="true"
+                                Selected="@(card.Id == SelectedCardInstanceId)"
+                                CueSourceCardInstanceId="CueSourceCardInstanceId"
+                                CueTargetCardInstanceIds="CueTargetCardInstanceIds" />
+                </button>
+            }
+            @for (var index = Side.Bench.Length; index < 5; index++)
+            {
+                <span class="bench-slot" aria-hidden="true"></span>
+            }
+        </div>
+    </div>
+
+    @if (Opponent && Side.HandCount > 0)
+    {
+        <div class="opponent-hand" aria-label="@($"Opponent hand, {Side.HandCount} cards")">
+            @for (var index = 0; index < Math.Min(Side.HandCount, 7); index++)
+            {
+                <CardBack />
+            }
+        </div>
+    }
+
+    <div class="prize-rack" aria-label="@($"{Side.PrizeCards} Prize cards remaining")">
+        <div class="prizes" aria-hidden="true">
+            @for (var index = 0; index < Side.PrizeCards; index++)
+            {
+                <CardBack />
+            }
+        </div>
+        <b>Prize Cards @Side.PrizeCards</b>
+    </div>
 </section>
 
 @code {
@@ -10,4 +77,48 @@
 
     [Parameter]
     public bool Opponent { get; set; }
+
+    [Parameter]
+    public string? SelectedCardInstanceId { get; set; }
+
+    [Parameter]
+    public string? CueSourceCardInstanceId { get; set; }
+
+    [Parameter]
+    public string[] CueTargetCardInstanceIds { get; set; } = [];
+
+    [Parameter]
+    public string[] EligibleTargetCardInstanceIds { get; set; } = [];
+
+    [Parameter]
+    public string? SelectedTargetCardInstanceId { get; set; }
+
+    [Parameter]
+    public EventCallback<string> CardSelected { get; set; }
+
+    private Task Select(string cardInstanceId) => CardSelected.InvokeAsync(cardInstanceId);
+
+    private string? TargetClass(string cardInstanceId)
+    {
+        if (!EligibleTargetCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal))
+        {
+            return null;
+        }
+
+        return cardInstanceId == SelectedTargetCardInstanceId
+            ? "is-target-option is-target-selected"
+            : "is-target-option";
+    }
+
+    private string CardLabel(MatchCardInstanceView card, string position) =>
+        EligibleTargetCardInstanceIds.Contains(card.Id, StringComparer.Ordinal)
+            ? $"Choose {card.Card.Name}, {position}"
+            : $"Inspect {card.Card.Name}, {position}";
+
+    private string? TargetPressed(string cardInstanceId) =>
+        EligibleTargetCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal)
+            ? cardInstanceId == SelectedTargetCardInstanceId
+                ? "true"
+                : "false"
+            : null;
 }

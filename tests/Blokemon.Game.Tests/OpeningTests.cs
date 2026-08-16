@@ -1,5 +1,6 @@
 using Blokemon.Core.SetDesign;
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -15,13 +16,10 @@ public sealed class OpeningTests
         var engine = MatchScenario.Engine();
         var state = MatchScenario.Started(engine.Start(MatchScenario.StartRequest(seed)));
 
-        await Assert.That(state.OpeningPlayer).IsEqualTo(expectedOpening);
-        await Assert
-            .That(state.Players.All(static player => player.BarChitsRemaining == 6))
-            .IsTrue();
-        await Assert
-            .That(state.Players.All(player => state.CardsIn(player.Id, CardZone.Mitt).Count() == 7))
-            .IsTrue();
+        state.OpeningPlayer.ShouldBe(expectedOpening);
+        state.Players.All(static player => player.BarChitsRemaining == 6).ShouldBeTrue();
+        state.Players.All(player => state.CardsIn(player.Id, CardZone.Mitt).Count() == 7)
+            .ShouldBeTrue();
 
         foreach (var player in new[] { MatchScenario.FirstPlayer, MatchScenario.SecondPlayer })
         {
@@ -39,29 +37,19 @@ public sealed class OpeningTests
             state = MatchScenario.Applied(engine.Apply(state, command));
         }
 
-        await Assert.That(state.Phase).IsEqualTo(MatchPhase.Playing);
-        await Assert.That(state.ActivePlayer).IsEqualTo(expectedOpening);
-        await Assert
-            .That(state.CardsIn(MatchScenario.FirstPlayer, CardZone.Oche).Count())
-            .IsEqualTo(1);
-        await Assert
-            .That(state.CardsIn(MatchScenario.SecondPlayer, CardZone.Oche).Count())
-            .IsEqualTo(1);
-        await Assert
-            .That(state.CardsIn(MatchScenario.FirstPlayer, CardZone.Booth).Count())
-            .IsEqualTo(5);
-        await Assert
-            .That(state.CardsIn(MatchScenario.SecondPlayer, CardZone.Booth).Count())
-            .IsEqualTo(5);
-        await Assert.That(state.Player(expectedOpening).RoundsStarted).IsEqualTo(1);
+        state.Phase.ShouldBe(MatchPhase.Playing);
+        state.ActivePlayer.ShouldBe(expectedOpening);
+        state.CardsIn(MatchScenario.FirstPlayer, CardZone.Oche).Count().ShouldBe(1);
+        state.CardsIn(MatchScenario.SecondPlayer, CardZone.Oche).Count().ShouldBe(1);
+        state.CardsIn(MatchScenario.FirstPlayer, CardZone.Booth).Count().ShouldBe(5);
+        state.CardsIn(MatchScenario.SecondPlayer, CardZone.Booth).Count().ShouldBe(5);
+        state.Player(expectedOpening).RoundsStarted.ShouldBe(1);
         foreach (var player in new[] { MatchScenario.FirstPlayer, MatchScenario.SecondPlayer })
         {
             var barChits = state.CardsIn(player, CardZone.BarChit).ToArray();
-            await Assert.That(barChits.Length).IsEqualTo(6);
-            await Assert.That(barChits.All(static card => card.IsFaceDown)).IsTrue();
-            await Assert
-                .That(barChits.Select(static card => card.Id).Distinct().Count())
-                .IsEqualTo(6);
+            barChits.Length.ShouldBe(6);
+            barChits.All(static card => card.IsFaceDown).ShouldBeTrue();
+            barChits.Select(static card => card.Id).Distinct().Count().ShouldBe(6);
         }
     }
 }

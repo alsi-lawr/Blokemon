@@ -1,4 +1,5 @@
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -17,11 +18,9 @@ public sealed class CommandBoundaryTests
 
         var duplicate = (CommandOutcome.Rejected)engine.Apply(accepted.State, command);
 
-        await Assert
-            .That(duplicate.Rejection.Code)
-            .IsEqualTo(CommandRejectionCode.DuplicateCommand);
-        await Assert.That(ReferenceEquals(duplicate.State, accepted.State)).IsTrue();
-        await Assert.That(duplicate.State).IsEqualTo(accepted.State);
+        duplicate.Rejection.Code.ShouldBe(CommandRejectionCode.DuplicateCommand);
+        ReferenceEquals(duplicate.State, accepted.State).ShouldBeTrue();
+        duplicate.State.ShouldBe(accepted.State);
     }
 
     [Test]
@@ -38,10 +37,8 @@ public sealed class CommandBoundaryTests
 
         var duplicate = (CommandOutcome.Rejected)engine.Apply(accepted.State, repeated);
 
-        await Assert
-            .That(duplicate.Rejection.Code)
-            .IsEqualTo(CommandRejectionCode.DuplicateCommand);
-        await Assert.That(duplicate.State).IsEqualTo(accepted.State);
+        duplicate.Rejection.Code.ShouldBe(CommandRejectionCode.DuplicateCommand);
+        duplicate.State.ShouldBe(accepted.State);
     }
 
     [Test]
@@ -58,7 +55,7 @@ public sealed class CommandBoundaryTests
 
         var rejected = (CommandOutcome.Rejected)engine.Apply(accepted.State, stale);
 
-        await Assert.That(rejected.Rejection.Code).IsEqualTo(CommandRejectionCode.StaleRevision);
-        await Assert.That(rejected.State).IsEqualTo(accepted.State);
+        rejected.Rejection.Code.ShouldBe(CommandRejectionCode.StaleRevision);
+        rejected.State.ShouldBe(accepted.State);
     }
 }

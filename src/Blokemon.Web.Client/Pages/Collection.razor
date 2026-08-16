@@ -1,6 +1,5 @@
 @page "/collection"
-@rendermode InteractiveAuto
-@inject BlokemonApiClient Api
+@inject IBlokemonApplication Api
 
 <PageTitle>Collection · Blokemon</PageTitle>
 
@@ -15,15 +14,36 @@ else if (_error is not null)
 else
 {
     var owned = _view!.Cards.Count(static card => card.OwnedQuantity > 0);
-    <header class="topline"><div><span class="eyebrow">@owned owned · @_view.Cards.Length known</span><h1>Your collection.</h1></div><span class="dev-badge">Kits and Basic Vim are always available</span></header>
-    <div class="toolbar">
-        <input class="search" placeholder="Search by name or type" @bind="_search" @bind:event="oninput" />
-        <button class="secondary @(_ownedOnly ? "selected" : null)" @onclick="() => _ownedOnly = !_ownedOnly">Owned</button>
+    <header class="topline">
+        <div><span class="eyebrow">@owned owned · @_view.Cards.Length cards</span><h1>Your collection.</h1></div>
+        <span class="dev-badge">Trainer cards and Basic Energy are always available</span>
+    </header>
+    <div class="toolbar" role="search">
+        <label class="visually-hidden" for="collection-search">Search cards</label>
+        <input id="collection-search" class="search" placeholder="Search names, types, or card text" @bind="_search" @bind:event="oninput" />
+        <button class="secondary @(_ownedOnly ? "selected" : null)"
+                aria-pressed="@_ownedOnly"
+                @onclick="() => _ownedOnly = !_ownedOnly">Owned</button>
     </div>
-    <div class="card-grid">
+    <div class="card-grid collection-grid">
         @foreach (var card in VisibleCards())
         {
-            <article class="card-tile"><span class="qty">@(card.FreelyAvailable ? "Free" : $"×{card.OwnedQuantity}")</span><img src="@card.ArtUrl" alt="@card.Name" /><b>@card.Name</b><span>@card.Detail · @card.Type</span></article>
+            ElementReference cardTrigger = default;
+            <article class="card-tile">
+                <span class="qty">@(card.FreelyAvailable ? "Free" : $"×{card.OwnedQuantity}")</span>
+                <button type="button"
+                        class="card-showcase-trigger"
+                        aria-label="@($"Show a large view of {card.Name}")"
+                        @ref="cardTrigger"
+                        @onclick="() => ShowCard(card, cardTrigger)">
+                    <CardFace Card="card"
+                              Size="CardFaceSize.Catalogue"
+                              Decorative="true"
+                              ShowTitle="false" />
+                </button>
+                <b>@card.Name</b>
+                <span>@PublicKind(card.Kind) · @card.Type</span>
+            </article>
         }
     </div>
     @if (!VisibleCards().Any())
@@ -32,11 +52,17 @@ else
     }
 }
 
+<CardShowcase @ref="_cardShowcase" />
+
 @code {
     private ApplicationView? _view;
+    private CardShowcase? _cardShowcase;
     private string? _error;
     private string _search = string.Empty;
     private bool _ownedOnly;
+
+    private void ShowCard(CardView card, ElementReference trigger) =>
+        _cardShowcase?.Show(card, trigger);
 
     protected override async Task OnInitializedAsync()
     {
@@ -58,5 +84,15 @@ else
                 string.IsNullOrWhiteSpace(_search)
                 || card.Name.Contains(_search, StringComparison.OrdinalIgnoreCase)
                 || card.Type.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                || card.Detail.Contains(_search, StringComparison.OrdinalIgnoreCase)
             );
+
+    private static string PublicKind(CardKindView kind) =>
+        kind switch
+        {
+            CardKindView.Blokemon => "Blokemon",
+            CardKindView.Kit => "Trainer",
+            CardKindView.BasicVim => "Basic Energy",
+            _ => kind.ToString(),
+        };
 }

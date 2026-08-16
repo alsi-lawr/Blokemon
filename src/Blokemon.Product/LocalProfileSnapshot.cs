@@ -20,15 +20,24 @@ public sealed record SavedDeckSnapshot(
     ImmutableArray<SavedDeckCardSnapshot> Cards
 );
 
+public sealed record StarterCollectibleGrantSnapshot(string? CardId, int Quantity);
+
+public sealed record StarterDeckClaimSnapshot(
+    string? StarterDeckId,
+    string? CommandId,
+    SavedDeckSnapshot? Deck,
+    ImmutableArray<StarterCollectibleGrantSnapshot> CollectibleGrants
+);
+
 public sealed record LocalProfileSnapshot(
     string? AuthorityManifestVersion,
     string? ProfileId,
     string? DisplayName,
     string? GuaranteedRegularCollectibleId,
-    int AvailablePackEntitlements,
     ImmutableArray<CollectibleOwnershipSnapshot> CollectibleOwnership,
     ImmutableArray<PackReceiptSnapshot> PackReceipts,
-    ImmutableArray<SavedDeckSnapshot> SavedDecks
+    ImmutableArray<SavedDeckSnapshot> SavedDecks,
+    ImmutableArray<StarterDeckClaimSnapshot> StarterDeckClaims = default
 );
 
 public enum SnapshotDuplicateKind
@@ -39,6 +48,8 @@ public enum SnapshotDuplicateKind
     SampledCardIdWithinReceipt,
     DeckId,
     DeckCardId,
+    StarterGrantCardId,
+    StarterClaimCommandId,
 }
 
 public abstract record LocalProfileRestorationFailure
@@ -53,7 +64,6 @@ public abstract record LocalProfileRestorationFailure
         Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
         Func<string, CardId, TResult> onUnknownCard,
         Func<CardId, TResult> onStarterNotRegular,
-        Func<int, int, TResult> onEntitlementHistoryMismatch,
         Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
         Func<PackReceiptId, int, TResult> onInvalidPackSequence,
         Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -73,7 +83,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -94,7 +103,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -114,7 +122,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -135,7 +142,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -156,7 +162,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -176,7 +181,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -196,7 +200,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -204,27 +207,6 @@ public abstract record LocalProfileRestorationFailure
             Func<DeckId, long, TResult> onInvalidDeckRevision,
             Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
         ) => onStarterNotRegular(CardId);
-    }
-
-    public sealed record EntitlementHistoryMismatch(int Actual, int Expected)
-        : LocalProfileRestorationFailure
-    {
-        public override TResult Match<TResult>(
-            Func<string, TextValueFailure, TResult> onInvalidId,
-            Func<DisplayNameCreationFailure, TResult> onInvalidDisplayName,
-            Func<string, TResult> onMissingEntry,
-            Func<string, int, TResult> onNegativeQuantity,
-            Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
-            Func<string, CardId, TResult> onUnknownCard,
-            Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
-            Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
-            Func<PackReceiptId, int, TResult> onInvalidPackSequence,
-            Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
-            Func<DeckId, TextValueFailure, TResult> onInvalidDeckName,
-            Func<DeckId, long, TResult> onInvalidDeckRevision,
-            Func<DeckId, ImmutableArray<DeckValidationIssue>, TResult> onInvalidSavedDeck
-        ) => onEntitlementHistoryMismatch(Actual, Expected);
     }
 
     public sealed record InvalidPackCardCount(PackReceiptId ReceiptId, int Actual)
@@ -238,7 +220,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -259,7 +240,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -280,7 +260,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -301,7 +280,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -322,7 +300,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,
@@ -343,7 +320,6 @@ public abstract record LocalProfileRestorationFailure
             Func<SnapshotDuplicateKind, string, TResult> onDuplicateValue,
             Func<string, CardId, TResult> onUnknownCard,
             Func<CardId, TResult> onStarterNotRegular,
-            Func<int, int, TResult> onEntitlementHistoryMismatch,
             Func<PackReceiptId, int, TResult> onInvalidPackCardCount,
             Func<PackReceiptId, int, TResult> onInvalidPackSequence,
             Func<CardId, int, int, TResult> onOwnershipHistoryMismatch,

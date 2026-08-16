@@ -2,6 +2,7 @@ using System.Text.Json;
 using Blokemon.Core.SetDesign;
 using Blokemon.Game;
 using Blokemon.Web.Persistence;
+using Shouldly;
 
 namespace Blokemon.Web.Tests;
 
@@ -148,6 +149,6 @@ public sealed class MatchJsonTests
             MatchJson.Options
         );
 
-        await Assert.That(restored).IsEqualTo(commands);
+        restored.ShouldBe(commands);
     }
 }

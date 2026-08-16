@@ -9,9 +9,9 @@ public static class CardRenderer
 
     /// <summary>Prints a card.</summary>
     /// <param name="card">The card to print.</param>
-    /// <param name="art">The illustrations to embed.</param>
+    /// <param name="art">The illustrations to render.</param>
     /// <returns>The card markup.</returns>
-    public static string Render(ICard card, Illustrations art)
+    public static string Render(ICard card, IllustrationRendering art)
     {
         ArgumentNullException.ThrowIfNull(card);
         ArgumentNullException.ThrowIfNull(art);
@@ -37,7 +37,7 @@ public static class CardRenderer
             ? $"{card.DisplayName}, {points} HP, {vitality.Type} Blokemon"
             : card.DisplayName;
 
-    private static string Region(CardRegion region, Illustrations art) =>
+    private static string Region(CardRegion region, IllustrationRendering art) =>
         region.Match(
             PrintedField,
             Nameplate,
@@ -70,11 +70,14 @@ public static class CardRenderer
             ? string.Empty
             : $"""<div class="hp-cluster"><strong>{points}</strong><small>HP</small></div>""";
 
-    private static string Lineage(CardRegion.Lineage lineage, Illustrations art) =>
-        $"""<div class="evolution-panel" data-region="evolution-panel">{art.Image(lineage.Previous.Art, "previous-art")}</div><div class="evolves-strip">Evolves from {Esc(lineage.Previous.Name)}</div>""";
+    private static string Lineage(CardRegion.Lineage lineage, IllustrationRendering art) =>
+        $"""<div class="evolution-panel" data-region="evolution-panel">{art.Image(lineage.Previous.Art, IllustrationRole.PreviousStage)}</div><div class="evolves-strip">Evolves from {Esc(lineage.Previous.Name)}</div>""";
 
-    private static string Illustration(CardRegion.Illustration illustration, Illustrations art) =>
-        $"""{Frame(illustration.Placement)}<figure class="art-viewport" data-region="art-viewport" data-placement="{Placement(illustration.Placement)}">{art.Image(illustration.Art, null)}</figure>""";
+    private static string Illustration(
+        CardRegion.Illustration illustration,
+        IllustrationRendering art
+    ) =>
+        $"""{Frame(illustration.Placement)}<figure class="art-viewport" data-region="art-viewport" data-placement="{Placement(illustration.Placement)}">{art.Image(illustration.Art, IllustrationRole.Primary)}</figure>""";
 
     private static string Frame(IllustrationPlacement placement) =>
         placement is IllustrationPlacement.Framed

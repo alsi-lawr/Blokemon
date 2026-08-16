@@ -3,18 +3,16 @@ using Blokemon.CardGen.Domain;
 
 namespace Blokemon.CardGen.Rendering;
 
-/// <summary>The illustrations a card carries inside itself.</summary>
-public sealed class Illustrations
+/// <summary>A trusted source of rendered card illustrations.</summary>
+public abstract class IllustrationRendering
 {
-    private readonly ImmutableDictionary<string, string> _encoded;
+    private protected IllustrationRendering() { }
 
-    private Illustrations(ImmutableDictionary<string, string> encoded) => _encoded = encoded;
-
-    /// <summary>Reads every illustration in a directory.</summary>
+    /// <summary>Loads illustrations that travel inside the rendered card.</summary>
     /// <param name="directory">The directory holding the illustrations.</param>
-    /// <returns>The illustrations.</returns>
-    public static Illustrations Load(string directory) =>
-        new(
+    /// <returns>The embedded illustration rendering.</returns>
+    public static IllustrationRendering Embedded(string directory) =>
+        new EmbeddedIllustrationRendering(
             Directory
                 .EnumerateFiles(directory, "*.svg")
                 .ToImmutableDictionary(
@@ -24,26 +22,71 @@ public sealed class Illustrations
                 )
         );
 
-    /// <summary>Places an illustration as an embedded image.</summary>
-    /// <param name="artwork">The artwork to place.</param>
-    /// <param name="className">The class the image carries, absent when it needs none.</param>
-    /// <returns>The image markup.</returns>
-    public string Image(Artwork artwork, string? className)
-    {
-        ArgumentNullException.ThrowIfNull(artwork);
+    /// <summary>Loads illustrations referenced from the same-origin art directory.</summary>
+    /// <param name="directory">The directory whose known illustration names may be referenced.</param>
+    /// <returns>The referenced illustration rendering.</returns>
+    public static IllustrationRendering Referenced(string directory) =>
+        new ReferencedIllustrationRendering(
+            Directory
+                .EnumerateFiles(directory, "*.svg")
+                .Select(Path.GetFileName)
+                .OfType<string>()
+                .ToImmutableHashSet(StringComparer.Ordinal)
+        );
 
-        if (!_encoded.TryGetValue(artwork.FileName, out var data))
+    internal abstract string Image(Artwork artwork, IllustrationRole role);
+
+    private static string Class(IllustrationRole role) =>
+        role switch
         {
-            throw new InvalidDataException($"No illustration for {artwork.FileName}");
-        }
+            IllustrationRole.Primary => string.Empty,
+            IllustrationRole.PreviousStage => " class=\"previous-art\"",
+            _ => throw new ArgumentOutOfRangeException(nameof(role)),
+        };
 
-        // Carried as data rather than referenced, so a card is one file with nothing beside it.
-        var mark = className is null ? string.Empty : $" class=\"{className}\"";
-        var alt = artwork
-            .AltText.Replace("&", "&amp;", StringComparison.Ordinal)
+    private static string Esc(string value) =>
+        value
+            .Replace("&", "&amp;", StringComparison.Ordinal)
             .Replace("<", "&lt;", StringComparison.Ordinal)
-            .Replace("\"", "&quot;", StringComparison.Ordinal);
+            .Replace(">", "&gt;", StringComparison.Ordinal)
+            .Replace("\"", "&quot;", StringComparison.Ordinal)
+            .Replace("'", "&#39;", StringComparison.Ordinal);
 
-        return $"""<img{mark} src="data:image/svg+xml;base64,{data}" alt="{alt}"/>""";
+    private sealed class EmbeddedIllustrationRendering(ImmutableDictionary<string, string> encoded)
+        : IllustrationRendering
+    {
+        internal override string Image(Artwork artwork, IllustrationRole role)
+        {
+            ArgumentNullException.ThrowIfNull(artwork);
+
+            if (!encoded.TryGetValue(artwork.FileName, out var data))
+            {
+                throw new InvalidDataException($"No illustration for {artwork.FileName}");
+            }
+
+            return $"""<img{Class(role)} src="data:image/svg+xml;base64,{data}" alt="{Esc(artwork.AltText)}"/>""";
+        }
     }
+
+    private sealed class ReferencedIllustrationRendering(ImmutableHashSet<string> knownFiles)
+        : IllustrationRendering
+    {
+        internal override string Image(Artwork artwork, IllustrationRole role)
+        {
+            ArgumentNullException.ThrowIfNull(artwork);
+
+            if (!knownFiles.Contains(artwork.FileName))
+            {
+                throw new InvalidDataException($"No illustration for {artwork.FileName}");
+            }
+
+            return $"""<img{Class(role)} src="/art/{Esc(artwork.FileName)}" alt="{Esc(artwork.AltText)}"/>""";
+        }
+    }
+}
+
+internal enum IllustrationRole
+{
+    Primary,
+    PreviousStage,
 }

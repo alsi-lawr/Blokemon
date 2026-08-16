@@ -10,6 +10,7 @@ public enum MatchEventKind
     CardsShuffled,
     CardsDrawn,
     CardMoved,
+    CardsRevealed,
     BeerMatTossed,
     DamagePlaced,
     DamageHealed,

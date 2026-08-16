@@ -1,4 +1,5 @@
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -29,7 +30,7 @@ public sealed class ModifierDurationTests
             engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-076-B02"))
         );
 
-        await Assert.That(state.Card(new CardInstanceId("defender")).Damage).IsEqualTo(350);
+        state.Card(new CardInstanceId("defender")).Damage.ShouldBe(350);
     }
 
     [Test]
@@ -61,9 +62,7 @@ public sealed class ModifierDurationTests
 
         var applied = (CommandOutcome.Applied)engine.Apply(state, command);
 
-        await Assert.That(applied.State.Card(source.Id).Zone).IsEqualTo(CardZone.Oche);
-        await Assert
-            .That(applied.State.Card(new CardInstanceId("attacker")).Zone)
-            .IsEqualTo(CardZone.Booth);
+        applied.State.Card(source.Id).Zone.ShouldBe(CardZone.Oche);
+        applied.State.Card(new CardInstanceId("attacker")).Zone.ShouldBe(CardZone.Booth);
     }
 }

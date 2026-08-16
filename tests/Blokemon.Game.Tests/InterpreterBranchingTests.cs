@@ -1,5 +1,6 @@
 using Blokemon.Core.SetDesign;
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -10,9 +11,9 @@ public sealed class InterpreterBranchingTests
     {
         var audit = new BlokemonInterpreter(MatchScenario.Authority).AuditAuthority();
 
-        await Assert.That(audit.IsInventoryComplete).IsTrue();
-        await Assert.That(audit.EffectCount).IsEqualTo(310);
-        await Assert.That(audit.InstructionCount).IsEqualTo(644);
+        audit.IsInventoryComplete.ShouldBeTrue();
+        audit.EffectCount.ShouldBe(310);
+        audit.InstructionCount.ShouldBe(641);
     }
 
     [Test]
@@ -31,10 +32,10 @@ public sealed class InterpreterBranchingTests
             engine.Apply(blankState, MatchScenario.AttackCommand(blankState, "BLK-056-B01"))
         );
 
-        await Assert.That(badgeResult.Card(new CardInstanceId("defender")).Damage).IsEqualTo(40);
-        await Assert.That(badgeResult.Card(new CardInstanceId("attacker")).Damage).IsEqualTo(0);
-        await Assert.That(blankResult.Card(new CardInstanceId("defender")).Damage).IsEqualTo(20);
-        await Assert.That(blankResult.Card(new CardInstanceId("attacker")).Damage).IsEqualTo(20);
+        badgeResult.Card(new CardInstanceId("defender")).Damage.ShouldBe(40);
+        badgeResult.Card(new CardInstanceId("attacker")).Damage.ShouldBe(0);
+        blankResult.Card(new CardInstanceId("defender")).Damage.ShouldBe(20);
+        blankResult.Card(new CardInstanceId("attacker")).Damage.ShouldBe(20);
     }
 
     [Test]
@@ -55,9 +56,9 @@ public sealed class InterpreterBranchingTests
 
         var accepted = engine.Apply(state, declined);
 
-        await Assert.That(missing.Rejection.Code).IsEqualTo(CommandRejectionCode.ChoiceRequired);
-        await Assert.That(ReferenceEquals(missing.State, state)).IsTrue();
-        await Assert.That(accepted).IsTypeOf<CommandOutcome.Applied>();
+        missing.Rejection.Code.ShouldBe(CommandRejectionCode.ChoiceRequired);
+        ReferenceEquals(missing.State, state).ShouldBeTrue();
+        accepted.ShouldBeOfType<CommandOutcome.Applied>();
     }
 
     [Test]
@@ -83,11 +84,9 @@ public sealed class InterpreterBranchingTests
             engine.Apply(state, MatchScenario.AttackCommand(state, "BLK-052-B01"))
         );
 
-        await Assert.That(applied.PendingEffect).IsNull();
-        await Assert
-            .That(applied.Card(new CardInstanceId("defender")).Zone)
-            .IsEqualTo(CardZone.Oche);
-        await Assert.That(applied.Card(boothCard.Id).Zone).IsEqualTo(CardZone.Booth);
+        applied.PendingEffect.ShouldBeNull();
+        applied.Card(new CardInstanceId("defender")).Zone.ShouldBe(CardZone.Oche);
+        applied.Card(boothCard.Id).Zone.ShouldBe(CardZone.Booth);
     }
 
     [Test]
@@ -139,20 +138,16 @@ public sealed class InterpreterBranchingTests
         var resolved = (CommandOutcome.Applied)
             engine.Apply(requested.State, choiceDecision.Action.Command);
 
-        await Assert.That(legalAttack.ChoiceRequirements.Count).IsEqualTo(0);
-        await Assert.That(legalAttack.Command.Choices.Count).IsEqualTo(0);
-        await Assert.That(attackDecision.Action.Kind).IsEqualTo(LegalActionKind.Attack);
-        await Assert.That(requested.State.Phase).IsEqualTo(MatchPhase.AwaitingEffectChoice);
-        await Assert
-            .That(pending.Requirements.Single().Chooser)
-            .IsEqualTo(MatchScenario.FirstPlayer);
-        await Assert.That(rejected.Rejection.Code).IsEqualTo(CommandRejectionCode.WrongChooser);
-        await Assert.That(rejected.State).IsEqualTo(requested.State);
-        await Assert
-            .That(choiceDecision.Action.Kind)
-            .IsEqualTo(LegalActionKind.ResolveEffectChoice);
-        await Assert.That(resolved.State.PendingEffect).IsNull();
-        await Assert.That(resolved.State.Card(boothCard.Id).Zone).IsEqualTo(CardZone.Oche);
+        legalAttack.ChoiceRequirements.Count.ShouldBe(0);
+        legalAttack.Command.Choices.Count.ShouldBe(0);
+        attackDecision.Action.Kind.ShouldBe(LegalActionKind.Attack);
+        requested.State.Phase.ShouldBe(MatchPhase.AwaitingEffectChoice);
+        pending.Requirements.Single().Chooser.ShouldBe(MatchScenario.FirstPlayer);
+        rejected.Rejection.Code.ShouldBe(CommandRejectionCode.WrongChooser);
+        rejected.State.ShouldBe(requested.State);
+        choiceDecision.Action.Kind.ShouldBe(LegalActionKind.ResolveEffectChoice);
+        resolved.State.PendingEffect.ShouldBeNull();
+        resolved.State.Card(boothCard.Id).Zone.ShouldBe(CardZone.Oche);
     }
 
     private static ulong SeedFor(bool firstBadge)

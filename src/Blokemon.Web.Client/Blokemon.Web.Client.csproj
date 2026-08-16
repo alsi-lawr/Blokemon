@@ -8,7 +8,25 @@
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(StandaloneBrowser)' == 'true'">
+    <DefineConstants>$(DefineConstants);BLOKEMON_STANDALONE_BROWSER</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.csproj" />
+    <ProjectReference Include="../Blokemon.Game/Blokemon.Game.csproj" />
+    <ProjectReference Include="../Blokemon.Product/Blokemon.Product.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Blokemon.Web.Tests" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(StandaloneBrowser)' == 'true'">
+    <Content Include="../Blokemon.Web/wwwroot/app.css" Link="wwwroot/app.css" />
+    <Content Include="../Blokemon.Web/wwwroot/favicon.svg" Link="wwwroot/favicon.svg" />
+    <Content Include="../../content/art/**" Link="wwwroot/art/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../../content/fonts/**" Link="wwwroot/fonts/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

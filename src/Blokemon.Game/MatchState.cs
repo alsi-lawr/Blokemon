@@ -53,10 +53,11 @@ public sealed record RoundUsage(
     int MatesPlayed,
     int LocalsPlayed,
     int TaxisUsed,
-    FrozenList<EffectId> EffectsUsed
+    FrozenList<EffectId> EffectsUsed,
+    FrozenList<MechanicalCardId> KitsPlayed
 )
 {
-    public static RoundUsage Empty(PlayerId player) => new(player, 0, 0, 0, 0, []);
+    public static RoundUsage Empty(PlayerId player) => new(player, 0, 0, 0, 0, [], []);
 }
 
 public sealed record MatchState(

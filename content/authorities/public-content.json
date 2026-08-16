@@ -1,9 +1,9 @@
 {
   "schemaVersion": "blokemon-public-content-schema-2.0.0-candidate.5",
-  "contentVersion": "blokemon-public-content-2.0.0-candidate.5",
-  "mechanicalManifestVersion": "sv151-candidate.12",
+  "contentVersion": "blokemon-public-content-2.0.0-candidate.7",
+  "mechanicalManifestVersion": "sv151-candidate.14",
   "terminologyVersion": "blokemon-public-terminology-2.0.0-candidate.5",
-  "humanApprovalStatus": "AwaitingApproval",
+  "humanApprovalStatus": "Accepted",
   "terminology": [
     {
       "id": "TERM-TYPE-001",
@@ -150,7 +150,7 @@
       "category": "Status",
       "singular": "Paralyzed",
       "plural": "Paralyzed",
-      "definition": "The affected Active Blokemon cannot Attack or Retreat; clear Paralyzed after its owner’s next turn."
+      "definition": "The affected Active Blokemon cannot Attack or Retreat; clear Paralyzed after its owner\u2019s next turn."
     },
     {
       "id": "TERM-STATUS-005",
@@ -197,35 +197,35 @@
     {
       "id": "TERM-TARGET-006",
       "category": "Target",
-      "singular": "Your opponent’s Active Blokemon",
-      "plural": "Your opponents’ Active Blokemon",
+      "singular": "Your opponent\u2019s Active Blokemon",
+      "plural": "Your opponents\u2019 Active Blokemon",
       "definition": "The opposing Blokemon in the Active Spot."
     },
     {
       "id": "TERM-TARGET-007",
       "category": "Target",
-      "singular": "1 of your opponent’s Benched Blokemon",
-      "plural": "Your opponents’ Benched Blokemon",
+      "singular": "1 of your opponent\u2019s Benched Blokemon",
+      "plural": "Your opponents\u2019 Benched Blokemon",
       "definition": "An eligible opposing Blokemon you choose from the Bench."
     },
     {
       "id": "TERM-TARGET-008",
       "category": "Target",
-      "singular": "Each of your opponent’s Benched Blokemon",
+      "singular": "Each of your opponent\u2019s Benched Blokemon",
       "plural": "Each opposing Benched Blokemon",
       "definition": "Every eligible opposing Blokemon on the Bench."
     },
     {
       "id": "TERM-TARGET-009",
       "category": "Target",
-      "singular": "1 of your opponent’s Blokemon",
-      "plural": "Your opponents’ Blokemon",
+      "singular": "1 of your opponent\u2019s Blokemon",
+      "plural": "Your opponents\u2019 Blokemon",
       "definition": "One eligible Blokemon your opponent controls."
     },
     {
       "id": "TERM-TARGET-010",
       "category": "Target",
-      "singular": "Each of your opponent’s Blokemon",
+      "singular": "Each of your opponent\u2019s Blokemon",
       "plural": "Each opposing Blokemon",
       "definition": "Every eligible Blokemon your opponent controls."
     },
@@ -239,9 +239,9 @@
     {
       "id": "TERM-TARGET-012",
       "category": "Target",
-      "singular": "Your opponent’s hand",
-      "plural": "Your opponents’ hands",
-      "definition": "Your opponent’s private cards, revealed only when an effect requires it."
+      "singular": "Your opponent\u2019s hand",
+      "plural": "Your opponents\u2019 hands",
+      "definition": "Your opponent\u2019s private cards, revealed only when an effect requires it."
     },
     {
       "id": "TERM-TARGET-013",
@@ -253,9 +253,9 @@
     {
       "id": "TERM-TARGET-014",
       "category": "Target",
-      "singular": "Your opponent’s Deck",
-      "plural": "Your opponents’ Decks",
-      "definition": "Your opponent’s face-down draw pile."
+      "singular": "Your opponent\u2019s Deck",
+      "plural": "Your opponents\u2019 Decks",
+      "definition": "Your opponent\u2019s face-down draw pile."
     },
     {
       "id": "TERM-TARGET-015",
@@ -283,7 +283,7 @@
       "category": "Choice",
       "singular": "Choose",
       "plural": "Choose",
-      "definition": "The effect’s controller selects an eligible target."
+      "definition": "The effect\u2019s controller selects an eligible target."
     },
     {
       "id": "TERM-CHOICE-002",
@@ -500,7 +500,7 @@
       "category": "Timing",
       "singular": "Until the end of the next turn",
       "plural": "Until the ends of the next turns",
-      "definition": "The effect expires after the specified participant’s next turn."
+      "definition": "The effect expires after the specified participant\u2019s next turn."
     },
     {
       "id": "TERM-TIMING-010",
@@ -612,21 +612,21 @@
       "category": "Core",
       "singular": "Hand",
       "plural": "Hands",
-      "definition": "A participant’s private held cards."
+      "definition": "A participant\u2019s private held cards."
     },
     {
       "id": "TERM-CORE-009",
       "category": "Core",
       "singular": "Deck",
       "plural": "Decks",
-      "definition": "A participant’s face-down draw pile."
+      "definition": "A participant\u2019s face-down draw pile."
     },
     {
       "id": "TERM-CORE-010",
       "category": "Core",
       "singular": "Discard pile",
       "plural": "Discard piles",
-      "definition": "A participant’s face-up discarded cards."
+      "definition": "A participant\u2019s face-up discarded cards."
     },
     {
       "id": "TERM-CORE-011",
@@ -689,7 +689,7 @@
       "category": "Core",
       "singular": "Discard",
       "plural": "Discards",
-      "definition": "Move a card to its owner’s discard pile."
+      "definition": "Move a card to its owner\u2019s discard pile."
     },
     {
       "id": "TERM-CORE-020",
@@ -752,7 +752,7 @@
       "category": "BattleTiming",
       "singular": "Single absence expires",
       "plural": "Single absence expires",
-      "definition": "One absent participant forfeits when that participant’s reconnect grace expires."
+      "definition": "One absent participant forfeits when that participant\u2019s reconnect grace expires."
     },
     {
       "id": "TERM-BATTLE-TIMING-007",
@@ -874,7 +874,7 @@
         "altIntent": "Weedman Will is recognisable as a cautious but generous regular sharing a small smoke in shelter from the rain, his guarded posture softening through the offered hand."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -902,7 +902,7 @@
         "altIntent": "Bedroom Grower should read as a proud amateur tending an improvised indoor garden, boxed in by warm lamps, clipped leaves and the practical clutter of a converted bedroom."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -934,11 +934,11 @@
       ],
       "illustration": {
         "brief": "An assured older raconteur occupies the centre of a low pub booth with relaxed open palms; wide low-angle portrait, brass rail and two empty water glasses, deep bottle green cut by a calm cream spotlight.",
-        "prompt": "Seat Howard Marks along the back curve of a low snug, viewed from table height with both open palms calming unseen companions on either side. Use the brass rail and two water glasses to create a quiet horizontal rhythm, leaving a cream pool of light around his assured face; avoid portraits, trademarks and any written décor in the pub.",
+        "prompt": "Seat Howard Marks along the back curve of a low snug, viewed from table height with both open palms calming unseen companions on either side. Use the brass rail and two water glasses to create a quiet horizontal rhythm, leaving a cream pool of light around his assured face; avoid portraits, trademarks and any written d\u00e9cor in the pub.",
         "altIntent": "Howard Marks appears as an older, composed raconteur whose relaxed hands and central place in the booth make a noisy room feel settled without force."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -966,7 +966,7 @@
         "altIntent": "Dave Lister is shown as a scruffy late-night curry devotee protecting his meal with comic seriousness while rain and counter steam close in around him."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -994,7 +994,7 @@
         "altIntent": "Four-Naan Jeremy's visual meaning is determined excess: he carefully builds an implausible stack of flatbreads while the crowded table records the scale of his order."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1029,7 +1029,7 @@
         "altIntent": "Brick Lane Boss reads as a formidable host who treats the restaurant doorway as his territory, controlling the flow with stillness rather than spectacle."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1057,7 +1057,7 @@
         "altIntent": "Designated Driver is the calm person already prepared to leave, visually separated from the lively pub by keys, a clear drink and the waiting car light."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1085,7 +1085,7 @@
         "altIntent": "Dry January conveys fresh abstinence becoming a mission, with an intent figure inspecting a plain bottle while exercise kit and a marked-off month support the change."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1121,7 +1121,7 @@
         "altIntent": "Parkrun is a broad runner preparing before sunrise, visibly alert and organised against a damp gate, bottles and empty path."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1145,7 +1145,7 @@
         "altIntent": "First Rollie should communicate a novice taking a tiny task far too seriously, his anxious hands and close attention doing most of the storytelling."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1173,7 +1173,7 @@
         "altIntent": "Couch Lock depicts a bloke fully absorbed by the sofa, too settled to reach the nearby remote as blanket, snacks and closing curtains confirm the long stay."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1202,7 +1202,7 @@
         "altIntent": "High as a Kite feels buoyant and convinced of flight, a delighted human figure leaning into a hilltop gust above the remote lights of the pub."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1229,7 +1229,7 @@
         "altIntent": "Soap Bar is visually a wary regular offering a dubious little wrapped block, with harsh light and improvised packaging making the exchange feel uncertain."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1258,7 +1258,7 @@
         "altIntent": "Cheese presents a relaxed obsessive carefully unwrapping a pungent parcel, his contented attention making the odd bar snack feel treasured."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1286,7 +1286,7 @@
         "altIntent": "Stardawg should read as an intense connoisseur delivering absolute expertise over an anonymous display, with pointed gesture, jars and grinder conveying the fixation."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1314,7 +1314,7 @@
         "altIntent": "Ciggy Sam is a weathered doorway regular caught between shelter and rain, cigarette, folded paper and scuffed shoes marking a familiar pause outside."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1337,7 +1337,7 @@
         "altIntent": "Pub Regular belongs unmistakably to one corner of the bar, his settled posture, worn elbow and small familiar objects suggesting years in the same seat."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1365,7 +1365,7 @@
         "altIntent": "Local Celebrity shows a delighted neighbourhood figure performing fame for a tiny arrival, enjoying flashes and a makeshift rope as though the crowd were enormous."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1389,7 +1389,7 @@
         "altIntent": "Scrounger appears hopeful and practised, already asking through open hands, an empty pocket and borrowed umbrella before fully crossing the threshold."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1408,12 +1408,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A persuasive borrower diagrams an elaborate repayment plan across a beer mat; seated over-shoulder view, loose coins and cracked phone, soft tan under a doubtful blue lamp.",
-        "prompt": "Place the viewer over Borrow-a-Fiver's shoulder as he arranges loose coins into an elaborate route across a blank beer mat for a sceptical companion. Keep his cracked phone face-down and his pointing hand animated under a doubtful blue lamp, with soft tan seating enclosing the scene; no figures, totals or dialogue may be readable.",
-        "altIntent": "Borrow-a-Fiver is a persuasive regular turning a tiny debt into a complicated plan, using coins and emphatic gestures to hold a listener at the table."
+        "brief": "A scruffy pub mate asks to borrow a single five-pound note while another person holds the note out across the table.",
+        "prompt": "Show a scruffy adult British pub mate genuinely asking another person to lend him one recognisable five-pound note. He leans forward with an embarrassed persuasive expression and an open asking hand while the other person holds out a single small blue-green UK \u00a35 polymer note. Keep the note simplified, with no legible portrait, serial number or writing. One pub table, one half-pint and a cracked phone; the borrowing exchange is unmistakable.",
+        "altIntent": "A scruffy pub mate asks to borrow a single five-pound note while another person holds the note out across the table."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1442,7 +1442,7 @@
         "altIntent": "Dole Spender should convey effortless confidence amid administrative clutter, relaxed on the sofa while blank letters and everyday shopping imply a busy account of the day."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1470,7 +1470,7 @@
         "altIntent": "Cash-in-Hand is a practical worker settling payment beside an unfinished job, the notes, tools and blank receipt pad making the arrangement clear without words."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1494,7 +1494,7 @@
         "altIntent": "Snake Oil appears as a velvet-smooth seller revealing an implausible range of anonymous tonics, his confidence and presentation carrying the dubious promise."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1529,7 +1529,7 @@
         "altIntent": "Boiler Room is a controlling closer dominating a cramped sales floor, with converging desks and hot red lamps making pressure visible around the human figure."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1552,12 +1552,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A compact pub hero braces a brimming tray at chest height; low comic-but-clean angle, rolled sleeves and foam-rimmed glasses, bright lager gold against navy.",
-        "prompt": "Shoot Pintman from below the edge of a brimming tray as he braces it against his chest and finds a path through the room. Rolled sleeves, foaming plain glasses and a compact determined face should glow lager-gold against navy booths; no glass logo, pump badge or written order should be present.",
-        "altIntent": "Pintman reads as a small but heroic carrier of the round, defined by the heavy tray, planted stance and bright concentration rather than costume parody."
+        "brief": "An old, enormously fat and weathered heavy drinker carries four pints through his local pub.",
+        "prompt": "Make Pintman an older, much fatter, rougher heavy drinker: late sixties, enormous beer belly, sagging jowls, blotchy weathered face, broken nose, thinning grey hair, heavy eye bags and stained old polo under a cardigan. He braces a tray of four ordinary pints with both hands in a tired local pub. Affectionate grotesque caricature, not handsome or heroic-polished.",
+        "altIntent": "An old, enormously fat and weathered heavy drinker carries four pints through his local pub."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1565,7 +1565,7 @@
       "id": "BLK-026",
       "approvedName": "Donni",
       "approvedType": "Beer",
-      "flavourText": "Donni can hear a loose earth cable from across the lounge.",
+      "flavourText": "Donni necks a can of lager\u2014his electric soup\u2014before squaring up to the Crack Fox.",
       "abilities": [
         {
           "mechanicalId": "BLK-026-T01",
@@ -1576,18 +1576,18 @@
       "attacks": [
         {
           "mechanicalId": "BLK-026-B01",
-          "name": "Call It Big Noise",
+          "name": "Electric Souperman",
           "effectText": "This Blokemon also does 50 damage to itself."
         }
       ],
       "rules": [],
       "illustration": {
-        "brief": "A seasoned drinker kneels beside a humming jukebox with one hand on the plug; triangular composition, pint kept safely distant and rubber-soled boots, amber light grounded by charcoal.",
-        "prompt": "Kneel beside Donni at floor level while he checks a jukebox plug with one careful hand and keeps his pint well behind the other knee. Build a triangular scene from rubber-soled boots, coiled lead and amber cabinet glow, letting his seasoned concern lead the eye; controls, songs and manufacturer marks remain blank.",
-        "altIntent": "Donni is the experienced regular who notices an electrical fault before anyone else, crouched safely by the jukebox with practical attention and the drink kept away."
+        "brief": "Donni necks a plain can of lager while squaring up to the Crack Fox; a bold face-off with the raised can as the focal prop, electric amber against charcoal and ample negative space.",
+        "prompt": "Show Donni necking a plain unbranded can of lager\u2014his electric soup\u2014as he gears up to fight the Crack Fox. Stage them as two clear opposing silhouettes, with Donni\u2019s raised can and clenched free hand carrying the action; keep the sewer setting to one flat arch and one puddle shape, with no labels, litter or incidental clutter.",
+        "altIntent": "Donni drinks a can of lager to become Electric Souperman and face the Crack Fox."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1616,7 +1616,7 @@
         "altIntent": "You Looking at Me? captures the instant a pool player turns a casual glance into confrontation, cue, squared shoulder and narrowed eyes making the question unmistakable."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1640,12 +1640,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A stocky car-park combatant plants both feet beneath a security lamp; wide stance in a clean central frame, folded coat on a bollard and clenched jaw, stone grey with hazard yellow.",
-        "prompt": "Set Come On Then full-body beneath a lonely security lamp, feet planted wide while his folded coat waits neatly on a bollard. Keep the car park broad and nearly empty so stone-grey ground and hazard-yellow light amplify his clenched stance; clothing stays unbranded and no sign or caption invites the fight.",
-        "altIntent": "Come On Then is a stocky challenger prepared for a car-park confrontation, his deliberate stance and carefully removed coat telling the story before anyone responds."
+        "brief": "A comically short-limbed, long-torsoed car-park hard man puffs himself up beneath a security lamp.",
+        "prompt": "A ridiculous little car-park hard man still trying desperately to look tough. Give him a very long thick torso, comically short legs, short stubby arms, oversized head, tiny planted feet, clenched jaw and puffed chest. His coat is physically folded on a bollard. Full body under one security lamp; silly proportions are obvious while the challenge pose remains aggressive.",
+        "altIntent": "A comically short-limbed, long-torsoed car-park hard man puffs himself up beneath a security lamp."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1669,7 +1669,7 @@
         "altIntent": "Fake Tan Fran appears glamorous, calculating and pleased with the result, using the compact reflection and salon setting to make fresh colour the centre of attention."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1697,7 +1697,7 @@
         "altIntent": "Facebook Marketplace depicts an intense seller treating a mundane chair like a premium listing, with staged light, measuring tape and camera posture conveying the hustle."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1725,7 +1725,7 @@
         "altIntent": "MLM Queen is a radiant recruiter performing certainty to an almost absent audience, her presentation pose and stacked samples revealing the sales structure without labels."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1748,7 +1748,7 @@
         "altIntent": "Knockoff Nigel reads as a vigilant market trader polishing the appearance of suspiciously familiar clothing while guarding his stall."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1775,7 +1775,7 @@
         "altIntent": "Cash Only is a proprietor firmly steering payment toward the small till, with coins and an unplugged reader making the preference obvious without any sign."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1800,12 +1800,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A prosperous landlord surveys a tiny freshly painted room from the doorway; wide lens exaggeration, giant key ring and clipboard held close, estate-agent teal under ominous gold.",
-        "prompt": "Watch Landlord from inside a tiny freshly painted room as he fills the doorway, giant keys hanging toward the wide lens and clipboard tucked protectively to his chest. Let teal walls bow slightly around his prosperous stance under ominous gold light; paperwork, key tags and property details remain unreadable.",
-        "altIntent": "Landlord appears pleased with a cramped room he controls, looming in the doorway with oversized keys and guarded clipboard as the space bends around him."
+        "brief": "A smug landlord stands in a coherent open doorway holding three properly attached brass keys and one clipboard.",
+        "prompt": "A smug prosperous landlord stands correctly within an ordinary open rental-room doorway. The door is a single rigid rectangle mounted to visible hinges, with one handle and a coherent frame. He has exactly two arms: one hand holds a physically plausible ring of three old brass mortice keys, each key attached through its bow; the other holds one clipboard. No warped architecture, duplicate hardware or floating keys.",
+        "altIntent": "A smug landlord stands in a coherent open doorway holding three properly attached brass keys and one clipboard."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1828,12 +1828,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A bright-eyed newcomer leans into a crowded dance-floor greeting; close kinetic crop, wrist stamp and raised shoulders, ultraviolet lavender with mint flashes.",
-        "prompt": "Enter the dance floor close beside First Bump as the bright-eyed newcomer leans into a greeting, shoulders raised and wrist turned to show only an abstract stamp. Use cropped surrounding arms and mint flashes to create movement through ultraviolet lavender while keeping faces human; no club mark, text or drug object should carry the meaning.",
-        "altIntent": "First Bump communicates the instant a newcomer finds sudden social energy, leaning eagerly into a crowded greeting under quick coloured light."
+        "brief": "A gaunt, sweaty and visibly strung-out clubber grips a toilet basin beside a tiny folded card.",
+        "prompt": "First Bump is a gaunt strung-out adult at the edge of a British club toilet, not a cheerful newcomer. Hollow eyes, sweaty pallor, tense shoulders, raw nostril and clenched jaw; one hand grips the basin while the other holds a tiny folded unbranded card near the counter. A minute trace of white powder on the card makes the stimulant context legible without glamour. Sparse tiled wall and ultraviolet spill.",
+        "altIntent": "A gaunt, sweaty and visibly strung-out clubber grips a toilet basin beside a tiny folded card."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1857,12 +1857,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A revived dancer points both hands toward a newly opened side room; sweeping medium frame, loosened jacket and water bottle, violet dawn with a clean cyan pulse.",
-        "prompt": "Track Second Wind from the side as the revived dancer points both hands toward an opening side room while the rest of the group had been moving toward the exit. Let a loosened jacket trail behind and a water bottle flash cyan against violet dawn, with no venue signs or screen content; posture should make the returned momentum clear.",
-        "altIntent": "Second Wind shows a tired night abruptly restarting, the dancer redirecting companions toward fresh light with renewed movement and an open, energetic pose."
+        "brief": "A fat, drenched bloke dances frantically after taking too much stimulant, with a tiny packet resting on a speaker.",
+        "prompt": "Second Wind is a fat middle-aged bloke dancing far too energetically after obviously having too much packet. Huge sweating face and belly, soaked shirt stuck to him, wild eyes, clenched jaw and frantic but physically coherent dance pose. A tiny crumpled unbranded packet rests on a nearby speaker and a faint powder trace sits under one nostril. Exactly two arms and two legs; no extra crowd clutter.",
+        "altIntent": "A fat, drenched bloke dances frantically after taking too much stimulant, with a tiny packet resting on a speaker."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1886,7 +1886,7 @@
         "altIntent": "Ruby Murray is a poised curry-house veteran who finds the current dish too mild, her measured taste and confident request signalling practiced appetite."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1916,12 +1916,12 @@
         }
       ],
       "illustration": {
-        "brief": "A commanding night-time diner strides down a long restaurant strip through rising steam; cinematic wide shot, takeaway bag and mirrored windows, red-gold light doubled across wet pavement.",
-        "prompt": "Travel parallel with Curry Mile as the night-time diner strides through a long restaurant street, takeaway bag low and mirrored windows repeating her silhouette. Steam and red-gold reflections should sweep across wet pavement behind a cinematic wide figure; all shopfronts stay abstract and unreadable, with no copied venue identity.",
-        "altIntent": "Curry Mile presents a commanding diner moving confidently through an entire glowing food district, surrounded by steam, mirrored light and the promise of another stop."
+        "brief": "A curry takeaway and paper bag overlook a wet, glowing Manchester restaurant strip threaded by saffron steam.",
+        "prompt": "OBJECT-AND-PLACE ONLY; no person. Reimagine Manchester's Curry Mile as a low, clean night view down one physically coherent wet road. A single open takeaway curry container and folded paper bag sit on a foreground wall; one broad ribbon of saffron steam leads toward two simplified rows of South Asian restaurant windows and awnings receding down the road. Red and gold reflections, no readable shop names, no generic London landmark, no clutter.",
+        "altIntent": "A curry takeaway and paper bag overlook a wet, glowing Manchester restaurant strip threaded by saffron steam."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1950,7 +1950,7 @@
         "altIntent": "Karaoke Kev is caught at the committed start of a solo, delighted and slightly overprepared with both hands around the microphone in an otherwise quiet room."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -1986,7 +1986,7 @@
         "altIntent": "Karaoke Queen turns a solo into a room-wide chorus, visually commanding the centre while a varied semicircle willingly joins her performance."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2015,7 +2015,7 @@
         "altIntent": "Balaclava is a furtive but recognisably human figure paused under surveillance, trying to disappear while distinctive trainers and tense posture give him away."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2039,7 +2039,7 @@
         "altIntent": "Catalytic Converter shows a hurried operator moving a suspicious metal load through a rear entrance, with tools, grease and wary body language establishing the situation."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2062,7 +2062,7 @@
         "altIntent": "Eighth represents careful measurement at a dim table, the buyer's exacting hands, tiny packet and pocket scales conveying caution over a small quantity."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2075,7 +2075,7 @@
         {
           "mechanicalId": "BLK-044-T01",
           "name": "Half-Lit Haze",
-          "effectText": "If this card evolves a Blokemon from your hand during your turn, you may examine your Deck’s top 3 cards. Attach every Basic Energy card you find to your Blokemon in any distribution, then shuffle the remaining cards into your Deck."
+          "effectText": "If this card evolves a Blokemon from your hand during your turn, you may examine your Deck\u2019s top 3 cards. Attach any number of Basic Energy cards you find to your Blokemon in any distribution, then shuffle the remaining cards into your Deck."
         }
       ],
       "attacks": [
@@ -2091,7 +2091,7 @@
         "altIntent": "Whitey depicts a partygoer suddenly overwhelmed, holding the counter for balance as the room seems to cant and the offered water remains untouched."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2104,7 +2104,7 @@
         {
           "mechanicalId": "BLK-045-T01",
           "name": "Full-Lit Haze",
-          "effectText": "If this card evolves a Blokemon from your hand during your turn, you may examine your Deck’s top 8 cards. Attach every Basic Energy card you find to your Blokemon in any distribution, then shuffle the remaining cards into your Deck."
+          "effectText": "If this card evolves a Blokemon from your hand during your turn, you may examine your Deck\u2019s top 8 cards. Attach any number of Basic Energy cards you find to your Blokemon in any distribution, then shuffle the remaining cards into your Deck."
         }
       ],
       "attacks": [
@@ -2120,7 +2120,7 @@
         "altIntent": "Growroom shows a confident keeper embedded in a fully improvised indoor garden, with practical equipment and dense foliage surrounding the human operator."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2148,7 +2148,7 @@
         "altIntent": "Fun Guy is an enthusiastic human forager discovering mushrooms at the edge of a pub garden, crouched close with basket ready and genuine delight."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2176,7 +2176,7 @@
         "altIntent": "Magic Mushroom conveys a diner absorbed by shifting patterns and altered scale, still recognisably human in the chair with plate and suspended gesture anchoring reality."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2203,7 +2203,7 @@
         "altIntent": "Red-Eye is a wide-awake regular peering from a hazy kitchen doorway, identified by the intense human gaze, condensation and a small red lighter."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2231,7 +2231,7 @@
         "altIntent": "Space Cadet turns pub-table scraps into a private star map, visibly lost in the route while bottle tops and an improvised arrow hold the composition together."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2253,12 +2253,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A compact challenger leans forward from below table height with incredulous palms; low comic perspective kept stark, muddy boots and toppled stool, ochre under hard fluorescent light.",
-        "prompt": "Place the camera almost beneath the table as You What? leans into the lens with both incredulous palms, muddy boots and a toppled stool looming around him. Stark fluorescent light and ochre floor should exaggerate the compact challenge without caricaturing his human proportions; walls, clothing and objects carry no readable provocation.",
-        "altIntent": "You What? captures a compact bloke surging forward in disbelief, using open palms, low perspective and disrupted furniture to make the confrontation immediate."
+        "brief": "A tracksuit-and-puffer-clad chav leans into someone outside frame and starts a confrontation.",
+        "prompt": "A recognisable British chav starting on someone just outside frame: compact adult bloke in plain tracksuit, puffer vest and trainers, chin thrust forward, shoulders hunched, one open palm demanding an answer and the other hand pointing at the unseen target. Close personal-space confrontation beside a pub car park. No brands or text; exactly two arms; more chav aggression than generic surprise.",
+        "altIntent": "A tracksuit-and-puffer-clad chav leans into someone outside frame and starts a confrontation."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2285,7 +2285,7 @@
         "altIntent": "Me and My Mates is a tight cluster of three friends reacting as one, their varied faces, shared food and synchronized pointing making collective bravado the subject."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2313,7 +2313,7 @@
         "altIntent": "Bookies Brian appears fully at home in a betting-shop corner, studying several screens while quietly drawing another person into his confident calculation."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2342,7 +2342,7 @@
         "altIntent": "Golf Club Gary is a polished regular relaxing beside his kit, with immaculate posture and untouched scorecard conveying comfortable membership and practiced confidence."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2370,7 +2370,7 @@
         "altIntent": "Day Two communicates a quiet, overthought hangover, with one exhausted person, an ordinary glass and sparse morning objects making every decision feel difficult."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2398,7 +2398,7 @@
         "altIntent": "Clear Head shows an alert swimmer calmly helping someone else at the pool edge, with tidy kit and open blue space reinforcing composure."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2422,7 +2422,7 @@
         "altIntent": "Shirt Off is a wiry scrapper who has removed his top with excessive seriousness, standing ready while the carefully folded garment exposes the ritual of the moment."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2451,7 +2451,7 @@
         "altIntent": "Ronnie Pickering is an enraged driver leaning far out of a stationary car, his pointed gesture and weather-beaten roadside making the confrontation unmistakable."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2475,7 +2475,7 @@
         "altIntent": "Balti Triangle presents a proud curry pilgrim confidently carrying a complex stack of food where three streets meet, framed by steam and converging lines."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2504,7 +2504,7 @@
         "altIntent": "Bradford reads as a generous, commanding host presiding over an expansive curry banquet, his open gesture and position at the head establishing authority."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2528,7 +2528,7 @@
         "altIntent": "Lime and Soda is the composed teetotaller in a louder crowd, visibly satisfied with a clear drink and the means to drive home."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2556,7 +2556,7 @@
         "altIntent": "Alcohol Free depicts a relaxed, discerning regular treating two plain alternatives with the same care as a formal tasting."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2585,7 +2585,7 @@
         "altIntent": "Zero Point Zero shows abstinence as physical confidence, with a strong athlete working the heavy bag while a plain alcohol-free can remains secondary."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2603,12 +2603,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A tightly framed dancer stares past the camera while working their jaw; close portrait, loose collar and water bead, electric lilac over near-black.",
-        "prompt": "Crop Jaw Swing tightly from collarbone to forehead, the dancer looking beyond camera while jaw, cheek and one tense hand reveal restless energy. A water bead and loose collar should catch electric lilac against near-black, but anatomy must stay natural and no club stamp or written cue should appear.",
-        "altIntent": "Jaw Swing communicates wired social tension through a close human face, worked jaw and unfocused gaze, rooted entirely in the physical atmosphere of the night."
+        "brief": "A gaunt bald clubber stares wide-eyed as his clenched lower jaw swings visibly to one side.",
+        "prompt": "Use the supplied Batch 010 reference for the drug-strung expression and jaw mechanics, not as a literal photograph. A gaunt unattractive bald adult clubber, sweaty and hollow-cheeked, stares with wide unfocused eyes while the lower jaw is visibly shifted sideways and the cheek muscles pull tight. Close head-and-shoulders portrait, loose blue polo collar, dark club corner. Human anatomy remains coherent; not handsome, not smiling.",
+        "altIntent": "A gaunt bald clubber stares wide-eyed as his clenched lower jaw swings visibly to one side."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2627,12 +2627,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A contorted club veteran appears to jump between two pools of light; split-frame composition, raised fingers and empty corridor, ultraviolet purple with a white strobe seam.",
-        "prompt": "Split Gurning across two pools of ultraviolet light, the club veteran twisting between them with raised fingers and a contorted but human expression. Let an empty corridor and white strobe seam separate the two body positions, changing scale and angle across the frame; walls remain blank and no duplicate is literal.",
-        "altIntent": "Gurning appears caught between two moments of the same restless dance, face and hands stretched by movement while the corridor and strobe preserve a recognisable person."
+        "brief": "A bald raver properly gurns with wide eyes, bared teeth, a sideways jaw and two raised hands.",
+        "prompt": "Use the supplied Batch 010 reference as the exact expression target. Show a bald, gaunt adult raver properly gurning: eyes very wide, eyebrows high, nose wrinkled, cheeks stretched, upper and lower teeth bared, jaw pulled hard to one side. Both raised hands are attached to two visible arms and have five fingers. Tight club portrait with one white strobe seam; one person only, no duplicated face or movement clone.",
+        "altIntent": "A bald raver properly gurns with wide eyes, bared teeth, a sideways jaw and two raised hands."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2667,7 +2667,7 @@
         "altIntent": "Ebeneezer Goode is a sharply dressed older raver whose calm stillness dominates a moving room, suggesting complete confidence inside the rush."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2695,7 +2695,7 @@
         "altIntent": "Tiny is a compact lifter cheerfully confronting a stone much larger than himself, with scale, stance and chalk conveying fearless optimism."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2719,7 +2719,7 @@
         "altIntent": "Bouncer is the immovable human barrier at a club door, communicating refusal through one raised palm, planted body and professional equipment."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2749,7 +2749,7 @@
         "altIntent": "Head Doorman appears as the veteran authority above the entrance, directing other staff and the waiting line through posture and position."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2777,7 +2777,7 @@
         "altIntent": "Ten Bag depicts cautious preparation of a very small purchase, with exact hands, tools and watchful profile making the scale and care visible."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2804,7 +2804,7 @@
         "altIntent": "Half Ounce shows methodical portioning across a cleared counter, the operator's ordered hands and repeated rows communicating organised quantity."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2822,7 +2822,7 @@
         {
           "mechanicalId": "BLK-071-B02",
           "name": "Creeping Regret",
-          "effectText": "After your opponent's next turn ends, put 12 damage counters on their Active Blokemon."
+          "effectText": "After your opponent's next turn ends, put 12 damage counters on the Blokemon that was Defending when this Attack was used."
         }
       ],
       "rules": [],
@@ -2832,7 +2832,7 @@
         "altIntent": "Full Ounce is a calm operator securing a substantial anonymous bag, with scale, locked storage and measured posture conveying a larger transaction."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2859,7 +2859,7 @@
         "altIntent": "Early Night is the sensible guest already preparing to leave, shown through watch, coat, umbrella and water at the quiet edge of the room."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2888,7 +2888,7 @@
         "altIntent": "Fresh as a Daisy represents bright recovery after the night before, standing in a newly clean kitchen as open curtains, gloves and flowers announce restored energy."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2916,7 +2916,7 @@
         "altIntent": "Stone Island is a branded-style devotee without an actual brand, using the guarded sleeve, squared shoulder and blocked passage to project territorial confidence."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2944,7 +2944,7 @@
         "altIntent": "Away Day captures a travelling supporter turning the station into a football moment, with airborne pose, plain scarf and ticket conveying the trip."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -2979,7 +2979,7 @@
         "altIntent": "The Firm is a coordinated group rather than one avatar, advancing as a compact wedge whose matched stance and floodlit setting communicate organised intimidation."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3007,7 +3007,7 @@
         "altIntent": "Southall shows a stylish diner settling the table with practised ease, the coins, empty platter and composed profile implying a confident end to the meal."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3036,7 +3036,7 @@
         "altIntent": "Shish Mahal is a legendary host moving a huge feast through a crowded restaurant, his sweeping turn and balanced tray commanding both tables."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3059,12 +3059,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A flushed clubber waits on the edge of a sofa with expectant hands; intimate eye-level frame, zipped jacket and untouched water, violet slowly lifting to pink.",
-        "prompt": "Sit Coming Up on the very edge of a sofa, flushed face and expectant hands angled toward an unseen dance floor while the water remains untouched. An intimate eye-level camera should let violet slowly brighten to pink around the zipped jacket; no clock, label or written promise indicates what is awaited.",
-        "altIntent": "Coming Up depicts tense anticipation before social energy arrives, with a clubber poised forward, hands ready and attention fixed beyond the sofa."
+        "brief": "A clubber studies his hands as enlarged pupils, breathing wall lines and coloured halos reveal an LSD come-up.",
+        "prompt": "Coming Up depicts the unmistakable first onset of LSD in an adult clubber. He sits forward on a sofa with enlarged pupils, flushed skin, anxious delighted half-smile and hands examining themselves. The straight edges of one plain wall have just begun to breathe into gentle waves and coloured halos collect around a lamp. Keep the person clear and physical; visual distortion is environmental and sparse.",
+        "altIntent": "A clubber studies his hands as enlarged pupils, breathing wall lines and coloured halos reveal an LSD come-up."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3088,12 +3088,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A patient but doubtful figure lies back beneath a kitchen clock with no hands; wide languid crop, coat as pillow and orange slice, sleepy mauve with a thin dawn line.",
-        "prompt": "Stretch Still Coming Up almost flat beneath a blank-faced kitchen clock, coat folded as a pillow and one orange slice held without enthusiasm. Use a wide languid crop and sleepy mauve divided by a thin dawn line, keeping the doubtful human expression clear; no clock marks, packets or captions appear.",
-        "altIntent": "Still Coming Up is the long wait after expectation has faded, a patient figure lying back in the kitchen while dawn and an idle snack mark the delay."
+        "brief": "A clubber lies safely on a kitchen floor during a stronger LSD onset as broad waves and restrained hand trails fill the room.",
+        "prompt": "Still Coming Up is the later, stronger LSD onset. An exhausted adult lies safely on a kitchen floor at dawn, coat under the head, staring at one hand as its fingers leave two restrained colour trails. Wallpaper lines breathe in broad waves, a round clock has a soft halo, and violet shifts to pale orange. One coherent body with exactly two arms and two legs; obvious psychedelic come-up, not ordinary tiredness.",
+        "altIntent": "A clubber lies safely on a kitchen floor during a stronger LSD onset as broad waves and restrained hand trails fill the room."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3121,7 +3121,7 @@
         "altIntent": "One-Pint Wonder becomes larger than the room after one drink, visually commanding a whole table through a small figure, lifted finger and outsized certainty."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3149,7 +3149,7 @@
         "altIntent": "Three-Pint Hero is a triumphant regular rescuing lost belongings from beneath the seating, treating a small search like a heroic expedition."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3177,7 +3177,7 @@
         "altIntent": "Allotment Alan is a proud grower at the centre of an orderly plot, with giant produce, neat rows and a small shed establishing his achievement."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3201,7 +3201,7 @@
         "altIntent": "The Twins are two closely matched locals occupying one booth as a visual pair, distinguished by posture while sharing clothes, space and snacks."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3231,7 +3231,7 @@
         "altIntent": "The Lads is a moving three-person unit, friends filling the corridor together while distinct faces and synchronized pace express collective momentum."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3254,7 +3254,7 @@
         "altIntent": "Cold Plunge shows a determined swimmer committing to cold water, the held breath, tense grip and outdoor steel tub making the effort immediate."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3282,7 +3282,7 @@
         "altIntent": "Ice Bath depicts calm endurance in a deliberately prepared cold bath, with steady expression, measured setup and nearby towels contrasting the discomfort."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3306,7 +3306,7 @@
         "altIntent": "Fly Tipper is caught personally manoeuvring unwanted furniture onto a roadside at night, with open van, cone and wary posture telling the offence."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3334,7 +3334,7 @@
         "altIntent": "Waste Licence Pending presents an operator confidently guarding a questionable storage site, using official-looking clothing and blocked access without showing valid paperwork."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3358,7 +3358,7 @@
         "altIntent": "Recovery Meeting shows a quiet attendee present and receptive before others arrive, with the circle, warm mug and careful posture conveying mutual support."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3382,7 +3382,7 @@
         "altIntent": "The Sponsor is the dependable older mentor ready to answer and step outside in bad weather, signalled by coat, umbrella, phone box and calm attention."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3405,7 +3405,7 @@
         "altIntent": "Kitchen Afterparty is a dense group refusing to finish the night, gathered in a tiny steamed room around the only clear air and a jumble of mugs."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3434,7 +3434,7 @@
         "altIntent": "Someone's Mate is the socially ambiguous person caught between two groups, visually central but claimed by neither as the kitchen argument continues around them."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3463,7 +3463,7 @@
         "altIntent": "Sunrise Sesh shows one euphoric survivor greeting first light above a scattered, tired group, with rooftop scale and warming colour marking the night's final surge."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3491,7 +3491,7 @@
         "altIntent": "Big Vern is a monumental local made larger by the railway arch and low viewpoint, steady enough that loose gravel seems to move around him."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3509,12 +3509,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A hollow-eyed regular arranges teaspoons by size at four in the morning; stark overhead kitchen frame, black coffee and open blinds, desaturated lilac under clinical light.",
-        "prompt": "Hover over No Sleep arranging teaspoons by exact size at a kitchen table, hollow eyes visible beyond black coffee and open blinds. Clinical light should flatten desaturated lilac objects into a rigid grid while one restless hand breaks the order; no clock, label or written list explains the fourth-morning compulsion.",
-        "altIntent": "No Sleep depicts exhausted precision at an impossible hour, with a hollow-eyed regular organizing spoons while coffee and open blinds expose sleeplessness."
+        "brief": "A hollow-eyed sleepless bloke sorts exactly six intact teaspoons at four in the morning.",
+        "prompt": "A hollow-eyed sleepless adult at a four-in-the-morning kitchen table carefully sorts exactly six normal teaspoons. All six spoons are intact, lie flat, remain separate, have one bowl and one straight handle each, and form a neat parallel row from smallest to largest. One hand touches one spoon; the other holds a plain black-coffee mug. No bent, fused or duplicated cutlery.",
+        "altIntent": "A hollow-eyed sleepless bloke sorts exactly six intact teaspoons at four in the morning."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3543,7 +3543,7 @@
         "altIntent": "Fourth Night is an unnervingly focused host holding a tired table with a perfectly steady gaze, repeated cups and suspended keys suggesting time has stretched."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3571,7 +3571,7 @@
         "altIntent": "Crabby Before Coffee shows an early riser guarding the first brew, visibly hostile to interruption until the cafetiere is safely in hand."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3594,12 +3594,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A sharp-suited regular slams an espresso beside a clean chopping board; high-contrast profile, heavy mug and rolled cuff, black-brown with white ceramic.",
-        "prompt": "Catch Black Coffee in high-contrast profile at the instant a heavy espresso lands beside a clean chopping board, sharp suit cuff rolling back from the impact. Black-brown shadow and white ceramic should make the gesture precise rather than violent; cup, kitchen and clothing remain blank and unbranded.",
-        "altIntent": "Black Coffee is a sharply dressed regular punctuating the morning with one severe espresso, the slammed cup and rigid profile conveying instant focus."
+        "brief": "An exhausted unshaven bloke sits at dawn holding one black-coffee mug between both hands.",
+        "prompt": "A straightforward Black Coffee image: one rough, exhausted middle-aged bloke sits at a plain kitchen table at dawn, both elbows supported, holding one heavy mug of black coffee between his two hands. Tired eyes, unshaven face and a severe focused stare into the mug. One window, one saucer, broad black-brown and cream shapes. Nothing slammed, floating, warped or surreal.",
+        "altIntent": "An exhausted unshaven bloke sits at dawn holding one black-coffee mug between both hands."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3623,7 +3623,7 @@
         "altIntent": "Tinnie turns an empty shelter into a small game, following a plain silver can with restless feet while rain and reflected light sharpen the movement."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3646,12 +3646,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "An upside-down party champion is held steady above a plain keg; energetic triangular frame, trainers overhead and cheering arms, bright beer gold against midnight blue.",
-        "prompt": "Build Kegstand as a true group action: an upside-down party champion above a plain keg, held securely by several different cheering friends whose arms form a broad triangle. Trainers should break the top edge against bright beer gold and midnight blue; no tap badge, clothing slogan or written drinking cue appears, and ordinary human balance remains plausible.",
-        "altIntent": "Kegstand is an exuberant group feat centred on the upside-down participant, with supporting friends, raised trainers and the plain keg making the ritual clear."
+        "brief": "One upside-down partygoer performs a physically supported kegstand while two friends each hold one ankle.",
+        "prompt": "A physically correct kegstand at a British house party. One adult is upside down with exactly two straight arms supporting the shoulders on the floor beside one plain keg, mouth aligned to the keg tap; exactly two legs extend upward. Two friends each use both hands to securely hold one ankle. Every limb belongs to a visible body, all contact points make sense, and the keg, tap and hose form one coherent object.",
+        "altIntent": "One upside-down partygoer performs a physically supported kegstand while two friends each hold one ankle."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3675,7 +3675,7 @@
         "altIntent": "Edibles shows a pleased baker sharing carefully made squares from a cooling rack, with warm kitchen craft and green-tinted crumbs implying the unusual batch."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3703,7 +3703,7 @@
         "altIntent": "Space Cake depicts a diner absorbed by a cake that seems momentarily planetary, with suspended fork, drifting crumbs and a calm human expression anchoring the altered view."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3728,12 +3728,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A stern pool regular rattles a cue against the rail while backing a friend; long horizontal frame, chalk cube and bone-coloured handle, burgundy with lairy cream.",
-        "prompt": "Stretch Pool Cue along the full rail as the stern regular rattles the bone-coloured cue and looks past camera toward a friend needing backup. Chalk cube, burgundy baize and braced side profile should create a long horizontal tension; scoreboards, maker marks and wall signs remain empty.",
-        "altIntent": "Pool Cue is a stern regular using the cue and rail to signal support from across the table, his fixed gaze making the intervention feel deliberate."
+        "brief": "One complete straight pool cue lies across burgundy baize beside a chalk cube and still balls, with no person present.",
+        "prompt": "OBJECT ONLY; absolutely no person, face, hand or body part. One complete straight English pool cue lies diagonally across burgundy baize, fully visible from rubber butt to narrow tip with a smooth continuous taper and no bends, branches or duplicate ends. Add one blue chalk cube and two still pool balls only. Clean pub-pool lighting and generous negative space.",
+        "altIntent": "One complete straight pool cue lies across burgundy baize beside a chalk cube and still balls, with no person present."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3762,7 +3762,7 @@
         "altIntent": "Last Orders shows a determined pool player making one dramatic final gesture as lights rise and furniture stacks, turning closing time into an action beat."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3790,7 +3790,7 @@
         "altIntent": "Barry Chuckle is a cheerful brother mid-sweep, his open hands and exaggerated leg making physical comedy clear in a simple rehearsal space."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3820,7 +3820,7 @@
         "altIntent": "Paul Chuckle is the answering brother, braced with playful defensive energy and ready to send the comic exchange back across the room."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3844,7 +3844,7 @@
         "altIntent": "Pub Bore is a relentless talker occupying the whole length of a conversation while one listener and two untouched drinks reveal how long it has lasted."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3868,7 +3868,7 @@
         "altIntent": "Two-Pound Vape contrasts a small dubious device with an outsized cloud, keeping the wary human seller and handful of coins at the centre of the scene."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3898,7 +3898,7 @@
         "altIntent": "Duty-Free shows an overexcited traveller whirling through anonymous purchases, luggage and multiplying reflections turning the transit space into a chaotic celebration."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3921,12 +3921,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "An enraged driver pushes through a jammed side street with both palms raised; compressed telephoto frame, red face and steering wheel, brake-light crimson over asphalt.",
-        "prompt": "Compress Road Rage through a telephoto windscreen view, the enraged driver lifting both palms above the wheel while brake lights stack tightly behind and beside him. Crimson reflections should crowd the ordinary human face against asphalt grey; number plates, dashboard displays and road signs contain no readable information.",
-        "altIntent": "Road Rage is a driver visibly overwhelmed by a jammed street, boxed in by brake lights while both raised hands broadcast frustration inside the car."
+        "brief": "An angry driver remains correctly seated in a right-hand-drive car, one hand on the wheel and one palm raised at stopped traffic.",
+        "prompt": "A physically possible road-rage scene viewed from the front passenger side inside one ordinary right-hand-drive British car. One angry driver sits fully in the seat with exactly two arms: right hand gripping the steering wheel, left hand raised in an exasperated open-palm gesture. Both legs remain below the dashboard. Through the windscreen is a stopped queue of cars with aligned brake lights. No intersecting bodywork or impossible perspective.",
+        "altIntent": "An angry driver remains correctly seated in a right-hand-drive car, one hand on the wheel and one palm raised at stopped traffic."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3949,12 +3949,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A meticulous motorist points from a dashboard screen to the road outside; over-shoulder view, suction mount and timestamp-free display, cool blue with hazard amber.",
-        "prompt": "Look over Dashcam's shoulder from the passenger side as the meticulous motorist points between a blank dashboard display and the exact patch of road visible through the glass. Suction mount and hazard amber should frame his intent profile in cool blue; the screen shows only abstract shapes, with no timestamp, plate or brand.",
-        "altIntent": "Dashcam depicts a precise motorist comparing recorded-looking imagery with the road itself, using the pointing hand and mounted blank screen to show scrutiny."
+        "brief": "A single suction-mounted dashcam faces a coherent British road, with its cable properly connected and no person present.",
+        "prompt": "OBJECT ONLY; no person, hand or body part. One compact dashcam is physically fixed to the inside of a windscreen by a single suction-cup arm. The camera lens faces the road, one power cable plugs into the camera and follows the windscreen edge, and a small rear screen shows only simple abstract road shapes with no text or timestamp. Outside is one coherent British road.",
+        "altIntent": "A single suction-mounted dashcam faces a coherent British road, with its cable properly connected and no person present."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -3967,7 +3967,7 @@
         {
           "mechanicalId": "BLK-113-T01",
           "name": "Eyes Down",
-          "effectText": "During your turn, if this face-down card becomes a Prize Card while your Bench has room, you may put it onto your Bench before adding it to your hand. If you do, flip a coin and take 1 extra Prize Card on heads."
+          "effectText": "When you take this face-down card as a Prize Card during your turn, if your Bench has room, you may put it onto your Bench before adding it to your hand. If you do, flip a coin and take 1 extra Prize Card on heads."
         }
       ],
       "attacks": [
@@ -3983,7 +3983,7 @@
         "altIntent": "Bingo Brenda is a delighted regular celebrating a complete card, her raised blank grid, dabber and proud expression communicating the win without readable numbers."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4007,7 +4007,7 @@
         "altIntent": "Hotbox shows a relaxed person settled inside a dense enclosed atmosphere, with fogged glass, looping vapour and cables making the room feel sealed."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4037,12 +4037,12 @@
         }
       ],
       "illustration": {
-        "brief": "A formidable parent directs children, bags and traffic from beside a practical car; broad morning tableau, travel mug and three lunchboxes, raspberry red with daylight blue.",
-        "prompt": "Spread School-Run Sue across a broad morning tableau beside a practical car, one arm directing children while the other corrals bags and traffic. Three lunchboxes and a travel mug should create foreground obstacles around her formidable stance in raspberry and daylight blue; all uniforms, vehicle marks and road signs remain blank.",
-        "altIntent": "School-Run Sue is the commanding centre of a busy departure, visibly coordinating children, bags and cars with the efficiency of a one-person traffic system."
+        "brief": "School-Run Sue uses exactly two arms to direct two children while lunchboxes and bags rest securely on car and ground.",
+        "prompt": "School-Run Sue is a formidable adult mother beside a practical car, with exactly two arms. Her left hand holds one travel mug; her right arm points toward two children who stand on the pavement. Three closed lunchboxes rest visibly on the car bonnet and two school bags rest on the ground. Nothing floats, no duplicate limbs, and every object has clear support.",
+        "altIntent": "School-Run Sue uses exactly two arms to direct two children while lunchboxes and bags rest securely on car and ground."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4064,12 +4064,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A reflective walker crosses a small bridge in steady rain; distant side composition, plain umbrella and single token, soft aqua with graphite.",
-        "prompt": "Keep One Day at a Time small in side view crossing a modest bridge through steady rain, plain umbrella angled forward and a single token held near the coat. Soft aqua and graphite should leave long quiet space before the walker; the token, bridge signs and clothing carry no words, while the next step remains the visual focus.",
-        "altIntent": "One Day at a Time represents patient progress through bad weather, a solitary walker taking the bridge one measured step at a time with a small recovery token."
+        "brief": "A recovery walker crosses an unrailed stone footbridge beneath an umbrella while holding a small recovery token.",
+        "prompt": "A solitary recovery walker crosses correctly ON TOP OF a small stone bridge in steady rain. Both feet are visibly planted on the bridge walkway, the parapet and railing remain behind the body, and no limb intersects stonework. Exactly two arms: one holds a properly opened umbrella above the head; the other holds a small plain recovery token near the coat. Clear side profile and quiet negative space.",
+        "altIntent": "A recovery walker crosses an unrailed stone footbridge beneath an umbrella while holding a small recovery token."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4083,7 +4083,7 @@
         {
           "mechanicalId": "BLK-117-B01",
           "name": "One-Year Glare",
-          "effectText": "Whenever your opponent's Active Blokemon uses an Attack on their next turn, they flip 2 coins. Cancel that Attack if either coin is tails."
+          "effectText": "On your opponent's next turn, when the Blokemon that was Defending when this Attack was used tries to use an Attack, your opponent flips 2 coins. Cancel that Attack if either coin is tails."
         }
       ],
       "rules": [],
@@ -4093,7 +4093,7 @@
         "altIntent": "One Year Chip conveys a private milestone through the proud holder's expression and carefully held blank token, with warm light giving the moment dignity."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4121,7 +4121,7 @@
         "altIntent": "Sunday Swim is a cheerful swimmer emerging from cold open water with an armful of towels, flask and sunrise making the weekly ritual feel communal and earned."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4145,12 +4145,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A resolute swimmer cuts through long dark water beside a distant escort light; aerial diagonal composition, white cap and trailing wake, deep navy with a silver path.",
-        "prompt": "Take an aerial diagonal over Channel Crossing as the resolute swimmer cuts a long silver wake through dark navy water toward a tiny escort light. Keep the white-capped human body clearly proportioned and alone within the scale, with no boat lettering, flags, route marks or creature silhouettes.",
-        "altIntent": "Channel Crossing expresses endurance through one small swimmer maintaining a direct path across a vast dark surface, guided only by wake and distant escort light."
+        "brief": "A life-jacketed group makes an unauthorised night crossing of the English Channel in one small inflatable dinghy.",
+        "prompt": "Depict a clandestine unauthorised migrant crossing of the English Channel at night, treated seriously and without caricature. One small inflatable dinghy sits physically in dark rough water, carrying a compact group of adult migrants seated inside and wearing plain life jackets; one person holds the outboard tiller. Distant white cliffs and a faint patrol light establish the Channel. No swimmer, no text, no national flags, no sensational facial detail.",
+        "altIntent": "A life-jacketed group makes an unauthorised night crossing of the English Channel in one small inflatable dinghy."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4174,7 +4174,7 @@
         "altIntent": "Couch to 5K shows a beginner choosing the road over the visible sofa, with modest running gear and determined stride making the change concrete."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4203,7 +4203,7 @@
         "altIntent": "Marathon depicts a composed runner holding course through the final darkness, guided by one bright point while fatigue remains visible in an ordinary human body."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4228,12 +4228,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A rave veteran performs precise invisible-box gestures under a single club light; front-on medium portrait, white gloves and striped shirt without text, monochrome cut by violet.",
-        "prompt": "Square Big Fish Little Fish front-on beneath one club light, white-gloved hands performing precise invisible-box gestures around a striped but unlettered shirt. Keep the rave veteran's amused human face and medium stance crisp against monochrome cut by violet; no signs, lyrics or technological motifs explain the dance.",
-        "altIntent": "Big Fish Little Fish is an experienced raver confidently performing familiar hand shapes, with gloves, striped shirt and isolated light making the social ritual instantly visible."
+        "brief": "A rave veteran performs the big-fish pose while translucent hand echoes show little fish and cardboard box.",
+        "prompt": "Show one adult rave veteran performing the actual 'big fish, little fish, cardboard box' hand dance. The main instant is BIG FISH: both forearms horizontal at chest height, palms facing each other far apart to indicate a large fish. Two faint simple motion echoes behind the hands show LITTLE FISH with palms close together, then CARDBOARD BOX with both hands tracing a square. One body, exactly two real arms; motion echoes are clearly translucent, not extra limbs.",
+        "altIntent": "A rave veteran performs the big-fish pose while translucent hand echoes show little fish and cardboard box."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4261,7 +4261,7 @@
         "altIntent": "Cropper is a practical grower actively trimming tall plants, with shears, tied stems and workwear emphasizing skilled cultivation rather than fantasy foliage."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4296,7 +4296,7 @@
         "altIntent": "Hen Night Mum is a glamorous matriarch whose single cold stare controls the pavement, with windblown coat and plain sash locating the night out."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4319,12 +4319,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "An animated drinker drums three quick beats on a pub table; tight kinetic crop, half-pint and rolled sleeves, electric yellow with beer amber.",
-        "prompt": "Crop Pub Buzz close over the table as the animated drinker drums three distinct beats with rolled sleeves, eyes already tracking the next response. A half-pint and electric-yellow motion accents should sit against beer amber without drawn sound words or labels; retain natural hands and a clearly human social spark.",
-        "altIntent": "Pub Buzz shows a drinker generating quick contagious energy at the table, the three-beat gesture and alert expression making the room feel about to join in."
+        "brief": "An animated pub regular drums three fingertips on the table while holding one half-pint with the other hand.",
+        "prompt": "Make Pub Buzz simple and physical. One ordinary animated middle-aged pub regular sits at a table, leaning into conversation with an alert mischievous grin. Exactly three fingertips of one hand drum the wooden tabletop in a visible sequence of three contact marks; the other hand rests around one half-pint. One booth and one lamp only; no insects, surreal effects, extra hands or distorted furniture.",
+        "altIntent": "An animated pub regular drums three fingertips on the table while holding one half-pint with the other hand."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4352,7 +4352,7 @@
         "altIntent": "Mr Vesta is a dignified diner protecting a warm dish with ceremonial care, his steady hands and ember-lit expression conveying old-fashioned pride."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4375,12 +4375,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A precise smoker clamps a minute rollie with an elaborate metal clip; macro hands-first composition, ashtray and jeweller's loupe, forest green with silver.",
-        "prompt": "Magnify Roach Clip's hands as the precise smoker adjusts a minute roll-up in an elaborate metal clip, face and jeweller's loupe visible beyond the focal plane. Forest green and silver should stress painstaking craft without logos, labels or glamour smoke; the human concentration must outweigh the tiny object.",
-        "altIntent": "Roach Clip depicts almost absurd precision applied to a minute roll-up, with specialised clip, loupe and careful hands revealing the obsessive craft."
+        "brief": "A careful smoker uses a metal clip on a tiny roll-up while a headband physically supports the jeweller's loupe.",
+        "prompt": "A precise adult smoker uses a small metal roach clip to hold a TINY nearly finished roll-up no longer than a cigarette filter. The clip is held in one hand and the other steadies an ashtray on the table. A jeweller's loupe is correctly clipped into a headband over one eye, touching the face and supported by the band; it must not float. Exactly two arms, one small spliff, no oversized joint.",
+        "altIntent": "A careful smoker uses a metal clip on a tiny roll-up while a headband physically supports the jeweller's loupe."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4409,7 +4409,7 @@
         "altIntent": "White Van Dan is the practical organiser of a small crew at the open van, directing people and gear with confident roadside authority."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4433,7 +4433,7 @@
         "altIntent": "Rock Bottom shows one person alone at the lowest edge of an empty pool, the vast cold space and first horizon light holding both exhaustion and possibility."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4463,7 +4463,7 @@
         "altIntent": "Comeback Story depicts a swimmer actively emerging from dark water into morning light, with worn goggles and determined lift making recovery physical."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4491,7 +4491,7 @@
         "altIntent": "Last Bus Home is about one friend carrying another toward the final warm bus, their joined weight and wet-night setting expressing dependable help."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4520,7 +4520,7 @@
         "altIntent": "Steve appears outwardly ordinary while three mirrors suggest different possible versions of his posture, making adaptability rather than spectacle the visual idea."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4543,12 +4543,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A keen young worker carries mismatched tools through a half-finished room; diagonal full-body frame, paint roller, cable reel and lunch bag, practical blue with sawdust gold.",
-        "prompt": "Track Apprentice full-body through a half-finished room, mismatched tools pulling in different directions as paint roller, cable reel and lunch bag complicate the diagonal stride. Practical blue and sawdust gold should show a keen young worker learning on the move; tool marks, plans and wall writing stay absent.",
-        "altIntent": "Apprentice is an eager young worker carrying more varied kit than experience, moving purposefully through a room where several jobs remain unfinished."
+        "brief": "A two-armed apprentice carries one roller and one toolbox while the cable reel remains on the floor.",
+        "prompt": "A keen young British apprentice walks through a half-finished room with exactly two arms and no floating tools. One hand grips the handle of a closed toolbox hanging naturally at thigh height; the other hand holds one paint roller by its handle. A cable reel rests flat on the floor and a lunch bag is strapped across the shoulder. Every item is supported or held; simple physical perspective.",
+        "altIntent": "A two-armed apprentice carries one roller and one toolbox while the cable reel remains on the floor."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4577,7 +4577,7 @@
         "altIntent": "Teetotal Terry is the calm person who changes the direction of a swirling night, guiding others toward a quiet table while holding only a clear drink."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4606,7 +4606,7 @@
         "altIntent": "Snakebite shows a charged drinker moving straight through a crowded room, one distinctive mixed glass and fixed expression making the path feel electric."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4635,7 +4635,7 @@
         "altIntent": "Bombay Bandit is a smiling diner turning spare dishes into a rapid operation, with sweeping hands, takeaway cartons and hot plates conveying comic efficiency."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4659,7 +4659,7 @@
         "altIntent": "Facebook Dad is a middle-aged tinkerer making an elaborate colour system around a blank tablet, with coasters and glasses conveying earnest online-style organisation."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4683,7 +4683,7 @@
         "altIntent": "Old Habit shows an older swimmer following a familiar path between old routine and early exercise, with coat, towel and changing colour holding both directions together."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4713,7 +4713,7 @@
         "altIntent": "New Life depicts recovery as active care, with a renewed regular tending young plants beside a bright pool and keeping a quiet token nearby."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4737,7 +4737,7 @@
         "altIntent": "Flat Cap is a compact traditional scrapper expressing speed through two quick hand motions, low brim and worn clothing rather than weapons or myth."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4750,7 +4750,7 @@
         {
           "mechanicalId": "BLK-141-T01",
           "name": "By Order of the Old Ways",
-          "effectText": "Apply your opponent's Active Blokemon's Weakness as ×4 instead of its printed multiplier."
+          "effectText": "Apply your opponent's Active Blokemon's Weakness as \u00d74 instead of its printed multiplier."
         }
       ],
       "attacks": [
@@ -4767,7 +4767,7 @@
         "altIntent": "Peaky Blinder is a sharply controlled figure moving through a room that has cleared in advance, using stillness, cap and pocket watch to project authority."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4795,7 +4795,7 @@
         "altIntent": "Old Boy is a weathered local controlling movement through the building from above, his smooth descent, walking stick and pointing hand conveying senior authority."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4825,7 +4825,7 @@
         "altIntent": "Big Dave is a very large but gentle regular settling carefully before an equally large meal, with the tiny cup and reinforced chair making scale affectionate rather than monstrous."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4855,7 +4855,7 @@
         "altIntent": "Cold Turkey represents focused endurance through a solitary winter swim, the warm tow-float and visible breath locating a human body in severe cold."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4891,7 +4891,7 @@
         "altIntent": "Beer Baron is a grand pub showman momentarily lifted by the energy of the room, surrounded by raised glasses and coasters while remaining recognisably human."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4921,7 +4921,7 @@
         "altIntent": "Fat Les is a jubilant curry champion celebrating over a street feast, with raised arms, huge ladle and surrounding diners making appetite feel communal."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4948,7 +4948,7 @@
         "altIntent": "Reginald Kray is a sharply tailored young legend projecting threat through one measured tap and controlled stillness at an otherwise bare table."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -4976,7 +4976,7 @@
         "altIntent": "Golden Boy appears as a rising legend arriving at exactly the right moment, his polished turn and aligned reflections making confidence look effortless."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -5001,12 +5001,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A beloved legend drives forward across a rain-bright pub car park with joyous arms wide; expansive tracking shot, loose shirt and trailing scarf without text, heroic blue with white flare.",
-        "prompt": "Track Gazza across a rain-bright pub car park, beloved legend driving forward with joyous arms wide while a loose shirt and plain scarf stream behind. Heroic blue and white flare should leave wet ground, open face and ordinary human stride visible; no team colour marks, slogans or copied likeness cues are required.",
-        "altIntent": "Gazza is a beloved, exuberant legend moving toward people with arms open, rain, scarf and bright tracking light turning the car park into a celebratory entrance."
+        "brief": "A ruddy, enormous-bellied Brexit geezer raises a pint and welcomes the pub car park with boisterous swagger.",
+        "prompt": "Gazza is NOT Paul Gascoigne. Make him a ridiculous fat Brexit-geezer pub archetype: middle-aged, ruddy, loud, huge round beer belly hanging far over the waistband, thick neck, flushed cheeks, thinning hair and an unbranded football scarf. In a wet pub car park he raises one ordinary pint and throws the other arm wide in boisterous welcome. Exaggerate the belly and geezer swagger; affectionate but grotesque.",
+        "altIntent": "A ruddy, enormous-bellied Brexit geezer raises a pint and welcomes the pub car park with boisterous swagger."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -5030,12 +5030,12 @@
       ],
       "rules": [],
       "illustration": {
-        "brief": "A wired philosopher crouches behind a mirrored coffee table while pointing through his own reflection; angular interior frame, leather jacket and unlabelled speaker, ultraviolet black with cold silver.",
-        "prompt": "Angle Super Hans behind a mirrored coffee table, wired philosopher crouched low as one finger points through his own broken reflection toward an unlabelled speaker. Ultraviolet black and cold silver should create sharp interior planes around leather jacket and intensely social gaze; no written theory, interface display or explanatory caption appears.",
-        "altIntent": "Super Hans is a wired social philosopher using his reflection and emphatic pointing to command an intense room, with mirror and speaker supporting rather than defining him."
+        "brief": "A recognisable gaunt Super Hans leans over a table and points intensely in a shabby flat.",
+        "prompt": "Use all supplied Batch 025 Super Hans references as mandatory identity control. Depict a recognisable Matt King as Super Hans from Peep Show: very gaunt angular face, deep-set pale blue eyes with dark rims, narrow long nose, thin lips, scruffy short brown hair, wiry stubble and intense wired stare. He leans toward camera in a shabby flat, black hard-edged jacket over a coloured shirt, pointing emphatically with one attached hand while the other braces a table. One speaker behind him. Do not make him blond, muscular, square-jawed or generically handsome.",
+        "altIntent": "A recognisable gaunt Super Hans leans over a table and points intensely in a shabby flat."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     },
@@ -5055,7 +5055,7 @@
         {
           "mechanicalId": "BLK-151-B01",
           "name": "Borrow Their Best",
-          "effectText": "Choose 1 Attack belonging to your opponent's Active Blokemon and use it as this Attack, paying its cost with Energy attached to this Blokemon."
+          "effectText": "Choose 1 Attack belonging to your opponent's Active Blokemon and use it as this Attack."
         }
       ],
       "rules": [
@@ -5071,7 +5071,7 @@
         "altIntent": "Bez is the explosive centre of a fresh dance circle, his loose full-body movement pulling people and blank cards into motion without relying on a named prop."
       },
       "art": {
-        "status": "Placeholder",
+        "status": "Accepted",
         "authority": "Blokemon"
       }
     }
@@ -5185,7 +5185,7 @@
         {
           "mechanicalId": "KIT-006-R01",
           "name": "Trade Energy for a Card",
-          "effectText": "Once during each participant’s turn, that participant may discard 1 Basic Energy card from their hand to draw 1 card."
+          "effectText": "Once during each participant\u2019s turn, that participant may discard 1 Basic Energy card from their hand to draw 1 card."
         },
         {
           "mechanicalId": "KIT-006-R02",

@@ -11,7 +11,6 @@ public sealed record ProfileView(
     Guid Id,
     string DisplayName,
     long Revision,
-    int UnopenedPacks,
     string? StarterDeckId
 );
 
@@ -227,6 +226,7 @@ public enum MatchAnimationKindView
     Turn,
     Coin,
     Victory,
+    Reveal,
     Other,
 }
 
@@ -238,7 +238,8 @@ public sealed record MatchEventCueView(
     string[] TargetCardInstanceIds,
     int Amount,
     bool? BadgeSide,
-    bool? ActorIsLocalPlayer
+    bool? ActorIsLocalPlayer,
+    CardView[] RevealedCards
 );
 
 public sealed record MatchPresentationStepView(MatchFrameView Frame, MatchEventCueView[] Events);
@@ -334,6 +335,8 @@ public interface IBlokemonApplication
         ApplyMatchActionRequest request,
         CancellationToken cancellationToken = default
     );
+
+    Task<ApiResponse<ApplicationView>> PurgeData(CancellationToken cancellationToken = default);
 }
 
 public sealed class BlokemonApiClient(HttpClient http) : IBlokemonApplication
@@ -382,6 +385,10 @@ public sealed class BlokemonApiClient(HttpClient http) : IBlokemonApplication
             request,
             cancellationToken
         );
+
+    public Task<ApiResponse<ApplicationView>> PurgeData(
+        CancellationToken cancellationToken = default
+    ) => Post<object, ApplicationView>("api/purge", new(), cancellationToken);
 
     private async Task<ApiResponse<T>> Get<T>(string path, CancellationToken cancellationToken)
     {

@@ -121,14 +121,22 @@ public sealed class MatchEngine
             return [];
         }
 
-        var proposed = state.Phase switch
+        var legalState = state;
+        if (state.Phase == MatchPhase.Playing)
         {
-            MatchPhase.MulliganBonus => MulliganBonusActions(state, actor),
-            MatchPhase.OpeningPlacement => OpeningActions(state, actor),
-            MatchPhase.Playing => PlayingActions(state, actor),
-            MatchPhase.AwaitingEffectChoice => EffectChoiceActions(state, actor),
-            MatchPhase.AwaitingTriggerChoice => TriggerChoiceActions(state, actor),
-            MatchPhase.AwaitingReplacement => ReplacementActions(state, actor),
+            var builder = new MatchBuilder(state, _catalog);
+            RefreshContinuousEffects(builder);
+            legalState = builder.Snapshot();
+        }
+
+        var proposed = legalState.Phase switch
+        {
+            MatchPhase.MulliganBonus => MulliganBonusActions(legalState, actor),
+            MatchPhase.OpeningPlacement => OpeningActions(legalState, actor),
+            MatchPhase.Playing => PlayingActions(legalState, actor),
+            MatchPhase.AwaitingEffectChoice => EffectChoiceActions(legalState, actor),
+            MatchPhase.AwaitingTriggerChoice => TriggerChoiceActions(legalState, actor),
+            MatchPhase.AwaitingReplacement => ReplacementActions(legalState, actor),
             MatchPhase.Complete => [],
             _ => throw new UnreachableException(),
         };
@@ -474,7 +482,7 @@ public sealed class MatchEngine
             )
             {
                 var effect = new EffectId(trick.MechanicalId);
-                builder.RemoveEffects(effect);
+                builder.RemoveEffects(effect, source.Id);
                 _interpreter.Execute(
                     builder,
                     source.Owner,
@@ -502,7 +510,7 @@ public sealed class MatchEngine
             )
             {
                 var effect = new EffectId(rule.MechanicalId);
-                builder.RemoveEffects(effect);
+                builder.RemoveEffects(effect, source.Id);
                 _interpreter.Execute(
                     builder,
                     source.Owner,
@@ -717,14 +725,17 @@ public sealed class MatchEngine
         }
 
         var player = builder.Player(command.Actor);
+        var firstRoundPromotionAllowed = AllowsFirstRoundPromotion(builder, target);
         if (
             promotion.Owner != command.Actor
             || target.Owner != command.Actor
             || promotion.Kind != CardKind.Bloke
             || promotion.Zone != CardZone.Mitt
             || !IsInPlay(target)
-            || player.RoundsStarted <= 1
-            || target.EnteredAtOwnerRound == player.RoundsStarted
+            || (
+                !firstRoundPromotionAllowed
+                && (player.RoundsStarted <= 1 || target.EnteredAtOwnerRound == player.RoundsStarted)
+            )
             || target.LastPromotedRound == builder.RoundNumber
             || _catalog.Bloke(promotion.MechanicalId).PromotesFromId != target.MechanicalId.Value
         )
@@ -791,6 +802,22 @@ public sealed class MatchEngine
 
         return HandlerResult.Accepted;
     }
+
+    private bool AllowsFirstRoundPromotion(MatchBuilder builder, CardState target) =>
+        _catalog
+            .PartyTricks(target)
+            .Where(static trick => trick.Trigger == BlokemonTrigger.Continuous)
+            .Where(trick =>
+                ContainsCondition(trick.Program, BlokemonCondition.OpenedSecond)
+                && ContainsCondition(trick.Program, BlokemonCondition.OwnersFirstRound)
+            )
+            .Any(trick =>
+                builder.Effects.Any(effect =>
+                    effect.SourceEffect == new EffectId(trick.MechanicalId)
+                    && effect.SourceCard == target.Id
+                    && effect.Kind == TemporaryEffectKind.ContinuousPartyTrick
+                )
+            );
 
     private HandlerResult PlayKit(MatchBuilder builder, MatchCommand.PlayKit command)
     {
@@ -946,6 +973,12 @@ public sealed class MatchEngine
             builder.MoveCard(kitCard.Id, CardZone.EmptiesTray);
         }
 
+        builder.RoundUsage = builder.RoundUsage with
+        {
+            KitsPlayed = FrozenList<MechanicalCardId>.Create(
+                builder.RoundUsage.KitsPlayed.Append(kitCard.MechanicalId)
+            ),
+        };
         builder.RoundUsage = kit.Kind switch
         {
             BlokemonKitKind.BarBit => builder.RoundUsage,
@@ -973,7 +1006,7 @@ public sealed class MatchEngine
         var restricted = builder.Effects.Any(effect =>
             effect.Owner != actor
             && (
-                effect.Kind == TemporaryEffectKind.RestrictKit
+                effect.Kind == TemporaryEffectKind.RestrictKit && kit.Kind == BlokemonKitKind.BarBit
                 || (
                     kit.Kind == BlokemonKitKind.Local
                     && effect.Kind == TemporaryEffectKind.RestrictLocal
@@ -1092,7 +1125,7 @@ public sealed class MatchEngine
 
         builder.MoveCard(outgoing.Id, CardZone.Booth);
         builder.ClearRoughStates(command.Actor, outgoing.Id);
-        builder.RemoveEffectsFor(outgoing.Id);
+        builder.RemoveEffectsFor(outgoing.Id, preserveDelayedTarget: true);
         builder.MoveCard(incoming.Id, CardZone.Oche);
         builder.RoundUsage = builder.RoundUsage with
         {
@@ -1354,9 +1387,47 @@ public sealed class MatchEngine
                     Effect: command.AttackId
                 )
             );
+            var attackGate = builder.Effects.LastOrDefault(effect =>
+                effect.TargetCard == attacker.Id
+                && effect.Kind == TemporaryEffectKind.RestrictAttackOnBeerMat
+                && effect.AppliesFromRound <= builder.RoundNumber
+            );
+            if (attackGate is not null)
+            {
+                var attackAllowed = true;
+                for (var toss = 0; toss < attackGate.Amount; toss++)
+                {
+                    var badge = builder.TossBeerMat(command.Actor);
+                    builder.Events.Add(
+                        new PendingMatchEvent(
+                            MatchEventKind.BeerMatTossed,
+                            command.Actor,
+                            attacker.Id,
+                            Effect: attackGate.SourceEffect,
+                            BadgeSide: badge
+                        )
+                    );
+                    attackAllowed &= badge;
+                }
+
+                if (!attackAllowed)
+                {
+                    builder.Events.Add(
+                        new PendingMatchEvent(
+                            MatchEventKind.AttackCancelled,
+                            command.Actor,
+                            attacker.Id,
+                            Effect: command.AttackId
+                        )
+                    );
+                    FinishOrPendRound(builder);
+                    return HandlerResult.Accepted;
+                }
+            }
+
             if (attacker.RoughStates.Any(entry => entry.State == BlokemonRoughState.Muddled))
             {
-                var badge = builder.Random.NextInt(2) == 1;
+                var badge = builder.TossBeerMat(command.Actor);
                 builder.Events.Add(
                     new PendingMatchEvent(
                         MatchEventKind.BeerMatTossed,
@@ -1441,8 +1512,23 @@ public sealed class MatchEngine
             );
         }
 
-        ResolveReactiveAttackTriggers(builder, attacker, defendingCard, defendingDamageBefore);
-        if (!ResolveSendHome(builder, execution.ForcedSendHome, attacker.Id, true))
+        ResolveReactiveAttackTriggers(
+            builder,
+            attacker,
+            defendingCard,
+            defendingDamageBefore,
+            execution.AttackDamageTargets
+        );
+        if (
+            !ResolveSendHome(
+                builder,
+                execution.ForcedSendHome,
+                attacker.Id,
+                true,
+                execution.AttackDamageTargets,
+                execution.DeferredAttackKnockoutBarChits
+            )
+        )
         {
             return HandlerResult.Accepted;
         }
@@ -1527,7 +1613,7 @@ public sealed class MatchEngine
 
         foreach (var expected in plannedBeerMats.Skip(recordedBeerMats.Count))
         {
-            var actual = builder.Random.NextInt(2) == 1;
+            var actual = builder.TossBeerMat(command.Actor);
             if (actual != expected)
             {
                 return HandlerResult.Reject(CommandRejectionCode.AuthorityMismatch);
@@ -1695,12 +1781,24 @@ public sealed class MatchEngine
 
         builder.PendingKnockout = null;
         builder.Phase = MatchPhase.Playing;
-        SendHomeOne(builder, builder.Card(pending.KnockedOutCard), pending.AttackingCard);
+        SendHomeOne(
+            builder,
+            builder.Card(pending.KnockedOutCard),
+            pending.AttackingCard,
+            pending.FinishRoundAfterResolution
+        );
+        TakeExtraBarChits(
+            builder,
+            pending.AttackingCard,
+            pending.ExtraBarChits,
+            pending.FinishRoundAfterResolution
+        );
         var completed = ResolveSendHome(
             builder,
             pending.RemainingKnockouts,
             pending.AttackingCard,
-            pending.FinishRoundAfterResolution
+            pending.FinishRoundAfterResolution,
+            pending.AttackDamageTargets
         );
         if (completed && pending.FinishRoundAfterResolution)
         {
@@ -2007,7 +2105,7 @@ public sealed class MatchEngine
 
     private static bool TossCheckup(MatchBuilder builder, PlayerId player, CardInstanceId card)
     {
-        var badge = builder.Random.NextInt(2) == 1;
+        var badge = builder.TossBeerMat(player, applyPlayerEffects: false);
         builder.Events.Add(
             new PendingMatchEvent(MatchEventKind.BeerMatTossed, player, card, BadgeSide: badge)
         );
@@ -2018,9 +2116,12 @@ public sealed class MatchEngine
         MatchBuilder builder,
         FrozenList<CardInstanceId> forcedSendHome,
         CardInstanceId? attackingCard = null,
-        bool finishRoundAfterResolution = false
+        bool finishRoundAfterResolution = false,
+        FrozenList<CardInstanceId> attackDamageTargets = default,
+        int extraBarChits = 0
     )
     {
+        var extraBarChitsAwarded = false;
         var candidates = builder
             .Cards.Where(IsInPlay)
             .Where(card =>
@@ -2039,8 +2140,13 @@ public sealed class MatchEngine
                 continue;
             }
 
+            var knockedOutByAttackDamage =
+                attackingCard is not null
+                && attackDamageTargets.Contains(current.Id)
+                && current.Damage >= EffectiveStayingPower(builder, current);
+            var damageAttacker = knockedOutByAttackDamage ? attackingCard : null;
             if (
-                attackingCard is { } recoverAttacker
+                damageAttacker is { } recoverAttacker
                 && TryRecover(builder, current, recoverAttacker)
             )
             {
@@ -2048,7 +2154,7 @@ public sealed class MatchEngine
             }
 
             if (
-                attackingCard is { } attacker
+                damageAttacker is { } attacker
                 && QueueKnockoutTrigger(
                     builder,
                     current,
@@ -2056,20 +2162,36 @@ public sealed class MatchEngine
                     FrozenList<CardInstanceId>.Create(
                         candidates.Skip(index + 1).Select(static card => card.Id)
                     ),
-                    finishRoundAfterResolution
+                    finishRoundAfterResolution,
+                    attackDamageTargets,
+                    extraBarChitsAwarded ? 0 : extraBarChits
                 )
             )
             {
                 return false;
             }
 
-            if (SendHomeOne(builder, current, attackingCard) && attackingCard is { } reflected)
+            if (
+                SendHomeOne(builder, current, damageAttacker, finishRoundAfterResolution)
+                && damageAttacker is { } reflected
+            )
             {
                 var attackerState = builder.FindCard(reflected);
                 if (attackerState is not null && IsInPlay(attackerState))
                 {
                     candidates.Add(attackerState);
                 }
+            }
+
+            if (knockedOutByAttackDamage && !extraBarChitsAwarded)
+            {
+                TakeExtraBarChits(
+                    builder,
+                    attackingCard!.Value,
+                    extraBarChits,
+                    finishRoundAfterResolution
+                );
+                extraBarChitsAwarded = true;
             }
         }
 
@@ -2128,9 +2250,20 @@ public sealed class MatchEngine
         CardState knockedOut,
         CardInstanceId attackingCard,
         FrozenList<CardInstanceId> remainingKnockouts,
-        bool finishRoundAfterResolution
+        bool finishRoundAfterResolution,
+        FrozenList<CardInstanceId> attackDamageTargets,
+        int extraBarChits
     )
     {
+        var attacker = builder.Card(attackingCard);
+        if (
+            attacker.Owner == knockedOut.Owner
+            || knockedOut.Damage < EffectiveStayingPower(builder, knockedOut)
+        )
+        {
+            return false;
+        }
+
         var sources = builder
             .Cards.Where(card =>
                 card.Owner == knockedOut.Owner && card.Id != knockedOut.Id && IsInPlay(card)
@@ -2197,7 +2330,9 @@ public sealed class MatchEngine
             knockedOut.Owner,
             FrozenList<CardInstanceId>.Create(eligibleVim),
             attackingCard,
-            finishRoundAfterResolution
+            finishRoundAfterResolution,
+            attackDamageTargets,
+            extraBarChits
         );
         builder.Phase = MatchPhase.AwaitingTriggerChoice;
         builder.Events.Add(
@@ -2212,7 +2347,12 @@ public sealed class MatchEngine
         return true;
     }
 
-    private bool SendHomeOne(MatchBuilder builder, CardState current, CardInstanceId? attackingCard)
+    private bool SendHomeOne(
+        MatchBuilder builder,
+        CardState current,
+        CardInstanceId? attackingCard,
+        bool finishRoundAfterResolution
+    )
     {
         var retaliation =
             attackingCard is not null && current.Zone == CardZone.Oche
@@ -2234,7 +2374,7 @@ public sealed class MatchEngine
         );
         var takingPlayer = builder.Other(current.Owner);
         var taken = builder.TakeBarChits(takingPlayer, _catalog.BarChits(current), current.Id);
-        QueueBarChitTriggers(builder, takingPlayer, taken, attackingCard is not null);
+        QueueBarChitTriggers(builder, takingPlayer, taken, finishRoundAfterResolution);
         var retaliates = false;
         if (retaliation is not null && attackingCard is { } attacker)
         {
@@ -2267,6 +2407,23 @@ public sealed class MatchEngine
         }
 
         return retaliates;
+    }
+
+    private void TakeExtraBarChits(
+        MatchBuilder builder,
+        CardInstanceId attackingCard,
+        int count,
+        bool finishRoundAfterResolution
+    )
+    {
+        if (count <= 0)
+        {
+            return;
+        }
+
+        var attacker = builder.Card(attackingCard);
+        var taken = builder.TakeBarChits(attacker.Owner, count, attackingCard);
+        QueueBarChitTriggers(builder, attacker.Owner, taken, finishRoundAfterResolution);
     }
 
     private void QueueBarChitTriggers(
@@ -2313,7 +2470,8 @@ public sealed class MatchEngine
         MatchBuilder builder,
         CardState attacker,
         CardState? defenderBefore,
-        int damageBefore
+        int damageBefore,
+        FrozenList<CardInstanceId> attackDamageTargets
     )
     {
         if (defenderBefore is null)
@@ -2322,7 +2480,11 @@ public sealed class MatchEngine
         }
 
         var defender = builder.FindCard(defenderBefore.Id);
-        if (defender is null || defender.Damage <= damageBefore)
+        if (
+            defender is null
+            || defender.Damage <= damageBefore
+            || !attackDamageTargets.Contains(defender.Id)
+        )
         {
             return;
         }
@@ -2569,7 +2731,12 @@ public sealed class MatchEngine
             )
         )
         {
-            fare = modifier.MechanicalTypes.Count == 0 ? 0 : Math.Max(0, fare + modifier.Amount);
+            var continuous =
+                _catalog.PartyTrick(modifier.SourceEffect)?.Trigger == BlokemonTrigger.Continuous;
+            fare =
+                modifier.MechanicalTypes.Count == 0 || continuous
+                    ? 0
+                    : Math.Max(0, fare + modifier.Amount);
         }
 
         return fare;
@@ -2822,39 +2989,26 @@ public sealed class MatchEngine
                 .Where(static card => card.Kind == CardKind.Bloke)
         )
         {
-            var requirements = FrozenList<ChoiceRequirement>.Create(
-                _catalog
-                    .PartyTricks(promotion)
-                    .Where(static trick => trick.Trigger == BlokemonTrigger.OnPromotionFromMitt)
-                    .SelectMany(trick =>
-                        _interpreter.GetChoiceRequirements(
-                            state,
-                            new EffectInvocation(
-                                actor,
-                                promotion.Id,
-                                new EffectId(trick.MechanicalId),
-                                []
-                            )
-                        )
+            foreach (var target in inPlay)
+            {
+                var requirements = PromotionChoiceRequirements(state, actor, promotion, target);
+                actions.Add(
+                    new LegalAction(
+                        LegalActionKind.Promote,
+                        new MatchCommand.Promote(
+                            CpuCommandId(state, $"promote:{promotion.Id.Value}:{target.Id.Value}"),
+                            state.Id,
+                            actor,
+                            state.Revision,
+                            promotion.Id,
+                            target.Id,
+                            StableChoices(requirements)
+                        ),
+                        requirements,
+                        $"promote:{promotion.Id.Value}:{target.Id.Value}"
                     )
-                    .DistinctBy(static requirement => requirement.Id)
-            );
-            actions.AddRange(
-                inPlay.Select(target => new LegalAction(
-                    LegalActionKind.Promote,
-                    new MatchCommand.Promote(
-                        CpuCommandId(state, $"promote:{promotion.Id.Value}:{target.Id.Value}"),
-                        state.Id,
-                        actor,
-                        state.Revision,
-                        promotion.Id,
-                        target.Id,
-                        StableChoices(requirements)
-                    ),
-                    requirements,
-                    $"promote:{promotion.Id.Value}:{target.Id.Value}"
-                ))
-            );
+                );
+            }
         }
 
         foreach (
@@ -3088,6 +3242,59 @@ public sealed class MatchEngine
         return actions;
     }
 
+    private FrozenList<ChoiceRequirement> PromotionChoiceRequirements(
+        MatchState state,
+        PlayerId actor,
+        CardState promotion,
+        CardState target
+    )
+    {
+        var promotedCards = state.Cards.Select(card =>
+            card.Id == target.Id
+                ? card with
+                {
+                    Zone = CardZone.Attached,
+                    AttachedTo = promotion.Id,
+                    Attachments = [],
+                    RoughStates = [],
+                }
+            : card.Id == promotion.Id
+                ? card with
+                {
+                    Zone = target.Zone,
+                    StackPosition = -1,
+                    Damage = target.Damage,
+                    Attachments = target.Attachments,
+                    UnderlyingCards = FrozenList<CardInstanceId>.Create(
+                        target.UnderlyingCards.Append(target.Id)
+                    ),
+                    RoughStates = [],
+                    EnteredAtOwnerRound = target.EnteredAtOwnerRound,
+                    LastPromotedRound = state.RoundNumber,
+                }
+            : target.Attachments.Contains(card.Id) ? card with { AttachedTo = promotion.Id }
+            : card
+        );
+        var promotedState = state with { Cards = FrozenList<CardState>.Create(promotedCards) };
+        return FrozenList<ChoiceRequirement>.Create(
+            _catalog
+                .PartyTricks(promotion)
+                .Where(static trick => trick.Trigger == BlokemonTrigger.OnPromotionFromMitt)
+                .SelectMany(trick =>
+                    _interpreter.GetChoiceRequirements(
+                        promotedState,
+                        new EffectInvocation(
+                            actor,
+                            promotion.Id,
+                            new EffectId(trick.MechanicalId),
+                            []
+                        )
+                    )
+                )
+                .DistinctBy(static requirement => requirement.Id)
+        );
+    }
+
     private static FrozenList<EffectChoice> StableChoices(
         FrozenList<ChoiceRequirement> requirements
     ) => FrozenList<EffectChoice>.Create(requirements.SelectMany(StableChoice));
@@ -3135,10 +3342,9 @@ public sealed class MatchEngine
                         new EffectChoice.Attachments(
                             requirement.Id,
                             FrozenList<VimAttachment>.Create(
-                                requirement.EligibleCards.Select(vim => new VimAttachment(
-                                    vim,
-                                    target
-                                ))
+                                requirement
+                                    .EligibleCards.Take(requirement.Minimum)
+                                    .Select(vim => new VimAttachment(vim, target))
                             )
                         )
                 ),

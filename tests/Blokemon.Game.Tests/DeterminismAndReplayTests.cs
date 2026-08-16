@@ -1,4 +1,5 @@
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -12,8 +13,8 @@ public sealed class DeterminismAndReplayTests
         var firstStart = (MatchStartOutcome.Started)engine.Start(request);
         var repeatedStart = (MatchStartOutcome.Started)engine.Start(request);
 
-        await Assert.That(repeatedStart.State).IsEqualTo(firstStart.State);
-        await Assert.That(repeatedStart.Events).IsEqualTo(firstStart.Events);
+        repeatedStart.State.ShouldBe(firstStart.State);
+        repeatedStart.Events.ShouldBe(firstStart.Events);
 
         var commands = new List<MatchCommand>();
         var allEvents = new List<MatchEvent>(firstStart.Events);
@@ -44,8 +45,8 @@ public sealed class DeterminismAndReplayTests
         var eventReplay = (ReplayOutcome.Replayed)engine.ReplayEvents(allEvents);
         var commandReplay = (ReplayOutcome.Replayed)engine.ReplayCommands(request, commands);
 
-        await Assert.That(eventReplay.State).IsEqualTo(state);
-        await Assert.That(commandReplay.State).IsEqualTo(state);
+        eventReplay.State.ShouldBe(state);
+        commandReplay.State.ShouldBe(state);
     }
 
     [Test]
@@ -58,7 +59,7 @@ public sealed class DeterminismAndReplayTests
         var first = (CpuDecision.Selected)cpu.Choose(engine, state, MatchScenario.FirstPlayer);
         var repeated = (CpuDecision.Selected)cpu.Choose(engine, state, MatchScenario.FirstPlayer);
 
-        await Assert.That(repeated.Action).IsEqualTo(first.Action);
+        repeated.Action.ShouldBe(first.Action);
     }
 
     [Test]
@@ -71,6 +72,6 @@ public sealed class DeterminismAndReplayTests
 
         var replay = (ReplayOutcome.Rejected)engine.ReplayEvents(events);
 
-        await Assert.That(replay.Issue.Code).IsEqualTo(ReplayIssueCode.StateMismatch);
+        replay.Issue.Code.ShouldBe(ReplayIssueCode.StateMismatch);
     }
 }

@@ -6,6 +6,7 @@
     <ProjectReference Include="../../src/Blokemon.Product/Blokemon.Product.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Shouldly" />
     <PackageReference Include="TUnit" />
   </ItemGroup>
   <ItemGroup>

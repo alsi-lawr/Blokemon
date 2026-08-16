@@ -1,11 +1,12 @@
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
 public sealed class TopStackDistributionTests
 {
     [Test]
-    public async Task PromotionTrigger_AttachesEveryBasicVimFromTheDeclaredTopStackWindow()
+    public async Task PromotionTrigger_AttachesOnlyTheSelectedBasicVimFromTheTopStackWindow()
     {
         var engine = MatchScenario.Engine();
         var state = MatchScenario.BattleState("BLK-043", "BLK-001", [], 59);
@@ -57,10 +58,6 @@ public sealed class TopStackDistributionTests
                     new VimAttachment(
                         new CardInstanceId("top-grass"),
                         new CardInstanceId("promotion")
-                    ),
-                    new VimAttachment(
-                        new CardInstanceId("top-water"),
-                        new CardInstanceId("promotion")
                     )
                 )
             )
@@ -77,8 +74,9 @@ public sealed class TopStackDistributionTests
 
         var applied = (CommandOutcome.Applied)engine.Apply(state, command);
 
-        await Assert.That(applied.State.Card(topGrass.Id).AttachedTo).IsEqualTo(promotion.Id);
-        await Assert.That(applied.State.Card(topWater.Id).AttachedTo).IsEqualTo(promotion.Id);
-        await Assert.That(applied.State.Card(topBloke.Id).Zone).IsEqualTo(CardZone.Stack);
+        applied.State.Card(topGrass.Id).AttachedTo.ShouldBe(promotion.Id);
+        applied.State.Card(topWater.Id).Zone.ShouldBe(CardZone.Stack);
+        applied.State.Card(topWater.Id).AttachedTo.ShouldBeNull();
+        applied.State.Card(topBloke.Id).Zone.ShouldBe(CardZone.Stack);
     }
 }

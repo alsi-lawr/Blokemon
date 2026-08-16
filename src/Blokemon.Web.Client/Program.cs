@@ -1,12 +1,33 @@
-using Blokemon.Web.Client.Api;
+using Blokemon.Web.Client.Application;
+using Blokemon.Web.Content;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-var builder = WebAssemblyHostBuilder.CreateDefault(args);
+namespace Blokemon.Web.Client;
 
-builder.Services.AddScoped(_ => new HttpClient
+public static class ClientProgram
 {
-    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress),
-});
-builder.Services.AddScoped<BlokemonApiClient>();
+    public static async Task Main(string[] args)
+    {
+        var builder = WebAssemblyHostBuilder.CreateDefault(args);
+        var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
+        var bootstrap = await http.GetStringAsync("content/catalogue.json");
+#if BLOKEMON_STANDALONE_BROWSER
+        var playModes = new PlayModeAvailability(ServerBacked: false);
+#else
+        var playModes = new PlayModeAvailability(ServerBacked: true);
+#endif
+        builder.Services.AddBlokemonClient(
+            http,
+            BlokemonCatalogue.FromBootstrapJson(bootstrap),
+            playModes
+        );
 
-await builder.Build().RunAsync();
+#if BLOKEMON_STANDALONE_BROWSER
+        builder.RootComponents.Add<App>("#app");
+        builder.RootComponents.Add<HeadOutlet>("head::after");
+#endif
+
+        await builder.Build().RunAsync();
+    }
+}

@@ -1,4 +1,5 @@
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -44,12 +45,10 @@ public sealed class ExceptionalEffectTests
 
         var applied = MatchScenario.Applied(engine.Apply(state, command));
 
-        await Assert.That(applied.Card(new CardInstanceId("defender")).Damage).IsEqualTo(10);
-        await Assert.That(applied.Card(otherBench.Id).Damage).IsEqualTo(10);
-        await Assert.That(applied.Card(ownBench.Id).Zone).IsEqualTo(CardZone.Oche);
-        await Assert
-            .That(applied.Card(new CardInstanceId("attacker")).Zone)
-            .IsEqualTo(CardZone.Booth);
+        applied.Card(new CardInstanceId("defender")).Damage.ShouldBe(10);
+        applied.Card(otherBench.Id).Damage.ShouldBe(10);
+        applied.Card(ownBench.Id).Zone.ShouldBe(CardZone.Oche);
+        applied.Card(new CardInstanceId("attacker")).Zone.ShouldBe(CardZone.Booth);
     }
 
     [Test]
@@ -103,9 +102,9 @@ public sealed class ExceptionalEffectTests
 
         var applied = MatchScenario.Applied(engine.Apply(requested.State, command));
 
-        await Assert.That(applied.Card(new CardInstanceId("defender")).Damage).IsEqualTo(100);
-        await Assert.That(applied.Card(firstTool.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
-        await Assert.That(applied.Card(secondTool.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
+        applied.Card(new CardInstanceId("defender")).Damage.ShouldBe(100);
+        applied.Card(firstTool.Id).Zone.ShouldBe(CardZone.EmptiesTray);
+        applied.Card(secondTool.Id).Zone.ShouldBe(CardZone.EmptiesTray);
     }
 
     [Test]
@@ -142,8 +141,8 @@ public sealed class ExceptionalEffectTests
 
         var applied = MatchScenario.Applied(engine.Apply(state, command));
 
-        await Assert.That(cards.EligibleCards).IsEquivalentTo([opposingVim.Id]);
-        await Assert.That(applied.Card(opposingVim.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
+        cards.EligibleCards.ShouldBe([opposingVim.Id]);
+        applied.Card(opposingVim.Id).Zone.ShouldBe(CardZone.EmptiesTray);
     }
 
     [Test]
@@ -193,14 +192,10 @@ public sealed class ExceptionalEffectTests
 
         var applied = MatchScenario.Applied(engine.Apply(requested.State, command));
 
-        await Assert.That(applied.Card(new CardInstanceId("defender")).Damage).IsEqualTo(20);
-        await Assert
-            .That(applied.Card(new CardInstanceId("attacker")).Zone)
-            .IsEqualTo(CardZone.EmptiesTray);
-        await Assert
-            .That(applied.Player(MatchScenario.SecondPlayer).BarChitsRemaining)
-            .IsEqualTo(6);
-        await Assert.That(applied.Phase).IsEqualTo(MatchPhase.AwaitingReplacement);
+        applied.Card(new CardInstanceId("defender")).Damage.ShouldBe(20);
+        applied.Card(new CardInstanceId("attacker")).Zone.ShouldBe(CardZone.EmptiesTray);
+        applied.Player(MatchScenario.SecondPlayer).BarChitsRemaining.ShouldBe(6);
+        applied.Phase.ShouldBe(MatchPhase.AwaitingReplacement);
     }
 
     [Test]
@@ -263,16 +258,10 @@ public sealed class ExceptionalEffectTests
 
         var applied = MatchScenario.Applied(engine.Apply(requested.State, command));
 
-        await Assert.That(applied.Card(replacement.Id).Zone).IsEqualTo(CardZone.Oche);
-        await Assert
-            .That(applied.Card(new CardInstanceId("attacker")).Zone)
-            .IsEqualTo(CardZone.EmptiesTray);
-        await Assert
-            .That(applied.Card(new CardInstanceId("vim-0")).Zone)
-            .IsEqualTo(CardZone.EmptiesTray);
-        await Assert
-            .That(applied.Player(MatchScenario.SecondPlayer).BarChitsRemaining)
-            .IsEqualTo(6);
+        applied.Card(replacement.Id).Zone.ShouldBe(CardZone.Oche);
+        applied.Card(new CardInstanceId("attacker")).Zone.ShouldBe(CardZone.EmptiesTray);
+        applied.Card(new CardInstanceId("vim-0")).Zone.ShouldBe(CardZone.EmptiesTray);
+        applied.Player(MatchScenario.SecondPlayer).BarChitsRemaining.ShouldBe(6);
     }
 
     [Test]
@@ -314,11 +303,90 @@ public sealed class ExceptionalEffectTests
             cpu.Choose(engine, requested.State, MatchScenario.FirstPlayer);
         var applied = MatchScenario.Applied(engine.Apply(requested.State, decision.Action.Command));
 
-        await Assert.That(applied.Card(vim.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
-        await Assert
-            .That(applied.Card(new CardInstanceId("first-draw")).Zone)
-            .IsEqualTo(CardZone.Mitt);
-        await Assert.That(applied.RoundUsage.EffectsUsed).Contains(new EffectId("KIT-006-R01"));
+        applied.Card(vim.Id).Zone.ShouldBe(CardZone.EmptiesTray);
+        applied.Card(new CardInstanceId("first-draw")).Zone.ShouldBe(CardZone.Mitt);
+        applied.RoundUsage.EffectsUsed.ShouldContain(new EffectId("KIT-006-R01"));
+    }
+
+    [Test]
+    public async Task TalentScout_NoEligibleBlokemon_ResolvesAnExplicitEmptyChoiceDeterministically()
+    {
+        var engine = MatchScenario.Engine();
+        var state = MatchScenario.BattleState("BLK-001", "BLK-150", [], 433);
+        var kit = MatchScenario.Card(
+            "talent-scout",
+            "KIT-005",
+            MatchScenario.FirstPlayer,
+            CardZone.Mitt,
+            -1
+        );
+        var topCards = Enumerable
+            .Range(0, 8)
+            .Select(index =>
+                MatchScenario.Card(
+                    $"top-{index}",
+                    "VIM-SOBER",
+                    MatchScenario.FirstPlayer,
+                    CardZone.Stack,
+                    index
+                )
+            )
+            .ToArray();
+        var outsideWindow = MatchScenario.Card(
+            "outside-window",
+            "BLK-004",
+            MatchScenario.FirstPlayer,
+            CardZone.Stack,
+            8
+        );
+        state = state with
+        {
+            Cards = FrozenList<CardState>.Create(
+                state
+                    .Cards.Where(card => card.Id.Value != "first-draw")
+                    .Append(kit)
+                    .Concat(topCards)
+                    .Append(outsideWindow)
+                    .OrderBy(static card => card.Id)
+            ),
+        };
+        var play = engine
+            .GetLegalActions(state, MatchScenario.FirstPlayer)
+            .Single(action =>
+                action.Kind == LegalActionKind.PlayKit
+                && action.Command is MatchCommand.PlayKit command
+                && command.Kit == kit.Id
+            );
+        var requested = (CommandOutcome.Applied)engine.Apply(state, play.Command);
+        var requirement = requested.State.PendingEffect!.Requirements.Single();
+        var resolve = engine
+            .GetLegalActions(requested.State, MatchScenario.FirstPlayer)
+            .Single(action => action.Kind == LegalActionKind.ResolveEffectChoice);
+        var omitted = (CommandOutcome.Rejected)
+            engine.Apply(
+                requested.State,
+                ((MatchCommand.ResolveEffectChoice)resolve.Command) with
+                {
+                    Id = new CommandId("omit-empty-talent-scout-choice"),
+                    Choices = [],
+                }
+            );
+
+        var applied = (CommandOutcome.Applied)engine.Apply(requested.State, resolve.Command);
+        var repeated = (CommandOutcome.Applied)
+            MatchScenario.Engine().Apply(requested.State, resolve.Command);
+
+        requirement.Kind.ShouldBe(ChoiceRequirementKind.Cards);
+        requirement.Minimum.ShouldBe(0);
+        requirement.Maximum.ShouldBe(0);
+        requirement.EligibleCards.ShouldBeEmpty();
+        omitted.Rejection.Code.ShouldBe(CommandRejectionCode.ChoiceRequired);
+        omitted.State.ShouldBe(requested.State);
+        applied.State.ShouldBe(repeated.State);
+        applied.Events.ShouldBe(repeated.Events);
+        applied.State.Card(kit.Id).Zone.ShouldBe(CardZone.EmptiesTray);
+        topCards.Append(outsideWindow).Select(card => applied.State.Card(card.Id).Zone)
+            .ShouldBe(Enumerable.Repeat(CardZone.Stack, 9));
     }
 
     [Test]
@@ -356,11 +424,9 @@ public sealed class ExceptionalEffectTests
 
         var applied = MatchScenario.Applied(engine.Apply(state, action.Command));
 
-        await Assert.That(applied.Card(basic.Id).Zone).IsEqualTo(CardZone.Oche);
-        await Assert
-            .That(applied.Card(new CardInstanceId("defender")).Zone)
-            .IsEqualTo(CardZone.Booth);
-        await Assert.That(applied.Card(kit.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
+        applied.Card(basic.Id).Zone.ShouldBe(CardZone.Oche);
+        applied.Card(new CardInstanceId("defender")).Zone.ShouldBe(CardZone.Booth);
+        applied.Card(kit.Id).Zone.ShouldBe(CardZone.EmptiesTray);
     }
 
     private static MatchState AddCardsAndAttachments(

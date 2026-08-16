@@ -11,7 +11,6 @@ public sealed partial class LocalProfile
             Id.Value,
             DisplayName.Value,
             GuaranteedRegularCollectibleId.Value,
-            AvailablePackEntitlements,
             _collectibleOwnership
                 .OrderBy(static entry => entry.Key.Value, StringComparer.Ordinal)
                 .Select(static entry => new CollectibleOwnershipSnapshot(
@@ -32,18 +31,9 @@ public sealed partial class LocalProfile
                 .ToImmutableArray(),
             _savedDecks
                 .Values.OrderBy(static deck => deck.Id.Value, StringComparer.Ordinal)
-                .Select(static deck => new SavedDeckSnapshot(
-                    deck.Id.Value,
-                    deck.Name.Value,
-                    deck.Revision.Value,
-                    deck.Cards.OrderBy(static entry => entry.Key.Value, StringComparer.Ordinal)
-                        .Select(static entry => new SavedDeckCardSnapshot(
-                            entry.Key.Value,
-                            entry.Value
-                        ))
-                        .ToImmutableArray()
-                ))
-                .ToImmutableArray()
+                .Select(ToSavedDeckSnapshot)
+                .ToImmutableArray(),
+            _starterDeckClaims.Select(ToStarterDeckClaimSnapshot).ToImmutableArray()
         );
 
     public static DomainResult<LocalProfile, LocalProfileRestorationFailure> Restore(
@@ -104,41 +94,20 @@ public sealed partial class LocalProfile
         }
         var starterId = ((DomainResult<CardId, TextValueFailure>.Succeeded)starterIdResult).Value;
 
-        if (snapshot.AvailablePackEntitlements < 0)
-        {
-            return RestorationFailed(
-                new LocalProfileRestorationFailure.NegativeQuantity(
-                    nameof(snapshot.AvailablePackEntitlements),
-                    snapshot.AvailablePackEntitlements
-                )
-            );
-        }
-
         var ownershipSnapshots = OrEmpty(snapshot.CollectibleOwnership);
         var receiptSnapshots = OrEmpty(snapshot.PackReceipts);
         var deckSnapshots = OrEmpty(snapshot.SavedDecks);
-        var expectedEntitlements = InitialPackEntitlementCount - receiptSnapshots.Length;
-        if (snapshot.AvailablePackEntitlements != expectedEntitlements)
-        {
-            return RestorationFailed(
-                new LocalProfileRestorationFailure.EntitlementHistoryMismatch(
-                    snapshot.AvailablePackEntitlements,
-                    expectedEntitlements
-                )
-            );
-        }
 
         var isCurrentAuthority = string.Equals(
             snapshot.AuthorityManifestVersion,
             currentAuthority.ManifestVersion,
             StringComparison.Ordinal
         );
-        var currentCollectibles = isCurrentAuthority
-            ? currentAuthority.Collectibles.ToDictionary(
-                static card => card.Id,
-                StringComparer.Ordinal
-            )
-            : null;
+        var authorityCollectibles = currentAuthority.Collectibles.ToDictionary(
+            static card => card.Id,
+            StringComparer.Ordinal
+        );
+        var currentCollectibles = isCurrentAuthority ? authorityCollectibles : null;
 
         if (
             isCurrentAuthority
@@ -155,6 +124,150 @@ public sealed partial class LocalProfile
                         nameof(snapshot.GuaranteedRegularCollectibleId),
                         starterId
                     )
+            );
+        }
+
+        var claimSnapshots = OrEmpty(snapshot.StarterDeckClaims);
+        var parsedClaims =
+            new List<(
+                StarterDeckId StarterDeckId,
+                CommandId CommandId,
+                SavedDeckSnapshot Deck,
+                ImmutableArray<StarterCollectibleGrant> Grants
+            )>(claimSnapshots.Length);
+        var claimCommandIds = new HashSet<CommandId>();
+        for (var claimIndex = 0; claimIndex < claimSnapshots.Length; claimIndex++)
+        {
+            var claimSnapshot = claimSnapshots[claimIndex];
+            var claimPath = $"{nameof(snapshot.StarterDeckClaims)}[{claimIndex}]";
+            if (claimSnapshot is null)
+            {
+                return RestorationFailed(new LocalProfileRestorationFailure.MissingEntry(claimPath));
+            }
+
+            var starterDeckIdResult = StarterDeckId.Create(claimSnapshot.StarterDeckId);
+            if (
+                starterDeckIdResult
+                is DomainResult<StarterDeckId, TextValueFailure>.Failed invalidStarterDeckId
+            )
+            {
+                return RestorationFailed(
+                    new LocalProfileRestorationFailure.InvalidId(
+                        $"{claimPath}.{nameof(claimSnapshot.StarterDeckId)}",
+                        invalidStarterDeckId.Error
+                    )
+                );
+            }
+            var claimedStarterDeckId = (
+                (DomainResult<StarterDeckId, TextValueFailure>.Succeeded)starterDeckIdResult
+            ).Value;
+
+            var commandIdResult = CommandId.Create(claimSnapshot.CommandId);
+            if (
+                commandIdResult is DomainResult<CommandId, TextValueFailure>.Failed invalidCommandId
+            )
+            {
+                return RestorationFailed(
+                    new LocalProfileRestorationFailure.InvalidId(
+                        $"{claimPath}.{nameof(claimSnapshot.CommandId)}",
+                        invalidCommandId.Error
+                    )
+                );
+            }
+            var starterClaimCommandId = (
+                (DomainResult<CommandId, TextValueFailure>.Succeeded)commandIdResult
+            ).Value;
+            if (!claimCommandIds.Add(starterClaimCommandId))
+            {
+                return RestorationFailed(
+                    new LocalProfileRestorationFailure.DuplicateValue(
+                        SnapshotDuplicateKind.StarterClaimCommandId,
+                        starterClaimCommandId.Value
+                    )
+                );
+            }
+
+            if (claimSnapshot.Deck is null)
+            {
+                return RestorationFailed(
+                    new LocalProfileRestorationFailure.MissingEntry(
+                        $"{claimPath}.{nameof(claimSnapshot.Deck)}"
+                    )
+                );
+            }
+
+            var grantSnapshots = OrEmpty(claimSnapshot.CollectibleGrants);
+            var grants = ImmutableArray.CreateBuilder<StarterCollectibleGrant>(
+                grantSnapshots.Length
+            );
+            var grantedCardIds = new HashSet<CardId>();
+            for (var grantIndex = 0; grantIndex < grantSnapshots.Length; grantIndex++)
+            {
+                var grant = grantSnapshots[grantIndex];
+                if (grant is null)
+                {
+                    return RestorationFailed(
+                        new LocalProfileRestorationFailure.MissingEntry(
+                            $"{claimPath}.{nameof(claimSnapshot.CollectibleGrants)}[{grantIndex}]"
+                        )
+                    );
+                }
+                if (grant.Quantity <= 0)
+                {
+                    return RestorationFailed(
+                        new LocalProfileRestorationFailure.NegativeQuantity(
+                            $"{claimPath}.{nameof(claimSnapshot.CollectibleGrants)}[{grantIndex}].{nameof(grant.Quantity)}",
+                            grant.Quantity
+                        )
+                    );
+                }
+
+                var grantCardIdResult = CardId.Create(grant.CardId);
+                if (
+                    grantCardIdResult
+                    is DomainResult<CardId, TextValueFailure>.Failed invalidGrantCardId
+                )
+                {
+                    return RestorationFailed(
+                        new LocalProfileRestorationFailure.InvalidId(
+                            $"{claimPath}.{nameof(claimSnapshot.CollectibleGrants)}[{grantIndex}].{nameof(grant.CardId)}",
+                            invalidGrantCardId.Error
+                        )
+                    );
+                }
+                var grantCardId = (
+                    (DomainResult<CardId, TextValueFailure>.Succeeded)grantCardIdResult
+                ).Value;
+
+                if (!grantedCardIds.Add(grantCardId))
+                {
+                    return RestorationFailed(
+                        new LocalProfileRestorationFailure.DuplicateValue(
+                            SnapshotDuplicateKind.StarterGrantCardId,
+                            grantCardId.Value
+                        )
+                    );
+                }
+                if (!authorityCollectibles.ContainsKey(grantCardId.Value))
+                {
+                    return RestorationFailed(
+                        new LocalProfileRestorationFailure.UnknownCard(
+                            $"{claimPath}.{nameof(claimSnapshot.CollectibleGrants)}[{grantIndex}].{nameof(grant.CardId)}",
+                            grantCardId
+                        )
+                    );
+                }
+
+                grants.Add(new StarterCollectibleGrant(grantCardId, grant.Quantity));
+            }
+
+            parsedClaims.Add(
+                (
+                    claimedStarterDeckId,
+                    starterClaimCommandId,
+                    claimSnapshot.Deck,
+                    grants.MoveToImmutable()
+                )
             );
         }
 
@@ -360,6 +473,15 @@ public sealed partial class LocalProfile
             expectedSequence++;
         }
 
+        foreach (var parsedClaim in parsedClaims)
+        {
+            foreach (var grant in parsedClaim.Grants)
+            {
+                expectedOwnership[grant.CardId] =
+                    expectedOwnership.GetValueOrDefault(grant.CardId) + grant.Quantity;
+            }
+        }
+
         foreach (
             var cardId in ownership
                 .Keys.Concat(expectedOwnership.Keys)
@@ -386,159 +508,312 @@ public sealed partial class LocalProfile
             displayName,
             snapshot.AuthorityManifestVersion,
             starterId,
-            snapshot.AvailablePackEntitlements,
             ownership.ToImmutableDictionary(),
             receiptsByCommand.ToImmutableDictionary(),
             receiptsById.ToImmutableDictionary(),
-            ImmutableDictionary<DeckId, SavedDeck>.Empty
+            ImmutableDictionary<DeckId, SavedDeck>.Empty,
+            ImmutableArray<StarterDeckClaim>.Empty
         );
         var savedDecks = new Dictionary<DeckId, SavedDeck>();
         for (var deckIndex = 0; deckIndex < deckSnapshots.Length; deckIndex++)
         {
-            var item = deckSnapshots[deckIndex];
-            if (item is null)
+            var restoredDeckResult = RestoreDeckSnapshot(
+                deckSnapshots[deckIndex],
+                $"SavedDecks[{deckIndex}]",
+                baseProfile,
+                currentAuthority,
+                isCurrentAuthority
+            );
+            if (
+                restoredDeckResult
+                is DomainResult<SavedDeck, LocalProfileRestorationFailure>.Failed invalidDeck
+            )
             {
-                return RestorationFailed(
-                    new LocalProfileRestorationFailure.MissingEntry($"SavedDecks[{deckIndex}]")
-                );
+                return RestorationFailed(invalidDeck.Error);
             }
+            var deck = (
+                (DomainResult<
+                    SavedDeck,
+                    LocalProfileRestorationFailure
+                >.Succeeded)restoredDeckResult
+            ).Value;
 
-            var deckIdResult = DeckId.Create(item.DeckId);
-            if (deckIdResult is DomainResult<DeckId, TextValueFailure>.Failed invalidDeckId)
-            {
-                return RestorationFailed(
-                    new LocalProfileRestorationFailure.InvalidId(
-                        $"SavedDecks[{deckIndex}].DeckId",
-                        invalidDeckId.Error
-                    )
-                );
-            }
-            var deckId = ((DomainResult<DeckId, TextValueFailure>.Succeeded)deckIdResult).Value;
-
-            if (savedDecks.ContainsKey(deckId))
+            if (!savedDecks.TryAdd(deck.Id, deck))
             {
                 return RestorationFailed(
                     new LocalProfileRestorationFailure.DuplicateValue(
                         SnapshotDuplicateKind.DeckId,
-                        deckId.Value
+                        deck.Id.Value
                     )
                 );
             }
+        }
 
-            var deckNameResult = DeckName.Create(item.Name);
-            if (deckNameResult is DomainResult<DeckName, TextValueFailure>.Failed invalidDeckName)
+        var starterDeckClaims = ImmutableArray.CreateBuilder<StarterDeckClaim>(parsedClaims.Count);
+        for (var claimIndex = 0; claimIndex < parsedClaims.Count; claimIndex++)
+        {
+            var parsedClaim = parsedClaims[claimIndex];
+            var claimPath = $"{nameof(snapshot.StarterDeckClaims)}[{claimIndex}]";
+            var claimDeckResult = RestoreDeckSnapshot(
+                parsedClaim.Deck,
+                $"{claimPath}.Deck",
+                baseProfile,
+                currentAuthority,
+                true
+            );
+            if (
+                claimDeckResult
+                is DomainResult<SavedDeck, LocalProfileRestorationFailure>.Failed invalidClaimDeck
+            )
             {
-                return RestorationFailed(
-                    new LocalProfileRestorationFailure.InvalidDeckName(
-                        deckId,
-                        invalidDeckName.Error
-                    )
-                );
+                return RestorationFailed(invalidClaimDeck.Error);
             }
-            var deckName = (
-                (DomainResult<DeckName, TextValueFailure>.Succeeded)deckNameResult
+            var claimDeck = (
+                (DomainResult<SavedDeck, LocalProfileRestorationFailure>.Succeeded)claimDeckResult
             ).Value;
 
-            var revisionResult = DeckRevision.Create(item.Revision);
-            if (revisionResult is DomainResult<DeckRevision, DeckRevisionFailure>.Failed)
+            if (claimDeck.Revision != DeckRevision.Initial)
             {
                 return RestorationFailed(
-                    new LocalProfileRestorationFailure.InvalidDeckRevision(deckId, item.Revision)
-                );
-            }
-            var revision = (
-                (DomainResult<DeckRevision, DeckRevisionFailure>.Succeeded)revisionResult
-            ).Value;
-
-            var cardSnapshots = OrEmpty(item.Cards);
-            var selections = ImmutableArray.CreateBuilder<DeckCardSelection>(cardSnapshots.Length);
-            var deckCards = new Dictionary<CardId, int>();
-            for (var cardIndex = 0; cardIndex < cardSnapshots.Length; cardIndex++)
-            {
-                var card = cardSnapshots[cardIndex];
-                if (card is null)
-                {
-                    return RestorationFailed(
-                        new LocalProfileRestorationFailure.MissingEntry(
-                            $"SavedDecks[{deckIndex}].Cards[{cardIndex}]"
-                        )
-                    );
-                }
-                if (card.Quantity < 0)
-                {
-                    return RestorationFailed(
-                        new LocalProfileRestorationFailure.NegativeQuantity(
-                            $"SavedDecks[{deckIndex}].Cards[{cardIndex}].Quantity",
-                            card.Quantity
-                        )
-                    );
-                }
-
-                var cardIdResult = CardId.Create(card.CardId);
-                if (cardIdResult is DomainResult<CardId, TextValueFailure>.Failed invalidCardId)
-                {
-                    return RestorationFailed(
-                        new LocalProfileRestorationFailure.InvalidId(
-                            $"SavedDecks[{deckIndex}].Cards[{cardIndex}].CardId",
-                            invalidCardId.Error
-                        )
-                    );
-                }
-                var cardId = ((DomainResult<CardId, TextValueFailure>.Succeeded)cardIdResult).Value;
-
-                if (!deckCards.TryAdd(cardId, card.Quantity))
-                {
-                    return RestorationFailed(
-                        new LocalProfileRestorationFailure.DuplicateValue(
-                            SnapshotDuplicateKind.DeckCardId,
-                            cardId.Value
-                        )
-                    );
-                }
-                selections.Add(new DeckCardSelection(cardId, card.Quantity));
-            }
-
-            if (isCurrentAuthority)
-            {
-                var validation = DeckValidator.Validate(baseProfile, currentAuthority, selections);
-                if (validation is DeckValidationResult.Invalid invalidDeck)
-                {
-                    return RestorationFailed(
-                        new LocalProfileRestorationFailure.InvalidSavedDeck(
-                            deckId,
-                            invalidDeck.Issues
-                        )
-                    );
-                }
-                deckCards = ((DeckValidationResult.Valid)validation).Deck.Cards.ToDictionary();
-            }
-            else if (selections.Any(static selection => selection.Quantity == 0))
-            {
-                var zeroQuantityIssues = selections
-                    .Where(static selection => selection.Quantity == 0)
-                    .Select(static selection =>
-                        (DeckValidationIssue)
-                            new DeckValidationIssue.QuantityMustBePositive(
-                                selection.CardId,
-                                selection.Quantity
-                            )
+                    new LocalProfileRestorationFailure.InvalidDeckRevision(
+                        claimDeck.Id,
+                        claimDeck.Revision.Value
                     )
-                    .ToImmutableArray();
+                );
+            }
+            if (!savedDecks.TryGetValue(claimDeck.Id, out var savedClaimDeck))
+            {
                 return RestorationFailed(
-                    new LocalProfileRestorationFailure.InvalidSavedDeck(deckId, zeroQuantityIssues)
+                    new LocalProfileRestorationFailure.MissingEntry(
+                        $"SavedDecks[{claimDeck.Id.Value}]"
+                    )
+                );
+            }
+            if (
+                savedClaimDeck.Revision == DeckRevision.Initial
+                && !SavedDecksMatch(savedClaimDeck, claimDeck)
+            )
+            {
+                return RestorationFailed(
+                    new LocalProfileRestorationFailure.InvalidSavedDeck(
+                        claimDeck.Id,
+                        ImmutableArray<DeckValidationIssue>.Empty
+                    )
                 );
             }
 
-            savedDecks.Add(
-                deckId,
-                new SavedDeck(deckId, deckName, revision, deckCards.ToImmutableDictionary())
+            // Every claim grants the starter's full collectible contents, so its
+            // recorded grants must equal the claim deck's collectible quantities.
+            var expectedGrants = claimDeck
+                .Cards.Where(entry => authorityCollectibles.ContainsKey(entry.Key.Value))
+                .ToDictionary(static entry => entry.Key, static entry => entry.Value);
+            var recordedGrants = parsedClaim.Grants.ToDictionary(
+                static grant => grant.CardId,
+                static grant => grant.Quantity
+            );
+            if (
+                recordedGrants.Count != expectedGrants.Count
+                || recordedGrants.Any(entry =>
+                    expectedGrants.GetValueOrDefault(entry.Key) != entry.Value
+                )
+            )
+            {
+                var mismatched = recordedGrants
+                    .Keys.Concat(expectedGrants.Keys)
+                    .Distinct()
+                    .OrderBy(static cardId => cardId.Value, StringComparer.Ordinal)
+                    .First(cardId =>
+                        recordedGrants.GetValueOrDefault(cardId)
+                        != expectedGrants.GetValueOrDefault(cardId)
+                    );
+                return RestorationFailed(
+                    new LocalProfileRestorationFailure.OwnershipHistoryMismatch(
+                        mismatched,
+                        recordedGrants.GetValueOrDefault(mismatched),
+                        expectedGrants.GetValueOrDefault(mismatched)
+                    )
+                );
+            }
+
+            starterDeckClaims.Add(
+                new StarterDeckClaim(
+                    parsedClaim.StarterDeckId,
+                    parsedClaim.CommandId,
+                    claimDeck,
+                    parsedClaim.Grants
+                )
             );
         }
 
         return DomainResult<LocalProfile, LocalProfileRestorationFailure>.Success(
-            baseProfile.Copy(savedDecks: savedDecks.ToImmutableDictionary())
+            baseProfile.Copy(
+                savedDecks: savedDecks.ToImmutableDictionary(),
+                starterDeckClaims: starterDeckClaims.MoveToImmutable()
+            )
         );
     }
+
+    private static SavedDeckSnapshot ToSavedDeckSnapshot(SavedDeck deck) =>
+        new(
+            deck.Id.Value,
+            deck.Name.Value,
+            deck.Revision.Value,
+            deck.Cards.OrderBy(static entry => entry.Key.Value, StringComparer.Ordinal)
+                .Select(static entry => new SavedDeckCardSnapshot(entry.Key.Value, entry.Value))
+                .ToImmutableArray()
+        );
+
+    private static StarterDeckClaimSnapshot ToStarterDeckClaimSnapshot(StarterDeckClaim claim) =>
+        new(
+            claim.Id.Value,
+            claim.CommandId.Value,
+            ToSavedDeckSnapshot(claim.Deck),
+            claim
+                .CollectibleGrants.OrderBy(
+                    static grant => grant.CardId.Value,
+                    StringComparer.Ordinal
+                )
+                .Select(static grant => new StarterCollectibleGrantSnapshot(
+                    grant.CardId.Value,
+                    grant.Quantity
+                ))
+                .ToImmutableArray()
+        );
+
+    private static DomainResult<SavedDeck, LocalProfileRestorationFailure> RestoreDeckSnapshot(
+        SavedDeckSnapshot? item,
+        string path,
+        LocalProfile baseProfile,
+        BlokemonRuntimeManifest currentAuthority,
+        bool isCurrentAuthority
+    )
+    {
+        if (item is null)
+        {
+            return DeckRestorationFailed(new LocalProfileRestorationFailure.MissingEntry(path));
+        }
+
+        var deckIdResult = DeckId.Create(item.DeckId);
+        if (deckIdResult is DomainResult<DeckId, TextValueFailure>.Failed invalidDeckId)
+        {
+            return DeckRestorationFailed(
+                new LocalProfileRestorationFailure.InvalidId(
+                    $"{path}.{nameof(item.DeckId)}",
+                    invalidDeckId.Error
+                )
+            );
+        }
+        var deckId = ((DomainResult<DeckId, TextValueFailure>.Succeeded)deckIdResult).Value;
+
+        var deckNameResult = DeckName.Create(item.Name);
+        if (deckNameResult is DomainResult<DeckName, TextValueFailure>.Failed invalidDeckName)
+        {
+            return DeckRestorationFailed(
+                new LocalProfileRestorationFailure.InvalidDeckName(deckId, invalidDeckName.Error)
+            );
+        }
+        var deckName = ((DomainResult<DeckName, TextValueFailure>.Succeeded)deckNameResult).Value;
+
+        var revisionResult = DeckRevision.Create(item.Revision);
+        if (revisionResult is DomainResult<DeckRevision, DeckRevisionFailure>.Failed)
+        {
+            return DeckRestorationFailed(
+                new LocalProfileRestorationFailure.InvalidDeckRevision(deckId, item.Revision)
+            );
+        }
+        var revision = (
+            (DomainResult<DeckRevision, DeckRevisionFailure>.Succeeded)revisionResult
+        ).Value;
+
+        var cardSnapshots = OrEmpty(item.Cards);
+        var selections = ImmutableArray.CreateBuilder<DeckCardSelection>(cardSnapshots.Length);
+        var deckCards = new Dictionary<CardId, int>();
+        for (var cardIndex = 0; cardIndex < cardSnapshots.Length; cardIndex++)
+        {
+            var card = cardSnapshots[cardIndex];
+            if (card is null)
+            {
+                return DeckRestorationFailed(
+                    new LocalProfileRestorationFailure.MissingEntry(
+                        $"{path}.{nameof(item.Cards)}[{cardIndex}]"
+                    )
+                );
+            }
+            if (card.Quantity < 0)
+            {
+                return DeckRestorationFailed(
+                    new LocalProfileRestorationFailure.NegativeQuantity(
+                        $"{path}.{nameof(item.Cards)}[{cardIndex}].{nameof(card.Quantity)}",
+                        card.Quantity
+                    )
+                );
+            }
+
+            var cardIdResult = CardId.Create(card.CardId);
+            if (cardIdResult is DomainResult<CardId, TextValueFailure>.Failed invalidCardId)
+            {
+                return DeckRestorationFailed(
+                    new LocalProfileRestorationFailure.InvalidId(
+                        $"{path}.{nameof(item.Cards)}[{cardIndex}].{nameof(card.CardId)}",
+                        invalidCardId.Error
+                    )
+                );
+            }
+            var cardId = ((DomainResult<CardId, TextValueFailure>.Succeeded)cardIdResult).Value;
+
+            if (!deckCards.TryAdd(cardId, card.Quantity))
+            {
+                return DeckRestorationFailed(
+                    new LocalProfileRestorationFailure.DuplicateValue(
+                        SnapshotDuplicateKind.DeckCardId,
+                        cardId.Value
+                    )
+                );
+            }
+            selections.Add(new DeckCardSelection(cardId, card.Quantity));
+        }
+
+        if (isCurrentAuthority)
+        {
+            var validation = DeckValidator.Validate(baseProfile, currentAuthority, selections);
+            if (validation is DeckValidationResult.Invalid invalidDeck)
+            {
+                return DeckRestorationFailed(
+                    new LocalProfileRestorationFailure.InvalidSavedDeck(deckId, invalidDeck.Issues)
+                );
+            }
+            deckCards = ((DeckValidationResult.Valid)validation).Deck.Cards.ToDictionary();
+        }
+        else if (selections.Any(static selection => selection.Quantity == 0))
+        {
+            var zeroQuantityIssues = selections
+                .Where(static selection => selection.Quantity == 0)
+                .Select(static selection =>
+                    (DeckValidationIssue)
+                        new DeckValidationIssue.QuantityMustBePositive(
+                            selection.CardId,
+                            selection.Quantity
+                        )
+                )
+                .ToImmutableArray();
+            return DeckRestorationFailed(
+                new LocalProfileRestorationFailure.InvalidSavedDeck(deckId, zeroQuantityIssues)
+            );
+        }
+
+        return DomainResult<SavedDeck, LocalProfileRestorationFailure>.Success(
+            new SavedDeck(deckId, deckName, revision, deckCards.ToImmutableDictionary())
+        );
+    }
+
+    private static bool SavedDecksMatch(SavedDeck left, SavedDeck right) =>
+        left.Id == right.Id
+        && left.Name == right.Name
+        && left.Revision == right.Revision
+        && left.Cards.Count == right.Cards.Count
+        && left.Cards.All(entry =>
+            right.Cards.TryGetValue(entry.Key, out var quantity) && entry.Value == quantity
+        );
 
     private static ImmutableArray<T> OrEmpty<T>(ImmutableArray<T> values) =>
         values.IsDefault ? ImmutableArray<T>.Empty : values;
@@ -546,4 +821,8 @@ public sealed partial class LocalProfile
     private static DomainResult<LocalProfile, LocalProfileRestorationFailure> RestorationFailed(
         LocalProfileRestorationFailure failure
     ) => DomainResult<LocalProfile, LocalProfileRestorationFailure>.Failure(failure);
+
+    private static DomainResult<SavedDeck, LocalProfileRestorationFailure> DeckRestorationFailed(
+        LocalProfileRestorationFailure failure
+    ) => DomainResult<SavedDeck, LocalProfileRestorationFailure>.Failure(failure);
 }

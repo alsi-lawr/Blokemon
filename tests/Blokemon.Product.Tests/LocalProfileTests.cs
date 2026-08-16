@@ -1,4 +1,5 @@
 using Blokemon.Core.SetDesign;
+using Shouldly;
 
 namespace Blokemon.Product.Tests;
 
@@ -19,8 +20,8 @@ public sealed class LocalProfileTests
 
         var result = Success(DisplayName.Create($"  {boundary}\t"));
 
-        await Assert.That(result.Value).IsEqualTo(boundary);
-        await Assert.That(result.Value.Length).IsEqualTo(DisplayName.MaximumLength);
+        result.Value.ShouldBe(boundary);
+        result.Value.Length.ShouldBe(DisplayName.MaximumLength);
     }
 
     [Test]
@@ -29,8 +30,8 @@ public sealed class LocalProfileTests
         var missing = Failure(DisplayName.Create(" \t "));
         var overlong = Failure(DisplayName.Create(new string('a', DisplayName.MaximumLength + 1)));
 
-        await Assert.That(missing).IsEqualTo(DisplayNameCreationFailure.Required);
-        await Assert.That(overlong).IsEqualTo(DisplayNameCreationFailure.TooLong);
+        missing.ShouldBe(DisplayNameCreationFailure.Required);
+        overlong.ShouldBe(DisplayNameCreationFailure.TooLong);
     }
 
     [Test]
@@ -57,36 +58,30 @@ public sealed class LocalProfileTests
             )
         );
 
-        await Assert.That(first.Disposition).IsEqualTo(PackOpenDisposition.Opened);
-        await Assert.That(retried.Disposition).IsEqualTo(PackOpenDisposition.AlreadyOpened);
-        await Assert.That(retried.Profile).IsSameReferenceAs(first.Profile);
-        await Assert.That(retried.Receipt).IsSameReferenceAs(first.Receipt);
-        await Assert.That(retried.Receipt.Id.Value).IsEqualTo("receipt-1");
-        await Assert.That(retried.Receipt.SampledCollectibleIds.Length).IsEqualTo(11);
-        await Assert
-            .That(
-                retried.Receipt.SampledCollectibleIds.SequenceEqual(
-                    first.Receipt.SampledCollectibleIds
-                )
-            )
-            .IsTrue();
+        first.Disposition.ShouldBe(PackOpenDisposition.Opened);
+        retried.Disposition.ShouldBe(PackOpenDisposition.AlreadyOpened);
+        retried.Profile.ShouldBeSameAs(first.Profile);
+        retried.Receipt.ShouldBeSameAs(first.Receipt);
+        retried.Receipt.Id.Value.ShouldBe("receipt-1");
+        retried.Receipt.SampledCollectibleIds.Length.ShouldBe(11);
+        retried.Receipt.SampledCollectibleIds.SequenceEqual(
+            first.Receipt.SampledCollectibleIds
+        ).ShouldBeTrue();
         foreach (var group in first.Receipt.SampledCollectibleIds.GroupBy(static id => id))
         {
             var initialQuantity = group.Key == profile.GuaranteedRegularCollectibleId ? 1 : 0;
-            await Assert
-                .That(first.Profile.OwnedCollectibleQuantity(group.Key))
-                .IsEqualTo(initialQuantity + group.Count());
+            first.Profile.OwnedCollectibleQuantity(group.Key)
+                .ShouldBe(initialQuantity + group.Count());
         }
-        await Assert.That(retried.Profile.AvailablePackEntitlements).IsEqualTo(9);
-        await Assert.That(retried.Profile.PackReceipts.Count).IsEqualTo(1);
-        await Assert.That(retryRandom.ConsumptionIndex).IsEqualTo(0);
+        retried.Profile.PackReceipts.Count.ShouldBe(1);
+        retryRandom.ConsumptionIndex.ShouldBe(0);
     }
 
     [Test]
-    public async Task UnavailableEntitlement_DoesNotSampleOrChangeExhaustedProfile()
+    public async Task OpeningPacksBeyondTheFormerTenPackLimit_KeepsGrantingSamplesInSequence()
     {
         var profile = CreateProfile();
-        for (var index = 0; index < LocalProfile.InitialPackEntitlementCount; index++)
+        for (var index = 0; index < 12; index++)
         {
             profile = Success(
                 profile.OpenPack(
@@ -98,22 +93,10 @@ public sealed class LocalProfileTests
             ).Profile;
         }
 
-        var random = new CountingRandomSource();
-        var result = profile.OpenPack(
-            Value(CommandId.Create("command-unavailable")),
-            Value(PackReceiptId.Create("receipt-unavailable")),
-            _authority.Value,
-            random
-        );
-
-        var failure = Failure(result);
-        await Assert.That(failure).IsEqualTo(PackOpenFailure.EntitlementUnavailable);
-        await Assert.That(profile.AvailablePackEntitlements).IsEqualTo(0);
-        await Assert
-            .That(profile.CollectibleOwnership.Values.Sum())
-            .IsEqualTo(1 + LocalProfile.InitialPackEntitlementCount * 11);
-        await Assert.That(profile.PackReceipts.Count).IsEqualTo(10);
-        await Assert.That(random.ConsumptionIndex).IsEqualTo(0);
+        profile.PackReceipts.Count.ShouldBe(12);
+        profile.PackReceipts.Values.Select(static receipt => receipt.Sequence)
+            .ShouldBe(Enumerable.Range(1, 12), ignoreOrder: true);
+        profile.CollectibleOwnership.Values.Sum().ShouldBe(1 + 12 * 11);
     }
 
     [Test]
@@ -140,21 +123,13 @@ public sealed class LocalProfileTests
             )
         );
 
-        await Assert.That(legal.IsValid).IsTrue();
-        await Assert
-            .That(
-                overOwned.Any(static issue =>
-                    issue is DeckValidationIssue.CollectibleQuantityNotOwned
-                )
-            )
-            .IsTrue();
-        await Assert
-            .That(
-                overMechanicalLimit.Any(static issue =>
-                    issue is DeckValidationIssue.MechanicalCopyLimitExceeded
-                )
-            )
-            .IsTrue();
+        legal.IsValid.ShouldBeTrue();
+        overOwned.Any(static issue =>
+            issue is DeckValidationIssue.CollectibleQuantityNotOwned
+        ).ShouldBeTrue();
+        overMechanicalLimit.Any(static issue =>
+            issue is DeckValidationIssue.MechanicalCopyLimitExceeded
+        ).ShouldBeTrue();
     }
 
     [Test]
@@ -173,16 +148,10 @@ public sealed class LocalProfileTests
             DeckValidator.Validate(profile, _authority.Value, [new(vim, 60)])
         );
 
-        await Assert
-            .That(wrongCount.Any(static issue => issue is DeckValidationIssue.WrongCardCount))
-            .IsTrue();
-        await Assert
-            .That(
-                noRegular.Any(static issue =>
-                    issue is DeckValidationIssue.RegularCollectibleRequired
-                )
-            )
-            .IsTrue();
+        wrongCount.Any(static issue => issue is DeckValidationIssue.WrongCardCount).ShouldBeTrue();
+        noRegular.Any(static issue =>
+            issue is DeckValidationIssue.RegularCollectibleRequired
+        ).ShouldBeTrue();
     }
 
     [Test]
@@ -213,13 +182,13 @@ public sealed class LocalProfileTests
         );
 
         var failure = Failure(stale);
-        await Assert.That(failure).IsTypeOf<DeckSaveFailure.StaleRevision>();
+        failure.ShouldBeOfType<DeckSaveFailure.StaleRevision>();
         var staleRevision = (DeckSaveFailure.StaleRevision)failure;
-        await Assert.That(staleRevision.DeckId).IsEqualTo(deckId);
-        await Assert.That(staleRevision.ExpectedRevision).IsEqualTo(created.Deck.Revision);
-        await Assert.That(staleRevision.ActualRevision).IsEqualTo(revised.Deck.Revision);
-        await Assert.That(revised.Profile.SavedDecks[deckId].Name.Value).IsEqualTo("Second");
-        await Assert.That(revised.Profile.SavedDecks[deckId].Revision.Value).IsEqualTo(2);
+        staleRevision.DeckId.ShouldBe(deckId);
+        staleRevision.ExpectedRevision.ShouldBe(created.Deck.Revision);
+        staleRevision.ActualRevision.ShouldBe(revised.Deck.Revision);
+        revised.Profile.SavedDecks[deckId].Name.Value.ShouldBe("Second");
+        revised.Profile.SavedDecks[deckId].Revision.Value.ShouldBe(2);
     }
 
     [Test]
@@ -241,45 +210,31 @@ public sealed class LocalProfileTests
             )
         );
 
-        await Assert
-            .That(restored.BoundAuthorityManifestVersion)
-            .IsEqualTo(snapshot.AuthorityManifestVersion);
-        await Assert
-            .That(
-                restoredSnapshot.CollectibleOwnership.SequenceEqual(snapshot.CollectibleOwnership)
-            )
-            .IsTrue();
-        await Assert.That(restoredSnapshot.PackReceipts.Length).IsEqualTo(2);
+        restored.BoundAuthorityManifestVersion.ShouldBe(snapshot.AuthorityManifestVersion);
+        restoredSnapshot.CollectibleOwnership.SequenceEqual(snapshot.CollectibleOwnership)
+            .ShouldBeTrue();
+        restoredSnapshot.PackReceipts.Length.ShouldBe(2);
         for (var index = 0; index < snapshot.PackReceipts.Length; index++)
         {
-            await Assert
-                .That(restoredSnapshot.PackReceipts[index].ReceiptId)
-                .IsEqualTo(snapshot.PackReceipts[index].ReceiptId);
-            await Assert
-                .That(restoredSnapshot.PackReceipts[index].CommandId)
-                .IsEqualTo(snapshot.PackReceipts[index].CommandId);
-            await Assert.That(restoredSnapshot.PackReceipts[index].Sequence).IsEqualTo(index + 1);
-            await Assert
-                .That(
-                    restoredSnapshot
-                        .PackReceipts[index]
-                        .SampledCollectibleIds.SequenceEqual(
-                            snapshot.PackReceipts[index].SampledCollectibleIds
-                        )
-                )
-                .IsTrue();
+            restoredSnapshot.PackReceipts[index].ReceiptId
+                .ShouldBe(snapshot.PackReceipts[index].ReceiptId);
+            restoredSnapshot.PackReceipts[index].CommandId
+                .ShouldBe(snapshot.PackReceipts[index].CommandId);
+            restoredSnapshot.PackReceipts[index].Sequence.ShouldBe(index + 1);
+            restoredSnapshot
+                .PackReceipts[index]
+                .SampledCollectibleIds.SequenceEqual(
+                    snapshot.PackReceipts[index].SampledCollectibleIds
+                ).ShouldBeTrue();
         }
-        await Assert.That(restoredSnapshot.SavedDecks.Length).IsEqualTo(1);
-        await Assert.That(restoredSnapshot.SavedDecks[0].Revision).IsEqualTo(2);
-        await Assert.That(restoredSnapshot.SavedDecks[0].Name).IsEqualTo("Revised deck");
-        await Assert
-            .That(restoredSnapshot.SavedDecks[0].Cards.SequenceEqual(snapshot.SavedDecks[0].Cards))
-            .IsTrue();
-        await Assert.That(retried.Disposition).IsEqualTo(PackOpenDisposition.AlreadyOpened);
-        await Assert
-            .That(restored.PackReceipts.Values.Max(static receipt => receipt.Sequence))
-            .IsEqualTo(2);
-        await Assert.That(retryRandom.ConsumptionIndex).IsEqualTo(0);
+        restoredSnapshot.SavedDecks.Length.ShouldBe(1);
+        restoredSnapshot.SavedDecks[0].Revision.ShouldBe(2);
+        restoredSnapshot.SavedDecks[0].Name.ShouldBe("Revised deck");
+        restoredSnapshot.SavedDecks[0].Cards.SequenceEqual(snapshot.SavedDecks[0].Cards)
+            .ShouldBeTrue();
+        retried.Disposition.ShouldBe(PackOpenDisposition.AlreadyOpened);
+        restored.PackReceipts.Values.Max(static receipt => receipt.Sequence).ShouldBe(2);
+        retryRandom.ConsumptionIndex.ShouldBe(0);
     }
 
     [Test]
@@ -349,36 +304,27 @@ public sealed class LocalProfileTests
             )
         );
 
-        await Assert.That(restored.BoundAuthorityManifestVersion).IsEqualTo("historical-manifest");
-        await Assert
-            .That(
-                restoredSnapshot.CollectibleOwnership.Any(static item =>
-                    item.CardId == historicalCardId && item.Quantity == 1
-                )
-            )
-            .IsTrue();
-        await Assert
-            .That(restoredSnapshot.PackReceipts[0].SampledCollectibleIds.Contains(historicalCardId))
-            .IsTrue();
-        await Assert
-            .That(
-                restoredSnapshot
-                    .SavedDecks[0]
-                    .Cards.Any(static card =>
-                        card.CardId == "HISTORICAL-DECK-CARD" && card.Quantity == 59
-                    )
-            )
-            .IsTrue();
-        await Assert
-            .That(revised.Deck.Cards.Keys.Select(static cardId => cardId.Value))
-            .IsEquivalentTo(currentCards.Select(static selection => selection.CardId.Value));
-        await Assert.That(revised.Deck.Revision.Value).IsEqualTo(historicalDeck.Revision + 1);
-        await Assert.That(created.Deck.Cards.Keys).IsEquivalentTo(revised.Deck.Cards.Keys);
-        await Assert
-            .That(created.Profile.BoundAuthorityManifestVersion)
-            .IsEqualTo("historical-manifest");
-        await Assert.That(packFailure).IsEqualTo(PackOpenFailure.AuthorityVersionMismatch);
-        await Assert.That(random.ConsumptionIndex).IsEqualTo(0);
+        restored.BoundAuthorityManifestVersion.ShouldBe("historical-manifest");
+        restoredSnapshot.CollectibleOwnership.Any(static item =>
+            item.CardId == historicalCardId && item.Quantity == 1
+        ).ShouldBeTrue();
+        restoredSnapshot.PackReceipts[0].SampledCollectibleIds.Contains(historicalCardId)
+            .ShouldBeTrue();
+        restoredSnapshot
+            .SavedDecks[0]
+            .Cards.Any(static card =>
+                card.CardId == "HISTORICAL-DECK-CARD" && card.Quantity == 59
+            ).ShouldBeTrue();
+        revised.Deck.Cards.Keys.Select(static cardId => cardId.Value)
+            .ShouldBe(
+                currentCards.Select(static selection => selection.CardId.Value),
+                ignoreOrder: true
+            );
+        revised.Deck.Revision.Value.ShouldBe(historicalDeck.Revision + 1);
+        created.Deck.Cards.Keys.ShouldBe(revised.Deck.Cards.Keys, ignoreOrder: true);
+        created.Profile.BoundAuthorityManifestVersion.ShouldBe("historical-manifest");
+        packFailure.ShouldBe(PackOpenFailure.AuthorityVersionMismatch);
+        random.ConsumptionIndex.ShouldBe(0);
     }
 
     [Test]
@@ -402,9 +348,6 @@ public sealed class LocalProfileTests
                 },
                 _authority.Value
             )
-        );
-        var negativeEntitlements = Failure(
-            LocalProfile.Restore(snapshot with { AvailablePackEntitlements = -1 }, _authority.Value)
         );
         var duplicateReceipt = Failure(
             LocalProfile.Restore(
@@ -482,31 +425,16 @@ public sealed class LocalProfileTests
             )
         );
 
-        await Assert.That(invalidIdentity).IsTypeOf<LocalProfileRestorationFailure.InvalidId>();
-        await Assert
-            .That(negativeQuantity)
-            .IsTypeOf<LocalProfileRestorationFailure.NegativeQuantity>();
-        await Assert
-            .That(negativeEntitlements)
-            .IsTypeOf<LocalProfileRestorationFailure.NegativeQuantity>();
-        await Assert
-            .That(duplicateReceipt)
-            .IsTypeOf<LocalProfileRestorationFailure.DuplicateValue>();
-        await Assert
-            .That(((LocalProfileRestorationFailure.DuplicateValue)duplicateReceipt).Kind)
-            .IsEqualTo(SnapshotDuplicateKind.PackReceiptId);
-        await Assert
-            .That(((LocalProfileRestorationFailure.DuplicateValue)duplicateCommand).Kind)
-            .IsEqualTo(SnapshotDuplicateKind.PackCommandId);
-        await Assert
-            .That(duplicateSequence)
-            .IsTypeOf<LocalProfileRestorationFailure.InvalidPackSequence>();
-        await Assert
-            .That(nonPositiveSequence)
-            .IsTypeOf<LocalProfileRestorationFailure.InvalidPackSequence>();
-        await Assert
-            .That(gappedSequence)
-            .IsTypeOf<LocalProfileRestorationFailure.InvalidPackSequence>();
+        invalidIdentity.ShouldBeOfType<LocalProfileRestorationFailure.InvalidId>();
+        negativeQuantity.ShouldBeOfType<LocalProfileRestorationFailure.NegativeQuantity>();
+        duplicateReceipt.ShouldBeOfType<LocalProfileRestorationFailure.DuplicateValue>();
+        ((LocalProfileRestorationFailure.DuplicateValue)duplicateReceipt).Kind
+            .ShouldBe(SnapshotDuplicateKind.PackReceiptId);
+        ((LocalProfileRestorationFailure.DuplicateValue)duplicateCommand).Kind
+            .ShouldBe(SnapshotDuplicateKind.PackCommandId);
+        duplicateSequence.ShouldBeOfType<LocalProfileRestorationFailure.InvalidPackSequence>();
+        nonPositiveSequence.ShouldBeOfType<LocalProfileRestorationFailure.InvalidPackSequence>();
+        gappedSequence.ShouldBeOfType<LocalProfileRestorationFailure.InvalidPackSequence>();
     }
 
     [Test]
@@ -556,13 +484,9 @@ public sealed class LocalProfileTests
             )
         );
 
-        await Assert
-            .That(unknownCurrentCard)
-            .IsTypeOf<LocalProfileRestorationFailure.UnknownCard>();
-        await Assert
-            .That(invalidRevision)
-            .IsTypeOf<LocalProfileRestorationFailure.InvalidDeckRevision>();
-        await Assert.That(illegalDeck).IsTypeOf<LocalProfileRestorationFailure.InvalidSavedDeck>();
+        unknownCurrentCard.ShouldBeOfType<LocalProfileRestorationFailure.UnknownCard>();
+        invalidRevision.ShouldBeOfType<LocalProfileRestorationFailure.InvalidDeckRevision>();
+        illegalDeck.ShouldBeOfType<LocalProfileRestorationFailure.InvalidSavedDeck>();
     }
 
     private static LocalProfile CreateProfile() =>

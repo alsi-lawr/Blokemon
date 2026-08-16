@@ -1,5 +1,6 @@
 using Blokemon.Core.SetDesign;
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -128,31 +129,22 @@ public sealed class DeferredBranchChoiceTests
         var duplicate = (CommandOutcome.Rejected)engine.Apply(resolved.State, resolve);
         var replayed = (ReplayOutcome.Replayed)engine.ReplayEvents(finalEvents);
 
-        await Assert.That(pending.BeerMatResults).IsEquivalentTo([true]);
-        await Assert
-            .That(resolved.State.Random.ConsumptionIndex)
-            .IsEqualTo(requested.State.Random.ConsumptionIndex);
-        await Assert.That(replayed.State).IsEqualTo(resolved.State);
-        await Assert.That(restarted.State).IsEqualTo(resolved.State);
-        await Assert.That(restarted.Events).IsEqualTo(resolved.Events);
-        await Assert
-            .That(rejectedChooser.Rejection.Code)
-            .IsEqualTo(CommandRejectionCode.WrongChooser);
-        await Assert.That(ReferenceEquals(rejectedChooser.State, requested.State)).IsTrue();
-        await Assert.That(rejectedChooser.State).IsEqualTo(requested.State);
-        await Assert
-            .That(
-                allEvents
-                    .Take(eventsBeforeWrongChooser.Length)
-                    .SequenceEqual(eventsBeforeWrongChooser)
-            )
-            .IsTrue();
-        await Assert
-            .That(duplicate.Rejection.Code)
-            .IsEqualTo(CommandRejectionCode.DuplicateCommand);
-        await Assert.That(ReferenceEquals(duplicate.State, resolved.State)).IsTrue();
-        await Assert.That(duplicate.State).IsEqualTo(resolved.State);
-        await Assert.That(allEvents.SequenceEqual(finalEvents)).IsTrue();
+        pending.BeerMatResults.ShouldBe([true]);
+        resolved.State.Random.ConsumptionIndex.ShouldBe(requested.State.Random.ConsumptionIndex);
+        replayed.State.ShouldBe(resolved.State);
+        restarted.State.ShouldBe(resolved.State);
+        restarted.Events.ShouldBe(resolved.Events);
+        rejectedChooser.Rejection.Code.ShouldBe(CommandRejectionCode.WrongChooser);
+        ReferenceEquals(rejectedChooser.State, requested.State).ShouldBeTrue();
+        rejectedChooser.State.ShouldBe(requested.State);
+        allEvents
+            .Take(eventsBeforeWrongChooser.Length)
+            .SequenceEqual(eventsBeforeWrongChooser)
+            .ShouldBeTrue();
+        duplicate.Rejection.Code.ShouldBe(CommandRejectionCode.DuplicateCommand);
+        ReferenceEquals(duplicate.State, resolved.State).ShouldBeTrue();
+        duplicate.State.ShouldBe(resolved.State);
+        allEvents.SequenceEqual(finalEvents).ShouldBeTrue();
     }
 
     [Test]
@@ -183,9 +175,9 @@ public sealed class DeferredBranchChoiceTests
 
         var applied = MatchScenario.Applied(engine.Apply(state, action.Command));
 
-        await Assert.That(action.ChoiceRequirements.Count).IsEqualTo(0);
-        await Assert.That(applied.Card(new CardInstanceId("defender")).Damage).IsEqualTo(20);
-        await Assert.That(applied.Card(discardedVim.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
+        action.ChoiceRequirements.Count.ShouldBe(0);
+        applied.Card(new CardInstanceId("defender")).Damage.ShouldBe(20);
+        applied.Card(discardedVim.Id).Zone.ShouldBe(CardZone.EmptiesTray);
     }
 
     [Test]
@@ -223,10 +215,10 @@ public sealed class DeferredBranchChoiceTests
 
         var applied = MatchScenario.Applied(engine.Apply(state, action.Command));
 
-        await Assert.That(action.ChoiceRequirements.Count).IsEqualTo(0);
-        await Assert.That(applied.PendingEffect).IsNull();
-        await Assert.That(applied.Card(kit.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
-        await Assert.That(applied.Card(discardedVim.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
+        action.ChoiceRequirements.Count.ShouldBe(0);
+        applied.PendingEffect.ShouldBeNull();
+        applied.Card(kit.Id).Zone.ShouldBe(CardZone.EmptiesTray);
+        applied.Card(discardedVim.Id).Zone.ShouldBe(CardZone.EmptiesTray);
     }
 
     [Test]
@@ -279,13 +271,11 @@ public sealed class DeferredBranchChoiceTests
 
         var resolved = MatchScenario.Applied(engine.Apply(requested.State, choice.Action.Command));
 
-        await Assert.That(action.ChoiceRequirements.Count).IsEqualTo(0);
-        await Assert.That(requested.State.PendingEffect).IsNotNull();
-        await Assert
-            .That(requested.State.PendingEffect!.Requirements.Single().EligibleTargets)
-            .IsEquivalentTo([bench.Id]);
-        await Assert.That(resolved.Card(discardedVim.Id).AttachedTo).IsEqualTo(bench.Id);
-        await Assert.That(resolved.Card(kit.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
+        action.ChoiceRequirements.Count.ShouldBe(0);
+        requested.State.PendingEffect.ShouldNotBeNull();
+        requested.State.PendingEffect!.Requirements.Single().EligibleTargets.ShouldBe([bench.Id]);
+        resolved.Card(discardedVim.Id).AttachedTo.ShouldBe(bench.Id);
+        resolved.Card(kit.Id).Zone.ShouldBe(CardZone.EmptiesTray);
     }
 
     private static MatchStartRequest CoinSwitchRequest() =>

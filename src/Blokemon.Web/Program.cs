@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseStaticWebAssets();
 
 var contentRoot = Path.Combine(AppContext.BaseDirectory, "content");
-var catalogue = BlokemonCatalogue.Load(contentRoot);
+var catalogue = BlokemonCatalogueBuilder.Load(contentRoot);
 var databasePath = LocalDataPath.Resolve(builder.Configuration);
 
 builder.Services.AddSingleton(catalogue);
@@ -20,6 +20,9 @@ builder.Services.AddPooledDbContextFactory<BlokemonDbContext>(options =>
     options.UseSqlite($"Data Source={databasePath}")
 );
 builder.Services.AddScoped<StateDocumentStore>();
+builder.Services.AddScoped<IStateDocumentStore>(static provider =>
+    provider.GetRequiredService<StateDocumentStore>()
+);
 builder.Services.AddScoped<LocalMatchService>();
 builder.Services.AddScoped<LocalApplicationService>();
 builder.Services.AddScoped(serviceProvider => new HttpClient
@@ -67,7 +70,8 @@ app.MapGet(
             {
                 status = "ready",
                 mechanics = catalogue.Mechanics.ManifestVersion,
-                content = catalogue.PublicContent.ContentVersion,
+                content = catalogue.PublicContentVersion,
+                starters = catalogue.StarterDecks.Version,
             }
         )
 );

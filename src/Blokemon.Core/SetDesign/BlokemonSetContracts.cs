@@ -2,7 +2,7 @@ namespace Blokemon.Core.SetDesign;
 
 public enum BlokemonPresentationStatus
 {
-    PlaceholderBacked,
+    Accepted,
 }
 
 public enum BlokemonMechanicalType
@@ -117,6 +117,8 @@ public enum BlokemonOpcode
     RestrictKit,
     RestrictLocal,
     RestrictEmptiesRecovery,
+    ForceBeerMatBlank,
+    ReflectAttackDamage,
     BeerMatToss,
     RepeatUntilBlankSide,
     Conditional,

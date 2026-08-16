@@ -1,4 +1,5 @@
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -58,13 +59,13 @@ public sealed class CardFlowTests
         );
 
         var outcome = engine.Apply(requested.State, command);
-        await Assert.That((outcome as CommandOutcome.Rejected)?.Rejection.Code).IsNull();
+        ((outcome as CommandOutcome.Rejected)?.Rejection.Code).ShouldBeNull();
         var applied = (CommandOutcome.Applied)outcome;
 
-        await Assert.That(missing.Rejection.ChoiceRequirements.Count).IsEqualTo(1);
-        await Assert.That(requirement.EligibleCards).IsEquivalentTo([basic.Id]);
-        await Assert.That(applied.State.Card(basic.Id).Zone).IsEqualTo(CardZone.Booth);
-        await Assert.That(applied.State.Card(evolved.Id).Zone).IsEqualTo(CardZone.Stack);
+        missing.Rejection.ChoiceRequirements.Count.ShouldBe(1);
+        requirement.EligibleCards.ShouldBe([basic.Id]);
+        applied.State.Card(basic.Id).Zone.ShouldBe(CardZone.Booth);
+        applied.State.Card(evolved.Id).Zone.ShouldBe(CardZone.Stack);
     }
 
     [Test]
@@ -113,30 +114,37 @@ public sealed class CardFlowTests
             ),
         };
         var actions = engine.GetLegalActions(state, MatchScenario.FirstPlayer);
-        await Assert
-            .That(
-                actions.Any(value =>
-                    value.Kind == LegalActionKind.PlayKit
-                    && value.Command is MatchCommand.PlayKit play
-                    && play.Kit == kit.Id
-                )
-            )
-            .IsTrue();
+        actions.Any(value =>
+            value.Kind == LegalActionKind.PlayKit
+            && value.Command is MatchCommand.PlayKit play
+            && play.Kit == kit.Id
+        ).ShouldBeTrue();
         var action = actions.Single(value =>
             value.Kind == LegalActionKind.PlayKit
             && value.Command is MatchCommand.PlayKit play
             && play.Kit == kit.Id
         );
 
-        var applied = (CommandOutcome.Applied)engine.Apply(state, action.Command);
+        var requested = MatchScenario.Applied(engine.Apply(state, action.Command));
+        var requirement = requested.PendingEffect!.Requirements.Single();
+        var applied = MatchScenario.Applied(
+            engine.Apply(
+                requested,
+                MatchScenario.ResolveEffectChoiceCommand(
+                    requested,
+                    FrozenList<EffectChoice>.Create(
+                        new EffectChoice.Cards(
+                            requirement.Id,
+                            FrozenList<CardInstanceId>.Create(ownVim.Id)
+                        )
+                    )
+                )
+            )
+        );
 
-        await Assert.That(applied.State.Card(otherVim.Id).Zone).IsEqualTo(CardZone.Mitt);
-        await Assert
-            .That(applied.State.Card(otherVim.Id).Owner)
-            .IsEqualTo(MatchScenario.SecondPlayer);
-        await Assert
-            .That(applied.State.Card(ownVim.Id).AttachedTo)
-            .IsEqualTo(new CardInstanceId("attacker"));
-        await Assert.That(applied.State.Card(kit.Id).Zone).IsEqualTo(CardZone.EmptiesTray);
+        applied.Card(otherVim.Id).Zone.ShouldBe(CardZone.Mitt);
+        applied.Card(otherVim.Id).Owner.ShouldBe(MatchScenario.SecondPlayer);
+        applied.Card(ownVim.Id).AttachedTo.ShouldBe(new CardInstanceId("attacker"));
+        applied.Card(kit.Id).Zone.ShouldBe(CardZone.EmptiesTray);
     }
 }

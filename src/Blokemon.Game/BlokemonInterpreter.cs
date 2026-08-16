@@ -208,7 +208,9 @@ public sealed class BlokemonInterpreter
             requirements,
             FrozenList<CardInstanceId>.Create(runtime.ForcedSendHome.Order()),
             runtime.SourceChucked,
-            runtime.BeerMatResults
+            runtime.BeerMatResults,
+            FrozenList<CardInstanceId>.Create(runtime.AttackDamageTargets.Order()),
+            runtime.DeferredAttackKnockoutBarChits
         );
     }
 
@@ -410,8 +412,9 @@ public sealed class BlokemonInterpreter
             );
             if (
                 instruction.Opcode
-                is BlokemonOpcode.BeerMatToss
-                    or BlokemonOpcode.RepeatUntilBlankSide
+                    is BlokemonOpcode.BeerMatToss
+                        or BlokemonOpcode.RepeatUntilBlankSide
+                || instruction.Opcode == BlokemonOpcode.MoveCards && instruction.Then.Length > 0
             )
             {
                 continue;
@@ -502,7 +505,7 @@ public sealed class BlokemonInterpreter
                     ChoiceId(effect, path, "attachments"),
                     ChoiceRequirementKind.Attachments,
                     actor,
-                    required,
+                    instruction.Sources is { Length: > 0 } ? required : 0,
                     required,
                     FrozenList<CardInstanceId>.Create(eligibleVim),
                     [],
@@ -639,12 +642,12 @@ public sealed class BlokemonInterpreter
             );
         }
 
-        if (maximum == 0)
+        if (maximum == 0 && instruction.Selection != BlokemonSelection.UpTo)
         {
             return;
         }
 
-        var minimum = instruction.Selection == BlokemonSelection.UpTo ? 1 : maximum;
+        var minimum = instruction.Selection == BlokemonSelection.UpTo ? 0 : maximum;
         var chooser =
             instruction.Selection == BlokemonSelection.OtherSideChosen
                 ? builder.Other(actor)
@@ -758,6 +761,8 @@ public sealed class BlokemonInterpreter
             BlokemonOpcode.RestrictKit => false,
             BlokemonOpcode.RestrictLocal => false,
             BlokemonOpcode.RestrictEmptiesRecovery => false,
+            BlokemonOpcode.ForceBeerMatBlank => false,
+            BlokemonOpcode.ReflectAttackDamage => false,
             BlokemonOpcode.BeerMatToss => false,
             BlokemonOpcode.RepeatUntilBlankSide => false,
             BlokemonOpcode.Conditional => false,
@@ -903,6 +908,7 @@ public sealed class BlokemonInterpreter
                 runtime.LastSelectedCards = FrozenList<CardInstanceId>.Create(
                     selected.Select(static card => card.Id)
                 );
+                runtime.HasCardSelection = true;
                 MoveCardsToDestination(
                     runtime,
                     runtime.LastSelectedCards.Select(runtime.Builder.Card),
@@ -910,20 +916,29 @@ public sealed class BlokemonInterpreter
                 );
                 break;
             case BlokemonOpcode.ShuffleStack:
-                runtime.Builder.Shuffle(runtime.Actor);
+                var stackOwner =
+                    instruction.Targets.Contains(BlokemonTarget.OtherStack)
+                    || instruction.Sources?.Contains(BlokemonTarget.OtherStack) is true
+                        ? runtime.Builder.Other(runtime.Actor)
+                        : runtime.Actor;
+                runtime.Builder.Shuffle(
+                    stackOwner,
+                    runtime.HasCardSelection ? runtime.LastSelectedCards : []
+                );
                 break;
             case BlokemonOpcode.RevealCards:
-                if (runtime.LastSelectedCards.Count == 0)
+                if (!runtime.HasCardSelection)
                 {
                     runtime.LastSelectedCards = FrozenList<CardInstanceId>.Create(
                         ResolveSelectedTargets(runtime, instruction, path)
                             .Select(static card => card.Id)
                     );
+                    runtime.HasCardSelection = true;
                 }
 
                 runtime.Builder.Events.Add(
                     new PendingMatchEvent(
-                        MatchEventKind.CardMoved,
+                        MatchEventKind.CardsRevealed,
                         runtime.Actor,
                         runtime.Source.Id,
                         runtime.LastSelectedCards,
@@ -933,12 +948,15 @@ public sealed class BlokemonInterpreter
                 break;
             case BlokemonOpcode.MoveCards:
                 ExecuteMoveCards(runtime, instruction, path);
-                break;
+                return;
             case BlokemonOpcode.ChuckCards:
                 ExecuteChuckCards(runtime, instruction, path);
                 break;
             case BlokemonOpcode.AttachVim:
-                ExecuteAttachVim(runtime, instruction, path);
+                if (_catalog.PartyTrick(runtime.Effect)?.Trigger != BlokemonTrigger.Continuous)
+                {
+                    ExecuteAttachVim(runtime, instruction, path);
+                }
                 break;
             case BlokemonOpcode.MoveVim:
                 ExecuteMoveVim(runtime, instruction, path);
@@ -981,7 +999,13 @@ public sealed class BlokemonInterpreter
                 runtime.IgnoreStubbornStreak = true;
                 break;
             case BlokemonOpcode.RestrictAttack:
-                RegisterEffect(runtime, instruction, TemporaryEffectKind.RestrictAttack);
+                RegisterEffect(
+                    runtime,
+                    instruction,
+                    instruction.Selection == BlokemonSelection.BeerMat
+                        ? TemporaryEffectKind.RestrictAttackOnBeerMat
+                        : TemporaryEffectKind.RestrictAttack
+                );
                 break;
             case BlokemonOpcode.RestrictTaxi:
                 RegisterEffect(runtime, instruction, TemporaryEffectKind.RestrictTaxi);
@@ -994,6 +1018,12 @@ public sealed class BlokemonInterpreter
                 break;
             case BlokemonOpcode.RestrictEmptiesRecovery:
                 RegisterEffect(runtime, instruction, TemporaryEffectKind.RestrictEmptiesRecovery);
+                break;
+            case BlokemonOpcode.ForceBeerMatBlank:
+                RegisterPlayerEffect(runtime, TemporaryEffectKind.ForceBeerMatBlank);
+                break;
+            case BlokemonOpcode.ReflectAttackDamage:
+                RegisterEffect(runtime, instruction, TemporaryEffectKind.ReflectAttackDamage);
                 break;
             case BlokemonOpcode.BeerMatToss:
                 ExecuteBeerMat(runtime, instruction, path);
@@ -1038,7 +1068,19 @@ public sealed class BlokemonInterpreter
                 ExecuteTransform(runtime, instruction, path);
                 break;
             case BlokemonOpcode.TakeExtraBarChit:
-                TakeBarChits(runtime.Builder, runtime.Actor, instruction.Amount, runtime.Source.Id);
+                if (runtime.IsAttack)
+                {
+                    runtime.DeferredAttackKnockoutBarChits += instruction.Amount;
+                }
+                else
+                {
+                    TakeBarChits(
+                        runtime.Builder,
+                        runtime.Actor,
+                        instruction.Amount,
+                        runtime.Source.Id
+                    );
+                }
                 break;
             case BlokemonOpcode.PlayAsBloke:
                 PlayAsBloke(runtime);
@@ -1238,7 +1280,13 @@ public sealed class BlokemonInterpreter
                 == runtime
                     .Builder.CardsIn(runtime.Builder.Other(runtime.Actor), CardZone.Mitt)
                     .Count(),
-            BlokemonCondition.MatePlayedThisRound => runtime.Builder.RoundUsage.MatesPlayed > 0,
+            BlokemonCondition.MatePlayedThisRound => runtime.Builder.RoundUsage.MatesPlayed > 0
+                && (
+                    predicate.RelatedId is null
+                    || runtime.Builder.RoundUsage.KitsPlayed.Any(kit =>
+                        kit.Value == predicate.RelatedId
+                    )
+                ),
             BlokemonCondition.NamedBlokeInPlay => predicate.RelatedId is { } id
                 && InPlay(runtime.Builder, runtime.Actor)
                     .Any(card => card.MechanicalId.Value == id),
@@ -1320,11 +1368,25 @@ public sealed class BlokemonInterpreter
         return true;
     }
 
-    private static bool PendingSendsHome(EffectRuntime runtime) =>
+    private bool PendingSendsHome(EffectRuntime runtime) =>
         runtime.PendingAttackDamage.Any(pending =>
-            pending.Amount + runtime.Builder.Card(pending.Target).Damage
-            >= runtime.Catalog.StayingPower(runtime.Builder.Card(pending.Target))
-        );
+        {
+            var target = runtime.Builder.Card(pending.Target);
+            var damage =
+                pending.Kind == DamageKind.Attack
+                    ? ApplyAttackDamageOrder(runtime, target, pending.Amount)
+                    : pending.Amount;
+            var stayingPower =
+                runtime.Catalog.StayingPower(target)
+                + runtime
+                    .Builder.Effects.Where(effect =>
+                        effect.TargetCard == target.Id
+                        && effect.Kind == TemporaryEffectKind.ModifyStayingPower
+                        && EffectMatchesAttack(effect, runtime.Source, target)
+                    )
+                    .Sum(static effect => effect.Amount);
+            return damage + target.Damage >= stayingPower;
+        });
 
     private void ExecuteScaleDamage(
         EffectRuntime runtime,
@@ -1453,29 +1515,44 @@ public sealed class BlokemonInterpreter
         string path
     )
     {
-        var selected = instruction.Sources is { Length: > 0 }
-            ? ResolveSelectedTargets(runtime, instruction, path).ToArray()
-            : runtime.LastSelectedCards.Select(runtime.Builder.Card).ToArray();
-        if (selected.Length == 0)
-        {
-            selected = ResolveSelectedTargets(runtime, instruction, path).ToArray();
-        }
-
-        MoveCardsToDestination(runtime, selected.Take(instruction.Amount), instruction.Destination);
+        var selected =
+            instruction.Sources is { Length: > 0 } || !runtime.HasCardSelection
+                ? ResolveSelectedTargets(runtime, instruction, path).ToArray()
+                : runtime.LastSelectedCards.Select(runtime.Builder.Card).ToArray();
+        var moved = MoveCardsToDestination(
+            runtime,
+            selected.Take(instruction.Amount),
+            instruction.Destination
+        );
         runtime.LastSelectedCards = FrozenList<CardInstanceId>.Create(
             selected.Select(static card => card.Id)
         );
+        runtime.HasCardSelection = true;
+        if (
+            moved > 0
+            && instruction.Then.Length > 0
+            && RequireBranchChoices(runtime, instruction.Then, path + "/then")
+        )
+        {
+            ExecuteProgram(runtime, instruction.Then, path + "/then");
+        }
     }
 
-    private static void MoveCardsToDestination(
+    private static int MoveCardsToDestination(
         EffectRuntime runtime,
         IEnumerable<CardState> selected,
         BlokemonEffectDestination destination
     )
     {
         var cards = selected.ToArray();
+        var moved = 0;
         foreach (var card in cards)
         {
+            if (DiscardRecoveryIsBlocked(runtime, card, destination))
+            {
+                continue;
+            }
+
             if (IsInPlay(card) && EffectIsPrevented(runtime, card))
             {
                 continue;
@@ -1501,7 +1578,15 @@ public sealed class BlokemonInterpreter
                 continue;
             }
 
+            if (zone == CardZone.Stack && card.Kind == CardKind.Bloke && IsInPlay(card))
+            {
+                MoveBlokeAndAttachedCardsToStack(runtime.Builder, card);
+                moved++;
+                continue;
+            }
+
             runtime.Builder.MoveCard(card.Id, zone);
+            moved++;
             if (zone == CardZone.Booth && card.Kind == CardKind.Bloke)
             {
                 runtime.Builder.SetCard(
@@ -1527,7 +1612,58 @@ public sealed class BlokemonInterpreter
                 );
             }
         }
+
+        return moved;
     }
+
+    private static void MoveBlokeAndAttachedCardsToStack(MatchBuilder builder, CardState bloke)
+    {
+        builder.RemoveEffectsFor(bloke.Id);
+        foreach (var cardId in bloke.Attachments.Concat(bloke.UnderlyingCards).Distinct())
+        {
+            builder.RemoveEffectsFor(cardId);
+            builder.MoveCard(cardId, CardZone.Stack);
+            builder.SetCard(
+                builder.Card(cardId) with
+                {
+                    Attachments = [],
+                    UnderlyingCards = [],
+                    Damage = 0,
+                    RoughStates = [],
+                }
+            );
+        }
+
+        builder.MoveCard(bloke.Id, CardZone.Stack);
+        builder.SetCard(
+            builder.Card(bloke.Id) with
+            {
+                Attachments = [],
+                UnderlyingCards = [],
+                Damage = 0,
+                RoughStates = [],
+            }
+        );
+    }
+
+    private static bool DiscardRecoveryIsBlocked(
+        EffectRuntime runtime,
+        CardState card,
+        BlokemonEffectDestination destination
+    ) =>
+        runtime.Source.Kind == CardKind.Kit
+        && runtime.Catalog.Kit(runtime.Source.MechanicalId).Kind
+            is BlokemonKitKind.BarBit
+                or BlokemonKitKind.Mate
+        && card.Kind == CardKind.Kit
+        && card.Zone == CardZone.EmptiesTray
+        && destination
+            is BlokemonEffectDestination.OwnStack
+                or BlokemonEffectDestination.BottomOfOwnStack
+        && runtime.Builder.Effects.Any(effect =>
+            effect.Owner != runtime.Actor
+            && effect.Kind == TemporaryEffectKind.RestrictEmptiesRecovery
+        );
 
     private void ExecuteChuckCards(
         EffectRuntime runtime,
@@ -1695,6 +1831,14 @@ public sealed class BlokemonInterpreter
             .ToArray();
         foreach (var vim in selected)
         {
+            if (
+                vim.AttachedTo is { } attachedTo
+                && EffectIsPrevented(runtime, runtime.Builder.Card(attachedTo))
+            )
+            {
+                continue;
+            }
+
             runtime.Builder.DetachTo(vim.Id, CardZone.EmptiesTray);
         }
     }
@@ -1720,9 +1864,11 @@ public sealed class BlokemonInterpreter
             return;
         }
 
+        ResolvePendingDamageFor(runtime, outgoing.Id);
+        outgoing = runtime.Builder.Card(outgoing.Id);
         runtime.Builder.MoveCard(outgoing.Id, CardZone.Booth);
         runtime.Builder.ClearRoughStates(runtime.Actor, outgoing.Id);
-        runtime.Builder.RemoveEffectsFor(outgoing.Id);
+        runtime.Builder.RemoveEffectsFor(outgoing.Id, preserveDelayedTarget: true);
         runtime.Builder.MoveCard(incoming.Id, CardZone.Oche);
     }
 
@@ -1733,7 +1879,11 @@ public sealed class BlokemonInterpreter
         string? path = null
     )
     {
-        if (instruction.Selection == BlokemonSelection.BeerMat && runtime.BadgeSides == 0)
+        if (
+            instruction.Selection == BlokemonSelection.BeerMat
+            && runtime.BadgeSides == 0
+            && kind != TemporaryEffectKind.RestrictAttackOnBeerMat
+        )
         {
             return;
         }
@@ -1758,10 +1908,36 @@ public sealed class BlokemonInterpreter
             targets = [runtime.Builder.Card(runtime.Source.Id)];
         }
 
-        var duration = kind
-            is TemporaryEffectKind.ContinuousPartyTrick
-                or TemporaryEffectKind.ModifyStayingPower
-            ? EffectDuration.WhileSourceInPlay
+        if (
+            kind == TemporaryEffectKind.ModifyTaxiFare
+            && instruction.MechanicalTypes.Length > 0
+            && _catalog.PartyTrick(runtime.Effect)?.Trigger == BlokemonTrigger.Continuous
+        )
+        {
+            targets = targets
+                .Where(target =>
+                    AttachedVim(runtime.Builder, target.Id)
+                        .Any(vim =>
+                            instruction.MechanicalTypes.Contains(
+                                _catalog.Vim(vim.MechanicalId).MechanicalType
+                            )
+                        )
+                )
+                .ToArray();
+            if (targets.Length == 0)
+            {
+                return;
+            }
+        }
+
+        var duration =
+            kind == TemporaryEffectKind.ModifySoftSpot && runtime.IsAttack
+                ? EffectDuration.WhileTargetInPlay
+            : kind
+                is TemporaryEffectKind.ContinuousPartyTrick
+                    or TemporaryEffectKind.ModifyStayingPower
+                    or TemporaryEffectKind.ModifySoftSpot
+                ? EffectDuration.WhileSourceInPlay
             : EffectDuration.UntilEndOfOpponentsNextRound;
         foreach (var target in targets.DefaultIfEmpty())
         {
@@ -1803,6 +1979,27 @@ public sealed class BlokemonInterpreter
         }
     }
 
+    private static void RegisterPlayerEffect(EffectRuntime runtime, TemporaryEffectKind kind)
+    {
+        runtime.Builder.AddEffect(
+            new TemporaryEffect(
+                runtime.Effect,
+                runtime.Source.Id,
+                runtime.Actor,
+                null,
+                kind,
+                0,
+                [],
+                [],
+                [],
+                [],
+                EffectDuration.UntilEndOfOpponentsNextRound,
+                runtime.Builder.RoundNumber + 1,
+                runtime.Builder.RoundNumber + 1
+            )
+        );
+    }
+
     private void ExecuteCopyAttack(EffectRuntime runtime, string path)
     {
         var choice = runtime.Choice<EffectChoice.Attack>(ChoiceId(runtime.Effect, path, "attack"));
@@ -1820,20 +2017,38 @@ public sealed class BlokemonInterpreter
         }
 
         runtime.CopyStack.Add(choice.Value);
-        ExecuteProgram(runtime, attack.Program, path + "/copy");
+        var copyPath = path + "/copy";
+        if (RequireBranchChoices(runtime, attack.Program, copyPath))
+        {
+            ExecuteProgram(runtime, attack.Program, copyPath);
+        }
+
         runtime.CopyStack.Remove(choice.Value);
     }
 
-    private static void Demote(EffectRuntime runtime, CardState target)
+    private void Demote(EffectRuntime runtime, CardState target)
     {
         if (target.UnderlyingCards.Count == 0)
         {
             return;
         }
 
+        ResolvePendingDamageFor(runtime, target.Id);
+        target = runtime.Builder.Card(target.Id);
         var underlyingId = target.UnderlyingCards[^1];
         var underlying = runtime.Builder.Card(underlyingId);
+        runtime.Builder.RemoveEffectsFor(target.Id);
         runtime.Builder.MoveCard(target.Id, CardZone.Mitt);
+        runtime.Builder.SetCard(
+            runtime.Builder.Card(target.Id) with
+            {
+                AttachedTo = null,
+                Attachments = [],
+                UnderlyingCards = [],
+                Damage = 0,
+                RoughStates = [],
+            }
+        );
         runtime.Builder.SetCard(
             underlying with
             {
@@ -2007,14 +2222,28 @@ public sealed class BlokemonInterpreter
             {
                 damage = ApplyAttackDamageOrder(runtime, target, damage);
             }
+            else if (pending.Kind == DamageKind.BoothAttack)
+            {
+                damage = ApplyAttackProtection(
+                    runtime,
+                    target,
+                    ApplyOutgoingAttackDamage(runtime, damage)
+                );
+            }
 
+            damage = Math.Max(0, damage);
             runtime.Builder.PlaceDamage(
                 runtime.Actor,
                 target.Id,
-                Math.Max(0, damage),
+                damage,
                 pending.Kind,
                 runtime.Source.Id
             );
+            if (damage > 0)
+            {
+                runtime.AttackDamageTargets.Add(target.Id);
+                AddReflectedDamage(runtime, target, damage);
+            }
         }
 
         foreach (var pending in runtime.PendingOtherDamage)
@@ -2029,39 +2258,81 @@ public sealed class BlokemonInterpreter
         }
     }
 
+    private void ResolvePendingDamageFor(EffectRuntime runtime, CardInstanceId targetId)
+    {
+        foreach (
+            var pending in runtime
+                .PendingAttackDamage.Where(damage => damage.Target == targetId)
+                .ToArray()
+        )
+        {
+            var target = runtime.Builder.Card(pending.Target);
+            var damage =
+                pending.Kind == DamageKind.Attack
+                    ? ApplyAttackDamageOrder(runtime, target, pending.Amount)
+                : pending.Kind == DamageKind.BoothAttack
+                    ? ApplyAttackProtection(runtime, target, pending.Amount)
+                : pending.Amount;
+            damage = Math.Max(0, damage);
+            runtime.Builder.PlaceDamage(
+                runtime.Actor,
+                target.Id,
+                damage,
+                pending.Kind,
+                runtime.Source.Id
+            );
+            if (damage > 0)
+            {
+                runtime.AttackDamageTargets.Add(target.Id);
+                AddReflectedDamage(runtime, target, damage);
+            }
+            runtime.PendingAttackDamage.Remove(pending);
+        }
+
+        foreach (
+            var pending in runtime
+                .PendingOtherDamage.Where(damage => damage.Target == targetId)
+                .ToArray()
+        )
+        {
+            runtime.Builder.PlaceDamage(
+                runtime.Actor,
+                pending.Target,
+                pending.Amount,
+                pending.Kind,
+                runtime.Source.Id
+            );
+            runtime.PendingOtherDamage.Remove(pending);
+        }
+    }
+
     private int ApplyAttackDamageOrder(EffectRuntime runtime, CardState target, int damage)
     {
-        damage += runtime
-            .Builder.Effects.Where(effect =>
-                effect.Owner == runtime.Actor
-                && effect.TargetCard == runtime.Source.Id
-                && effect.Kind == TemporaryEffectKind.ScaleNextAttackDamage
-                && effect.AppliesFromRound <= runtime.Builder.RoundNumber
-            )
-            .Sum(static effect => effect.Amount);
+        damage = ApplyOutgoingAttackDamage(runtime, damage);
 
         if (!runtime.IgnoreSoftSpot && target.Kind == CardKind.Bloke)
         {
             var attackerTypes = _catalog.MechanicalTypes(runtime.Builder.Card(runtime.Source.Id));
-            var modifiedSoftSpot = runtime.Builder.Effects.LastOrDefault(effect =>
-                effect.TargetCard == target.Id
-                && effect.Kind == TemporaryEffectKind.ModifySoftSpot
-                && EffectMatchesAttack(effect, runtime.Source, target)
+            var softSpotEffects = runtime
+                .Builder.Effects.Where(effect =>
+                    effect.TargetCard == target.Id
+                    && effect.Kind == TemporaryEffectKind.ModifySoftSpot
+                    && EffectMatchesAttack(effect, runtime.Source, target)
+                )
+                .ToArray();
+            var chosenSoftSpot = softSpotEffects.LastOrDefault(effect =>
+                effect.MechanicalTypes.Count > 0
             );
-            if (
-                modifiedSoftSpot is not null
-                && modifiedSoftSpot.MechanicalTypes.Any(attackerTypes.Contains)
-            )
+            var effectiveSoftSpots =
+                chosenSoftSpot?.MechanicalTypes
+                ?? FrozenList<BlokemonMechanicalType>.Create(
+                    _catalog
+                        .Bloke(target.MechanicalId)
+                        .SoftSpots.Select(static softSpot => softSpot.MechanicalType)
+                );
+            if (effectiveSoftSpots.Any(attackerTypes.Contains))
             {
-                damage *= modifiedSoftSpot.Amount == 4 ? 4 : 2;
-            }
-            else if (modifiedSoftSpot is null)
-            {
-                var softSpots = _catalog.Bloke(target.MechanicalId).SoftSpots;
-                if (softSpots.Any(softSpot => attackerTypes.Contains(softSpot.MechanicalType)))
-                {
-                    damage *= 2;
-                }
+                damage *= softSpotEffects.Any(static effect => effect.Amount == 4) ? 4 : 2;
             }
         }
 
@@ -2075,6 +2346,39 @@ public sealed class BlokemonInterpreter
             }
         }
 
+        return ApplyAttackProtection(runtime, target, damage);
+    }
+
+    private static int ApplyOutgoingAttackDamage(EffectRuntime runtime, int damage) =>
+        damage
+        + runtime
+            .Builder.Effects.Where(effect =>
+                effect.Owner == runtime.Actor
+                && effect.TargetCard == runtime.Source.Id
+                && effect.Kind == TemporaryEffectKind.ScaleNextAttackDamage
+                && effect.AppliesFromRound <= runtime.Builder.RoundNumber
+            )
+            .Sum(static effect => effect.Amount);
+
+    private static void AddReflectedDamage(EffectRuntime runtime, CardState target, int damage)
+    {
+        if (
+            runtime.Builder.Effects.Any(effect =>
+                effect.TargetCard == target.Id
+                && effect.Owner != runtime.Actor
+                && effect.Kind == TemporaryEffectKind.ReflectAttackDamage
+                && effect.AppliesFromRound <= runtime.Builder.RoundNumber
+            )
+        )
+        {
+            runtime.PendingOtherDamage.Add(
+                new PendingDamage(runtime.Source.Id, damage, DamageKind.PlacedCounter)
+            );
+        }
+    }
+
+    private int ApplyAttackProtection(EffectRuntime runtime, CardState target, int damage)
+    {
         var targetEffects = runtime
             .Builder.Effects.Where(effect =>
                 effect.TargetCard == target.Id
@@ -2145,7 +2449,12 @@ public sealed class BlokemonInterpreter
                 .Builder.CardsIn(runtime.Builder.Other(runtime.Actor), CardZone.Booth)
                 .Count(),
             BlokemonValueSource.OwnAttachedVim => AttachedVim(runtime.Builder, runtime.Source.Id)
-                .Count(),
+                .Count(vim =>
+                    instruction.MechanicalTypes.Length == 0
+                    || instruction.MechanicalTypes.Contains(
+                        runtime.Catalog.Vim(vim.MechanicalId).MechanicalType
+                    )
+                ),
             BlokemonValueSource.OtherAttachedVim => runtime.Builder.Oche(
                 runtime.Builder.Other(runtime.Actor)
             )
@@ -2390,6 +2699,8 @@ public sealed class BlokemonInterpreter
             BlokemonOpcode.RestrictKit => source.Yield(),
             BlokemonOpcode.RestrictLocal => source.Yield(),
             BlokemonOpcode.RestrictEmptiesRecovery => source.Yield(),
+            BlokemonOpcode.ForceBeerMatBlank => [],
+            BlokemonOpcode.ReflectAttackDamage => source.Yield(),
             BlokemonOpcode.BeerMatToss => [],
             BlokemonOpcode.RepeatUntilBlankSide => [],
             BlokemonOpcode.Conditional => [],
@@ -2423,6 +2734,7 @@ public sealed class BlokemonInterpreter
             )
             && (
                 instruction.MechanicalTypes.Length == 0
+                || !FiltersCandidatesByMechanicalType(instruction.Opcode)
                 || (
                     card.Kind == CardKind.Vim
                         ? instruction.MechanicalTypes.Contains(
@@ -2442,6 +2754,16 @@ public sealed class BlokemonInterpreter
             )
             && MatchesCardFilter(card, instruction.CardFilter)
         );
+
+    private static bool FiltersCandidatesByMechanicalType(BlokemonOpcode opcode) =>
+        opcode
+            is BlokemonOpcode.SearchStack
+                or BlokemonOpcode.ShuffleStack
+                or BlokemonOpcode.MoveCards
+                or BlokemonOpcode.ChuckCards
+                or BlokemonOpcode.AttachVim
+                or BlokemonOpcode.MoveVim
+                or BlokemonOpcode.ChuckVim;
 
     private bool MatchesCardFilter(CardState card, BlokemonEffectCardFilter? filter)
     {
@@ -2480,11 +2802,16 @@ public sealed class BlokemonInterpreter
     private static bool IsInPlay(CardState card) => card.Zone is CardZone.Oche or CardZone.Booth;
 
     private static bool EffectIsPrevented(EffectRuntime runtime, CardState target) =>
-        runtime.IsAttack
-        && runtime.Builder.Effects.Any(effect =>
+        runtime.Builder.Effects.Any(effect =>
             effect.TargetCard == target.Id
             && effect.Owner != runtime.Actor
             && effect.Kind == TemporaryEffectKind.PreventEffects
+            && (
+                runtime.IsAttack
+                    ? runtime.Builder.Card(effect.SourceCard).Kind == CardKind.Bloke
+                    : !runtime.IsHouseRule
+                        && runtime.Builder.Card(effect.SourceCard).Kind == CardKind.Kit
+            )
         );
 
     private static IEnumerable<CardState> AttachedVim(MatchBuilder builder, CardInstanceId card) =>
@@ -2704,7 +3031,9 @@ public sealed class BlokemonInterpreter
         FrozenList<ChoiceRequirement> Requirements,
         FrozenList<CardInstanceId> ForcedSendHome = default,
         bool SourceChucked = false,
-        FrozenList<bool> BeerMatResults = default
+        FrozenList<bool> BeerMatResults = default,
+        FrozenList<CardInstanceId> AttackDamageTargets = default,
+        int DeferredAttackKnockoutBarChits = 0
     );
 
     private sealed class EffectRuntime(
@@ -2756,13 +3085,19 @@ public sealed class BlokemonInterpreter
 
         public HashSet<CardInstanceId> ForcedSendHome { get; } = [];
 
+        public HashSet<CardInstanceId> AttackDamageTargets { get; } = [];
+
         public bool SourceChucked { get; set; }
 
         public FrozenList<CardInstanceId> LastSelectedCards { get; set; } = [];
 
+        public bool HasCardSelection { get; set; }
+
         public int BadgeSides { get; set; }
 
         public int TossCount { get; set; }
+
+        public int DeferredAttackKnockoutBarChits { get; set; }
 
         public string? BeerMatGateParent { get; set; }
 
@@ -2791,7 +3126,7 @@ public sealed class BlokemonInterpreter
             }
 
             LastBeerMatWasReplayed = false;
-            var result = Builder.Random.NextInt(2) == 1;
+            var result = Builder.TossBeerMat(Actor);
             _beerMatResults.Add(result);
             _replayedBeerMats++;
             return result;

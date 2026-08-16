@@ -6,7 +6,7 @@ namespace Blokemon.Core.PublicContent;
 public static class BlokemonPublicContentValidator
 {
     public const string SchemaVersion = "blokemon-public-content-schema-2.0.0-candidate.5";
-    public const string ContentVersion = "blokemon-public-content-2.0.0-candidate.5";
+    public const string ContentVersion = "blokemon-public-content-2.0.0-candidate.7";
     public const string TerminologyVersion = "blokemon-public-terminology-2.0.0-candidate.5";
     private const string _artAuthority = "Blokemon";
 
@@ -71,7 +71,7 @@ public static class BlokemonPublicContentValidator
         Check(
             manifest.ContentVersion == ContentVersion,
             "document.version",
-            "The public content version is not candidate.5.",
+            "The public content version is not candidate.7.",
             issues
         );
         Check(
@@ -87,9 +87,9 @@ public static class BlokemonPublicContentValidator
             issues
         );
         Check(
-            manifest.HumanApprovalStatus == BlokemonPublicContentApprovalStatus.AwaitingApproval,
+            manifest.HumanApprovalStatus == BlokemonPublicContentApprovalStatus.Accepted,
             "document.approval",
-            "Candidate.5 must remain pending exact human signoff.",
+            "Candidate.7 must carry exact human acceptance.",
             issues
         );
         ValidateTerminology(manifest, issues);
@@ -227,10 +227,10 @@ public static class BlokemonPublicContentValidator
                 issues
             );
             Check(
-                content.Art.Status == BlokemonPublicArtStatus.Placeholder
+                content.Art.Status == BlokemonPublicArtStatus.Accepted
                     && content.Art.Authority == _artAuthority,
                 "collectible.art",
-                $"{mechanical.Id} must expose only the placeholder-art boundary.",
+                $"{mechanical.Id} must expose accepted Blokemon artwork.",
                 issues
             );
             ValidateEffects(

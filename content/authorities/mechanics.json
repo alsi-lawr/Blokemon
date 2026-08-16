@@ -1,6 +1,6 @@
 {
-  "manifestVersion": "sv151-candidate.12",
-  "presentationStatus": "PlaceholderBacked",
+  "manifestVersion": "sv151-candidate.14",
+  "presentationStatus": "Accepted",
   "approvedMechanicalDisplayMap": [
     {
       "mechanicalType": "Grass",
@@ -48,7 +48,7 @@
       "id": "BLK-001",
       "approvedName": "Weedman Will",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -62,7 +62,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-001-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Colorless"
@@ -123,7 +123,7 @@
       "id": "BLK-002",
       "approvedName": "Bedroom Grower",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 100,
       "mechanicalTypes": [
@@ -137,7 +137,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-002-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Colorless"
@@ -182,7 +182,7 @@
         },
         {
           "mechanicalId": "BLK-002-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Grass",
@@ -228,7 +228,7 @@
       "id": "BLK-003",
       "approvedName": "Howard Marks",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 340,
       "mechanicalTypes": [
@@ -239,7 +239,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-003-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -310,7 +310,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-003-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Grass",
@@ -361,7 +361,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-003-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -398,7 +398,7 @@
       "id": "BLK-004",
       "approvedName": "Dave Lister",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -412,7 +412,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-004-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire"
           ],
@@ -440,7 +440,7 @@
         },
         {
           "mechanicalId": "BLK-004-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire",
             "Fire"
@@ -485,7 +485,7 @@
       "id": "BLK-005",
       "approvedName": "Four-Naan Jeremy",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 100,
       "mechanicalTypes": [
@@ -499,7 +499,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-005-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire"
           ],
@@ -527,7 +527,7 @@
         },
         {
           "mechanicalId": "BLK-005-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire",
             "Fire",
@@ -589,7 +589,7 @@
       "id": "BLK-006",
       "approvedName": "Brick Lane Boss",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 330,
       "mechanicalTypes": [
@@ -601,7 +601,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-006-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire"
           ],
@@ -668,7 +668,7 @@
         },
         {
           "mechanicalId": "BLK-006-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire",
             "Fire",
@@ -717,7 +717,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-006-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -754,7 +754,7 @@
       "id": "BLK-007",
       "approvedName": "Designated Driver",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -768,7 +768,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-007-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -827,7 +827,7 @@
         },
         {
           "mechanicalId": "BLK-007-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water"
@@ -872,7 +872,7 @@
       "id": "BLK-008",
       "approvedName": "Dry January",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 100,
       "mechanicalTypes": [
@@ -886,7 +886,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-008-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -953,7 +953,7 @@
         },
         {
           "mechanicalId": "BLK-008-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water"
@@ -998,7 +998,7 @@
       "id": "BLK-009",
       "approvedName": "Parkrun",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 330,
       "mechanicalTypes": [
@@ -1009,7 +1009,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-009-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "ContinuousPartyTrick",
@@ -1050,7 +1050,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-009-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water"
@@ -1095,7 +1095,17 @@
                   "roughStates": [],
                   "relatedIds": [],
                   "then": [],
-                  "otherwise": []
+                  "otherwise": [],
+                  "cardFilter": {
+                    "categories": [
+                      "Vim"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": true,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
                 },
                 {
                   "opcode": "ScaleDamage",
@@ -1122,7 +1132,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-009-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -1159,7 +1169,7 @@
       "id": "BLK-010",
       "approvedName": "First Rollie",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 50,
       "mechanicalTypes": [
@@ -1173,7 +1183,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-010-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -1256,7 +1266,7 @@
       "id": "BLK-011",
       "approvedName": "Couch Lock",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -1270,7 +1280,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-011-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -1298,7 +1308,7 @@
         },
         {
           "mechanicalId": "BLK-011-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -1374,7 +1384,7 @@
       "id": "BLK-012",
       "approvedName": "High as a Kite",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 130,
       "mechanicalTypes": [
@@ -1386,7 +1396,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-012-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -1430,7 +1440,7 @@
         },
         {
           "mechanicalId": "BLK-012-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -1460,13 +1470,89 @@
               "relatedIds": [],
               "then": [
                 {
+                  "opcode": "MoveCards",
+                  "amount": 1,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "OtherBoothChosen"
+                  ],
+                  "selection": "Chosen",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": [],
+                  "sources": [
+                    "OtherBoothChosen"
+                  ],
+                  "destination": "OtherStack",
+                  "cardFilter": {
+                    "categories": [
+                      "Bloke"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
+                },
+                {
+                  "opcode": "ShuffleStack",
+                  "amount": 1,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "OtherStack"
+                  ],
+                  "selection": "All",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": []
+                },
+                {
+                  "opcode": "MoveCards",
+                  "amount": 1,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "Self"
+                  ],
+                  "selection": "All",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": [],
+                  "sources": [
+                    "Self"
+                  ],
+                  "destination": "OwnStack",
+                  "cardFilter": {
+                    "categories": [
+                      "Bloke"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
+                },
+                {
                   "opcode": "ShuffleStack",
                   "amount": 1,
                   "valueSource": "Fixed",
                   "targets": [
                     "OwnStack"
                   ],
-                  "selection": "Chosen",
+                  "selection": "All",
                   "targetCount": 1,
                   "predicates": [],
                   "mechanicalTypes": [],
@@ -1498,7 +1584,7 @@
       "id": "BLK-013",
       "approvedName": "Soap Bar",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 50,
       "mechanicalTypes": [
@@ -1512,7 +1598,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-013-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -1540,7 +1626,7 @@
         },
         {
           "mechanicalId": "BLK-013-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -1585,7 +1671,7 @@
       "id": "BLK-014",
       "approvedName": "Cheese",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -1598,7 +1684,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-014-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "ContinuousPartyTrick",
@@ -1639,7 +1725,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-014-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -1684,7 +1770,7 @@
       "id": "BLK-015",
       "approvedName": "Stardawg",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 130,
       "mechanicalTypes": [
@@ -1696,7 +1782,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-015-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -1783,7 +1869,7 @@
         },
         {
           "mechanicalId": "BLK-015-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Grass"
@@ -1828,7 +1914,7 @@
       "id": "BLK-016",
       "approvedName": "Ciggy Sam",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 50,
       "mechanicalTypes": [
@@ -1842,7 +1928,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-016-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -1922,7 +2008,7 @@
         },
         {
           "mechanicalId": "BLK-016-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -1972,7 +2058,7 @@
       "id": "BLK-017",
       "approvedName": "Pub Regular",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -1986,7 +2072,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-017-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -2035,7 +2121,7 @@
       "id": "BLK-018",
       "approvedName": "Local Celebrity",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 130,
       "mechanicalTypes": [
@@ -2047,7 +2133,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-018-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -2075,7 +2161,7 @@
         },
         {
           "mechanicalId": "BLK-018-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless",
@@ -2144,6 +2230,22 @@
                   "relatedIds": [],
                   "then": [],
                   "otherwise": []
+                },
+                {
+                  "opcode": "PreventEffects",
+                  "amount": 150,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "Self"
+                  ],
+                  "selection": "BeerMat",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": []
                 }
               ],
               "otherwise": []
@@ -2173,7 +2275,7 @@
       "id": "BLK-019",
       "approvedName": "Scrounger",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 40,
       "mechanicalTypes": [
@@ -2187,7 +2289,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-019-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -2248,7 +2350,7 @@
       "id": "BLK-020",
       "approvedName": "Borrow-a-Fiver",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -2260,7 +2362,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-020-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -2321,7 +2423,7 @@
       "id": "BLK-021",
       "approvedName": "Dole Spender",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 50,
       "mechanicalTypes": [
@@ -2334,7 +2436,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-021-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -2389,7 +2491,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-021-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -2438,7 +2540,7 @@
       "id": "BLK-022",
       "approvedName": "Cash-in-Hand",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -2450,7 +2552,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-022-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -2534,7 +2636,7 @@
         },
         {
           "mechanicalId": "BLK-022-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -2583,7 +2685,7 @@
       "id": "BLK-023",
       "approvedName": "Snake Oil",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -2597,7 +2699,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-023-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness",
             "Darkness"
@@ -2673,7 +2775,7 @@
       "id": "BLK-024",
       "approvedName": "Boiler Room",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 270,
       "mechanicalTypes": [
@@ -2685,7 +2787,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-024-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness",
             "Darkness"
@@ -2746,7 +2848,7 @@
         },
         {
           "mechanicalId": "BLK-024-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness",
             "Darkness",
@@ -2794,7 +2896,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-024-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -2831,7 +2933,7 @@
       "id": "BLK-025",
       "approvedName": "Pintman",
       "approvedType": "Beer",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -2845,7 +2947,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-025-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning"
           ],
@@ -2921,7 +3023,7 @@
         },
         {
           "mechanicalId": "BLK-025-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning",
             "Lightning",
@@ -2967,7 +3069,7 @@
       "id": "BLK-026",
       "approvedName": "Donni",
       "approvedType": "Beer",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -2978,7 +3080,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-026-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -3056,7 +3158,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-026-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning",
             "Lightning",
@@ -3118,7 +3220,7 @@
       "id": "BLK-027",
       "approvedName": "You Looking at Me?",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -3131,7 +3233,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-027-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "ContinuousPartyTrick",
@@ -3170,7 +3272,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-027-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -3215,7 +3317,7 @@
       "id": "BLK-028",
       "approvedName": "Come On Then",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -3227,7 +3329,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-028-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -3287,7 +3389,7 @@
         },
         {
           "mechanicalId": "BLK-028-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Colorless",
@@ -3372,7 +3474,7 @@
       "id": "BLK-029",
       "approvedName": "Fake Tan Fran",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -3386,7 +3488,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-029-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness",
             "Colorless"
@@ -3449,7 +3551,7 @@
       "id": "BLK-030",
       "approvedName": "Facebook Marketplace",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -3463,7 +3565,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-030-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness"
           ],
@@ -3573,7 +3675,7 @@
         },
         {
           "mechanicalId": "BLK-030-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness",
             "Colorless"
@@ -3618,7 +3720,7 @@
       "id": "BLK-031",
       "approvedName": "MLM Queen",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 170,
       "mechanicalTypes": [
@@ -3630,7 +3732,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-031-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness",
             "Colorless"
@@ -3699,7 +3801,7 @@
         },
         {
           "mechanicalId": "BLK-031-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness",
             "Darkness",
@@ -3745,7 +3847,7 @@
       "id": "BLK-032",
       "approvedName": "Knockoff Nigel",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -3759,7 +3861,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-032-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness"
           ],
@@ -3803,7 +3905,7 @@
       "id": "BLK-033",
       "approvedName": "Cash Only",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -3817,7 +3919,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-033-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness"
           ],
@@ -3845,7 +3947,7 @@
         },
         {
           "mechanicalId": "BLK-033-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness",
             "Darkness",
@@ -3891,7 +3993,7 @@
       "id": "BLK-034",
       "approvedName": "Landlord",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 170,
       "mechanicalTypes": [
@@ -3902,7 +4004,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-034-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -3966,7 +4068,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-034-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness",
             "Darkness",
@@ -4031,7 +4133,7 @@
       "id": "BLK-035",
       "approvedName": "First Bump",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -4045,7 +4147,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-035-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic"
           ],
@@ -4129,7 +4231,7 @@
         },
         {
           "mechanicalId": "BLK-035-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic",
             "Colorless"
@@ -4174,7 +4276,7 @@
       "id": "BLK-036",
       "approvedName": "Second Wind",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 100,
       "mechanicalTypes": [
@@ -4186,7 +4288,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-036-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic"
           ],
@@ -4214,7 +4316,7 @@
         },
         {
           "mechanicalId": "BLK-036-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic",
             "Psychic",
@@ -4299,7 +4401,7 @@
       "id": "BLK-037",
       "approvedName": "Ruby Murray",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -4313,7 +4415,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-037-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire",
             "Colorless"
@@ -4391,7 +4493,7 @@
       "id": "BLK-038",
       "approvedName": "Curry Mile",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 260,
       "mechanicalTypes": [
@@ -4403,7 +4505,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-038-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire"
           ],
@@ -4449,7 +4551,7 @@
         },
         {
           "mechanicalId": "BLK-038-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire",
             "Colorless"
@@ -4519,7 +4621,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-038-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -4556,7 +4658,7 @@
       "id": "BLK-039",
       "approvedName": "Karaoke Kev",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -4570,7 +4672,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-039-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -4659,7 +4761,7 @@
         },
         {
           "mechanicalId": "BLK-039-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -4734,7 +4836,7 @@
       "id": "BLK-040",
       "approvedName": "Karaoke Queen",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 250,
       "mechanicalTypes": [
@@ -4745,7 +4847,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-040-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -4816,7 +4918,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-040-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless",
@@ -4887,7 +4989,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-040-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -4924,7 +5026,7 @@
       "id": "BLK-041",
       "approvedName": "Balaclava",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 40,
       "mechanicalTypes": [
@@ -4937,7 +5039,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-041-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -5008,7 +5110,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-041-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -5057,7 +5159,7 @@
       "id": "BLK-042",
       "approvedName": "Catalytic Converter",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -5069,7 +5171,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-042-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -5118,7 +5220,7 @@
       "id": "BLK-043",
       "approvedName": "Eighth",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -5132,7 +5234,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-043-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -5177,7 +5279,7 @@
       "id": "BLK-044",
       "approvedName": "Whitey",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -5190,7 +5292,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-044-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -5304,7 +5406,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-044-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -5349,7 +5451,7 @@
       "id": "BLK-045",
       "approvedName": "Growroom",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 140,
       "mechanicalTypes": [
@@ -5360,7 +5462,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-045-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -5474,7 +5576,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-045-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Colorless",
@@ -5520,7 +5622,7 @@
       "id": "BLK-046",
       "approvedName": "Fun Guy",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -5534,7 +5636,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-046-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -5562,7 +5664,7 @@
         },
         {
           "mechanicalId": "BLK-046-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Colorless"
@@ -5625,7 +5727,7 @@
       "id": "BLK-047",
       "approvedName": "Magic Mushroom",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -5637,7 +5739,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-047-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -5713,7 +5815,7 @@
         },
         {
           "mechanicalId": "BLK-047-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -5758,7 +5860,7 @@
       "id": "BLK-048",
       "approvedName": "Red-Eye",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -5772,7 +5874,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-048-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -5800,7 +5902,7 @@
         },
         {
           "mechanicalId": "BLK-048-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Colorless",
@@ -5846,7 +5948,7 @@
       "id": "BLK-049",
       "approvedName": "Space Cadet",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -5858,7 +5960,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-049-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -5922,7 +6024,7 @@
         },
         {
           "mechanicalId": "BLK-049-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Colorless",
@@ -5968,7 +6070,7 @@
       "id": "BLK-050",
       "approvedName": "You What?",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 50,
       "mechanicalTypes": [
@@ -5982,7 +6084,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-050-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -6010,7 +6112,7 @@
         },
         {
           "mechanicalId": "BLK-050-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Fighting"
@@ -6055,7 +6157,7 @@
       "id": "BLK-051",
       "approvedName": "Me and My Mates",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -6067,7 +6169,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-051-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -6095,7 +6197,7 @@
         },
         {
           "mechanicalId": "BLK-051-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Fighting"
@@ -6140,7 +6242,7 @@
       "id": "BLK-052",
       "approvedName": "Bookies Brian",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -6154,7 +6256,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-052-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -6197,7 +6299,7 @@
         },
         {
           "mechanicalId": "BLK-052-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -6242,7 +6344,7 @@
       "id": "BLK-053",
       "approvedName": "Golf Club Gary",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 110,
       "mechanicalTypes": [
@@ -6253,7 +6355,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-053-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -6388,7 +6490,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-053-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless",
@@ -6434,7 +6536,7 @@
       "id": "BLK-054",
       "approvedName": "Day Two",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -6448,7 +6550,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-054-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -6457,11 +6559,11 @@
           "canBeUsedFromBench": false,
           "program": [
             {
-              "opcode": "BeerMatToss",
+              "opcode": "ForceBeerMatBlank",
               "amount": 1,
               "valueSource": "Fixed",
               "targets": [],
-              "selection": "BeerMat",
+              "selection": "All",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
@@ -6474,7 +6576,7 @@
         },
         {
           "mechanicalId": "BLK-054-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -6518,7 +6620,7 @@
       "id": "BLK-055",
       "approvedName": "Clear Head",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 110,
       "mechanicalTypes": [
@@ -6530,7 +6632,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-055-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -6595,7 +6697,7 @@
         },
         {
           "mechanicalId": "BLK-055-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water",
@@ -6641,7 +6743,7 @@
       "id": "BLK-056",
       "approvedName": "Shirt Off",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -6655,7 +6757,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-056-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -6747,7 +6849,7 @@
       "id": "BLK-057",
       "approvedName": "Ronnie Pickering",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -6759,7 +6861,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-057-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -6784,51 +6886,28 @@
               "otherwise": []
             },
             {
-              "opcode": "Conditional",
-              "amount": 0,
+              "opcode": "ApplyRoughState",
+              "amount": 40,
               "valueSource": "Fixed",
-              "targets": [],
+              "targets": [
+                "Self"
+              ],
               "selection": "All",
               "targetCount": 1,
-              "predicates": [
-                {
-                  "condition": "SelfHasRoughState",
-                  "value": 0,
-                  "mechanicalType": null,
-                  "roughState": "Muddled",
-                  "relatedId": null
-                }
-              ],
+              "predicates": [],
               "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [
-                {
-                  "opcode": "ApplyRoughState",
-                  "amount": 40,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "Self"
-                  ],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [
-                    "Muddled"
-                  ],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                }
+              "roughStates": [
+                "Muddled"
               ],
+              "relatedIds": [],
+              "then": [],
               "otherwise": []
             }
           ]
         },
         {
           "mechanicalId": "BLK-057-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Colorless",
@@ -6897,7 +6976,7 @@
       "id": "BLK-058",
       "approvedName": "Balti Triangle",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -6911,7 +6990,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-058-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire"
           ],
@@ -6973,7 +7052,7 @@
       "id": "BLK-059",
       "approvedName": "Bradford",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 150,
       "mechanicalTypes": [
@@ -6985,7 +7064,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-059-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire"
           ],
@@ -7067,7 +7146,7 @@
         },
         {
           "mechanicalId": "BLK-059-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire",
             "Fire",
@@ -7132,7 +7211,7 @@
       "id": "BLK-060",
       "approvedName": "Lime and Soda",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -7146,7 +7225,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-060-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -7223,7 +7302,7 @@
       "id": "BLK-061",
       "approvedName": "Alcohol Free",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -7237,7 +7316,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-061-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -7265,7 +7344,7 @@
         },
         {
           "mechanicalId": "BLK-061-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless"
@@ -7341,7 +7420,7 @@
       "id": "BLK-062",
       "approvedName": "Zero Point Zero",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 160,
       "mechanicalTypes": [
@@ -7353,7 +7432,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-062-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -7414,7 +7493,7 @@
         },
         {
           "mechanicalId": "BLK-062-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless",
@@ -7491,7 +7570,7 @@
       "id": "BLK-063",
       "approvedName": "Jaw Swing",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 50,
       "mechanicalTypes": [
@@ -7505,7 +7584,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-063-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic"
           ],
@@ -7554,7 +7633,7 @@
       "id": "BLK-064",
       "approvedName": "Gurning",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -7568,7 +7647,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-064-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic"
           ],
@@ -7633,7 +7712,7 @@
       "id": "BLK-065",
       "approvedName": "Ebeneezer Goode",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 310,
       "mechanicalTypes": [
@@ -7645,7 +7724,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-065-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -7690,7 +7769,7 @@
         },
         {
           "mechanicalId": "BLK-065-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic",
             "Psychic"
@@ -7721,7 +7800,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-065-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -7763,7 +7842,7 @@
       "id": "BLK-066",
       "approvedName": "Tiny",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -7777,7 +7856,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-066-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -7805,7 +7884,7 @@
         },
         {
           "mechanicalId": "BLK-066-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Fighting"
@@ -7850,7 +7929,7 @@
       "id": "BLK-067",
       "approvedName": "Bouncer",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 100,
       "mechanicalTypes": [
@@ -7864,7 +7943,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-067-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Fighting"
@@ -7925,7 +8004,7 @@
       "id": "BLK-068",
       "approvedName": "Head Doorman",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 180,
       "mechanicalTypes": [
@@ -7936,7 +8015,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-068-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BeerMatToss",
@@ -8007,7 +8086,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-068-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Fighting"
@@ -8068,7 +8147,7 @@
       "id": "BLK-069",
       "approvedName": "Ten Bag",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -8082,7 +8161,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-069-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -8110,7 +8189,7 @@
         },
         {
           "mechanicalId": "BLK-069-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Colorless"
@@ -8187,7 +8266,7 @@
       "id": "BLK-070",
       "approvedName": "Half Ounce",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -8201,7 +8280,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-070-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -8229,7 +8308,7 @@
         },
         {
           "mechanicalId": "BLK-070-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Colorless"
@@ -8274,7 +8353,7 @@
       "id": "BLK-071",
       "approvedName": "Full Ounce",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 150,
       "mechanicalTypes": [
@@ -8286,7 +8365,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-071-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -8314,7 +8393,7 @@
         },
         {
           "mechanicalId": "BLK-071-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Colorless"
@@ -8391,7 +8470,7 @@
       "id": "BLK-072",
       "approvedName": "Early Night",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -8405,7 +8484,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-072-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -8433,7 +8512,7 @@
         },
         {
           "mechanicalId": "BLK-072-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -8478,7 +8557,7 @@
       "id": "BLK-073",
       "approvedName": "Fresh as a Daisy",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -8490,7 +8569,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-073-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -8537,7 +8616,7 @@
         },
         {
           "mechanicalId": "BLK-073-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless",
@@ -8657,7 +8736,7 @@
       "id": "BLK-074",
       "approvedName": "Stone Island",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -8671,7 +8750,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-074-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -8715,7 +8794,7 @@
         },
         {
           "mechanicalId": "BLK-074-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Colorless"
@@ -8760,7 +8839,7 @@
       "id": "BLK-075",
       "approvedName": "Away Day",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 110,
       "mechanicalTypes": [
@@ -8774,7 +8853,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-075-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -8833,7 +8912,7 @@
         },
         {
           "mechanicalId": "BLK-075-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Colorless",
@@ -8879,7 +8958,7 @@
       "id": "BLK-076",
       "approvedName": "The Firm",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 330,
       "mechanicalTypes": [
@@ -8891,7 +8970,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-076-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -8935,7 +9014,7 @@
         },
         {
           "mechanicalId": "BLK-076-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Colorless",
@@ -8981,7 +9060,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-076-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -9018,7 +9097,7 @@
       "id": "BLK-077",
       "approvedName": "Southall",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -9032,7 +9111,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-077-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire"
           ],
@@ -9060,7 +9139,7 @@
         },
         {
           "mechanicalId": "BLK-077-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire",
             "Colorless",
@@ -9106,7 +9185,7 @@
       "id": "BLK-078",
       "approvedName": "Shish Mahal",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 100,
       "mechanicalTypes": [
@@ -9118,7 +9197,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-078-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire"
           ],
@@ -9148,7 +9227,7 @@
         },
         {
           "mechanicalId": "BLK-078-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire",
             "Colorless",
@@ -9210,7 +9289,7 @@
       "id": "BLK-079",
       "approvedName": "Coming Up",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -9224,7 +9303,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-079-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic"
           ],
@@ -9268,7 +9347,7 @@
         },
         {
           "mechanicalId": "BLK-079-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -9318,7 +9397,7 @@
       "id": "BLK-080",
       "approvedName": "Still Coming Up",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 130,
       "mechanicalTypes": [
@@ -9330,7 +9409,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-080-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic"
           ],
@@ -9361,7 +9440,7 @@
         },
         {
           "mechanicalId": "BLK-080-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic",
             "Colorless",
@@ -9435,7 +9514,7 @@
       "id": "BLK-081",
       "approvedName": "One-Pint Wonder",
       "approvedType": "Beer",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -9449,7 +9528,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-081-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning"
           ],
@@ -9477,7 +9556,7 @@
         },
         {
           "mechanicalId": "BLK-081-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning",
             "Colorless"
@@ -9538,7 +9617,7 @@
       "id": "BLK-082",
       "approvedName": "Three-Pint Hero",
       "approvedType": "Beer",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -9550,7 +9629,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-082-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning"
           ],
@@ -9617,7 +9696,7 @@
         },
         {
           "mechanicalId": "BLK-082-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning",
             "Colorless",
@@ -9663,7 +9742,7 @@
       "id": "BLK-083",
       "approvedName": "Allotment Alan",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -9675,7 +9754,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-083-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -9703,7 +9782,7 @@
         },
         {
           "mechanicalId": "BLK-083-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -9752,7 +9831,7 @@
       "id": "BLK-084",
       "approvedName": "The Twins",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -9766,7 +9845,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-084-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -9831,7 +9910,7 @@
       "id": "BLK-085",
       "approvedName": "The Lads",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 100,
       "mechanicalTypes": [
@@ -9842,7 +9921,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-085-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -9922,7 +10001,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-085-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -9987,7 +10066,7 @@
       "id": "BLK-086",
       "approvedName": "Cold Plunge",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -10001,7 +10080,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-086-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -10045,7 +10124,7 @@
       "id": "BLK-087",
       "approvedName": "Ice Bath",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 130,
       "mechanicalTypes": [
@@ -10057,7 +10136,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-087-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless"
@@ -10086,7 +10165,7 @@
         },
         {
           "mechanicalId": "BLK-087-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless",
@@ -10132,7 +10211,7 @@
       "id": "BLK-088",
       "approvedName": "Fly Tipper",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -10146,7 +10225,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-088-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness"
           ],
@@ -10165,24 +10244,6 @@
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "ModifyAttackCost",
-              "amount": 1,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherOche"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [
-                "Colorless"
-              ],
               "roughStates": [],
               "relatedIds": [],
               "then": [],
@@ -10226,7 +10287,7 @@
       "id": "BLK-089",
       "approvedName": "Waste Licence Pending",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 150,
       "mechanicalTypes": [
@@ -10238,7 +10299,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-089-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness"
           ],
@@ -10302,7 +10363,7 @@
         },
         {
           "mechanicalId": "BLK-089-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Darkness",
             "Darkness",
@@ -10349,7 +10410,7 @@
       "id": "BLK-090",
       "approvedName": "Recovery Meeting",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -10363,7 +10424,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-090-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water"
@@ -10440,7 +10501,7 @@
       "id": "BLK-091",
       "approvedName": "The Sponsor",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 130,
       "mechanicalTypes": [
@@ -10452,7 +10513,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-091-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water"
@@ -10529,7 +10590,7 @@
       "id": "BLK-092",
       "approvedName": "Kitchen Afterparty",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 50,
       "mechanicalTypes": [
@@ -10543,7 +10604,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-092-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic"
           ],
@@ -10592,7 +10653,7 @@
       "id": "BLK-093",
       "approvedName": "Someone's Mate",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -10605,7 +10666,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-093-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -10692,7 +10753,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-093-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic",
             "Colorless"
@@ -10742,7 +10803,7 @@
       "id": "BLK-094",
       "approvedName": "Sunrise Sesh",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 130,
       "mechanicalTypes": [
@@ -10754,7 +10815,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-094-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic"
           ],
@@ -10798,7 +10859,7 @@
         },
         {
           "mechanicalId": "BLK-094-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic",
             "Colorless"
@@ -10864,7 +10925,7 @@
       "id": "BLK-095",
       "approvedName": "Big Vern",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -10876,7 +10937,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-095-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -10921,7 +10982,7 @@
         },
         {
           "mechanicalId": "BLK-095-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Fighting",
@@ -10968,7 +11029,7 @@
       "id": "BLK-096",
       "approvedName": "No Sleep",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -10982,7 +11043,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-096-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic",
             "Colorless"
@@ -11032,7 +11093,7 @@
       "id": "BLK-097",
       "approvedName": "Fourth Night",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 110,
       "mechanicalTypes": [
@@ -11043,7 +11104,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-097-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -11118,7 +11179,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-097-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic",
             "Psychic",
@@ -11169,7 +11230,7 @@
       "id": "BLK-098",
       "approvedName": "Crabby Before Coffee",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -11183,7 +11244,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-098-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -11274,7 +11335,7 @@
         },
         {
           "mechanicalId": "BLK-098-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water",
@@ -11320,7 +11381,7 @@
       "id": "BLK-099",
       "approvedName": "Black Coffee",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 140,
       "mechanicalTypes": [
@@ -11332,7 +11393,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-099-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water",
@@ -11378,7 +11439,7 @@
         },
         {
           "mechanicalId": "BLK-099-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water",
@@ -11425,7 +11486,7 @@
       "id": "BLK-100",
       "approvedName": "Tinnie",
       "approvedType": "Beer",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -11439,7 +11500,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-100-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning"
           ],
@@ -11514,7 +11575,7 @@
       "id": "BLK-101",
       "approvedName": "Kegstand",
       "approvedType": "Beer",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -11526,7 +11587,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-101-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning"
           ],
@@ -11609,7 +11670,7 @@
         },
         {
           "mechanicalId": "BLK-101-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning",
             "Colorless"
@@ -11654,7 +11715,7 @@
       "id": "BLK-102",
       "approvedName": "Edibles",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -11668,7 +11729,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-102-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -11744,7 +11805,7 @@
       "id": "BLK-103",
       "approvedName": "Space Cake",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 140,
       "mechanicalTypes": [
@@ -11756,7 +11817,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-103-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -11801,7 +11862,7 @@
         },
         {
           "mechanicalId": "BLK-103-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Grass",
@@ -11847,7 +11908,7 @@
       "id": "BLK-104",
       "approvedName": "Pool Cue",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -11860,7 +11921,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-104-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -11878,7 +11939,7 @@
                   "relatedId": null
                 },
                 {
-                  "condition": "NamedBlokeInBooth",
+                  "condition": "NamedBlokeInPlay",
                   "value": 0,
                   "mechanicalType": null,
                   "roughState": null,
@@ -11935,7 +11996,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-104-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -12009,7 +12070,7 @@
       "id": "BLK-105",
       "approvedName": "Last Orders",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -12021,7 +12082,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-105-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -12065,7 +12126,7 @@
         },
         {
           "mechanicalId": "BLK-105-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Colorless"
@@ -12126,7 +12187,7 @@
       "id": "BLK-106",
       "approvedName": "Barry Chuckle",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -12138,7 +12199,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-106-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting"
           ],
@@ -12182,7 +12243,7 @@
         },
         {
           "mechanicalId": "BLK-106-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Fighting",
@@ -12228,7 +12289,7 @@
       "id": "BLK-107",
       "approvedName": "Paul Chuckle",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -12239,7 +12300,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-107-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -12303,7 +12364,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-107-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Fighting"
@@ -12364,7 +12425,7 @@
       "id": "BLK-108",
       "approvedName": "Pub Bore",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 100,
       "mechanicalTypes": [
@@ -12376,7 +12437,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-108-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless",
@@ -12438,7 +12499,7 @@
       "id": "BLK-109",
       "approvedName": "Two-Pound Vape",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -12452,7 +12513,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-109-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -12515,7 +12576,7 @@
       "id": "BLK-110",
       "approvedName": "Duty-Free",
       "approvedType": "Dodgy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 110,
       "mechanicalTypes": [
@@ -12526,7 +12587,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-110-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BeerMatToss",
@@ -12581,7 +12642,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-110-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -12642,7 +12703,7 @@
       "id": "BLK-111",
       "approvedName": "Road Rage",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 100,
       "mechanicalTypes": [
@@ -12656,7 +12717,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-111-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Colorless"
@@ -12701,7 +12762,7 @@
         },
         {
           "mechanicalId": "BLK-111-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Fighting",
@@ -12747,7 +12808,7 @@
       "id": "BLK-112",
       "approvedName": "Dashcam",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -12759,7 +12820,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-112-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Colorless"
@@ -12788,7 +12849,7 @@
         },
         {
           "mechanicalId": "BLK-112-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Fighting",
@@ -12827,7 +12888,7 @@
                   "value": 0,
                   "mechanicalType": null,
                   "roughState": null,
-                  "relatedId": null
+                  "relatedId": "KIT-010"
                 }
               ],
               "mechanicalTypes": [],
@@ -12873,7 +12934,7 @@
       "id": "BLK-113",
       "approvedName": "Bingo Brenda",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 110,
       "mechanicalTypes": [
@@ -12884,7 +12945,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-113-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -12990,7 +13051,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-113-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless",
@@ -13036,7 +13097,7 @@
       "id": "BLK-114",
       "approvedName": "Hotbox",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -13048,7 +13109,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-114-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -13085,7 +13146,7 @@
                   "value": 0,
                   "mechanicalType": null,
                   "roughState": null,
-                  "relatedId": null
+                  "relatedId": "KIT-009"
                 }
               ],
               "mechanicalTypes": [],
@@ -13131,7 +13192,7 @@
       "id": "BLK-115",
       "approvedName": "School-Run Sue",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 230,
       "mechanicalTypes": [
@@ -13143,7 +13204,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-115-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -13171,7 +13232,7 @@
         },
         {
           "mechanicalId": "BLK-115-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless",
@@ -13233,7 +13294,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-115-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -13270,7 +13331,7 @@
       "id": "BLK-116",
       "approvedName": "One Day at a Time",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -13284,7 +13345,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-116-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -13312,7 +13373,7 @@
         },
         {
           "mechanicalId": "BLK-116-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless",
@@ -13358,7 +13419,7 @@
       "id": "BLK-117",
       "approvedName": "One Year Chip",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 80,
       "mechanicalTypes": [
@@ -13370,7 +13431,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-117-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless",
@@ -13388,20 +13449,6 @@
                 "OtherOche"
               ],
               "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "BeerMatToss",
-              "amount": 1,
-              "valueSource": "Fixed",
-              "targets": [],
-              "selection": "BeerMat",
               "targetCount": 1,
               "predicates": [],
               "mechanicalTypes": [],
@@ -13446,7 +13493,7 @@
       "id": "BLK-118",
       "approvedName": "Sunday Swim",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -13460,7 +13507,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-118-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -13518,7 +13565,7 @@
         },
         {
           "mechanicalId": "BLK-118-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -13563,7 +13610,7 @@
       "id": "BLK-119",
       "approvedName": "Channel Crossing",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 110,
       "mechanicalTypes": [
@@ -13575,7 +13622,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-119-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -13626,6 +13673,22 @@
                   "relatedIds": [],
                   "then": [],
                   "otherwise": []
+                },
+                {
+                  "opcode": "PreventEffects",
+                  "amount": 10,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "Self"
+                  ],
+                  "selection": "BeerMat",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": []
                 }
               ],
               "otherwise": []
@@ -13650,7 +13713,7 @@
         },
         {
           "mechanicalId": "BLK-119-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless",
@@ -13686,7 +13749,9 @@
               "selection": "All",
               "targetCount": 1,
               "predicates": [],
-              "mechanicalTypes": [],
+              "mechanicalTypes": [
+                "Water"
+              ],
               "roughStates": [],
               "relatedIds": [],
               "then": [],
@@ -13712,7 +13777,7 @@
       "id": "BLK-120",
       "approvedName": "Couch to 5K",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -13726,7 +13791,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-120-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless"
@@ -13787,7 +13852,7 @@
       "id": "BLK-121",
       "approvedName": "Marathon",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -13798,7 +13863,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-121-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -13878,7 +13943,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-121-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless"
@@ -13923,7 +13988,7 @@
       "id": "BLK-122",
       "approvedName": "Big Fish Little Fish",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -13934,7 +13999,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-122-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -14014,7 +14079,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-122-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -14063,7 +14128,7 @@
       "id": "BLK-123",
       "approvedName": "Cropper",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -14075,7 +14140,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-123-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass"
           ],
@@ -14134,7 +14199,7 @@
         },
         {
           "mechanicalId": "BLK-123-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Colorless",
@@ -14180,7 +14245,7 @@
       "id": "BLK-124",
       "approvedName": "Hen Night Mum",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 200,
       "mechanicalTypes": [
@@ -14192,7 +14257,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-124-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless",
@@ -14245,7 +14310,7 @@
         },
         {
           "mechanicalId": "BLK-124-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water",
@@ -14295,7 +14360,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-124-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -14332,7 +14397,7 @@
       "id": "BLK-125",
       "approvedName": "Pub Buzz",
       "approvedType": "Beer",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -14344,7 +14409,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-125-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning"
           ],
@@ -14411,7 +14476,7 @@
         },
         {
           "mechanicalId": "BLK-125-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning",
             "Colorless"
@@ -14456,7 +14521,7 @@
       "id": "BLK-126",
       "approvedName": "Mr Vesta",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -14468,7 +14533,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-126-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire"
           ],
@@ -14496,7 +14561,7 @@
         },
         {
           "mechanicalId": "BLK-126-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire",
             "Fire",
@@ -14581,7 +14646,7 @@
       "id": "BLK-127",
       "approvedName": "Roach Clip",
       "approvedType": "Blazed",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -14593,7 +14658,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-127-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Colorless"
@@ -14622,7 +14687,7 @@
         },
         {
           "mechanicalId": "BLK-127-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Grass",
             "Grass",
@@ -14707,7 +14772,7 @@
       "id": "BLK-128",
       "approvedName": "White Van Dan",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -14719,7 +14784,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-128-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -14776,7 +14841,7 @@
         },
         {
           "mechanicalId": "BLK-128-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -14837,7 +14902,7 @@
       "id": "BLK-129",
       "approvedName": "Rock Bottom",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 30,
       "mechanicalTypes": [
@@ -14851,7 +14916,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-129-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -14909,7 +14974,7 @@
       "id": "BLK-130",
       "approvedName": "Comeback Story",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 190,
       "mechanicalTypes": [
@@ -14920,7 +14985,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-130-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -14984,7 +15049,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-130-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless",
@@ -15047,7 +15112,7 @@
       "id": "BLK-131",
       "approvedName": "Last Bus Home",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 110,
       "mechanicalTypes": [
@@ -15059,7 +15124,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-131-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -15169,7 +15234,7 @@
         },
         {
           "mechanicalId": "BLK-131-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless",
@@ -15215,7 +15280,7 @@
       "id": "BLK-132",
       "approvedName": "Steve",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -15226,7 +15291,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-132-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -15350,7 +15415,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-132-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -15394,7 +15459,7 @@
       "id": "BLK-133",
       "approvedName": "Apprentice",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 70,
       "mechanicalTypes": [
@@ -15410,7 +15475,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-133-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -15520,7 +15585,7 @@
         },
         {
           "mechanicalId": "BLK-133-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -15564,7 +15629,7 @@
       "id": "BLK-134",
       "approvedName": "Teetotal Terry",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 130,
       "mechanicalTypes": [
@@ -15576,7 +15641,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-134-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -15620,7 +15685,7 @@
         },
         {
           "mechanicalId": "BLK-134-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Colorless",
@@ -15712,7 +15777,7 @@
       "id": "BLK-135",
       "approvedName": "Snakebite",
       "approvedType": "Beer",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 110,
       "mechanicalTypes": [
@@ -15724,7 +15789,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-135-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning"
           ],
@@ -15752,7 +15817,7 @@
         },
         {
           "mechanicalId": "BLK-135-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning",
             "Colorless",
@@ -15844,7 +15909,7 @@
       "id": "BLK-136",
       "approvedName": "Bombay Bandit",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 130,
       "mechanicalTypes": [
@@ -15856,7 +15921,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-136-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire"
           ],
@@ -15915,7 +15980,7 @@
         },
         {
           "mechanicalId": "BLK-136-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire",
             "Colorless",
@@ -16007,7 +16072,7 @@
       "id": "BLK-137",
       "approvedName": "Facebook Dad",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -16019,7 +16084,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-137-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -16073,7 +16138,7 @@
       "id": "BLK-138",
       "approvedName": "Old Habit",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 100,
       "mechanicalTypes": [
@@ -16087,7 +16152,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-138-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water"
@@ -16141,35 +16206,6 @@
                 "differentMechanicalTypes": false,
                 "excludedRelatedIds": []
               }
-            },
-            {
-              "opcode": "AttachVim",
-              "amount": 1,
-              "valueSource": "Fixed",
-              "targets": [
-                "OwnOche"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": [],
-              "sources": [
-                "OwnMitt"
-              ],
-              "cardFilter": {
-                "categories": [
-                  "Vim"
-                ],
-                "ranks": [],
-                "kitKinds": [],
-                "basicVimOnly": false,
-                "differentMechanicalTypes": false,
-                "excludedRelatedIds": []
-              }
             }
           ]
         }
@@ -16191,7 +16227,7 @@
       "id": "BLK-139",
       "approvedName": "New Life",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 150,
       "mechanicalTypes": [
@@ -16202,7 +16238,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-139-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -16282,7 +16318,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-139-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water"
@@ -16343,7 +16379,7 @@
       "id": "BLK-140",
       "approvedName": "Flat Cap",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 90,
       "mechanicalTypes": [
@@ -16357,7 +16393,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-140-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Colorless"
@@ -16432,7 +16468,7 @@
       "id": "BLK-141",
       "approvedName": "Peaky Blinder",
       "approvedType": "Lairy",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 160,
       "mechanicalTypes": [
@@ -16443,7 +16479,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-141-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "ContinuousPartyTrick",
@@ -16484,7 +16520,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-141-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fighting",
             "Colorless",
@@ -16546,7 +16582,7 @@
       "id": "BLK-142",
       "approvedName": "Old Boy",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 130,
       "mechanicalTypes": [
@@ -16558,7 +16594,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-142-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless"
           ],
@@ -16586,7 +16622,7 @@
         },
         {
           "mechanicalId": "BLK-142-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -16682,7 +16718,7 @@
       "id": "BLK-143",
       "approvedName": "Big Dave",
       "approvedType": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 150,
       "mechanicalTypes": [
@@ -16693,7 +16729,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-143-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -16777,7 +16813,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-143-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless",
@@ -16839,7 +16875,7 @@
       "id": "BLK-144",
       "approvedName": "Cold Turkey",
       "approvedType": "Sober",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -16850,7 +16886,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-144-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -16936,7 +16972,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-144-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Water",
@@ -17003,7 +17039,7 @@
       "id": "BLK-145",
       "approvedName": "Beer Baron",
       "approvedType": "Beer",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 200,
       "mechanicalTypes": [
@@ -17014,7 +17050,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-145-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -17100,7 +17136,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-145-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Lightning",
             "Lightning",
@@ -17156,7 +17192,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-145-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -17198,7 +17234,7 @@
       "id": "BLK-146",
       "approvedName": "Fat Les",
       "approvedType": "Curry",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 120,
       "mechanicalTypes": [
@@ -17209,7 +17245,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-146-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -17295,7 +17331,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-146-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Fire",
             "Fire",
@@ -17366,7 +17402,7 @@
       "id": "BLK-147",
       "approvedName": "Reginald Kray",
       "approvedType": "Legend",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 60,
       "mechanicalTypes": [
@@ -17380,7 +17416,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-147-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -17408,7 +17444,7 @@
         },
         {
           "mechanicalId": "BLK-147-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Lightning"
@@ -17448,7 +17484,7 @@
       "id": "BLK-148",
       "approvedName": "Golden Boy",
       "approvedType": "Legend",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Seasoned",
       "stayingPower": 100,
       "mechanicalTypes": [
@@ -17462,7 +17498,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-148-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water"
           ],
@@ -17490,7 +17526,7 @@
         },
         {
           "mechanicalId": "BLK-148-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Lightning"
@@ -17546,7 +17582,7 @@
       "id": "BLK-149",
       "approvedName": "Gazza",
       "approvedType": "Legend",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Landlord",
       "stayingPower": 180,
       "mechanicalTypes": [
@@ -17557,7 +17593,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-149-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "ContinuousPartyTrick",
@@ -17598,7 +17634,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-149-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Water",
             "Lightning"
@@ -17654,7 +17690,7 @@
       "id": "BLK-150",
       "approvedName": "Super Hans",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 130,
       "mechanicalTypes": [
@@ -17666,7 +17702,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-150-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless"
@@ -17692,24 +17728,8 @@
               "otherwise": []
             },
             {
-              "opcode": "TriggeredPartyTrick",
-              "amount": 20,
-              "valueSource": "Fixed",
-              "targets": [
-                "Self"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            },
-            {
-              "opcode": "PlaceDamageCounters",
-              "amount": 20,
+              "opcode": "ReflectAttackDamage",
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [
                 "Self"
@@ -17727,7 +17747,7 @@
         },
         {
           "mechanicalId": "BLK-150-B02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Psychic",
             "Psychic",
@@ -17794,7 +17814,7 @@
       "id": "BLK-151",
       "approvedName": "Bez",
       "approvedType": "Geeked",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "rank": "Regular",
       "stayingPower": 180,
       "mechanicalTypes": [
@@ -17805,7 +17825,7 @@
       "partyTricks": [
         {
           "mechanicalId": "BLK-151-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -17869,7 +17889,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-151-B01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless",
@@ -17901,7 +17921,7 @@
       "houseRules": [
         {
           "mechanicalId": "BLK-151-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BigHitterBarChits",
@@ -17944,11 +17964,11 @@
     {
       "id": "KIT-001",
       "kind": "BarBit",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [
         {
           "mechanicalId": "KIT-001-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "ContinuousPartyTrick",
@@ -17990,100 +18010,77 @@
       "houseRules": [
         {
           "mechanicalId": "KIT-001-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
-              "opcode": "Conditional",
-              "amount": 0,
+              "opcode": "ModifyTaxiFare",
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [],
               "selection": "All",
               "targetCount": 1,
-              "predicates": [
-                {
-                  "condition": "Optional",
-                  "value": 0,
-                  "mechanicalType": null,
-                  "roughState": null,
-                  "relatedId": null
-                }
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
               ],
-              "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [
-                {
-                  "opcode": "ModifyTaxiFare",
-                  "amount": 1,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "RestrictTaxi",
-                  "amount": 60,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "PlayAsBloke",
-                  "amount": 60,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "ChuckSelf",
-                  "amount": 1,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                }
+              "then": [],
+              "otherwise": []
+            },
+            {
+              "opcode": "RestrictTaxi",
+              "amount": 60,
+              "valueSource": "Fixed",
+              "targets": [],
+              "selection": "All",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
               ],
+              "roughStates": [],
+              "relatedIds": [],
+              "then": [],
+              "otherwise": []
+            },
+            {
+              "opcode": "PlayAsBloke",
+              "amount": 60,
+              "valueSource": "Fixed",
+              "targets": [],
+              "selection": "All",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
+              ],
+              "roughStates": [],
+              "relatedIds": [],
+              "then": [],
+              "otherwise": []
+            },
+            {
+              "opcode": "ChuckSelf",
+              "amount": 1,
+              "valueSource": "Fixed",
+              "targets": [],
+              "selection": "All",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
+              ],
+              "roughStates": [],
+              "relatedIds": [],
+              "then": [],
               "otherwise": []
             }
           ]
         },
         {
           "mechanicalId": "KIT-001-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -18134,11 +18131,11 @@
     {
       "id": "KIT-002",
       "kind": "BarBit",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [
         {
           "mechanicalId": "KIT-002-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -18203,100 +18200,77 @@
       "houseRules": [
         {
           "mechanicalId": "KIT-002-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
-              "opcode": "Conditional",
-              "amount": 0,
+              "opcode": "ModifyTaxiFare",
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [],
               "selection": "All",
               "targetCount": 1,
-              "predicates": [
-                {
-                  "condition": "Optional",
-                  "value": 0,
-                  "mechanicalType": null,
-                  "roughState": null,
-                  "relatedId": null
-                }
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
               ],
-              "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [
-                {
-                  "opcode": "ModifyTaxiFare",
-                  "amount": 1,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "RestrictTaxi",
-                  "amount": 60,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "PlayAsBloke",
-                  "amount": 60,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "ChuckSelf",
-                  "amount": 1,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                }
+              "then": [],
+              "otherwise": []
+            },
+            {
+              "opcode": "RestrictTaxi",
+              "amount": 60,
+              "valueSource": "Fixed",
+              "targets": [],
+              "selection": "All",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
               ],
+              "roughStates": [],
+              "relatedIds": [],
+              "then": [],
+              "otherwise": []
+            },
+            {
+              "opcode": "PlayAsBloke",
+              "amount": 60,
+              "valueSource": "Fixed",
+              "targets": [],
+              "selection": "All",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
+              ],
+              "roughStates": [],
+              "relatedIds": [],
+              "then": [],
+              "otherwise": []
+            },
+            {
+              "opcode": "ChuckSelf",
+              "amount": 1,
+              "valueSource": "Fixed",
+              "targets": [],
+              "selection": "All",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
+              ],
+              "roughStates": [],
+              "relatedIds": [],
+              "then": [],
               "otherwise": []
             }
           ]
         },
         {
           "mechanicalId": "KIT-002-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -18347,11 +18321,11 @@
     {
       "id": "KIT-003",
       "kind": "BarBit",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [
         {
           "mechanicalId": "KIT-003-T01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "ContinuousPartyTrick",
@@ -18393,100 +18367,77 @@
       "houseRules": [
         {
           "mechanicalId": "KIT-003-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
-              "opcode": "Conditional",
-              "amount": 0,
+              "opcode": "ModifyTaxiFare",
+              "amount": 1,
               "valueSource": "Fixed",
               "targets": [],
               "selection": "All",
               "targetCount": 1,
-              "predicates": [
-                {
-                  "condition": "Optional",
-                  "value": 0,
-                  "mechanicalType": null,
-                  "roughState": null,
-                  "relatedId": null
-                }
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
               ],
-              "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [
-                {
-                  "opcode": "ModifyTaxiFare",
-                  "amount": 1,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "RestrictTaxi",
-                  "amount": 60,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "PlayAsBloke",
-                  "amount": 60,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "ChuckSelf",
-                  "amount": 1,
-                  "valueSource": "Fixed",
-                  "targets": [],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [
-                    "Colorless"
-                  ],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                }
+              "then": [],
+              "otherwise": []
+            },
+            {
+              "opcode": "RestrictTaxi",
+              "amount": 60,
+              "valueSource": "Fixed",
+              "targets": [],
+              "selection": "All",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
               ],
+              "roughStates": [],
+              "relatedIds": [],
+              "then": [],
+              "otherwise": []
+            },
+            {
+              "opcode": "PlayAsBloke",
+              "amount": 60,
+              "valueSource": "Fixed",
+              "targets": [],
+              "selection": "All",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
+              ],
+              "roughStates": [],
+              "relatedIds": [],
+              "then": [],
+              "otherwise": []
+            },
+            {
+              "opcode": "ChuckSelf",
+              "amount": 1,
+              "valueSource": "Fixed",
+              "targets": [],
+              "selection": "All",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [
+                "Colorless"
+              ],
+              "roughStates": [],
+              "relatedIds": [],
+              "then": [],
               "otherwise": []
             }
           ]
         },
         {
           "mechanicalId": "KIT-003-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -18537,13 +18488,13 @@
     {
       "id": "KIT-004",
       "kind": "BarKit",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
       "houseRules": [
         {
           "mechanicalId": "KIT-004-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "ContinuousPartyTrick",
@@ -18585,7 +18536,7 @@
         },
         {
           "mechanicalId": "KIT-004-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -18636,13 +18587,13 @@
     {
       "id": "KIT-005",
       "kind": "Mate",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
       "houseRules": [
         {
           "mechanicalId": "KIT-005-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -18747,7 +18698,7 @@
         },
         {
           "mechanicalId": "KIT-005-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -18798,13 +18749,13 @@
     {
       "id": "KIT-006",
       "kind": "Local",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
       "houseRules": [
         {
           "mechanicalId": "KIT-006-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -18892,7 +18843,7 @@
         },
         {
           "mechanicalId": "KIT-006-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -18943,13 +18894,13 @@
     {
       "id": "KIT-007",
       "kind": "Mate",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
       "houseRules": [
         {
           "mechanicalId": "KIT-007-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "DrawFromStack",
@@ -18987,7 +18938,7 @@
         },
         {
           "mechanicalId": "KIT-007-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -19038,13 +18989,13 @@
     {
       "id": "KIT-008",
       "kind": "BarBit",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
       "houseRules": [
         {
           "mechanicalId": "KIT-008-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "BeerMatToss",
@@ -19094,7 +19045,7 @@
         },
         {
           "mechanicalId": "KIT-008-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -19145,13 +19096,13 @@
     {
       "id": "KIT-009",
       "kind": "Mate",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
       "houseRules": [
         {
           "mechanicalId": "KIT-009-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "RevealCards",
@@ -19221,7 +19172,7 @@
         },
         {
           "mechanicalId": "KIT-009-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -19272,13 +19223,13 @@
     {
       "id": "KIT-010",
       "kind": "Mate",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
       "houseRules": [
         {
           "mechanicalId": "KIT-010-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "MoveCards",
@@ -19293,7 +19244,37 @@
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [],
+              "then": [
+                {
+                  "opcode": "AttachVim",
+                  "amount": 1,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "OwnOche"
+                  ],
+                  "selection": "Chosen",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": [],
+                  "sources": [
+                    "OwnMitt"
+                  ],
+                  "cardFilter": {
+                    "categories": [
+                      "Vim"
+                    ],
+                    "ranks": [],
+                    "kitKinds": [],
+                    "basicVimOnly": false,
+                    "differentMechanicalTypes": false,
+                    "excludedRelatedIds": []
+                  }
+                }
+              ],
               "otherwise": [],
               "sources": [
                 "OtherOcheAttachedVim"
@@ -19309,41 +19290,12 @@
                 "differentMechanicalTypes": false,
                 "excludedRelatedIds": []
               }
-            },
-            {
-              "opcode": "AttachVim",
-              "amount": 1,
-              "valueSource": "Fixed",
-              "targets": [
-                "OwnOche"
-              ],
-              "selection": "Chosen",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": [],
-              "sources": [
-                "OwnMitt"
-              ],
-              "cardFilter": {
-                "categories": [
-                  "Vim"
-                ],
-                "ranks": [],
-                "kitKinds": [],
-                "basicVimOnly": false,
-                "differentMechanicalTypes": false,
-                "excludedRelatedIds": []
-              }
             }
           ]
         },
         {
           "mechanicalId": "KIT-010-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -19394,13 +19346,13 @@
     {
       "id": "KIT-011",
       "kind": "BarBit",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
       "houseRules": [
         {
           "mechanicalId": "KIT-011-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "RevealCards",
@@ -19452,7 +19404,7 @@
         },
         {
           "mechanicalId": "KIT-011-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -19503,13 +19455,13 @@
     {
       "id": "KIT-012",
       "kind": "BarKit",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
       "houseRules": [
         {
           "mechanicalId": "KIT-012-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "EndRoundEffect",
@@ -19545,7 +19497,7 @@
         },
         {
           "mechanicalId": "KIT-012-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -19596,13 +19548,13 @@
     {
       "id": "KIT-013",
       "kind": "BarKit",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
       "houseRules": [
         {
           "mechanicalId": "KIT-013-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "ModifySoftSpot",
@@ -19630,7 +19582,7 @@
         },
         {
           "mechanicalId": "KIT-013-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -19681,13 +19633,13 @@
     {
       "id": "KIT-014",
       "kind": "BarKit",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
       "houseRules": [
         {
           "mechanicalId": "KIT-014-R01",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "ReduceDamage",
@@ -19715,7 +19667,7 @@
         },
         {
           "mechanicalId": "KIT-014-R02",
-          "presentationStatus": "PlaceholderBacked",
+          "presentationStatus": "Accepted",
           "program": [
             {
               "opcode": "Conditional",
@@ -19768,7 +19720,7 @@
     {
       "id": "VIM-DODGY",
       "mechanicalType": "Darkness",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "freelyAvailable": true,
       "owned": false,
       "pulled": false,
@@ -19778,7 +19730,7 @@
     {
       "id": "VIM-LAIRY",
       "mechanicalType": "Fighting",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "freelyAvailable": true,
       "owned": false,
       "pulled": false,
@@ -19788,7 +19740,7 @@
     {
       "id": "VIM-CURRY",
       "mechanicalType": "Fire",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "freelyAvailable": true,
       "owned": false,
       "pulled": false,
@@ -19798,7 +19750,7 @@
     {
       "id": "VIM-BLAZED",
       "mechanicalType": "Grass",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "freelyAvailable": true,
       "owned": false,
       "pulled": false,
@@ -19808,7 +19760,7 @@
     {
       "id": "VIM-BEER",
       "mechanicalType": "Lightning",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "freelyAvailable": true,
       "owned": false,
       "pulled": false,
@@ -19818,7 +19770,7 @@
     {
       "id": "VIM-GEEKED",
       "mechanicalType": "Psychic",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "freelyAvailable": true,
       "owned": false,
       "pulled": false,
@@ -19828,7 +19780,7 @@
     {
       "id": "VIM-SOBER",
       "mechanicalType": "Water",
-      "presentationStatus": "PlaceholderBacked",
+      "presentationStatus": "Accepted",
       "freelyAvailable": true,
       "owned": false,
       "pulled": false,
@@ -20144,6 +20096,8 @@
       "RestrictKit",
       "RestrictLocal",
       "RestrictEmptiesRecovery",
+      "ForceBeerMatBlank",
+      "ReflectAttackDamage",
       "BeerMatToss",
       "RepeatUntilBlankSide",
       "Conditional",

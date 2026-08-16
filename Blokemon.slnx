@@ -7,6 +7,8 @@
     <Project Path="src/Blokemon.Product/Blokemon.Product.csproj" />
     <Project Path="src/Blokemon.Sheet/Blokemon.Sheet.csproj" />
     <Project Path="src/Blokemon.Web.Client/Blokemon.Web.Client.csproj" />
+    <Project Path="src/Blokemon.Web.Bootstrap/Blokemon.Web.Bootstrap.csproj" />
+    <Project Path="src/Blokemon.Web.Content/Blokemon.Web.Content.csproj" />
     <Project Path="src/Blokemon.Web/Blokemon.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">

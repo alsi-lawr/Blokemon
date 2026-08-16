@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Blokemon.Core.SetDesign;
 using Blokemon.Game;
+using Shouldly;
 
 namespace Blokemon.Game.Tests;
 
@@ -41,12 +42,12 @@ public sealed class AuthorityAuditTests
         var baseline = ObserveReactiveTrigger(MatchScenario.Engine(), testCase.Trigger);
         var observation = ObserveReactiveTrigger(engine, testCase.Trigger);
 
-        await Assert.That(observation).IsNotEqualTo(baseline);
-        await Assert.That(observation).IsEqualTo(testCase.ExpectedObservation);
+        observation.ShouldNotBe(baseline);
+        observation.ShouldBe(testCase.ExpectedObservation);
     }
 
     [Test]
-    public async Task Reconciled310Effects_IncludeTheSv151OptionalBoothBranchAsInstruction644()
+    public async Task Reconciled310Effects_Flatten641InstructionsAfterFossilGateRemoval()
     {
         using var document = JsonDocument.Parse(
             File.ReadAllText(
@@ -80,22 +81,18 @@ public sealed class AuthorityAuditTests
             .ToArray();
         var audit = new BlokemonInterpreter(MatchScenario.Authority).AuditAuthority();
 
-        await Assert
-            .That(root.GetProperty("authorityVersion").GetString())
-            .IsEqualTo(MatchScenario.Authority.ManifestVersion);
-        await Assert.That(documented.SequenceEqual(declared)).IsTrue();
-        await Assert.That(reconciled.Length).IsEqualTo(310);
-        await Assert
-            .That(
-                reconciled.Count(effect =>
-                    effect.GetProperty("disposition").GetString() == "CorrectedFromCandidate6"
-                )
-            )
-            .IsEqualTo(83);
-        await Assert.That(audit.EffectCount).IsEqualTo(310);
-        // Candidate.6's 643 was derived before BLK-113's SV151-correct optional Booth branch.
-        await Assert.That(audit.InstructionCount).IsEqualTo(644);
-        await Assert.That(audit.Issues.Count).IsEqualTo(0);
+        root.GetProperty("authorityVersion").GetString()
+            .ShouldBe(MatchScenario.Authority.ManifestVersion);
+        documented.SequenceEqual(declared).ShouldBeTrue();
+        reconciled.Length.ShouldBe(310);
+        reconciled.Count(effect =>
+            effect.GetProperty("disposition").GetString() == "CorrectedFromCandidate6"
+        ).ShouldBe(94);
+        audit.EffectCount.ShouldBe(310);
+        // Candidate.6's 643 was derived before BLK-113's SV151-correct optional Booth branch
+        // (+1) and before the three fossil Kits lost their spurious Optional wrappers (-3).
+        audit.InstructionCount.ShouldBe(641);
+        audit.Issues.Count.ShouldBe(0);
     }
 
     public static IEnumerable<ReactiveTriggerCase> ReactiveTriggerCases() =>

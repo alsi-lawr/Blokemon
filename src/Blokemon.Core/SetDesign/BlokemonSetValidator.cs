@@ -15,9 +15,9 @@ public static class BlokemonSetValidator
         var issues = new List<BlokemonValidationIssue>();
 
         Check(
-            manifest.PresentationStatus == BlokemonPresentationStatus.PlaceholderBacked,
+            manifest.PresentationStatus == BlokemonPresentationStatus.Accepted,
             "runtime.presentation",
-            "Presentation must remain deferred to placeholder-backed publication.",
+            "Presentation must carry exact human acceptance.",
             issues
         );
         Check(
@@ -60,10 +60,10 @@ public static class BlokemonSetValidator
         );
         Check(
             manifest.Collectibles.All(static card =>
-                card.PresentationStatus == BlokemonPresentationStatus.PlaceholderBacked
+                card.PresentationStatus == BlokemonPresentationStatus.Accepted
             ),
             "runtime.collectible-presentation",
-            "Every collectible must prevent presentation before placeholder-backed publication.",
+            "Every collectible must carry accepted presentation.",
             issues
         );
         Check(
@@ -164,26 +164,26 @@ public static class BlokemonSetValidator
     {
         Check(
             manifest.Kits.All(static card =>
-                card.PresentationStatus == BlokemonPresentationStatus.PlaceholderBacked
+                card.PresentationStatus == BlokemonPresentationStatus.Accepted
                 && card.FreelyAvailable
                 && !card.Owned
                 && !card.Pulled
                 && !card.Traded
             ),
             "runtime.kit-boundary",
-            "Kits must be free, non-owned, non-pulled, non-traded and presentation-deferred.",
+            "Kits must be free, non-owned, non-pulled, non-traded and accepted for presentation.",
             issues
         );
         Check(
             manifest.BasicVim.All(static card =>
-                card.PresentationStatus == BlokemonPresentationStatus.PlaceholderBacked
+                card.PresentationStatus == BlokemonPresentationStatus.Accepted
                 && card.FreelyAvailable
                 && !card.Owned
                 && !card.Pulled
                 && !card.Traded
             ),
             "runtime.vim-boundary",
-            "Basic Vim must be free, non-owned, non-pulled, non-traded and presentation-deferred.",
+            "Basic Vim must be free, non-owned, non-pulled, non-traded and accepted for presentation.",
             issues
         );
     }

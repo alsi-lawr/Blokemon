@@ -89,6 +89,18 @@ public sealed record DeckId
     public override string ToString() => Value;
 }
 
+public sealed record StarterDeckId
+{
+    private StarterDeckId(string value) => Value = value;
+
+    public string Value { get; }
+
+    public static DomainResult<StarterDeckId, TextValueFailure> Create(string? value) =>
+        NonBlankText.Create(value, static valid => new StarterDeckId(valid));
+
+    public override string ToString() => Value;
+}
+
 public sealed record DeckName
 {
     private DeckName(string value) => Value = value;
