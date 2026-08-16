@@ -434,6 +434,10 @@ public sealed class BrowserLocalApplicationTests
                 borrowed
             )
         );
+        // A new deck starts as an empty draft, so saving before it is filled fails the same way.
+        var createdEmpty = await application.SaveDeck(
+            new(Guid.Parse("b2666666-6666-6666-6666-666666666666"), null, null, "New deck", [])
+        );
         var state = Value(await application.State());
 
         createdIncomplete.Succeeded.ShouldBeFalse();
@@ -445,6 +449,11 @@ public sealed class BrowserLocalApplicationTests
         createdBorrowed.Error!.Code.ShouldBe("deck.invalid");
         createdBorrowed.Error.Message.ShouldBe(
             $"{unowned.Id} requests 2 copies, but only 0 are owned."
+        );
+        createdEmpty.Succeeded.ShouldBeFalse();
+        createdEmpty.Error!.Code.ShouldBe("deck.invalid");
+        createdEmpty.Error.Message.ShouldBe(
+            "The deck has 0 cards. It must have 60 cards. The deck needs at least one Regular Blokemon."
         );
         state.Decks.Single().Id.ShouldBe(starter.Id);
         state.Decks.Single().Revision.ShouldBe(starter.Revision);

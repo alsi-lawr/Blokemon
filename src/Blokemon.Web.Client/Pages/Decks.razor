@@ -291,16 +291,12 @@ else
         _commandId = null;
     }
 
-    // A new deck carries no saved id, so Save creates it instead of revising one.
+    // A new deck starts empty and carries no saved id, so Save creates it instead of revising one.
     private void BeginNewDeck()
     {
         _saved = null;
         _deckName = NewDeckName();
         _entries.Clear();
-        foreach (var entry in ClaimedStarter()?.Entries ?? [])
-        {
-            _entries[entry.CardId] = entry.Quantity;
-        }
         _hasUnsavedChanges = true;
         _operationError = null;
         _pendingSwitch = null;
