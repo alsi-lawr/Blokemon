@@ -9,6 +9,8 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- The game ships in English, so publishes carry no translated resource assemblies. -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
   </PropertyGroup>
   <PropertyGroup>
