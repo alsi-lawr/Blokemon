@@ -14,38 +14,61 @@
             }
             else
             {
-                <button type="button"
-                        class="field-card-button @TargetClass(Side.Active.Id)"
-                        aria-label="@CardLabel(Side.Active, "Active Blokemon")"
-                        aria-pressed="@TargetPressed(Side.Active.Id)"
-                        @onclick:stopPropagation="true"
-                        @onclick="() => Select(Side.Active.Id)">
+                <CardPress CardInstanceId="@Side.Active.Id"
+                           Class="@CardClass(Side.Active.Id)"
+                           AriaLabel="@CardLabel(Side.Active, "Active Blokemon")"
+                           AriaPressed="@CardPressed(Side.Active.Id)"
+                           Tapped="CardTapped"
+                           ViewOpened="CardViewOpened"
+                           ViewClosed="CardViewClosed">
                     <BattleCard Instance="Side.Active"
                                 Selected="@(Side.Active.Id == SelectedCardInstanceId)"
-                                CueSourceCardInstanceId="CueSourceCardInstanceId"
+                                CueSourceCardInstanceId="@CueSourceCardInstanceId"
                                 CueTargetCardInstanceIds="CueTargetCardInstanceIds" />
-                </button>
+                    @if (Counter(Side.Active.Id) is { } activeCounter)
+                    {
+                        <span class="aura-counter">@activeCounter</span>
+                    }
+                </CardPress>
             }
         </div>
         <div class="bench-row" aria-label="Bench">
             @foreach (var card in Side.Bench)
             {
-                <button type="button"
-                        class="field-card-button @TargetClass(card.Id)"
-                        aria-label="@CardLabel(card, "Benched Blokemon")"
-                        aria-pressed="@TargetPressed(card.Id)"
-                        @onclick:stopPropagation="true"
-                        @onclick="() => Select(card.Id)">
+                <CardPress CardInstanceId="@card.Id"
+                           Class="@CardClass(card.Id)"
+                           AriaLabel="@CardLabel(card, "Benched Blokemon")"
+                           AriaPressed="@CardPressed(card.Id)"
+                           Tapped="CardTapped"
+                           ViewOpened="CardViewOpened"
+                           ViewClosed="CardViewClosed">
                     <BattleCard Instance="card"
                                 Compact="true"
                                 Selected="@(card.Id == SelectedCardInstanceId)"
-                                CueSourceCardInstanceId="CueSourceCardInstanceId"
+                                CueSourceCardInstanceId="@CueSourceCardInstanceId"
                                 CueTargetCardInstanceIds="CueTargetCardInstanceIds" />
-                </button>
+                    @if (Counter(card.Id) is { } benchCounter)
+                    {
+                        <span class="aura-counter">@benchCounter</span>
+                    }
+                </CardPress>
             }
             @for (var index = Side.Bench.Length; index < 5; index++)
             {
-                <span class="bench-slot" aria-hidden="true"></span>
+                @if (BenchDestination)
+                {
+                    <button type="button"
+                            class="bench-slot is-bench-destination is-aura"
+                            aria-label="Play to this empty Bench position"
+                            @onclick:stopPropagation="true"
+                            @onclick="BenchTapped">
+                        <span>Bench</span>
+                    </button>
+                }
+                else
+                {
+                    <span class="bench-slot" aria-hidden="true"></span>
+                }
             }
         </div>
     </div>
@@ -88,37 +111,61 @@
     public string[] CueTargetCardInstanceIds { get; set; } = [];
 
     [Parameter]
-    public string[] EligibleTargetCardInstanceIds { get; set; } = [];
+    public string[] AuraCardInstanceIds { get; set; } = [];
 
     [Parameter]
-    public string? SelectedTargetCardInstanceId { get; set; }
+    public string[] AuraSelectedCardInstanceIds { get; set; } = [];
 
     [Parameter]
-    public EventCallback<string> CardSelected { get; set; }
+    public IReadOnlyDictionary<string, int>? AuraCounters { get; set; }
 
-    private Task Select(string cardInstanceId) => CardSelected.InvokeAsync(cardInstanceId);
+    [Parameter]
+    public bool BenchDestination { get; set; }
 
-    private string? TargetClass(string cardInstanceId)
+    [Parameter]
+    public EventCallback<string> CardTapped { get; set; }
+
+    [Parameter]
+    public EventCallback<string> CardViewOpened { get; set; }
+
+    [Parameter]
+    public EventCallback CardViewClosed { get; set; }
+
+    [Parameter]
+    public EventCallback BenchTapped { get; set; }
+
+    private bool IsAura(string cardInstanceId) =>
+        AuraCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal);
+
+    private bool IsAuraSelected(string cardInstanceId) =>
+        AuraSelectedCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal);
+
+    private int? Counter(string cardInstanceId) =>
+        AuraCounters?.TryGetValue(cardInstanceId, out var counter) == true && counter > 0
+            ? counter
+            : null;
+
+    private string CardClass(string cardInstanceId)
     {
-        if (!EligibleTargetCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal))
+        var classes = new List<string>(3) { "field-card-button" };
+        if (IsAuraSelected(cardInstanceId))
         {
-            return null;
+            classes.Add("is-aura is-aura-selected");
         }
-
-        return cardInstanceId == SelectedTargetCardInstanceId
-            ? "is-target-option is-target-selected"
-            : "is-target-option";
+        else if (IsAura(cardInstanceId))
+        {
+            classes.Add("is-aura");
+        }
+        return string.Join(' ', classes);
     }
 
     private string CardLabel(MatchCardInstanceView card, string position) =>
-        EligibleTargetCardInstanceIds.Contains(card.Id, StringComparer.Ordinal)
-            ? $"Choose {card.Card.Name}, {position}"
-            : $"Inspect {card.Card.Name}, {position}";
+        IsAura(card.Id) || IsAuraSelected(card.Id)
+            ? $"Choose {card.Card.Name}, {position}. Press and hold to view the card."
+            : $"{card.Card.Name}, {position}. Press and hold to view the card.";
 
-    private string? TargetPressed(string cardInstanceId) =>
-        EligibleTargetCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal)
-            ? cardInstanceId == SelectedTargetCardInstanceId
-                ? "true"
-                : "false"
-            : null;
+    private string? CardPressed(string cardInstanceId) =>
+        IsAuraSelected(cardInstanceId) ? "true"
+        : IsAura(cardInstanceId) ? "false"
+        : null;
 }

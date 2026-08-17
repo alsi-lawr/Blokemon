@@ -1,0 +1,174 @@
+@*
+    One press surface for every card on the battle table, in any zone. A short press is a tap and
+    drives the aura interaction; a press held past the threshold is a view and opens the card
+    viewer until the pointer is released. Pointer events carry both touch and mouse, and a press
+    that moves far enough to be a scroll or a drag is neither a tap nor a view.
+*@
+<button type="button"
+        class="@Class"
+        style="@Style"
+        aria-label="@AriaLabel"
+        aria-pressed="@AriaPressed"
+        @onclick="Tap"
+        @onclick:stopPropagation="true"
+        @onpointerdown="PressDown"
+        @onpointermove="PressMove"
+        @onpointerup="PressUp"
+        @onpointercancel="PressCancel"
+        @oncontextmenu:preventDefault="true"
+        @oncontextmenu:stopPropagation="true">
+    @ChildContent
+</button>
+
+@code {
+    // Long enough that a deliberate hold is unambiguous, short enough to feel immediate.
+    private const int _holdMilliseconds = 480;
+
+    // A press that travels further than this is a scroll or a drag, not a tap or a hold.
+    private const double _travelTolerance = 12;
+
+    private CancellationTokenSource? _hold;
+    private double _startX;
+    private double _startY;
+    private bool _viewing;
+    private bool _suppressTap;
+    private bool _parametersChanged;
+
+    [Parameter, EditorRequired]
+    public required string CardInstanceId { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    [Parameter]
+    public string? AriaPressed { get; set; }
+
+    [Parameter]
+    public EventCallback<string> Tapped { get; set; }
+
+    [Parameter]
+    public EventCallback<string> ViewOpened { get; set; }
+
+    [Parameter]
+    public EventCallback ViewClosed { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        _parametersChanged = true;
+        return base.SetParametersAsync(parameters);
+    }
+
+    // Press bookkeeping never changes what this button looks like, so only the parent's
+    // parameters can make it render. Pointer moves would otherwise re-render a card face
+    // for every frame of a scroll.
+    protected override bool ShouldRender()
+    {
+        var changed = _parametersChanged;
+        _parametersChanged = false;
+        return changed;
+    }
+
+    private async Task Tap()
+    {
+        if (_suppressTap)
+        {
+            _suppressTap = false;
+            return;
+        }
+
+        await Tapped.InvokeAsync(CardInstanceId);
+    }
+
+    private void PressDown(PointerEventArgs eventArgs)
+    {
+        // A new press always starts clean: neither the suppression nor a view whose release
+        // landed on the viewer rather than this button survives it.
+        _suppressTap = false;
+        _viewing = false;
+        _startX = eventArgs.ClientX;
+        _startY = eventArgs.ClientY;
+        StopHold();
+        var hold = new CancellationTokenSource();
+        _hold = hold;
+        _ = Hold(hold);
+    }
+
+    private async Task Hold(CancellationTokenSource hold)
+    {
+        try
+        {
+            await Task.Delay(_holdMilliseconds, hold.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        if (!ReferenceEquals(_hold, hold))
+        {
+            return;
+        }
+
+        _viewing = true;
+        _suppressTap = true;
+        await ViewOpened.InvokeAsync(CardInstanceId);
+    }
+
+    private void PressMove(PointerEventArgs eventArgs)
+    {
+        if (_hold is null || _viewing)
+        {
+            return;
+        }
+
+        var travelled =
+            Math.Abs(eventArgs.ClientX - _startX) > _travelTolerance
+            || Math.Abs(eventArgs.ClientY - _startY) > _travelTolerance;
+        if (!travelled)
+        {
+            return;
+        }
+
+        // The press became a scroll or a drag: no view, and no tap on release either.
+        _suppressTap = true;
+        StopHold();
+    }
+
+    private Task PressUp() => Release();
+
+    private Task PressCancel() => Release();
+
+    private async Task Release()
+    {
+        StopHold();
+        if (!_viewing)
+        {
+            return;
+        }
+
+        _viewing = false;
+        await ViewClosed.InvokeAsync();
+    }
+
+    private void StopHold()
+    {
+        var hold = _hold;
+        _hold = null;
+        if (hold is null)
+        {
+            return;
+        }
+
+        hold.Cancel();
+        hold.Dispose();
+    }
+}

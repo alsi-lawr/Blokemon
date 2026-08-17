@@ -6,6 +6,53 @@ export function focusElement(element) {
   element?.focus();
 }
 
+let returnFocusTo = null;
+
+// The battle surfaces move focus into themselves, so the element that was focused when a
+// surface opened is remembered here and refocused when it closes.
+export function focusSurface(element) {
+  if (!element) {
+    return;
+  }
+
+  const active = document.activeElement;
+  if (active && active !== document.body && !element.contains(active)) {
+    returnFocusTo = active;
+  }
+  element.focus();
+}
+
+export function restoreFocus() {
+  const target = returnFocusTo;
+  returnFocusTo = null;
+  if (target?.isConnected) {
+    target.focus();
+  }
+}
+
+// The printed face measures 750 x 1050, so the viewer scale is whichever of the two viewport
+// margins binds first. The card keeps its aspect ratio and clears the margin on both axes.
+const cardWidth = 750;
+const cardHeight = 1050;
+const viewerMargin = 20;
+
+function viewerScaleFor(width, height) {
+  const horizontal = (width - viewerMargin * 2) / cardWidth;
+  const vertical = (height - viewerMargin * 2) / cardHeight;
+  return Math.max(0.05, Math.min(horizontal, vertical));
+}
+
+export function viewerScale() {
+  return viewerScaleFor(window.innerWidth, window.innerHeight);
+}
+
+// A viewer open across a rotation or resize is rescaled in the browser rather than through a
+// round trip, so the margin holds without re-rendering the card.
+window.addEventListener("resize", () => {
+  const viewer = document.querySelector(".card-viewer");
+  viewer?.style.setProperty("--viewer-scale", `${viewerScale()}`);
+});
+
 export function positionDrawCards(table) {
   const deckZone = table?.classList.contains("cue-actor-opponent")
     ? ".opponent-zone"

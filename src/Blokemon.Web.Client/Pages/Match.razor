@@ -1,4 +1,5 @@
 @page "/match"
+@using System.Globalization
 @implements IAsyncDisposable
 @inject IBlokemonApplication Api
 @inject IJSRuntime Js
@@ -82,18 +83,35 @@ else
     var match = _view.Match;
     var frame = DisplayFrame();
     var selected = SelectedInstance(frame);
-    <section class="battle-screen @AnimationClass() @DockClass()" aria-label="Blokemon match table" @ref="_battleScreen">
+    var forced = ForcedDecision(match);
+    var auras = Auras(forced);
+    var sheet = SheetFor(match, forced);
+    <section class="battle-screen @AnimationClass() @DockClass() @SheetClass(frame, auras, sheet)" aria-label="Blokemon match table" @ref="_battleScreen">
       <div class="battle-canvas">
         <div class="battle-hud">
             <span class="round-chip"><span class="eyebrow">Turn @frame.Round</span> · @TurnStatus(frame)</span>
-            <button type="button" class="fullscreen-toggle" aria-label="Toggle full screen" title="Full screen" @onclick="ToggleFullscreen">
-                <svg class="fullscreen-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" /></svg>
-                <svg class="fullscreen-exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5" /></svg>
-            </button>
             @if (_animating)
             {
                 <button class="secondary skip-animation" @onclick="SkipPresentation">Skip animation</button>
             }
+            <div class="hud-actions">
+                @foreach (var action in TableEffects(match))
+                {
+                    <button type="button" class="hud-button hud-effect" @onclick="() => StartAction(action)" disabled="@Busy()">@PublicText(action.Label)</button>
+                }
+                @if (GlobalAction(match, MatchActionKindView.EndTurn) is { } endTurn)
+                {
+                    <button type="button" class="hud-button hud-end-turn" @onclick="() => StartAction(endTurn)" disabled="@Busy()">End turn</button>
+                }
+                @if (GlobalAction(match, MatchActionKindView.Resign) is { } resign)
+                {
+                    <button type="button" class="hud-button hud-resign" @onclick="() => StartAction(resign)" disabled="@Busy()">Resign</button>
+                }
+                <button type="button" class="hud-button fullscreen-toggle" aria-label="Toggle full screen" title="Full screen" @onclick="ToggleFullscreen">
+                    <svg class="fullscreen-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" /></svg>
+                    <svg class="fullscreen-exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5" /></svg>
+                </button>
+            </div>
         </div>
 
         @if (_operationError is not null)
@@ -148,56 +166,67 @@ else
             <div class="visually-hidden" role="status" aria-live="polite">@_animationStatus</div>
         }
 
-        <div class="battlefield @(_targetActions.Length > 0 ? "is-choosing-target" : null)" @onclick="DeselectCard">
+        <div class="battlefield @(auras.Cards.Length > 0 || auras.Bench ? "is-choosing" : null)" @onclick="TapBackground">
             <MatchSide Side="frame.Opponent"
                        Opponent="true"
-                       SelectedCardInstanceId="_selectedCardInstanceId"
-                       CueSourceCardInstanceId="_activeCue?.SourceCardInstanceId"
+                       SelectedCardInstanceId="@_selectedCardInstanceId"
+                       CueSourceCardInstanceId="@(_activeCue?.SourceCardInstanceId)"
                        CueTargetCardInstanceIds="@(_activeCue?.TargetCardInstanceIds ?? [])"
-                       EligibleTargetCardInstanceIds="TargetCardInstanceIds()"
-                       SelectedTargetCardInstanceId="@(_selectedAction?.TargetCardInstanceId)"
-                       CardSelected="SelectCard" />
-            <div class="turn-ribbon">@(frame.Player.HasTurn ? "Your turn · play, attach, retreat, or attack" : $"{frame.Opponent.Name}'s turn")</div>
+                       AuraCardInstanceIds="auras.Cards"
+                       AuraSelectedCardInstanceIds="auras.Selected"
+                       AuraCounters="auras.Counters"
+                       CardTapped="TapCard"
+                       CardViewOpened="OpenViewer"
+                       CardViewClosed="CloseViewer" />
+            <div class="turn-ribbon">@TurnRibbon(frame, auras)</div>
             <MatchSide Side="frame.Player"
-                       SelectedCardInstanceId="_selectedCardInstanceId"
-                       CueSourceCardInstanceId="_activeCue?.SourceCardInstanceId"
+                       SelectedCardInstanceId="@_selectedCardInstanceId"
+                       CueSourceCardInstanceId="@(_activeCue?.SourceCardInstanceId)"
                        CueTargetCardInstanceIds="@(_activeCue?.TargetCardInstanceIds ?? [])"
-                       EligibleTargetCardInstanceIds="TargetCardInstanceIds()"
-                       SelectedTargetCardInstanceId="@(_selectedAction?.TargetCardInstanceId)"
-                       CardSelected="SelectCard" />
+                       AuraCardInstanceIds="auras.Cards"
+                       AuraSelectedCardInstanceIds="auras.Selected"
+                       AuraCounters="auras.Counters"
+                       BenchDestination="auras.Bench"
+                       CardTapped="TapCard"
+                       CardViewOpened="OpenViewer"
+                       CardViewClosed="CloseViewer"
+                       BenchTapped="TapBench" />
         </div>
 
-        <div class="hand-zone" aria-label="Your hand" @onclick="DeselectCard">
+        <div class="hand-zone" aria-label="Your hand" @onclick="TapBackground">
             @if (frame.Player.Hand.Length == 0)
             {
                 <span class="empty-hand">Your hand is empty</span>
             }
-            @foreach (var card in frame.Player.Hand)
+            @for (var handIndex = 0; handIndex < frame.Player.Hand.Length; handIndex++)
             {
-                <button type="button"
-                        class="hand-card @(card.Id == _selectedCardInstanceId ? "selected" : null) @CueClass(card.Id)"
-                        aria-pressed="@(card.Id == _selectedCardInstanceId ? "true" : "false")"
-                        aria-label="@HandCardLabel(card, match)"
-                        @onclick:stopPropagation="true"
-                        @onclick="() => SelectCard(card.Id)">
+                var card = frame.Player.Hand[handIndex];
+                <CardPress CardInstanceId="@card.Id"
+                           Class="@HandCardClass(card.Id, auras)"
+                           Style="@FanStyle(handIndex, frame.Player.Hand.Length)"
+                           AriaLabel="@HandCardLabel(card, auras)"
+                           AriaPressed="@AuraPressed(card.Id, auras)"
+                           Tapped="TapCard"
+                           ViewOpened="OpenViewer"
+                           ViewClosed="CloseViewer">
                     <span class="hand-card-visual">
                         <CardFace Card="card.Card" Size="CardFaceSize.Hand" ShowTitle="false" />
-                        @if (DisplayActionsFor(card.Id, match).Length > 0)
-                        {
-                            <span class="playable-badge">Play</span>
-                        }
                     </span>
-                </button>
+                    @if (auras.Counters.TryGetValue(card.Id, out var handCounter) && handCounter > 0)
+                    {
+                        <span class="aura-counter">@handCounter</span>
+                    }
+                </CardPress>
             }
         </div>
 
         <aside class="action-dock @(_dockOpen ? "is-open" : "is-retracted")"
-               aria-label="Card actions"
+               aria-label="Card inspector"
                aria-hidden="@(_dockOpen ? "false" : "true")"
                inert="@(!_dockOpen)">
             @if (selected is null)
             {
-                <div class="dock-empty"><span class="eyebrow">Your action</span><h2>Select a card.</h2><p>Select a card to see its moves.</p></div>
+                <div class="dock-empty"><span class="eyebrow">Card inspector</span><h2>Tap a card.</h2><p>Tap a card to read it here. Press and hold any card to see it full size.</p></div>
             }
             else
             {
@@ -253,7 +282,7 @@ else
                         @foreach (var attack in match.Attacks)
                         {
                             <button class="attack-button @(attack.ActionId is not null ? "ready" : null)"
-                                    disabled="@(attack.ActionId is null || _working || _animating)"
+                                    disabled="@(attack.ActionId is null || Busy())"
                                     aria-describedby="@($"attack-{attack.EffectId}-reason")"
                                     @onclick="() => ChooseAttack(attack)">
                                 <span class="attack-title">
@@ -267,163 +296,276 @@ else
                     </div>
                 }
 
-                @if (DisplayActionsFor(selected.Id, match).Where(static action => action.Kind != MatchActionKindView.Attack).ToArray() is { Length: > 0 } cardActions)
+                @if (CardActions(selected.Id, match) is { Length: > 0 })
                 {
                     <div class="dock-actions">
-                        @foreach (var action in cardActions)
-                        {
-                            <button class="@(action.Primary ? "primary" : "secondary")" @onclick="() => ChooseAction(action)" disabled="@(_working || _animating)">@ActionButtonLabel(action, selected.Card.Name)</button>
-                        }
+                        <button class="primary" @onclick="() => TapCard(selected.Id)" disabled="@Busy()">Play @selected.Card.Name</button>
                     </div>
                 }
-
-            }
-
-            @if (TurnActions(match).Length > 0)
-            {
-                <div class="turn-actions">
-                    @foreach (var action in TurnActions(match))
-                    {
-                        <button class="quiet" @onclick="() => ChooseAction(action)" disabled="@(_working || _animating)">@PublicText(action.Label)</button>
-                    }
-                </div>
             }
             <details class="dock-log"><summary>Recent events</summary><ol>@foreach (var entry in match.RecentEvents){<li>@PublicText(entry)</li>}</ol></details>
         </aside>
         <button type="button"
                 class="dock-toggle"
-                aria-label="@(_dockOpen ? "Retract card panel" : "Open card panel")"
+                aria-label="@(_dockOpen ? "Close card inspector" : "Open card inspector")"
                 aria-expanded="@(_dockOpen ? "true" : "false")"
-                title="@(_dockOpen ? "Retract card panel" : "Open card panel")"
+                title="@(_dockOpen ? "Close card inspector" : "Open card inspector")"
                 @onclick="ToggleActionDock">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6" /></svg>
         </button>
 
-        @if (GenericActions(match).Length > 0)
+        @if (sheet is not null)
         {
-            <div class="required-actions" aria-label="Required match choices">
-                @foreach (var action in GenericActions(match))
+            @*
+                A sheet that answers its own decision is a modal: it dims the table and takes the
+                screen reader with it. A sheet whose decision is answered by tapping the table is
+                not, because the table is still the thing being used.
+            *@
+            var modal = sheet.Centred && sheet.Options.Length > 0;
+            <div class="action-sheet @(sheet.Centred ? "is-centred" : null) @(modal ? "is-modal" : null)"
+                 role="dialog"
+                 aria-modal="@(modal ? "true" : "false")"
+                 aria-labelledby="sheet-heading"
+                 tabindex="-1"
+                 @ref="_sheet"
+                 @onclick:stopPropagation="true">
+                @if (sheet.Eyebrow is { } eyebrow)
                 {
-                    <button class="@(action.Primary ? "primary" : "secondary")" @onclick="() => ChooseAction(action)" disabled="@(_working || _animating)">@PublicText(action.Label)</button>
+                    <span class="eyebrow">@eyebrow</span>
                 }
-            </div>
-        }
-
-        @if (MobileActions(match) is { Length: > 0 } mobileActions)
-        {
-            <div class="mobile-actions">
-                <div><strong>@(selected?.Card.Name ?? "Choose your move")</strong><small>@(mobileActions.Length == 1 ? MobileActionDetail(mobileActions[0], match) : $"{mobileActions.Length} moves available")</small></div>
-                <div class="mobile-action-buttons">
-                    @foreach (var action in mobileActions)
-                    {
-                        <button @onclick="() => ChooseAction(action)" disabled="@(_working || _animating)">@ActionButtonLabel(action, selected?.Card.Name)</button>
-                    }
-                </div>
-            </div>
-        }
-        @if (_targetActions.Length > 0 && (_selectedAction is null || !HasPlayerChoices(_selectedAction)))
-        {
-            <div class="action-confirm target-confirm" role="dialog" aria-modal="false" aria-labelledby="target-heading" tabindex="-1" @ref="_choicePanel">
-                <span class="eyebrow">Choose a target</span>
-                <strong id="target-heading">@TargetChoiceHeading(frame)</strong>
-                <p>@TargetChoiceInstruction(frame)</p>
-                <div class="action-confirm-buttons">
-                    <button class="secondary" @onclick="CancelChoice">Cancel</button>
-                    <button class="primary" @onclick="ConfirmChoice" disabled="@(_working || _selectedAction is null)">@(_working ? "Playing…" : TargetConfirmationButton())</button>
-                </div>
-            </div>
-        }
-        else if (_selectedAction is not null && !HasPlayerChoices(_selectedAction))
-        {
-            <div class="action-confirm" role="dialog" aria-modal="false" aria-labelledby="confirm-heading" tabindex="-1" @ref="_choicePanel">
-                <strong id="confirm-heading">@ConfirmationHeading(_selectedAction)</strong>
-                <div class="action-confirm-buttons">
-                    <button class="secondary" @onclick="CancelChoice">Cancel</button>
-                    <button class="primary" @onclick="ConfirmChoice" disabled="@_working">@(_working ? "Playing…" : ConfirmationButton(_selectedAction))</button>
-                </div>
-            </div>
-        }
-      </div>
-    </section>
-
-    @if (_selectedAction is not null && HasPlayerChoices(_selectedAction))
-    {
-        <section class="choice-drawer" aria-label="Complete action">
-            <div class="choice-panel" role="dialog" aria-modal="false" aria-labelledby="choice-heading" tabindex="-1" @ref="_choicePanel">
-                <div class="panel-head"><div><span class="eyebrow">Choose</span><h2 id="choice-heading">@PublicText(_selectedAction.Label)</h2></div><button class="quiet" @onclick="CancelChoice">Cancel</button></div>
-                @foreach (var requirement in _selectedAction.ChoiceRequirements.Where(static requirement => requirement.Chooser.IsLocalPlayer))
+                <strong id="sheet-heading">@sheet.Heading</strong>
+                @if (sheet.Detail is { } detail)
                 {
-                    <div class="choice-block @(ChoiceIsActive(requirement) ? null : "choice-inactive")">
-                        <div class="choice-heading"><div><h3>@PublicText(requirement.Label)</h3><small>@ChoiceProgress(requirement)</small></div></div>
-                        @if (!ChoiceIsActive(requirement))
+                    <p class="sheet-detail">@detail</p>
+                }
+                @if (sheet.Effect is { } effect)
+                {
+                    <p class="sheet-effect">@effect</p>
+                }
+
+                @switch (sheet.Mode)
+                {
+                    case SheetMode.Forced:
+                    case SheetMode.Destination:
+                    case SheetMode.Actions:
+                        @if (sheet.Options.Length > 0)
                         {
-                            <p>This part will be skipped.</p>
+                            <div class="sheet-options">
+                                @foreach (var option in sheet.Options)
+                                {
+                                    <button type="button" class="sheet-option" @onclick="() => StartAction(option)" disabled="@Busy()">@PublicText(option.Label)</button>
+                                }
+                            </div>
                         }
-                        else
+                        break;
+
+                    case SheetMode.Choice:
+                        @if (CurrentRequirement() is { } requirement)
                         {
-                            @switch (requirement.Kind)
-                            {
-                                case MatchChoiceKindView.Optional:
-                                    <label class="toggle-choice"><input type="checkbox" checked="@Draft(requirement).Accepted" @onchange="eventArgs => SetAccepted(requirement, eventArgs)" /><span>Yes, use this effect</span></label>
-                                    break;
-                                case MatchChoiceKindView.Amount:
-                                    <input class="choice-number" aria-label="@requirement.Label" type="number" min="@requirement.Minimum" max="@requirement.Maximum" value="@Draft(requirement).Amount" @onchange="eventArgs => SetAmount(requirement, eventArgs)" />
-                                    break;
-                                case MatchChoiceKindView.Cards:
-                                    <div class="choice-cards">
-                                        @foreach (var card in requirement.EligibleCards)
+                            <div class="sheet-choice">
+                                @switch (requirement.Kind)
+                                {
+                                    case MatchChoiceKindView.Optional:
+                                        @* Answering is the step: a yes or a no moves the flow on by itself. *@
+                                        <div class="sheet-options">
+                                            <button type="button" class="sheet-option is-primary" @onclick="() => AnswerOptional(requirement, true)">Use this effect</button>
+                                            <button type="button" class="sheet-option" @onclick="() => AnswerOptional(requirement, false)">Skip it</button>
+                                        </div>
+                                        break;
+
+                                    case MatchChoiceKindView.Amount:
+                                        <div class="sheet-stepper">
+                                            <button type="button" aria-label="One fewer" @onclick="() => StepAmount(requirement, -1)">−</button>
+                                            <b aria-live="polite">@Draft(requirement).Amount</b>
+                                            <button type="button" aria-label="One more" @onclick="() => StepAmount(requirement, 1)">+</button>
+                                        </div>
+                                        break;
+
+                                    case MatchChoiceKindView.MechanicalType:
+                                        <div class="sheet-options">
+                                            @foreach (var option in requirement.EligibleMechanicalTypes)
+                                            {
+                                                <button type="button"
+                                                        class="sheet-option @(Draft(requirement).MechanicalType == option.Value ? "is-picked" : null)"
+                                                        aria-pressed="@(Draft(requirement).MechanicalType == option.Value ? "true" : "false")"
+                                                        @onclick="() => PickMechanicalType(requirement, option.Value)">@option.Label</button>
+                                            }
+                                        </div>
+                                        break;
+
+                                    case MatchChoiceKindView.Attack:
+                                        <div class="sheet-options">
+                                            @foreach (var option in requirement.EligibleEffects)
+                                            {
+                                                <button type="button"
+                                                        class="sheet-option @(Draft(requirement).EffectId == option.Id ? "is-picked" : null)"
+                                                        aria-pressed="@(Draft(requirement).EffectId == option.Id ? "true" : "false")"
+                                                        @onclick="() => PickEffect(requirement, option.Id)">@option.Label</button>
+                                            }
+                                        </div>
+                                        break;
+
+                                    default:
+                                        @if (TrayCards(requirement) is { Length: > 0 } tray)
                                         {
-                                            var cardSelected = Draft(requirement).Cards.Contains(card.Id);
-                                            <label class="choice-card">
-                                                <input type="checkbox"
-                                                       checked="@cardSelected"
-                                                       disabled="@(!cardSelected && Draft(requirement).Cards.Count >= requirement.Maximum)"
-                                                       @onchange="eventArgs => ToggleCard(requirement, card.Id, eventArgs)" />
-                                                <CardFace Card="card.Card" Size="CardFaceSize.Tiny" Decorative="true" />
-                                                <span><b>@card.Card.Name</b><small>@CardChoiceDetail(requirement, card)</small></span>
-                                            </label>
+                                            <div class="sheet-tray" aria-label="@PublicText(requirement.Label)">
+                                                @foreach (var card in tray)
+                                                {
+                                                    <CardPress CardInstanceId="@card.Id"
+                                                               Class="@TrayCardClass(card.Id, auras)"
+                                                               AriaLabel="@($"Choose {card.Card.Name} from your {PublicZone(card.Zone)}. Press and hold to view the card.")"
+                                                               AriaPressed="@AuraPressed(card.Id, auras)"
+                                                               Tapped="TapCard"
+                                                               ViewOpened="OpenViewer"
+                                                               ViewClosed="CloseViewer">
+                                                        <span class="tray-card-visual">
+                                                            <CardFace Card="card.Card" Size="CardFaceSize.Hand" ShowTitle="false" />
+                                                        </span>
+                                                        @if (auras.Counters.TryGetValue(card.Id, out var trayCounter) && trayCounter > 0)
+                                                        {
+                                                            <span class="aura-counter">@trayCounter</span>
+                                                        }
+                                                    </CardPress>
+                                                }
+                                            </div>
                                         }
-                                    </div>
-                                    break;
-                                case MatchChoiceKindView.MechanicalType:
-                                    <select class="choice-select" value="@Draft(requirement).MechanicalType" @onchange="eventArgs => SetMechanicalType(requirement, eventArgs)"><option value="">Choose a type</option>@foreach (var option in requirement.EligibleMechanicalTypes){<option value="@option.Value">@option.Label</option>}</select>
-                                    break;
-                                case MatchChoiceKindView.Attack:
-                                    <select class="choice-select" value="@Draft(requirement).EffectId" @onchange="eventArgs => SetEffect(requirement, eventArgs)"><option value="">Choose an attack</option>@foreach (var option in requirement.EligibleEffects){<option value="@option.Id">@option.Label</option>}</select>
-                                    break;
-                                case MatchChoiceKindView.Distribution:
-                                    <div class="distribution-grid">@foreach (var card in requirement.EligibleCards){<label><span>@card.Card.Name</span><input class="choice-number" type="number" min="0" max="@requirement.Maximum" value="@Draft(requirement).Distribution.GetValueOrDefault(card.Id)" @onchange="eventArgs => SetDistribution(requirement, card.Id, eventArgs)" /></label>}</div>
-                                    break;
-                                case MatchChoiceKindView.Attachments:
-                                    <div class="attachment-grid">@foreach (var card in requirement.EligibleCards){<label><span>@card.Card.Name</span><select class="choice-select" value="@Draft(requirement).Attachments.GetValueOrDefault(card.Id)" @onchange="eventArgs => SetAttachment(requirement, card.Id, eventArgs)"><option value="">Do not attach</option>@foreach (var target in requirement.EligibleTargets){<option value="@target.Id">@target.Card.Name · @PublicZone(target.Zone)</option>}</select></label>}</div>
-                                    break;
-                            }
+                                        @if (requirement.Kind == MatchChoiceKindView.Attachments)
+                                        {
+                                            <ul class="sheet-assignments">
+                                                @foreach (var assignment in Draft(requirement).Attachments)
+                                                {
+                                                    <li>@CardName(frame, requirement, assignment.Key) → @CardName(frame, requirement, assignment.Value) <button type="button" class="quiet" @onclick="() => ClearAttachment(requirement, assignment.Key)">Clear</button></li>
+                                                }
+                                            </ul>
+                                        }
+                                        break;
+                                }
+                            </div>
                         }
-                    </div>
+                        break;
                 }
+
                 @if (_choiceValidation is not null)
                 {
                     <p class="field-error" role="alert">@_choiceValidation</p>
                 }
-                <button class="primary full" @onclick="ConfirmChoice" disabled="@(_working || !PlayerChoicesValid(_selectedAction))">@(_working ? "Playing…" : ConfirmationButton(_selectedAction))</button>
+
+                <div class="sheet-buttons">
+                    @if (sheet.CancelLabel is { } cancelLabel)
+                    {
+                        <button type="button" class="secondary" @onclick="StepBack">@cancelLabel</button>
+                    }
+                    @if (sheet.Mode == SheetMode.Choice && CurrentRequirement()?.Kind != MatchChoiceKindView.Optional)
+                    {
+                        <button type="button" class="primary sheet-continue" @onclick="AdvanceChoice" disabled="@(Busy() || !StepComplete())">Continue</button>
+                    }
+                    else if (sheet.Mode == SheetMode.Confirm && _pending is not null)
+                    {
+                        <button type="button" class="primary sheet-confirm" @onclick="ConfirmPending" disabled="@(_working || !PlayerChoicesValid(_pending))">@(_working ? "Playing…" : ConfirmationButton(_pending))</button>
+                    }
+                </div>
             </div>
-        </section>
-    }
+        }
+
+        @if (_viewerCard is not null)
+        {
+            <div class="card-viewer"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-label="@($"{_viewerCard.Name}, full size")"
+                 style="@ViewerStyle()"
+                 @onpointerup="CloseViewer"
+                 @onpointercancel="CloseViewer">
+                <CardFace Card="_viewerCard"
+                          Size="CardFaceSize.Showcase"
+                          Class="card-viewer-card"
+                          ShowTitle="false" />
+            </div>
+        }
+      </div>
+    </section>
 }
 
 @code {
+    private enum Stage
+    {
+        Idle,
+        Destination,
+        Actions,
+        Choice,
+        Confirm,
+    }
+
+    private enum SheetMode
+    {
+        Forced,
+        Destination,
+        Actions,
+        Choice,
+        Confirm,
+    }
+
+    private sealed record SheetView(
+        SheetMode Mode,
+        string Heading,
+        string? Eyebrow,
+        string? Detail,
+        string? Effect,
+        string? CancelLabel,
+        bool Centred,
+        MatchActionView[] Options
+    );
+
+    private sealed record AuraView(
+        string[] Cards,
+        string[] Selected,
+        bool Bench,
+        IReadOnlyDictionary<string, int> Counters
+    );
+
+    private static readonly MatchActionKindView[] _forcedKinds =
+    [
+        MatchActionKindView.ChooseMulliganBonus,
+        MatchActionKindView.ChooseOpening,
+        MatchActionKindView.ChooseReplacement,
+        MatchActionKindView.ResolveKnockout,
+        MatchActionKindView.TakePrize,
+        MatchActionKindView.ResolveChoice,
+    ];
+
+    private static readonly MatchActionKindView[] _cardKinds =
+    [
+        MatchActionKindView.AttachEnergy,
+        MatchActionKindView.PlayBlokemon,
+        MatchActionKindView.Evolve,
+        MatchActionKindView.PlayTrainer,
+        MatchActionKindView.UseAbility,
+        MatchActionKindView.Attack,
+        MatchActionKindView.Retreat,
+        MatchActionKindView.DiscardFossil,
+    ];
+
+    private static readonly IReadOnlyDictionary<string, int> _noCounters =
+        new Dictionary<string, int>(StringComparer.Ordinal);
+
     private ApplicationView? _view;
     private MatchFrameView? _presentedFrame;
     private MatchEventCueView? _activeCue;
     private CardView? _presentationCard;
-    private MatchActionView? _selectedAction;
-    private MatchActionView[] _targetActions = [];
+    private CardView? _viewerCard;
+    private MatchActionView? _pending;
+    private MatchActionView[] _directActions = [];
+    private MatchActionView[] _menu = [];
     private readonly Dictionary<string, ChoiceDraft> _drafts = new(StringComparer.Ordinal);
     private IJSObjectReference? _presentationModule;
     private ElementReference _battleScreen;
-    private ElementReference _choicePanel;
+    private ElementReference _sheet;
     private TaskCompletionSource? _skipSignal;
     private TaskCompletionSource? _revealSignal;
+    private Stage _stage;
+    private string? _originCardInstanceId;
+    private string? _destinationCardInstanceId;
+    private string? _attachmentCardInstanceId;
     private string? _selectedCardInstanceId;
     private string? _error;
     private string? _operationError;
@@ -431,12 +573,16 @@ else
     private string? _animationStatus;
     private Guid? _commandId;
     private Guid? _selectedDeckId;
+    private double _viewerScale = 0.5;
+    private int _choiceStep = -1;
+    private bool _benchDestination;
+    private bool _hadDestinationStep;
     private bool _working;
     private bool _animating;
     private bool _reducedMotion;
-    private bool _focusChoicePanel;
-    private bool _dockOpen = true;
-    private bool _dockManuallyRetracted;
+    private string? _sheetKey;
+    private string? _focusedSheetKey;
+    private bool _dockOpen;
 
     protected override async Task OnInitializedAsync()
     {
@@ -464,11 +610,27 @@ else
             _reducedMotion = await _presentationModule.InvokeAsync<bool>("prefersReducedMotion");
         }
 
-        if (_focusChoicePanel && _presentationModule is not null)
+        if (_presentationModule is null)
         {
-            _focusChoicePanel = false;
-            await _presentationModule.InvokeVoidAsync("focusElement", _choicePanel);
+            return;
         }
+
+        // Whichever surface is showing owns focus, and closing the last one hands focus back to
+        // the card or button that opened it. Keying on the surface itself covers the forced
+        // decisions that open themselves as well as the flows the player starts.
+        if (_sheetKey == _focusedSheetKey)
+        {
+            return;
+        }
+
+        _focusedSheetKey = _sheetKey;
+        if (_sheetKey is null)
+        {
+            await _presentationModule.InvokeVoidAsync("restoreFocus");
+            return;
+        }
+
+        await _presentationModule.InvokeVoidAsync("focusSurface", _sheet);
     }
 
     private DeckView[] ReadyDecks() =>
@@ -490,53 +652,833 @@ else
         await CompleteMutation(response, previousFrame);
     }
 
-    private async Task ChooseAttack(MatchAttackView attack)
+    private bool Busy() => _working || _animating;
+
+    // ---- The aura model -------------------------------------------------------------------
+    //
+    // Every card that can be acted on glows. Which cards those are depends only on the stage:
+    // the playable cards while idle, the forced decision's own candidates while a decision is
+    // outstanding, the destinations once an origin is picked, and the eligible cards while a
+    // choice step is open.
+
+    private AuraView Auras(MatchActionView[] forced)
+    {
+        if (_view?.Match is not { } match || Busy())
+        {
+            return new([], [], false, _noCounters);
+        }
+
+        switch (_stage)
+        {
+            case Stage.Idle when forced.Length > 0:
+                return ForcedByAura(forced)
+                    ? new(
+                        [.. forced.Select(static option => option.SourceCardInstanceId!)],
+                        [],
+                        false,
+                        _noCounters
+                    )
+                    : new([], [], false, _noCounters);
+
+            case Stage.Destination:
+                return new(
+                    DestinationCardIds(),
+                    [_originCardInstanceId!],
+                    _benchDestination,
+                    _noCounters
+                );
+
+            case Stage.Actions:
+            case Stage.Confirm:
+                return new(
+                    [],
+                    [
+                        .. new[] { _originCardInstanceId, _destinationCardInstanceId }
+                            .OfType<string>(),
+                    ],
+                    false,
+                    _noCounters
+                );
+
+            case Stage.Choice when CurrentRequirement() is { } requirement:
+                return ChoiceAuras(requirement);
+
+            case Stage.Idle:
+                return new(PlayableCardIds(match), [], false, _noCounters);
+
+            default:
+                return new([], [], false, _noCounters);
+        }
+    }
+
+    private AuraView ChoiceAuras(MatchChoiceRequirementView requirement)
+    {
+        var draft = Draft(requirement);
+        var origin = _originCardInstanceId is null ? [] : new[] { _originCardInstanceId };
+        return requirement.Kind switch
+        {
+            MatchChoiceKindView.Cards => new(
+                [.. requirement.EligibleCards.Select(static card => card.Id)],
+                [.. draft.Cards],
+                false,
+                _noCounters
+            ),
+            MatchChoiceKindView.Distribution => new(
+                [.. requirement.EligibleCards.Select(static card => card.Id)],
+                [.. draft.Distribution.Where(static item => item.Value > 0).Select(static item => item.Key)],
+                false,
+                draft.Distribution
+            ),
+            MatchChoiceKindView.Attachments when _attachmentCardInstanceId is { } energy => new(
+                [.. requirement.EligibleTargets.Select(static card => card.Id)],
+                [energy],
+                false,
+                _noCounters
+            ),
+            MatchChoiceKindView.Attachments => new(
+                [
+                    .. requirement
+                        .EligibleCards.Select(static card => card.Id)
+                        .Where(card => !draft.Attachments.ContainsKey(card)),
+                ],
+                [.. draft.Attachments.Keys],
+                false,
+                _noCounters
+            ),
+            _ => new([], origin, false, _noCounters),
+        };
+    }
+
+    private string[] PlayableCardIds(MatchView match) =>
+        [
+            .. match
+                .LegalActions.Where(action => IsCardAction(action) && IsVisible(action.SourceCardInstanceId))
+                .Select(static action => action.SourceCardInstanceId!)
+                .Distinct(StringComparer.Ordinal),
+        ];
+
+    private string[] DestinationCardIds() =>
+        [
+            .. OriginActions()
+                .Select(static action => action.TargetCardInstanceId)
+                .OfType<string>()
+                .Distinct(StringComparer.Ordinal),
+        ];
+
+    private MatchActionView[] OriginActions() =>
+        _view?.Match is { } match && _originCardInstanceId is { } origin
+            ? [.. match.LegalActions.Where(action => IsCardAction(action) && action.SourceCardInstanceId == origin)]
+            : [];
+
+    private static bool IsCardAction(MatchActionView action) =>
+        action.SourceCardInstanceId is not null && _cardKinds.Contains(action.Kind);
+
+    private bool IsVisible(string? cardInstanceId) =>
+        cardInstanceId is not null
+        && AllVisibleCards(DisplayFrame()).Any(card => card.Id == cardInstanceId);
+
+    // A forced decision is outstanding whenever the engine offers one of its kinds and no
+    // player-driven flow is in progress. It is derived, never stored, so the auras, the sheet
+    // and the tap routing of one render always agree.
+    private MatchActionView[] ForcedDecision(MatchView match)
+    {
+        if (_stage != Stage.Idle || _animating || _working)
+        {
+            return [];
+        }
+
+        foreach (var kind in _forcedKinds)
+        {
+            var options = match.LegalActions.Where(action => action.Kind == kind).ToArray();
+            if (options.Length > 0)
+            {
+                return options;
+            }
+        }
+
+        return [];
+    }
+
+    // A decision whose every candidate is a card the table shows hands off to the auras; one
+    // that is not card-shaped, such as the mulligan bonus, stays a list of options.
+    private bool ForcedByAura(MatchActionView[] forced) =>
+        forced.All(option => IsVisible(option.SourceCardInstanceId));
+
+    // A Local Kit in play is a legal action source the frame never renders, so its effects
+    // reach the player from the HUD instead of from an aura.
+    private MatchActionView[] TableEffects(MatchView match) =>
+        [
+            .. match.LegalActions.Where(action =>
+                IsCardAction(action) && !IsVisible(action.SourceCardInstanceId)
+            ),
+        ];
+
+    private static MatchActionView? GlobalAction(MatchView match, MatchActionKindView kind) =>
+        match.LegalActions.FirstOrDefault(action => action.Kind == kind);
+
+    private MatchActionView[] CardActions(string cardInstanceId, MatchView match) =>
+        [
+            .. match.LegalActions.Where(action =>
+                IsCardAction(action) && action.SourceCardInstanceId == cardInstanceId
+            ),
+        ];
+
+    // ---- Tap routing ----------------------------------------------------------------------
+
+    private void TapCard(string cardInstanceId)
+    {
+        if (_view?.Match is not { } match || Busy())
+        {
+            return;
+        }
+
+        _selectedCardInstanceId = cardInstanceId;
+        _operationError = null;
+
+        var forced = ForcedDecision(match);
+        switch (_stage)
+        {
+            case Stage.Choice when CurrentRequirement() is { } requirement:
+                TapChoiceCard(requirement, cardInstanceId);
+                return;
+
+            case Stage.Idle when forced.Length > 0:
+                if (
+                    ForcedByAura(forced)
+                    && forced.FirstOrDefault(option =>
+                        option.SourceCardInstanceId == cardInstanceId
+                    )
+                        is { } candidate
+                )
+                {
+                    StartAction(candidate);
+                }
+                return;
+
+            case Stage.Destination when DestinationCardIds().Contains(cardInstanceId, StringComparer.Ordinal):
+                _destinationCardInstanceId = cardInstanceId;
+                _benchDestination = false;
+                OpenMenu(
+                    [
+                        .. OriginActions().Where(action =>
+                            action.TargetCardInstanceId == cardInstanceId
+                        ),
+                    ]
+                );
+                return;
+
+            case Stage.Idle when PlayableCardIds(match).Contains(cardInstanceId, StringComparer.Ordinal):
+                SelectOrigin(cardInstanceId);
+                return;
+
+            case Stage.Destination when PlayableCardIds(match).Contains(cardInstanceId, StringComparer.Ordinal):
+                // Tapping another playable card while choosing a destination switches origin.
+                CancelFlow();
+                SelectOrigin(cardInstanceId);
+                return;
+
+            default:
+                return;
+        }
+    }
+
+    private void TapBench()
+    {
+        if (_stage != Stage.Destination || _originCardInstanceId is null || Busy())
+        {
+            return;
+        }
+
+        _destinationCardInstanceId = null;
+        OpenMenu(
+            [
+                .. OriginActions()
+                    .Where(static action =>
+                        action.Kind == MatchActionKindView.PlayBlokemon
+                        && action.TargetCardInstanceId is null
+                    ),
+            ]
+        );
+    }
+
+    private void TapBackground()
+    {
+        if (_stage == Stage.Idle)
+        {
+            return;
+        }
+
+        CancelFlow();
+    }
+
+    private void SelectOrigin(string cardInstanceId)
+    {
+        _originCardInstanceId = cardInstanceId;
+        _destinationCardInstanceId = null;
+        var actions = OriginActions();
+        var destinations = actions.Any(static action => action.TargetCardInstanceId is not null);
+        _benchDestination =
+            actions.Any(static action => action.Kind == MatchActionKindView.PlayBlokemon)
+            && DisplayFrame().Player.Bench.Length < 5;
+        _directActions =
+            [
+                .. actions.Where(static action =>
+                    action.TargetCardInstanceId is null
+                    && action.Kind != MatchActionKindView.PlayBlokemon
+                ),
+            ];
+        if (destinations || _benchDestination)
+        {
+            _hadDestinationStep = true;
+            _stage = Stage.Destination;
+            return;
+        }
+
+        _hadDestinationStep = false;
+        OpenMenu(_directActions);
+    }
+
+    private void OpenMenu(MatchActionView[] actions)
+    {
+        _menu = actions;
+        _directActions = [];
+        if (actions.Length == 0)
+        {
+            CancelFlow();
+            return;
+        }
+
+        if (actions.Length == 1)
+        {
+            // One available action needs no menu: the pop-up is its confirmation.
+            StartAction(actions[0]);
+            return;
+        }
+
+        _stage = Stage.Actions;
+    }
+
+    private void StartAction(MatchActionView action)
+    {
+        _pending = action;
+        _choiceValidation = null;
+        _attachmentCardInstanceId = null;
+        _drafts.Clear();
+        foreach (var requirement in LocalRequirements(action))
+        {
+            _drafts[requirement.Id] = new ChoiceDraft { Amount = requirement.Minimum };
+        }
+
+        _choiceStep = NextActiveStep(-1);
+        _stage = _choiceStep < 0 ? Stage.Confirm : Stage.Choice;
+    }
+
+    // One step back at a time, so cancelling is reachable from every surface without ever
+    // trapping the player: an earlier choice step, then the action, then the flow itself.
+    private void StepBack()
+    {
+        _choiceValidation = null;
+        if (_stage == Stage.Choice)
+        {
+            var previous = PreviousActiveStep(_choiceStep);
+            if (previous >= 0)
+            {
+                _choiceStep = previous;
+                return;
+            }
+
+            BackFromAction();
+            return;
+        }
+
+        if (_stage == Stage.Confirm && _pending is not null)
+        {
+            var last = PreviousActiveStep(LocalRequirements(_pending).Length);
+            if (last >= 0)
+            {
+                _choiceStep = last;
+                _stage = Stage.Choice;
+                return;
+            }
+
+            BackFromAction();
+            return;
+        }
+
+        CancelFlow();
+    }
+
+    private void BackFromAction()
+    {
+        var forced = _pending is not null && _forcedKinds.Contains(_pending.Kind);
+        _pending = null;
+        _drafts.Clear();
+        _choiceValidation = null;
+        _attachmentCardInstanceId = null;
+        if (forced)
+        {
+            _stage = Stage.Idle;
+            return;
+        }
+
+        if (_menu.Length > 1)
+        {
+            _stage = Stage.Actions;
+            return;
+        }
+
+        // Going back from an action reached through a destination returns to the destination
+        // step. An action that had no such step has nothing behind it but the table.
+        if (_hadDestinationStep && _originCardInstanceId is { } origin)
+        {
+            SelectOrigin(origin);
+            return;
+        }
+
+        CancelFlow();
+    }
+
+    private void CancelFlow()
+    {
+        _stage = Stage.Idle;
+        _pending = null;
+        _menu = [];
+        _directActions = [];
+        _originCardInstanceId = null;
+        _destinationCardInstanceId = null;
+        _attachmentCardInstanceId = null;
+        _benchDestination = false;
+        _hadDestinationStep = false;
+        _choiceValidation = null;
+        _choiceStep = -1;
+        _drafts.Clear();
+    }
+
+    // ---- Sheet copy ----------------------------------------------------------------------
+
+    private SheetView? SheetFor(MatchView match, MatchActionView[] forced)
+    {
+        var view = BuildSheet(match, forced);
+        _sheetKey = view is null ? null : $"{view.Mode}:{view.Heading}:{view.Detail}";
+        return view;
+    }
+
+    private SheetView? BuildSheet(MatchView match, MatchActionView[] forced)
+    {
+        if (Busy())
+        {
+            return null;
+        }
+
+        var frame = DisplayFrame();
+        if (_stage == Stage.Idle)
+        {
+            return forced.Length == 0
+                ? null
+                : new(
+                    SheetMode.Forced,
+                    ForcedHeading(forced[0].Kind),
+                    "Required",
+                    ForcedByAura(forced)
+                        ? "Tap one of the glowing cards."
+                        : "Choose how to resolve this.",
+                    null,
+                    null,
+                    true,
+                    ForcedByAura(forced) ? [] : forced
+                );
+        }
+
+        return _stage switch
+        {
+            Stage.Destination => new(
+                SheetMode.Destination,
+                DestinationHeading(frame),
+                "Choose a destination",
+                _benchDestination && DestinationCardIds().Length == 0
+                    ? "Tap an empty Bench position."
+                    : "Tap a glowing card.",
+                null,
+                "Cancel",
+                false,
+                _directActions
+            ),
+            Stage.Actions => new(
+                SheetMode.Actions,
+                $"{OriginName(frame)}: choose a move.",
+                "Available moves",
+                null,
+                null,
+                "Cancel",
+                false,
+                _menu
+            ),
+            Stage.Choice when CurrentRequirement() is { } requirement => new(
+                SheetMode.Choice,
+                PublicText(requirement.Label),
+                PublicText(_pending!.Label),
+                ChoiceProgress(requirement),
+                EffectDescription(_pending),
+                "Back",
+                _forcedKinds.Contains(_pending!.Kind),
+                []
+            ),
+            Stage.Confirm when _pending is not null => new(
+                SheetMode.Confirm,
+                ConfirmationHeading(_pending),
+                "Confirm",
+                ChoiceSummary(_pending),
+                EffectDescription(_pending),
+                "Cancel",
+                _forcedKinds.Contains(_pending.Kind),
+                []
+            ),
+            _ => null,
+        };
+    }
+
+    // A phone can show the sheet or the hand at the bottom, not both: the hand comes forward
+    // only while the cards still to be chosen are in it. The already-chosen origin does not
+    // count, or selecting a card from hand would raise the hand over the board it points at.
+    private static string? SheetClass(
+        MatchFrameView frame,
+        AuraView auras,
+        SheetView? sheet
+    ) =>
+        sheet is not null
+        && frame.Player.Hand.Any(card => auras.Cards.Contains(card.Id, StringComparer.Ordinal))
+            ? "has-sheet hand-forward"
+            : sheet is not null
+                ? "has-sheet"
+                : null;
+
+    private string ViewerStyle() =>
+        $"--viewer-scale: {_viewerScale.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture)}";
+
+    private static string ForcedHeading(MatchActionKindView kind) =>
+        kind switch
+        {
+            MatchActionKindView.ChooseMulliganBonus => "Take your bonus cards.",
+            MatchActionKindView.ChooseOpening => "Choose your Active Blokemon.",
+            MatchActionKindView.ChooseReplacement => "Choose a new Active Blokemon.",
+            MatchActionKindView.ResolveKnockout => "Resolve the Knock Out.",
+            MatchActionKindView.TakePrize => "Take your Prize card.",
+            _ => "Make the required choice.",
+        };
+
+    // The question is about the destination, so it is the action that has one that names it: a
+    // board card can offer a retreat alongside attacks that need no destination at all.
+    private string DestinationHeading(MatchFrameView frame) =>
+        OriginActions()
+            .FirstOrDefault(static action => action.TargetCardInstanceId is not null)
+            ?.Kind switch
+        {
+            MatchActionKindView.AttachEnergy or MatchActionKindView.PlayTrainer =>
+                $"Attach {OriginName(frame)} to which Blokemon?",
+            MatchActionKindView.Evolve => $"Evolve which Blokemon into {OriginName(frame)}?",
+            _ => $"Where does {OriginName(frame)} go?",
+        };
+
+    private string OriginName(MatchFrameView frame) =>
+        _originCardInstanceId is { } origin ? VisibleCardName(frame, origin) : "this card";
+
+    private string? EffectDescription(MatchActionView? action)
+    {
+        if (action?.SourceCardInstanceId is not { } sourceId)
+        {
+            return null;
+        }
+
+        var source = AllVisibleCards(DisplayFrame())
+            .FirstOrDefault(card => card.Id == sourceId)
+            ?.Card;
+        if (source is null)
+        {
+            return null;
+        }
+
+        // An attack or an ability names its own effect, so the printed text can be matched by
+        // name. A Kit's text is the whole card. Moving a Blokemon prints nothing, and showing
+        // its attack text there would describe something the player is not doing.
+        var rule = action.EffectId is not null
+            ? source.Rules.FirstOrDefault(candidate =>
+                string.Equals(
+                    candidate.Name,
+                    SimpleActionName(action.Label),
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            : action.Kind == MatchActionKindView.PlayTrainer
+                ? source.Rules.FirstOrDefault(static candidate =>
+                    candidate.Kind != CardRuleKindView.Energy
+                )
+                : null;
+        return string.IsNullOrWhiteSpace(rule?.Text) ? null : rule.Text;
+    }
+
+    private string? ChoiceSummary(MatchActionView action)
+    {
+        var frame = DisplayFrame();
+        var parts = new List<string>();
+        foreach (var requirement in LocalRequirements(action).Where(ChoiceHasStep))
+        {
+            var draft = Draft(requirement);
+            var value = requirement.Kind switch
+            {
+                MatchChoiceKindView.Optional => draft.Accepted ? "Yes" : "No",
+                MatchChoiceKindView.Amount => draft.Amount.ToString(),
+                MatchChoiceKindView.Cards => draft.Cards.Count == 0
+                    ? "None"
+                    : string.Join(
+                        ", ",
+                        draft.Cards.Select(card => CardName(frame, requirement, card))
+                    ),
+                MatchChoiceKindView.MechanicalType => requirement
+                    .EligibleMechanicalTypes.FirstOrDefault(option =>
+                        option.Value == draft.MechanicalType
+                    )
+                    ?.Label ?? "—",
+                MatchChoiceKindView.Attack => requirement
+                    .EligibleEffects.FirstOrDefault(option => option.Id == draft.EffectId)
+                    ?.Label ?? "—",
+                MatchChoiceKindView.Distribution => string.Join(
+                    ", ",
+                    draft
+                        .Distribution.Where(static item => item.Value > 0)
+                        .Select(item => $"{CardName(frame, requirement, item.Key)} {item.Value}")
+                ),
+                MatchChoiceKindView.Attachments => string.Join(
+                    ", ",
+                    draft.Attachments.Select(item =>
+                        $"{CardName(frame, requirement, item.Key)} → {CardName(frame, requirement, item.Value)}"
+                    )
+                ),
+                _ => null,
+            };
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                parts.Add($"{PublicText(requirement.Label)}: {value}");
+            }
+        }
+
+        return parts.Count == 0 ? null : string.Join(" · ", parts);
+    }
+
+    private string CardName(
+        MatchFrameView frame,
+        MatchChoiceRequirementView requirement,
+        string cardInstanceId
+    ) =>
+        AllVisibleCards(frame).FirstOrDefault(card => card.Id == cardInstanceId)?.Card.Name
+        ?? requirement
+            .EligibleCards.Concat(requirement.EligibleTargets)
+            .FirstOrDefault(card => card.Id == cardInstanceId)
+            ?.Card.Name
+        ?? "that card";
+
+    // ---- Choice steps --------------------------------------------------------------------
+
+    private MatchChoiceRequirementView[] LocalRequirements(MatchActionView action) =>
+        [.. action.ChoiceRequirements.Where(static requirement => requirement.Chooser.IsLocalPlayer)];
+
+    private MatchChoiceRequirementView? CurrentRequirement() =>
+        _pending is { } pending
+        && _choiceStep >= 0
+        && LocalRequirements(pending) is { } requirements
+        && _choiceStep < requirements.Length
+            ? requirements[_choiceStep]
+            : null;
+
+    private int NextActiveStep(int from)
+    {
+        if (_pending is null)
+        {
+            return -1;
+        }
+
+        var requirements = LocalRequirements(_pending);
+        for (var index = from + 1; index < requirements.Length; index++)
+        {
+            if (ChoiceHasStep(requirements[index]))
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    private int PreviousActiveStep(int from)
+    {
+        if (_pending is null)
+        {
+            return -1;
+        }
+
+        var requirements = LocalRequirements(_pending);
+        for (var index = Math.Min(from, requirements.Length) - 1; index >= 0; index--)
+        {
+            if (ChoiceHasStep(requirements[index]))
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
+    private void AdvanceChoice()
+    {
+        if (!StepComplete())
+        {
+            return;
+        }
+
+        _attachmentCardInstanceId = null;
+        _choiceValidation = null;
+        var next = NextActiveStep(_choiceStep);
+        if (next < 0)
+        {
+            _stage = Stage.Confirm;
+            return;
+        }
+
+        _choiceStep = next;
+    }
+
+    private void TapChoiceCard(MatchChoiceRequirementView requirement, string cardInstanceId)
+    {
+        var draft = Draft(requirement);
+        switch (requirement.Kind)
+        {
+            case MatchChoiceKindView.Cards:
+                if (!Eligible(requirement, cardInstanceId))
+                {
+                    return;
+                }
+                if (draft.Cards.Contains(cardInstanceId))
+                {
+                    draft.Cards.Remove(cardInstanceId);
+                }
+                else if (draft.Cards.Count < requirement.Maximum)
+                {
+                    draft.Cards.Add(cardInstanceId);
+                }
+                _choiceValidation = null;
+                return;
+
+            case MatchChoiceKindView.Distribution:
+                if (!Eligible(requirement, cardInstanceId))
+                {
+                    return;
+                }
+                // Repeated taps add counters and wrap back to none once the pool is spent.
+                var placed = draft.Distribution.Values.Sum();
+                var current = draft.Distribution.GetValueOrDefault(cardInstanceId);
+                draft.Distribution[cardInstanceId] =
+                    placed >= requirement.Maximum ? 0 : current + 1;
+                _choiceValidation = null;
+                return;
+
+            case MatchChoiceKindView.Attachments:
+                if (_attachmentCardInstanceId is { } energy)
+                {
+                    if (
+                        requirement.EligibleTargets.Any(card => card.Id == cardInstanceId)
+                    )
+                    {
+                        draft.Attachments[energy] = cardInstanceId;
+                        _attachmentCardInstanceId = null;
+                    }
+                    return;
+                }
+                if (requirement.EligibleCards.Any(card => card.Id == cardInstanceId))
+                {
+                    _attachmentCardInstanceId = cardInstanceId;
+                }
+                return;
+
+            default:
+                return;
+        }
+    }
+
+    private static bool Eligible(
+        MatchChoiceRequirementView requirement,
+        string cardInstanceId
+    ) => requirement.EligibleCards.Any(card => card.Id == cardInstanceId);
+
+    private void AnswerOptional(MatchChoiceRequirementView requirement, bool accepted)
+    {
+        Draft(requirement).Accepted = accepted;
+        AdvanceChoice();
+    }
+
+    private void StepAmount(MatchChoiceRequirementView requirement, int delta)
+    {
+        var draft = Draft(requirement);
+        draft.Amount = Math.Clamp(
+            draft.Amount + delta,
+            requirement.Minimum,
+            requirement.Maximum
+        );
+    }
+
+    private void PickMechanicalType(MatchChoiceRequirementView requirement, string value)
+    {
+        Draft(requirement).MechanicalType = value;
+        AdvanceChoice();
+    }
+
+    private void PickEffect(MatchChoiceRequirementView requirement, string effectId)
+    {
+        Draft(requirement).EffectId = effectId;
+        AdvanceChoice();
+    }
+
+    private void ClearAttachment(MatchChoiceRequirementView requirement, string energy) =>
+        Draft(requirement).Attachments.Remove(energy);
+
+    private MatchCardInstanceView[] TrayCards(MatchChoiceRequirementView requirement)
+    {
+        var frame = DisplayFrame();
+        var visible = AllVisibleCards(frame).Select(static card => card.Id).ToHashSet(StringComparer.Ordinal);
+        var candidates =
+            requirement.Kind == MatchChoiceKindView.Attachments
+            && _attachmentCardInstanceId is not null
+                ? requirement.EligibleTargets
+                : requirement.EligibleCards;
+        // Cards the table cannot show - a Deck search, the Discard pile, a Prize card - glow in
+        // the sheet instead, with the same aura and the same press behaviour.
+        return [.. candidates.Where(card => !visible.Contains(card.Id))];
+    }
+
+    private bool StepComplete() =>
+        CurrentRequirement() is { } requirement && ChoiceRequirementComplete(requirement);
+
+    // ---- Applying ------------------------------------------------------------------------
+
+    private void ChooseAttack(MatchAttackView attack)
     {
         if (attack.ActionId is null || _view?.Match is not { } match)
         {
             return;
         }
 
-        var action = match.LegalActions.Single(candidate => candidate.Id == attack.ActionId);
-        await ChooseAction(action);
+        CancelFlow();
+        _originCardInstanceId = attack.SourceCardInstanceId;
+        StartAction(match.LegalActions.Single(candidate => candidate.Id == attack.ActionId));
     }
 
-    private Task ChooseAction(MatchActionView action)
+    private async Task ConfirmPending()
     {
-        _operationError = null;
-        CancelChoice();
-        _targetActions = TargetActionsFor(action);
-        if (_targetActions.Length > 0)
-        {
-            _focusChoicePanel = true;
-            return Task.CompletedTask;
-        }
-
-        BeginAction(action);
-        return Task.CompletedTask;
-    }
-
-    private void BeginAction(MatchActionView action)
-    {
-        _choiceValidation = null;
-        _selectedAction = action;
-        _focusChoicePanel = true;
-        _drafts.Clear();
-        foreach (var requirement in action.ChoiceRequirements.Where(static requirement => requirement.Chooser.IsLocalPlayer))
-        {
-            _drafts[requirement.Id] = new ChoiceDraft { Amount = requirement.Minimum };
-        }
-    }
-
-    private async Task ConfirmChoice()
-    {
-        if (_selectedAction is null || !TryBuildChoices(_selectedAction, out var choices))
+        if (_pending is null || !TryBuildChoices(_pending, out var choices))
         {
             return;
         }
 
-        var action = _selectedAction;
-        CancelChoice();
+        var action = _pending;
+        CancelFlow();
         await Apply(action, choices);
     }
 
@@ -566,10 +1508,7 @@ else
 
         _commandId = null;
         _operationError = null;
-        _selectedAction = null;
-        _targetActions = [];
-        _choiceValidation = null;
-        _drafts.Clear();
+        CancelFlow();
         _view = response.Value.Application;
 
         if (response.Value.Presentation is { Steps.Length: > 0 } presentation)
@@ -722,47 +1661,104 @@ else
         }
     }
 
-    private MatchFrameView DisplayFrame() =>
-        _presentedFrame ?? _view!.Match!.Frame;
+    // ---- The card viewer -----------------------------------------------------------------
 
-    private void SelectCard(string cardInstanceId)
+    private async Task OpenViewer(string cardInstanceId)
     {
-        var targetAction = _targetActions.SingleOrDefault(action =>
-            action.TargetCardInstanceId == cardInstanceId
-        );
-        if (targetAction is not null)
+        var card = LookupCard(cardInstanceId);
+        if (card is null)
         {
-            BeginAction(targetAction);
             return;
         }
 
-        CancelChoice();
-        _selectedCardInstanceId = cardInstanceId;
-        if (!_dockManuallyRetracted)
+        if (_presentationModule is not null)
         {
-            _dockOpen = true;
+            _viewerScale = await _presentationModule.InvokeAsync<double>("viewerScale");
         }
+        _viewerCard = card;
+        StateHasChanged();
     }
 
-    private void DeselectCard()
+    private void CloseViewer()
     {
-        CancelChoice();
-        _selectedCardInstanceId = null;
-        _dockOpen = false;
-    }
-
-    private void ToggleActionDock()
-    {
-        if (_dockOpen)
+        if (_viewerCard is null)
         {
-            _dockOpen = false;
-            _dockManuallyRetracted = true;
             return;
         }
 
-        _dockOpen = true;
-        _dockManuallyRetracted = false;
+        _viewerCard = null;
+        StateHasChanged();
     }
+
+    private CardView? LookupCard(string cardInstanceId)
+    {
+        if (
+            AllVisibleCards(DisplayFrame()).FirstOrDefault(card => card.Id == cardInstanceId)
+            is { } visible
+        )
+        {
+            return visible.Card;
+        }
+
+        return _pending
+            ?.ChoiceRequirements.SelectMany(requirement =>
+                requirement.EligibleCards.Concat(requirement.EligibleTargets)
+            )
+            .FirstOrDefault(card => card.Id == cardInstanceId)
+            ?.Card;
+    }
+
+    // ---- Hand and dock -------------------------------------------------------------------
+
+    private static string HandCardClass(string cardInstanceId, AuraView auras)
+    {
+        var classes = new List<string>(3) { "hand-card" };
+        if (auras.Selected.Contains(cardInstanceId, StringComparer.Ordinal))
+        {
+            classes.Add("is-aura is-aura-selected");
+        }
+        else if (auras.Cards.Contains(cardInstanceId, StringComparer.Ordinal))
+        {
+            classes.Add("is-aura");
+        }
+        return string.Join(' ', classes);
+    }
+
+    // The fan is measured from the hand's own size, so every card keeps a clear press area
+    // however many are held: a fixed repeating pattern folds back on itself once the hand grows
+    // past the pattern and stacks two cards almost exactly on top of each other.
+    private static string FanStyle(int index, int count)
+    {
+        var offset = Math.Clamp(index - (count - 1) / 2.0, -3.5, 3.5);
+        var turn = (offset * 3.4).ToString("0.##", CultureInfo.InvariantCulture);
+        var lift = (offset * offset * 1.7).ToString("0.##", CultureInfo.InvariantCulture);
+        return $"--fan-turn: {turn}deg; --fan-lift: {lift}px";
+    }
+
+    private static string TrayCardClass(string cardInstanceId, AuraView auras) =>
+        auras.Selected.Contains(cardInstanceId, StringComparer.Ordinal)
+            ? "tray-card is-aura is-aura-selected"
+            : "tray-card is-aura";
+
+    private static string? AuraPressed(string cardInstanceId, AuraView auras) =>
+        auras.Selected.Contains(cardInstanceId, StringComparer.Ordinal) ? "true"
+        : auras.Cards.Contains(cardInstanceId, StringComparer.Ordinal) ? "false"
+        : null;
+
+    private static string HandCardLabel(MatchCardInstanceView card, AuraView auras) =>
+        auras.Cards.Contains(card.Id, StringComparer.Ordinal)
+        || auras.Selected.Contains(card.Id, StringComparer.Ordinal)
+            ? $"Choose {card.Card.Name} in your hand. Press and hold to view the card."
+            : $"{card.Card.Name} in your hand. Press and hold to view the card.";
+
+    private static string TurnRibbon(MatchFrameView frame, AuraView auras) =>
+        frame.Player.HasTurn
+            ? auras.Cards.Length > 0 || auras.Bench
+                ? "Your turn · tap a glowing card"
+                : "Your turn"
+            : $"{frame.Opponent.Name}'s turn";
+
+    private void ToggleActionDock() => _dockOpen = !_dockOpen;
 
     private string DockClass() => _dockOpen ? "dock-open" : "dock-retracted";
 
@@ -771,7 +1767,6 @@ else
         if (_view?.Match is not { } match)
         {
             _selectedCardInstanceId = null;
-            _dockOpen = false;
             return;
         }
 
@@ -786,8 +1781,7 @@ else
 
         _selectedCardInstanceId = selectDefault
             ? frame.Player.Active?.Id ?? frame.Player.Hand.FirstOrDefault()?.Id
-            : null;
-        _dockOpen = _selectedCardInstanceId is not null && !_dockManuallyRetracted;
+            : frame.Player.Active?.Id;
     }
 
     private MatchCardInstanceView? SelectedInstance(MatchFrameView frame) =>
@@ -800,6 +1794,9 @@ else
         side.Active is { } active
             ? new[] { active }.Concat(side.Bench).Concat(side.Hand)
             : side.Bench.Concat(side.Hand);
+
+    private MatchFrameView DisplayFrame() =>
+        _presentedFrame ?? _view!.Match!.Frame;
 
     private CardView? PresentationCard(MatchFrameView frame, MatchEventCueView cue)
     {
@@ -824,95 +1821,9 @@ else
             );
     }
 
-    private static MatchActionView[] ActionsFor(string cardInstanceId, MatchView match) =>
-        match.LegalActions
-            .Where(action => action.SourceCardInstanceId == cardInstanceId)
-            .ToArray();
+    // ---- Labels --------------------------------------------------------------------------
 
-    private static MatchActionView[] DisplayActionsFor(string cardInstanceId, MatchView match)
-    {
-        var displayActions = new List<MatchActionView>();
-        foreach (var action in ActionsFor(cardInstanceId, match))
-        {
-            if (
-                action.TargetCardInstanceId is null
-                || displayActions.All(existing => !SameTargetAction(existing, action))
-            )
-            {
-                displayActions.Add(action);
-            }
-        }
-
-        return [.. displayActions];
-    }
-
-    private MatchActionView[] TargetActionsFor(MatchActionView action) =>
-        action.TargetCardInstanceId is null || _view?.Match is not { } match
-            ? []
-            : match.LegalActions.Where(candidate => SameTargetAction(candidate, action)).ToArray();
-
-    private static bool SameTargetAction(MatchActionView left, MatchActionView right) =>
-        left.TargetCardInstanceId is not null
-        && right.TargetCardInstanceId is not null
-        && left.Kind == right.Kind
-        && left.SourceCardInstanceId == right.SourceCardInstanceId
-        && left.EffectId == right.EffectId;
-
-    private string[] TargetCardInstanceIds() =>
-        _targetActions
-            .Select(static action => action.TargetCardInstanceId)
-            .OfType<string>()
-            .ToArray();
-
-    private static MatchActionView[] GenericActions(MatchView match) =>
-        match.LegalActions.Where(IsGenericAction).ToArray();
-
-    private static bool IsGenericAction(MatchActionView action) =>
-        action.SourceCardInstanceId is null
-        && action.Kind
-            is not MatchActionKindView.EndTurn
-            and not MatchActionKindView.ChooseMulliganBonus
-            and not MatchActionKindView.Resign;
-
-    private static MatchActionView[] TurnActions(MatchView match) =>
-        match.LegalActions
-            .Where(static action =>
-                action.Kind
-                    is MatchActionKindView.EndTurn
-                        or MatchActionKindView.ChooseMulliganBonus
-                        or MatchActionKindView.Resign
-            )
-            .ToArray();
-
-    private MatchActionView[] MobileActions(MatchView match)
-    {
-        if (_selectedCardInstanceId is { } selected)
-        {
-            var selectedActions = DisplayActionsFor(selected, match);
-            if (selectedActions.Length > 0)
-            {
-                return selectedActions;
-            }
-        }
-
-        var required = GenericActions(match);
-        return required.Length > 0 ? required : TurnActions(match);
-    }
-
-    private static string MobileActionDetail(MatchActionView action, MatchView match)
-    {
-        var attack = match.Attacks.FirstOrDefault(candidate => candidate.ActionId == action.Id);
-        return attack is null
-            ? "Available now"
-            : attack.PrintedDamage == 0
-                ? "Ready · ends your turn"
-                : $"{attack.PrintedDamage} damage · ends your turn";
-    }
-
-    private static bool HasPlayerChoices(MatchActionView action) =>
-        action.ChoiceRequirements.Any(static requirement => requirement.Chooser.IsLocalPlayer);
-
-    private static string ConfirmationHeading(MatchActionView action) =>
+    private string ConfirmationHeading(MatchActionView action) =>
         action.Kind switch
         {
             MatchActionKindView.Attack => $"Use {SimpleActionName(action.Label)}?",
@@ -920,17 +1831,6 @@ else
             MatchActionKindView.Resign => "Resign and lose this battle?",
             _ => $"{PublicText(action.Label)}?",
         };
-
-    private static string ActionButtonLabel(MatchActionView action, string? sourceName) =>
-        action.TargetCardInstanceId is null || string.IsNullOrWhiteSpace(sourceName)
-            ? PublicText(action.Label)
-            : action.Kind switch
-            {
-                MatchActionKindView.AttachEnergy => $"Attach {sourceName}",
-                MatchActionKindView.Evolve => $"Evolve with {sourceName}",
-                MatchActionKindView.PlayTrainer => $"Play {sourceName}",
-                _ => PublicText(action.Label),
-            };
 
     private static string ConfirmationButton(MatchActionView action) =>
         action.Kind switch
@@ -949,37 +1849,6 @@ else
             _ => "Play",
         };
 
-    private string TargetChoiceHeading(MatchFrameView frame)
-    {
-        var source = TargetSourceName(frame);
-        if (_selectedAction?.TargetCardInstanceId is not { } targetId)
-        {
-            return $"Choose a Blokemon for {source}.";
-        }
-
-        var target = VisibleCardName(frame, targetId);
-        return _selectedAction.Kind switch
-        {
-            MatchActionKindView.AttachEnergy => $"Attach {source} to {target}?",
-            MatchActionKindView.Evolve => $"Evolve {target} into {source}?",
-            MatchActionKindView.PlayTrainer => $"Attach {source} to {target}?",
-            _ => $"Use {source} on {target}?",
-        };
-    }
-
-    private string TargetChoiceInstruction(MatchFrameView frame) =>
-        _selectedAction?.TargetCardInstanceId is { } targetId
-            ? $"Selected: {VisibleCardName(frame, targetId)}."
-            : "Select a highlighted Blokemon.";
-
-    private string TargetConfirmationButton() =>
-        _selectedAction is null ? "Confirm" : ConfirmationButton(_selectedAction);
-
-    private string TargetSourceName(MatchFrameView frame) =>
-        _targetActions.FirstOrDefault()?.SourceCardInstanceId is { } sourceId
-            ? VisibleCardName(frame, sourceId)
-            : "this card";
-
     private static string VisibleCardName(MatchFrameView frame, string cardInstanceId) =>
         AllVisibleCards(frame).FirstOrDefault(card => card.Id == cardInstanceId)?.Card.Name
         ?? "this Blokemon";
@@ -995,7 +1864,7 @@ else
     )
     {
         var result = new List<MatchChoiceSelectionRequest>();
-        foreach (var requirement in action.ChoiceRequirements.Where(static requirement => requirement.Chooser.IsLocalPlayer))
+        foreach (var requirement in LocalRequirements(action))
         {
             if (!ChoiceIsActive(requirement))
             {
@@ -1048,56 +1917,32 @@ else
     }
 
     private ChoiceDraft Draft(MatchChoiceRequirementView requirement) =>
-        _drafts[requirement.Id];
+        _drafts.TryGetValue(requirement.Id, out var draft)
+            ? draft
+            : _drafts[requirement.Id] = new ChoiceDraft { Amount = requirement.Minimum };
 
+    // An active requirement is one the match still expects an answer for, so it is always
+    // submitted even when the answer can only be empty.
     private bool ChoiceIsActive(MatchChoiceRequirementView requirement) =>
         requirement.DependsOnOptional is null
         || (_drafts.TryGetValue(requirement.DependsOnOptional, out var parent) && parent.Accepted);
 
-    private void SetAccepted(MatchChoiceRequirementView requirement, ChangeEventArgs eventArgs) =>
-        Draft(requirement).Accepted = Convert.ToBoolean(eventArgs.Value);
+    // A requirement that admits nothing but the empty answer is not a decision, so it gets no
+    // step and no line in the summary: it would show a heading, no glowing cards, and a Continue
+    // that means "there was nothing here".
+    private bool ChoiceHasStep(MatchChoiceRequirementView requirement) =>
+        ChoiceIsActive(requirement) && !NothingToDecide(requirement);
 
-    private void SetAmount(MatchChoiceRequirementView requirement, ChangeEventArgs eventArgs) =>
-        Draft(requirement).Amount = ParseNumber(eventArgs.Value, requirement.Minimum);
-
-    private void SetMechanicalType(MatchChoiceRequirementView requirement, ChangeEventArgs eventArgs) =>
-        Draft(requirement).MechanicalType = eventArgs.Value?.ToString();
-
-    private void SetEffect(MatchChoiceRequirementView requirement, ChangeEventArgs eventArgs) =>
-        Draft(requirement).EffectId = eventArgs.Value?.ToString();
-
-    private void SetDistribution(MatchChoiceRequirementView requirement, string card, ChangeEventArgs eventArgs) =>
-        Draft(requirement).Distribution[card] = Math.Max(0, ParseNumber(eventArgs.Value, 0));
-
-    private void ToggleCard(MatchChoiceRequirementView requirement, string card, ChangeEventArgs eventArgs)
-    {
-        var selected = Convert.ToBoolean(eventArgs.Value);
-        if (selected && Draft(requirement).Cards.Count < requirement.Maximum)
-        {
-            Draft(requirement).Cards.Add(card);
-        }
-        else if (!selected)
-        {
-            Draft(requirement).Cards.Remove(card);
-        }
-        _choiceValidation = null;
-    }
-
-    private void SetAttachment(MatchChoiceRequirementView requirement, string energy, ChangeEventArgs eventArgs)
-    {
-        var target = eventArgs.Value?.ToString();
-        if (string.IsNullOrEmpty(target))
-        {
-            Draft(requirement).Attachments.Remove(energy);
-        }
-        else
-        {
-            Draft(requirement).Attachments[energy] = target;
-        }
-    }
-
-    private static int ParseNumber(object? value, int fallback) =>
-        int.TryParse(value?.ToString(), out var parsed) ? parsed : fallback;
+    private static bool NothingToDecide(MatchChoiceRequirementView requirement) =>
+        requirement.Minimum == 0
+        && requirement.Kind
+            is MatchChoiceKindView.Cards
+                or MatchChoiceKindView.Distribution
+                or MatchChoiceKindView.Attachments
+        && (
+            requirement.Maximum == 0
+            || (requirement.EligibleCards.Length == 0 && requirement.EligibleTargets.Length == 0)
+        );
 
     private static string ChoiceInstruction(MatchChoiceRequirementView requirement)
     {
@@ -1111,16 +1956,27 @@ else
             : $"Choose {requirement.Minimum} to {requirement.Maximum}";
     }
 
-    private string ChoiceProgress(MatchChoiceRequirementView requirement) =>
-        requirement.Kind == MatchChoiceKindView.Cards && ChoiceIsActive(requirement)
-            ? $"{ChoiceInstruction(requirement)} · {Draft(requirement).Cards.Count}/{requirement.Maximum} selected"
-            : ChoiceInstruction(requirement);
+    private string ChoiceProgress(MatchChoiceRequirementView requirement)
+    {
+        var draft = Draft(requirement);
+        return requirement.Kind switch
+        {
+            MatchChoiceKindView.Cards =>
+                $"{ChoiceInstruction(requirement)} · {draft.Cards.Count}/{requirement.Maximum} selected",
+            MatchChoiceKindView.Distribution =>
+                $"Place {requirement.Maximum} · {draft.Distribution.Values.Sum()} placed. Tap a glowing Blokemon to add one.",
+            MatchChoiceKindView.Attachments =>
+                _attachmentCardInstanceId is null
+                    ? $"Tap an Energy card, then the Blokemon it joins · {draft.Attachments.Count}/{requirement.Maximum}"
+                    : "Now tap the Blokemon it joins.",
+            MatchChoiceKindView.Amount =>
+                $"Between {requirement.Minimum} and {requirement.Maximum}",
+            _ => ChoiceInstruction(requirement),
+        };
+    }
 
     private bool PlayerChoicesValid(MatchActionView action) =>
-        action
-            .ChoiceRequirements.Where(static requirement => requirement.Chooser.IsLocalPlayer)
-            .Where(ChoiceIsActive)
-            .All(ChoiceRequirementComplete);
+        LocalRequirements(action).Where(ChoiceIsActive).All(ChoiceRequirementComplete);
 
     private bool ChoiceRequirementComplete(MatchChoiceRequirementView requirement)
     {
@@ -1159,22 +2015,6 @@ else
     private static string TurnStatus(MatchFrameView frame) =>
         frame.Player.HasTurn ? "Your turn" : $"{frame.Opponent.Name}'s turn";
 
-    private static string CardChoiceDetail(MatchChoiceRequirementView requirement, MatchCardInstanceView card)
-    {
-        var types = requirement.EligibleCardTypes.FirstOrDefault(candidate => candidate.CardInstanceId == card.Id)?.MechanicalTypes;
-        return types is { Length: > 0 }
-            ? $"{card.OwnerName} · {PublicZone(card.Zone)} · {string.Join(" / ", types)}"
-            : $"{card.OwnerName} · {PublicZone(card.Zone)}";
-    }
-
-    private static string HandCardLabel(MatchCardInstanceView card, MatchView match)
-    {
-        var actions = DisplayActionsFor(card.Id, match);
-        return actions.Length == 0
-            ? $"Inspect {card.Card.Name} in your hand"
-            : $"{card.Card.Name} in your hand. {actions.Length} {(actions.Length == 1 ? "move" : "moves")} available.";
-    }
-
     private static string EnergyCostLabel(MatchAttackView attack) =>
         attack.EnergyCost.Length == 0
             ? "No Energy cost"
@@ -1187,17 +2027,6 @@ else
 
     private static string EnergyInitial(string energy) =>
         string.IsNullOrEmpty(energy) ? "?" : energy[..1];
-
-    private string CueClass(string cardInstanceId)
-    {
-        if (_activeCue?.SourceCardInstanceId == cardInstanceId)
-        {
-            return "is-cue-source";
-        }
-        return _activeCue?.TargetCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal) == true
-            ? "is-cue-target"
-            : string.Empty;
-    }
 
     private string? AnimationClass() =>
         _activeCue is null
@@ -1281,15 +2110,6 @@ else
                 },
             System.Text.RegularExpressions.RegexOptions.IgnoreCase
         );
-
-    private void CancelChoice()
-    {
-        _selectedAction = null;
-        _targetActions = [];
-        _focusChoicePanel = false;
-        _choiceValidation = null;
-        _drafts.Clear();
-    }
 
     public async ValueTask DisposeAsync()
     {

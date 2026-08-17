@@ -506,7 +506,6 @@ small,
 
 .search,
 .choice-select,
-.choice-number,
 .setup-card input,
 .deck-name-input {
   color: var(--ink);
@@ -674,8 +673,7 @@ small,
 }
 
 .qty,
-.count-pill,
-.playable-badge {
+.count-pill {
   position: absolute;
   z-index: 5;
   border: 1px solid #5a543e;
@@ -1652,12 +1650,49 @@ small,
   pointer-events: auto;
 }
 
+/* End turn, Resign and any effect the table cannot show a card for live in the HUD. */
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  pointer-events: auto;
+}
+
+.hud-button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #5a5739;
+  border-radius: 19px;
+  color: var(--ink);
+  background: rgb(10 12 9 / 88%);
+  backdrop-filter: blur(12px);
+  font: 700 12px "Jost", sans-serif;
+}
+
+.hud-end-turn {
+  border-color: #b7983d;
+  color: #f6e6ae;
+  background: linear-gradient(145deg, rgb(58 49 23 / 94%), rgb(24 27 18 / 94%));
+}
+
+.hud-resign {
+  color: var(--muted);
+}
+
+.hud-effect {
+  max-width: 34vw;
+  overflow: hidden;
+  color: #e6f0ff;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .fullscreen-toggle {
   width: 38px;
   height: 38px;
   display: grid;
   place-items: center;
-  margin-left: auto;
   padding: 0;
   border: 1px solid #5a5739;
   border-radius: 50%;
@@ -1854,12 +1889,20 @@ small,
   font-size: 11px;
 }
 
+/*
+  Cards are press surfaces: a hold must not raise the browser's own text selection or callout,
+  and a drag across a card must still scroll the table rather than being swallowed.
+*/
 .field-card-button,
-.hand-card {
+.hand-card,
+.tray-card {
   padding: 0;
   border: 0;
   color: inherit;
   background: transparent;
+  touch-action: pan-x pan-y;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .field-card-button {
@@ -1868,25 +1911,41 @@ small,
   border-radius: 10px;
 }
 
-.battlefield.is-choosing-target .field-card-button:not(.is-target-option) {
-  opacity: 0.32;
-  filter: saturate(0.4);
+/*
+  The aura is the whole interaction model: a card that can be acted on breathes a soft white
+  bloom, and the one the player has already chosen holds a brighter, steady bloom and lifts.
+  Nothing here flashes or steps; the glow swells and settles on an ease-in-out curve.
+*/
+.battlefield.is-choosing .field-card-button:not(.is-aura) {
+  opacity: 0.42;
+  filter: saturate(0.55);
 }
 
-.field-card-button.is-target-option {
+.is-aura {
   z-index: 20;
   cursor: pointer;
 }
 
-.field-card-button.is-target-option .battle-card-shell {
-  filter: drop-shadow(0 0 13px rgb(244 189 63 / 88%));
-  animation: legal-target-pulse 1.1s ease-in-out infinite alternate;
+.field-card-button.is-aura-selected .battle-card-shell {
+  transform: translateY(-6px) scale(1.05);
 }
 
-.field-card-button.is-target-selected .battle-card-shell {
-  filter: drop-shadow(0 0 20px rgb(255 220 108 / 100%));
-  transform: translateY(-5px) scale(1.05);
-  animation: none;
+.aura-counter {
+  position: absolute;
+  z-index: 12;
+  top: -9px;
+  left: -9px;
+  min-width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  padding: 0 5px;
+  border: 2px solid #dff0ff;
+  border-radius: 100px;
+  color: #10130e;
+  background: white;
+  box-shadow: 0 3px 10px #0009;
+  font: 700 12px "Jost", sans-serif;
 }
 
 .bench-row {
@@ -1908,6 +1967,31 @@ small,
   height: 137px;
   border: 1px dashed rgb(156 164 128 / 23%);
   border-radius: 7px;
+}
+
+/* An empty Bench position only becomes a control while it is a legal destination. */
+button.bench-slot {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #10130e;
+  background: rgb(255 255 255 / 12%);
+  cursor: pointer;
+}
+
+button.bench-slot.is-aura {
+  border: 2px solid rgb(255 255 255 / 88%);
+  box-shadow:
+    0 0 5px rgb(255 255 255 / 70%),
+    0 0 18px rgb(248 252 255 / 42%) inset;
+  animation: aura-bloom 2.9s ease-in-out infinite;
+}
+
+button.bench-slot span {
+  color: white;
+  font: 700 10px "Jost", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
 }
 
 .battle-card-shell {
@@ -2257,20 +2341,21 @@ small,
   pointer-events: auto;
 }
 
+/*
+  The fan lives on the card's own button, not on an inner visual: the press surface then sits
+  exactly where the card appears, so a tap always reaches the card it looks like it will. The
+  inner visual is left free for the cue animations to drive.
+*/
 .hand-card {
   position: relative;
   flex: 0 0 auto;
   margin: 0 -30px;
   overflow: visible;
   pointer-events: auto;
-}
-
-.hand-card::before {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background: rgb(0 0 0 / 0.1%);
   transform-origin: 50% 130%;
+  /* The page measures each card's place in the fan; the arc itself is declared here. */
+  transform: rotate(var(--fan-turn, 0deg)) translateY(var(--fan-lift, 0px));
+  transition: transform 0.2s;
 }
 
 .hand-card-visual {
@@ -2279,54 +2364,24 @@ small,
   height: max-content;
   display: block;
   transform-origin: 50% 130%;
-  transition: transform 0.2s, filter 0.2s;
-}
-
-.hand-card:nth-of-type(6n + 1)::before,
-.hand-card:nth-of-type(6n + 1) .hand-card-visual {
-  transform: rotate(-10deg) translateY(20px);
-}
-
-.hand-card:nth-of-type(6n + 2)::before,
-.hand-card:nth-of-type(6n + 2) .hand-card-visual {
-  transform: rotate(-6deg) translateY(9px);
-}
-
-.hand-card:nth-of-type(6n + 3)::before,
-.hand-card:nth-of-type(6n + 3) .hand-card-visual {
-  transform: rotate(-2deg);
-}
-
-.hand-card:nth-of-type(6n + 4)::before,
-.hand-card:nth-of-type(6n + 4) .hand-card-visual {
-  transform: rotate(2deg);
-}
-
-.hand-card:nth-of-type(6n + 5)::before,
-.hand-card:nth-of-type(6n + 5) .hand-card-visual {
-  transform: rotate(6deg) translateY(9px);
-}
-
-.hand-card:nth-of-type(6n)::before,
-.hand-card:nth-of-type(6n) .hand-card-visual {
-  transform: rotate(10deg) translateY(20px);
+  transition: filter 0.2s;
 }
 
 .hand-card:hover,
 .hand-card:focus-visible,
-.hand-card.selected {
+.hand-card.is-aura-selected {
   z-index: 8;
+  transform: translateY(-68px) rotate(0) scale(1.08);
 }
 
 .hand-card:focus-visible {
   outline: none;
 }
 
-.hand-card:hover .hand-card-visual,
-.hand-card:focus-visible .hand-card-visual,
-.hand-card.selected .hand-card-visual {
+/* Hover keeps its own warm lift, but never paints over a white aura. */
+.hand-card:not(.is-aura):hover .hand-card-visual,
+.hand-card:not(.is-aura):focus-visible .hand-card-visual {
   filter: drop-shadow(0 0 12px rgb(244 189 63 / 55%));
-  transform: translateY(-68px) rotate(0) scale(1.08);
 }
 
 .hand-card:focus-visible .hand-card-visual {
@@ -2334,12 +2389,26 @@ small,
   outline-offset: 3px;
 }
 
-.playable-badge {
-  right: 4px;
-  bottom: 8px;
-  padding: 4px 7px;
-  color: #17200d;
-  background: #badd8c;
+/*
+  The aura glow lands after the hand's own hover rules so a glowing card in hand keeps its
+  aura while hovered, and after the board rules so both zones read identically.
+*/
+.is-aura .battle-card-shell,
+.is-aura .hand-card-visual,
+.is-aura .tray-card-visual {
+  filter:
+    drop-shadow(0 0 5px rgb(255 255 255 / 82%))
+    drop-shadow(0 0 17px rgb(248 252 255 / 46%));
+  animation: aura-bloom 2.9s ease-in-out infinite;
+}
+
+.is-aura.is-aura-selected .battle-card-shell,
+.is-aura.is-aura-selected .hand-card-visual,
+.is-aura.is-aura-selected .tray-card-visual {
+  filter:
+    drop-shadow(0 0 9px rgb(255 255 255 / 96%))
+    drop-shadow(0 0 26px rgb(226 244 255 / 62%));
+  animation: none;
 }
 
 .action-dock {
@@ -2570,13 +2639,6 @@ small,
   margin-top: 12px;
 }
 
-.turn-actions {
-  display: grid;
-  gap: 4px;
-  margin-top: auto;
-  padding-top: 12px;
-}
-
 .dock-log {
   margin-top: 10px;
   color: var(--muted);
@@ -2587,135 +2649,198 @@ small,
   padding-left: 18px;
 }
 
-.required-actions {
-  position: absolute;
-  z-index: 45;
-  top: 58px;
-  left: 18px;
-  max-width: 260px;
-  display: grid;
-  gap: 7px;
-}
-
-.mobile-actions {
-  display: none;
-}
-
-.action-confirm,
-.choice-drawer {
-  position: absolute;
+/*
+  One pop-up surface carries every step of the interaction: the destination prompt, the list of
+  available moves, each choice step, and the final confirmation. It sits bottom-right beside the
+  table on a wide screen and becomes a bottom sheet on a phone. A forced decision centres the
+  same surface over a dimmed table.
+*/
+.action-sheet {
+  position: fixed;
   z-index: 200;
   right: 18px;
   bottom: 18px;
   width: 354px;
+  max-height: min(72dvh, 640px);
+  overflow: auto;
+  padding: 15px 18px 18px;
   border: 1px solid #75683d;
   border-radius: 17px;
   background: #1b1e16;
   box-shadow: 0 20px 55px #000d;
   transform-origin: bottom right;
-  animation: action-pop 0.18s ease-out both;
+  animation: action-pop 0.2s ease-out both;
 }
 
-.action-confirm {
-  padding: 18px;
-}
-
-.action-confirm > strong {
-  display: block;
-  font: 700 18px "Jost", sans-serif;
-}
-
-.target-confirm > .eyebrow {
+.action-sheet > .eyebrow {
   display: block;
   margin-bottom: 5px;
 }
 
-.target-confirm > p {
+.action-sheet > strong {
+  display: block;
+  font: 700 18px "Jost", sans-serif;
+}
+
+.action-sheet.is-centred {
+  right: auto;
+  bottom: auto;
+  inset: 50% auto auto 50%;
+  width: min(420px, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  border-color: #8d7f4c;
+  box-shadow: 0 24px 80px #000e;
+  animation: sheet-centre-in 0.22s ease-out both;
+}
+
+/*
+  A decision the sheet answers itself dims the table behind it. A decision the player answers by
+  tapping the table must not: the scrim would swallow the auras it is asking them to find.
+*/
+.action-sheet.is-modal {
+  box-shadow: 0 24px 80px #000e, 0 0 0 100vmax rgb(3 4 3 / 62%);
+}
+
+.sheet-detail {
   margin: 7px 0 0;
   color: var(--muted);
 }
 
-.action-confirm-buttons {
+.sheet-effect {
+  margin: 9px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--gold);
+  color: #d1cbb9;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.sheet-options {
+  display: grid;
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.sheet-option {
+  min-height: 44px;
+  padding: 10px 13px;
+  border: 1px solid #5c5b43;
+  border-radius: 11px;
+  color: var(--ink);
+  background: #23261c;
+  text-align: left;
+  font-weight: 700;
+}
+
+.sheet-option.is-primary,
+.sheet-option.is-picked {
+  border-color: #b7983d;
+  background: linear-gradient(145deg, #3a3117, #1f2216);
+}
+
+.sheet-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 13px;
+}
+
+.sheet-stepper button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #5c5b43;
+  border-radius: 50%;
+  color: var(--ink);
+  background: #23261c;
+  font-size: 20px;
+}
+
+.sheet-stepper b {
+  min-width: 34px;
+  text-align: center;
+  font: 700 20px "Jost", sans-serif;
+}
+
+/*
+  Cards the table cannot show - a Deck search, the Discard pile - glow inside the sheet with the
+  same aura and the same press behaviour they would have on the table.
+*/
+.sheet-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 15px 2px 2px;
+}
+
+.tray-card {
+  position: relative;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tray-card-visual {
+  position: relative;
+  display: block;
+  width: max-content;
+  transition: transform 0.18s, filter 0.18s;
+}
+
+.tray-card.is-aura-selected .tray-card-visual {
+  transform: translateY(-5px) scale(1.04);
+}
+
+.tray-card:focus-visible {
+  outline: none;
+}
+
+.tray-card:focus-visible .tray-card-visual {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.sheet-assignments {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.sheet-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 16px;
 }
 
-.choice-drawer {
+.sheet-buttons button {
+  min-height: 44px;
+}
+
+/*
+  The card viewer: press and hold any card in any zone. The face keeps its printed aspect ratio
+  and fills the viewport minus a 20px margin, whichever axis binds first.
+*/
+.card-viewer {
   position: fixed;
-  max-height: calc(100dvh - 36px);
-  overflow: auto;
-}
-
-.choice-panel {
-  width: 100%;
-  padding: 18px;
-}
-
-.choice-block {
-  padding: 18px 0;
-  border-top: 1px solid var(--line);
-}
-
-.choice-inactive {
-  opacity: 0.6;
-}
-
-.choice-heading {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 12px;
-}
-
-.chooser.cpu {
-  border-color: #4d5f3c;
-  color: #c6dcae;
-}
-
-.toggle-choice,
-.choice-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.choice-cards {
+  z-index: 400;
+  inset: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 8px;
+  place-items: center;
+  padding: 20px;
+  background: rgb(2 3 2 / 86%);
+  backdrop-filter: blur(7px);
+  animation: fade-in 0.16s ease-out both;
 }
 
-.choice-card {
-  padding: 8px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #12120f;
-}
-
-.choice-card:has(input:disabled) {
-  opacity: 0.45;
-}
-
-.choice-card b,
-.choice-card small {
-  display: block;
-}
-
-.distribution-grid,
-.attachment-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-}
-
-.distribution-grid label,
-.attachment-grid label {
-  display: grid;
-  gap: 6px;
-  color: var(--muted);
+.card-viewer .card-face-host {
+  --blokemon-card-scale: var(--viewer-scale, 0.5);
+  filter: drop-shadow(0 26px 60px #000c);
+  animation: viewer-in 0.2s cubic-bezier(0.2, 0.75, 0.25, 1) both;
 }
 
 .match-log {
@@ -2932,13 +3057,36 @@ small,
   }
 }
 
-@keyframes legal-target-pulse {
-  from {
-    transform: translateY(0) scale(1);
+/*
+  The aura breathes: the bloom swells and settles on one continuous ease-in-out curve, with no
+  step, no colour change and no hard edge. The card itself does not move.
+*/
+@keyframes aura-bloom {
+  0%,
+  100% {
+    filter:
+      drop-shadow(0 0 4px rgb(255 255 255 / 68%))
+      drop-shadow(0 0 12px rgb(248 252 255 / 30%));
   }
 
-  to {
-    transform: translateY(-4px) scale(1.035);
+  50% {
+    filter:
+      drop-shadow(0 0 8px rgb(255 255 255 / 94%))
+      drop-shadow(0 0 24px rgb(248 252 255 / 58%));
+  }
+}
+
+@keyframes sheet-centre-in {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+@keyframes viewer-in {
+  from {
+    opacity: 0;
+    scale: 0.94;
   }
 }
 
@@ -3808,7 +3956,7 @@ small,
 
   .battlefield {
     grid-template-rows: 1fr 28px 1.08fr;
-    padding: 38px 5px 320px;
+    padding: 38px 5px 214px;
   }
 
   .side-zone {
@@ -3912,30 +4060,51 @@ small,
     font-size: 11px;
   }
 
+  /*
+    On a phone the hand is a flat, swipeable tray rather than a fan: every card is fully
+    tappable and shows its whole aura, which the overlapping fan could not do at this size.
+    The press-and-hold viewer is what makes cards this small readable.
+  */
   .hand-zone {
     right: 0;
-    bottom: 76px;
+    bottom: 78px;
     left: 0;
     width: 100%;
-    height: 270px;
-    justify-content: flex-start;
-    padding: 88px 34px 10px;
+    height: 166px;
+    justify-content: safe center;
+    gap: 6px;
+    padding: 22px 10px 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
     transform: none;
-    background: linear-gradient(transparent, #090b08 48%);
+    background: linear-gradient(transparent, #090b08 42%);
+  }
+
+  /*
+    While the glowing cards to choose from are in hand, the hand rises clear of the sheet; the
+    board is the aura surface the rest of the time, so the hand stays down out of the way.
+  */
+  .hand-forward .hand-zone {
+    bottom: 340px;
+    background: linear-gradient(transparent, rgb(9 11 8 / 88%) 42%);
   }
 
   .hand-card {
-    margin: 0 -23px;
+    margin: 0;
+    scroll-snap-align: center;
+    touch-action: pan-x pan-y;
+    transform: none;
   }
 
   .hand-card .card-face--hand {
-    --blokemon-card-scale: 0.18;
+    --blokemon-card-scale: 0.13;
   }
 
-  .hand-card:hover .hand-card-visual,
-  .hand-card:focus-visible .hand-card-visual,
-  .hand-card.selected .hand-card-visual {
-    transform: translateY(-56px) rotate(0) scale(1.05);
+  .hand-card:hover,
+  .hand-card:focus-visible,
+  .hand-card.is-aura-selected {
+    transform: translateY(-14px) scale(1.04);
   }
 
   .card-play-overlay .card-face--showcase {
@@ -3967,83 +4136,23 @@ small,
     display: none;
   }
 
-  .required-actions {
-    top: auto;
-    right: 8px;
-    bottom: 306px;
-    left: 8px;
-    max-width: none;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .mobile-actions {
+  /*
+    The pop-up becomes a bottom sheet inside the table, above the navigation bar. A forced
+    decision uses the same geometry rather than a centred box, so a phone never stacks two
+    competing surfaces.
+  */
+  .action-sheet,
+  .action-sheet.is-centred {
     position: absolute;
-    z-index: 60;
-    right: 8px;
-    bottom: 8px;
-    left: 8px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px;
-    padding: 9px;
-    border: 1px solid #4b4c3c;
-    border-radius: 15px;
-    background: rgb(16 19 15 / 94%);
-    backdrop-filter: blur(14px);
+    inset: auto 8px 8px;
+    width: auto;
+    max-height: min(40dvh, 320px);
+    transform: none;
+    transform-origin: bottom center;
   }
 
-  .mobile-actions strong,
-  .mobile-actions small {
-    display: block;
-  }
-
-  .mobile-actions strong {
-    font: 700 13px "Jost", sans-serif;
-  }
-
-  .mobile-actions button {
-    padding: 0 18px;
-    border: 0;
-    border-radius: 10px;
-    color: #171408;
-    background: var(--gold);
-    font-weight: 700;
-  }
-
-  .mobile-action-buttons {
-    max-width: 58vw;
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-  }
-
-  .mobile-action-buttons button {
-    flex: 0 0 auto;
-    min-height: 44px;
-    white-space: nowrap;
-  }
-
-  .action-confirm,
-  .choice-drawer {
-    position: absolute;
-    right: 8px;
-    bottom: 82px;
-    width: min(360px, calc(100% - 16px));
-  }
-
-  .choice-panel {
-    max-height: calc(100dvh - 220px);
-    padding: 17px;
-  }
-
-  .choice-heading {
-    display: grid;
-  }
-
-  .choice-cards,
-  .distribution-grid,
-  .attachment-grid {
-    grid-template-columns: 1fr;
+  .sheet-tray .card-face--hand {
+    --blokemon-card-scale: 0.15;
   }
 
   .profile-setup {
@@ -4059,5 +4168,37 @@ small,
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /*
+    The aura is an affordance, not decoration: with motion suppressed it stops breathing and
+    holds its bloom, so every card that can be acted on still reads as glowing. The viewer and
+    the pop-up simply appear.
+  */
+  .is-aura .battle-card-shell,
+  .is-aura .hand-card-visual,
+  .is-aura .tray-card-visual,
+  button.bench-slot.is-aura,
+  .action-sheet,
+  .action-sheet.is-centred,
+  .card-viewer,
+  .card-viewer .card-face-host {
+    animation: none !important;
+  }
+
+  .is-aura .battle-card-shell,
+  .is-aura .hand-card-visual,
+  .is-aura .tray-card-visual {
+    filter:
+      drop-shadow(0 0 6px rgb(255 255 255 / 88%))
+      drop-shadow(0 0 20px rgb(248 252 255 / 52%)) !important;
+  }
+
+  .is-aura.is-aura-selected .battle-card-shell,
+  .is-aura.is-aura-selected .hand-card-visual,
+  .is-aura.is-aura-selected .tray-card-visual {
+    filter:
+      drop-shadow(0 0 10px rgb(255 255 255 / 100%))
+      drop-shadow(0 0 30px rgb(226 244 255 / 70%)) !important;
   }
 }
