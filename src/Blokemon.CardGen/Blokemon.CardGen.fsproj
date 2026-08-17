@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Blokemon.CardGen</RootNamespace>
+    <AssemblyName>Blokemon.CardGen</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Domain/CardVocabulary.fs" />
+    <Compile Include="Domain/CardValues.fs" />
+    <Compile Include="Domain/CardProfile.fs" />
+    <Compile Include="Domain/CardEntry.fs" />
+    <Compile Include="Domain/CardRegion.fs" />
+    <Compile Include="Domain/Card.fs" />
+    <Compile Include="Rendering/TypeGlyphs.fs" />
+    <Compile Include="Rendering/Illustrations.fs" />
+    <Compile Include="Rendering/CardRenderer.fs" />
+    <Compile Include="Rendering/CardDocument.fs" />
+    <Compile Include="Authority/ArtIndex.fs" />
+    <Compile Include="Authority/SetAuthority.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.csproj" />
+    <Content Include="Content\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      Central package management sets DisableImplicitFSharpCoreReference, so without this
+      reference the project builds green and fails at runtime with a missing FSharp.Core.
+    -->
+    <PackageReference Include="FSharp.Core" />
+  </ItemGroup>
+</Project>

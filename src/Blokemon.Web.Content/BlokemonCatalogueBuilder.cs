@@ -215,7 +215,7 @@ public static class BlokemonCatalogueBuilder
             attack.PrintedDamage == 0 ? null : attack.PrintedDamage
         );
 
-    private static string RuntimeCardId(ICard card) =>
+    private static string RuntimeCardId(Card card) =>
         card.Id.Value.StartsWith("ENERGY-", StringComparison.Ordinal)
             ? $"VIM-{card.Id.Value["ENERGY-".Length..]}"
             : card.Id.Value;

@@ -1,11 +1,11 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Blokemon.CardGen/Blokemon.CardGen.csproj" />
+    <Project Path="src/Blokemon.CardGen/Blokemon.CardGen.fsproj" />
     <Project Path="src/Blokemon.Core/Blokemon.Core.csproj" />
     <Project Path="src/Blokemon.Game/Blokemon.Game.csproj" />
     <Project Path="src/Blokemon.PackGen/Blokemon.PackGen.fsproj" />
     <Project Path="src/Blokemon.Product/Blokemon.Product.csproj" />
-    <Project Path="src/Blokemon.Sheet/Blokemon.Sheet.csproj" />
+    <Project Path="src/Blokemon.Sheet/Blokemon.Sheet.fsproj" />
     <Project Path="src/Blokemon.Web.Client/Blokemon.Web.Client.csproj" />
     <Project Path="src/Blokemon.Web.Bootstrap/Blokemon.Web.Bootstrap.csproj" />
     <Project Path="src/Blokemon.Web.Content/Blokemon.Web.Content.csproj" />

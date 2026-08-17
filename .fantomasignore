@@ -1,0 +1,2 @@
+# Review worktrees and other disposable scratch state now carry F# sources of their own.
+.agent-workspace/
