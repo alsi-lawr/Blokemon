@@ -1,4 +1,5 @@
 using Blokemon.App;
+using Blokemon.App.Client;
 using Blokemon.App.Contracts;
 using Blokemon.Web.Api;
 using Blokemon.Web.Components;

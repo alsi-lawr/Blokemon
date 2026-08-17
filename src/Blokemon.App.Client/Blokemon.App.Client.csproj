@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Blokemon.App.Client</RootNamespace>
+    <AssemblyName>Blokemon.App.Client</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
+  </ItemGroup>
+</Project>

@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Blokemon.App;
 using Blokemon.App.Catalogue;
+using Blokemon.App.Client;
 using Blokemon.App.Contracts;
 using Blokemon.Product;
 using Blokemon.Web.Client.Application;

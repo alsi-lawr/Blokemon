@@ -1,5 +1,6 @@
 using Blokemon.App;
 using Blokemon.App.Catalogue;
+using Blokemon.App.Client;
 using Blokemon.App.Contracts;
 using Blokemon.Product;
 using Blokemon.Web.Client.Persistence;
@@ -25,7 +26,17 @@ public static class ClientComposition
         services.AddScoped<LocalMatchService>();
         services.AddScoped<LocalApplicationService>();
         services.AddScoped<BlokemonApiClient>();
-        services.AddScoped<PlayModeApplication>();
+        // PlayModeApplication takes two IBlokemonApplication implementations, so the container
+        // cannot pick them itself: the server side is the HTTP transport, the browser side is
+        // the in-browser application service.
+        services.AddScoped<PlayModeApplication>(static provider =>
+            new(
+                provider.GetRequiredService<BlokemonApiClient>(),
+                provider.GetRequiredService<LocalApplicationService>(),
+                provider.GetRequiredService<IStateDocumentStore>(),
+                provider.GetRequiredService<PlayModeAvailability>()
+            )
+        );
         services.AddScoped<IBlokemonApplication>(static provider =>
             provider.GetRequiredService<PlayModeApplication>()
         );

@@ -36,6 +36,7 @@
             ++ [
               ./src/Blokemon.App
               ./src/Blokemon.App.Catalogue
+              ./src/Blokemon.App.Client
               ./src/Blokemon.App.Contracts
               ./src/Blokemon.Core
               ./src/Blokemon.Game
@@ -58,6 +59,7 @@
             ++ [
               ./src/Blokemon.App
               ./src/Blokemon.App.Catalogue
+              ./src/Blokemon.App.Client
               ./src/Blokemon.App.Contracts
               ./src/Blokemon.CardGen
               ./src/Blokemon.Core

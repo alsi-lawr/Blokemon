@@ -20,8 +20,8 @@ public sealed record PlayModeState(
 );
 
 public sealed class PlayModeApplication(
-    BlokemonApiClient server,
-    LocalApplicationService browser,
+    IBlokemonApplication server,
+    IBlokemonApplication browser,
     IStateDocumentStore browserDocuments,
     PlayModeAvailability availability
 ) : IBlokemonApplication

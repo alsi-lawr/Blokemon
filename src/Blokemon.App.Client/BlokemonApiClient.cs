@@ -2,7 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Blokemon.App.Contracts;
 
-namespace Blokemon.App;
+namespace Blokemon.App.Client;
 
 public sealed class BlokemonApiClient(HttpClient http) : IBlokemonApplication
 {
