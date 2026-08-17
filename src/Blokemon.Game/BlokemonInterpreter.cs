@@ -1745,15 +1745,7 @@ public sealed class BlokemonInterpreter
         }
 
         var selected = instruction.Sources is { Length: > 0 }
-            ? ResolveSelectedTargets(
-                    runtime,
-                    instruction with
-                    {
-                        Targets = instruction.Sources,
-                        Sources = null,
-                    },
-                    path
-                )
+            ? ResolveSelectedTargets(runtime, instruction.RetargetedTo(instruction.Sources), path)
                 .Where(card => card.Kind == CardKind.Vim)
                 .ToArray()
             : runtime

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Blokemon.Core.Contracts</RootNamespace>
+    <AssemblyName>Blokemon.Core.Contracts</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="SetDesign/BlokemonTimingContracts.fs" />
+    <Compile Include="SetDesign/BlokemonSetContracts.fs" />
+    <Compile Include="PublicContent/BlokemonPublicContentContracts.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      Central package management sets DisableImplicitFSharpCoreReference, so without this
+      reference the project builds green and fails at runtime with a missing FSharp.Core.
+    -->
+    <PackageReference Include="FSharp.Core" />
+  </ItemGroup>
+</Project>

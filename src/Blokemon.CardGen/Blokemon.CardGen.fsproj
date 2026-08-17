@@ -18,7 +18,7 @@
     <Compile Include="Authority/SetAuthority.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.csproj" />
+    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
     <Content Include="Content\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>

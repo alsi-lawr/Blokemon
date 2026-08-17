@@ -3,11 +3,19 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/Blokemon.Core/Blokemon.Core.csproj" />
+    <Compile Include="AuthorityTests.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Blokemon.Core/Blokemon.Core.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Shouldly" />
     <PackageReference Include="TUnit" />
+    <!--
+      Central package management sets DisableImplicitFSharpCoreReference, so without this
+      reference the project builds green and fails at runtime with a missing FSharp.Core.
+    -->
+    <PackageReference Include="FSharp.Core" />
   </ItemGroup>
   <ItemGroup>
     <Content

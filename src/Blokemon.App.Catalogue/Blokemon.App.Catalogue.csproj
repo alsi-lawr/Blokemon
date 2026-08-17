@@ -5,6 +5,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
-    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.csproj" />
+    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
   </ItemGroup>
 </Project>

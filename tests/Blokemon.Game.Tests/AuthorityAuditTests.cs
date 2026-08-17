@@ -15,28 +15,19 @@ public sealed class AuthorityAuditTests
     {
         var owner = MatchScenario.Authority.Collectibles.Single(card => card.Id == testCase.CardId);
         var trigger = owner.PartyTricks.Single(trick => trick.MechanicalId == testCase.EffectId);
-        var changedTrigger = trigger with
-        {
-            Program = MutateReactiveProgram(trigger.Program, testCase.Trigger),
-        };
-        var changedOwner = owner with
-        {
-            PartyTricks =
-            [
-                .. owner.PartyTricks.Select(trick =>
-                    trick.MechanicalId == changedTrigger.MechanicalId ? changedTrigger : trick
-                ),
-            ],
-        };
-        var authority = MatchScenario.Authority with
-        {
-            Collectibles =
-            [
-                .. MatchScenario.Authority.Collectibles.Select(card =>
-                    card.Id == changedOwner.Id ? changedOwner : card
-                ),
-            ],
-        };
+        var changedTrigger = trigger.WithProgram(
+            MutateReactiveProgram(trigger.Program, testCase.Trigger)
+        );
+        var changedOwner = owner.WithPartyTricks([
+            .. owner.PartyTricks.Select(trick =>
+                trick.MechanicalId == changedTrigger.MechanicalId ? changedTrigger : trick
+            ),
+        ]);
+        var authority = MatchScenario.Authority.WithCollectibles([
+            .. MatchScenario.Authority.Collectibles.Select(card =>
+                card.Id == changedOwner.Id ? changedOwner : card
+            ),
+        ]);
         var engine = new MatchEngine(authority);
 
         var baseline = ObserveReactiveTrigger(MatchScenario.Engine(), testCase.Trigger);
@@ -321,34 +312,20 @@ public sealed class AuthorityAuditTests
                 trigger switch
                 {
                     BlokemonTrigger.OnOwnBlokeSentHomeByOtherAttackDamage
-                        when instruction.Opcode == BlokemonOpcode.MoveVim => instruction with
-                    {
-                        MechanicalTypes = [],
-                    },
+                        when instruction.Opcode == BlokemonOpcode.MoveVim =>
+                        instruction.WithoutMechanicalTypes(),
                     BlokemonTrigger.BeforeSelfSentHomeByAttackDamage
                         when instruction.Opcode == BlokemonOpcode.RecoverFromSendHome =>
-                        instruction with
-                        {
-                            Amount = 20,
-                        },
+                        instruction.WithAmount(20),
                     BlokemonTrigger.AfterSelfDamagedByAttack
                         when instruction.Opcode == BlokemonOpcode.PlaceDamageCounters =>
-                        instruction with
-                        {
-                            Amount = 4,
-                        },
+                        instruction.WithAmount(4),
                     BlokemonTrigger.AfterSelfSentHomeByAttackDamage
-                        when instruction.Opcode == BlokemonOpcode.SendHome => instruction with
-                    {
-                        Opcode = BlokemonOpcode.PlaceDamageCounters,
-                        Amount = 4,
-                    },
+                        when instruction.Opcode == BlokemonOpcode.SendHome =>
+                        instruction.WithOpcodeAndAmount(BlokemonOpcode.PlaceDamageCounters, 4),
                     BlokemonTrigger.OnBarChitTaken
                         when instruction.Opcode == BlokemonOpcode.TakeExtraBarChit =>
-                        instruction with
-                        {
-                            Amount = 2,
-                        },
+                        instruction.WithAmount(2),
                     _ => instruction,
                 }
         );
@@ -361,11 +338,10 @@ public sealed class AuthorityAuditTests
             .Select(instruction =>
             {
                 var changed = mutation(instruction);
-                return changed with
-                {
-                    Then = MutateInstructions(changed.Then, mutation),
-                    Otherwise = MutateInstructions(changed.Otherwise, mutation),
-                };
+                return changed.WithBranches(
+                    MutateInstructions(changed.Then, mutation),
+                    MutateInstructions(changed.Otherwise, mutation)
+                );
             })
             .ToArray();
 

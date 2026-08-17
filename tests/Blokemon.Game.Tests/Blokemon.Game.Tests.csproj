@@ -3,7 +3,7 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/Blokemon.Core/Blokemon.Core.csproj" />
+    <ProjectReference Include="../../src/Blokemon.Core/Blokemon.Core.fsproj" />
     <ProjectReference Include="../../src/Blokemon.Game/Blokemon.Game.csproj" />
   </ItemGroup>
   <ItemGroup>

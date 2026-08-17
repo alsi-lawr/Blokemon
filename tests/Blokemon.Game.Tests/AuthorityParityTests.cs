@@ -744,30 +744,25 @@ public sealed class AuthorityParityTests
             [],
             [],
             [],
-            Sources: [BlokemonTarget.OwnEmptiesTray],
-            Destination: BlokemonEffectDestination.OwnStack,
-            CardFilter: new BlokemonEffectCardFilter(
+            sources: [BlokemonTarget.OwnEmptiesTray],
+            destination: BlokemonEffectDestination.OwnStack,
+            cardFilter: new BlokemonEffectCardFilter(
                 [BlokemonCardCategory.Kit],
                 [],
                 [],
                 false,
                 false,
                 []
-            )
+            ),
+            sourceTopCount: 0
         );
-        var changed = item with
-        {
-            HouseRules = [item.HouseRules[0] with { Program = [recovery] }, item.HouseRules[1]],
-        };
-        return MatchScenario.Authority with
-        {
-            Kits =
-            [
-                .. MatchScenario.Authority.Kits.Select(card =>
-                    card.Id == changed.Id ? changed : card
-                ),
-            ],
-        };
+        var changed = item.WithHouseRules([
+            item.HouseRules[0].WithProgram([recovery]),
+            item.HouseRules[1],
+        ]);
+        return MatchScenario.Authority.WithKits([
+            .. MatchScenario.Authority.Kits.Select(card => card.Id == changed.Id ? changed : card),
+        ]);
     }
 
     private static MatchState FareAbilityState(string[] attachedVim)

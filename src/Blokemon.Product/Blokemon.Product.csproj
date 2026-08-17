@@ -4,6 +4,6 @@
     <AssemblyName>Blokemon.Product</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.csproj" />
+    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
   </ItemGroup>
 </Project>

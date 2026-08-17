@@ -39,6 +39,8 @@
               ./src/Blokemon.App.Client
               ./src/Blokemon.App.Contracts
               ./src/Blokemon.Core
+              ./src/Blokemon.Core.Codecs
+              ./src/Blokemon.Core.Contracts
               ./src/Blokemon.Game
               ./src/Blokemon.Product
               ./src/Blokemon.Web.Client
@@ -63,6 +65,8 @@
               ./src/Blokemon.App.Contracts
               ./src/Blokemon.CardGen
               ./src/Blokemon.Core
+              ./src/Blokemon.Core.Codecs
+              ./src/Blokemon.Core.Contracts
               ./src/Blokemon.Game
               ./src/Blokemon.PackGen
               ./src/Blokemon.Product

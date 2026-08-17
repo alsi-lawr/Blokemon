@@ -12,7 +12,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <ProjectReference Include="../Blokemon.App.Catalogue/Blokemon.App.Catalogue.csproj" />
     <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
-    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.csproj" />
+    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
     <ProjectReference Include="../Blokemon.Game/Blokemon.Game.csproj" />
     <ProjectReference Include="../Blokemon.Product/Blokemon.Product.csproj" />
   </ItemGroup>

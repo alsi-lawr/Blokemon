@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Blokemon.Core.Codecs</RootNamespace>
+    <AssemblyName>Blokemon.Core.Codecs</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <!--
+      System.Text.Json source generation needs a partial class, which F# cannot express, so the two
+      generated contexts stay C# in this project and the contracts they bind sit beneath it.
+    -->
+    <ProjectReference Include="../Blokemon.Core.Contracts/Blokemon.Core.Contracts.fsproj" />
+  </ItemGroup>
+</Project>
