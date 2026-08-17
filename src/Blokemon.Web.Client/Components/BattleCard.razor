@@ -33,7 +33,10 @@
             }
         </div>
     }
-    <span class="hp-badge">@(Math.Max(0, Instance.HitPoints - Instance.Damage)) / @Instance.HitPoints HP</span>
+    @if (ShowVitals)
+    {
+        <span class="hp-badge">@(Math.Max(0, Instance.HitPoints - Instance.Damage)) / @Instance.HitPoints HP</span>
+    }
 </div>
 
 @code {
@@ -42,6 +45,10 @@
 
     [Parameter]
     public bool Compact { get; set; }
+
+    // A Kit in play has no staying power to spend, so it carries no HP line.
+    [Parameter]
+    public bool ShowVitals { get; set; } = true;
 
     [Parameter]
     public bool Selected { get; set; }

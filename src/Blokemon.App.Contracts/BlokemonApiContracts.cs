@@ -100,6 +100,10 @@ public sealed record MatchSideView(
     MatchCardInstanceView? Active,
     MatchCardInstanceView[] Bench,
     MatchCardInstanceView[] Hand,
+    // A Kit played to the table stays in play as a public card, so it is projected like any
+    // other card on the board. The zone is a single match-wide slot, so at most one side
+    // carries one at a time.
+    MatchCardInstanceView[] InPlayKits,
     bool HasTurn
 );
 

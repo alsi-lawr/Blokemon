@@ -1650,7 +1650,7 @@ small,
   pointer-events: auto;
 }
 
-/* End turn, Resign and any effect the table cannot show a card for live in the HUD. */
+/* Only what belongs to no card lives in the HUD: End turn, Resign and the full-screen toggle. */
 .hud-actions {
   display: flex;
   align-items: center;
@@ -1678,14 +1678,6 @@ small,
 
 .hud-resign {
   color: var(--muted);
-}
-
-.hud-effect {
-  max-width: 34vw;
-  overflow: hidden;
-  color: #e6f0ff;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .fullscreen-toggle {
@@ -1816,6 +1808,43 @@ small,
 
 .prizes .oche-card-back {
   width: 31px;
+}
+
+/*
+  A Kit played to the table stays in play as a public card, so it is dealt onto the table itself
+  rather than named in the HUD. Only one is ever on the table at a time, and it belongs to the
+  side that played it, so the table opens a place for it beside that side's Deck: the card sits
+  in the flow of the row rather than over it, which is what keeps it clear of the Active card at
+  every width. The slot never clips, so the corona reads whole here as everywhere.
+*/
+.battlefield.has-local .side-zone {
+  grid-template-columns: 112px 112px minmax(0, 1fr) 90px;
+}
+
+.battlefield.has-local .field-center {
+  grid-column: 3;
+}
+
+.battlefield.has-local .prize-rack {
+  grid-column: 4;
+}
+
+.local-slot {
+  position: relative;
+  z-index: 6;
+  grid-row: 1;
+  grid-column: 2;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  overflow: visible;
+}
+
+.local-slot-label {
+  color: #687057;
+  font: 700 9px "Jost", sans-serif;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
 .opponent-hand {
@@ -4038,10 +4067,6 @@ button.bench-slot.is-aura::after {
     padding: 0 9px;
   }
 
-  .hud-effect {
-    max-width: 26vw;
-  }
-
   .skip-animation {
     margin-left: 0;
     padding: 7px 9px;
@@ -4082,7 +4107,8 @@ button.bench-slot.is-aura::after {
     The Bench needs the whole width, so the Deck and the Prize cards leave the flow and sit
     beside the Active card instead, at the outer edge of the side they belong to.
   */
-  .side-zone {
+  .side-zone,
+  .battlefield.has-local .side-zone {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -4122,6 +4148,31 @@ button.bench-slot.is-aura::after {
   .opponent-hand {
     top: calc(-1 * var(--fan-strip));
     bottom: auto;
+  }
+
+  /*
+    There is no room for a column of its own on a phone, so the table's card lifts out of the row
+    and rests against the inner edge of its owner's half, just inside the Deck: the Bench, the
+    Active card and the hand all keep exactly the room they had.
+  */
+  .battlefield.has-local .field-center,
+  .battlefield.has-local .prize-rack {
+    grid-column: 1;
+  }
+
+  .local-slot {
+    position: absolute;
+    z-index: 6;
+    grid-column: 1;
+    left: 58px;
+  }
+
+  .opponent-zone .local-slot {
+    bottom: 0;
+  }
+
+  .player-zone .local-slot {
+    top: 0;
   }
 
   .deck-card-back {

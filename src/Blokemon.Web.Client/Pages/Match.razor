@@ -97,10 +97,6 @@ else
                 <button class="secondary skip-animation" @onclick="SkipPresentation">Skip animation</button>
             }
             <div class="hud-actions">
-                @foreach (var action in TableEffects(match))
-                {
-                    <button type="button" class="hud-button hud-effect" @onclick="() => StartAction(action)" disabled="@Busy()">@PublicText(action.Label)</button>
-                }
                 @if (GlobalAction(match, MatchActionKindView.EndTurn) is { } endTurn)
                 {
                     <button type="button" class="hud-button hud-end-turn" @onclick="() => StartAction(endTurn)" disabled="@Busy()">End turn</button>
@@ -168,7 +164,9 @@ else
             <div class="visually-hidden" role="status" aria-live="polite">@_animationStatus</div>
         }
 
-        <div class="battlefield @(auras.Cards.Length > 0 || auras.Bench ? "is-choosing" : null)" @onclick="TapBackground">
+        @* The table opens a place for a Kit in play on both halves at once, so the two sides
+           keep the same share of it however plays the card. *@
+        <div class="battlefield @(auras.Cards.Length > 0 || auras.Bench ? "is-choosing" : null) @(frame.Player.InPlayKits.Length + frame.Opponent.InPlayKits.Length > 0 ? "has-local" : null)" @onclick="TapBackground">
             <MatchSide Side="frame.Opponent"
                        Opponent="true"
                        SelectedCardInstanceId="@_selectedCardInstanceId"
@@ -422,7 +420,7 @@ else
                                                 {
                                                     <CardPress CardInstanceId="@card.Id"
                                                                Class="@TrayCardClass(card.Id, auras)"
-                                                               AriaLabel="@($"Choose {card.Card.Name} from your {PublicZone(card.Zone)}. Press and hold to view the card.")"
+                                                               AriaLabel="@TrayCardLabel(frame, card)"
                                                                AriaPressed="@AuraPressed(card.Id, auras)"
                                                                Tapped="TapCard"
                                                                ViewOpened="OpenViewer"
@@ -812,15 +810,6 @@ else
     // that is not card-shaped, such as the mulligan bonus, stays a list of options.
     private bool ForcedByAura(MatchActionView[] forced) =>
         forced.All(option => IsVisible(option.SourceCardInstanceId));
-
-    // A Local Kit in play is a legal action source the frame never renders, so its effects
-    // reach the player from the HUD instead of from an aura.
-    private MatchActionView[] TableEffects(MatchView match) =>
-        [
-            .. match.LegalActions.Where(action =>
-                IsCardAction(action) && !IsVisible(action.SourceCardInstanceId)
-            ),
-        ];
 
     private static MatchActionView? GlobalAction(MatchView match, MatchActionKindView kind) =>
         match.LegalActions.FirstOrDefault(action => action.Kind == kind);
@@ -1760,6 +1749,13 @@ else
         : auras.Cards.Contains(cardInstanceId, StringComparer.Ordinal) ? "false"
         : null;
 
+    // An effect that reveals the opponent's hand puts their cards in the tray to choose from, so
+    // the tray says whose zone a candidate came out of rather than assuming it is yours.
+    private static string TrayCardLabel(MatchFrameView frame, MatchCardInstanceView card) =>
+        card.OwnerName == frame.Player.Name
+            ? $"Choose {card.Card.Name} from your {PublicZone(card.Zone)}. Press and hold to view the card."
+            : $"Choose {card.Card.Name} from {card.OwnerName}'s {PublicZone(card.Zone)}. Press and hold to view the card.";
+
     private static string HandCardLabel(MatchCardInstanceView card, AuraView auras) =>
         auras.Cards.Contains(card.Id, StringComparer.Ordinal)
         || auras.Selected.Contains(card.Id, StringComparer.Ordinal)
@@ -1806,9 +1802,9 @@ else
         VisibleCards(frame.Player).Concat(VisibleCards(frame.Opponent));
 
     private static IEnumerable<MatchCardInstanceView> VisibleCards(MatchSideView side) =>
-        side.Active is { } active
-            ? new[] { active }.Concat(side.Bench).Concat(side.Hand)
-            : side.Bench.Concat(side.Hand);
+        (side.Active is { } active ? new[] { active }.Concat(side.Bench) : side.Bench)
+            .Concat(side.Hand)
+            .Concat(side.InPlayKits);
 
     private MatchFrameView DisplayFrame() =>
         _presentedFrame ?? _view!.Match!.Frame;

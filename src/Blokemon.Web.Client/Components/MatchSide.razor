@@ -6,6 +6,31 @@
         <small>Hand @Side.HandCount</small>
     </div>
 
+    @foreach (var card in Side.InPlayKits)
+    {
+        <div class="local-slot">
+            <CardPress CardInstanceId="@card.Id"
+                       Class="@CardClass(card.Id)"
+                       AriaLabel="@CardLabel(card, "in play on the table")"
+                       AriaPressed="@CardPressed(card.Id)"
+                       Tapped="CardTapped"
+                       ViewOpened="CardViewOpened"
+                       ViewClosed="CardViewClosed">
+                <BattleCard Instance="card"
+                            Compact="true"
+                            ShowVitals="false"
+                            Selected="@(card.Id == SelectedCardInstanceId)"
+                            CueSourceCardInstanceId="@CueSourceCardInstanceId"
+                            CueTargetCardInstanceIds="CueTargetCardInstanceIds" />
+                @if (Counter(card.Id) is { } localCounter)
+                {
+                    <span class="aura-counter">@localCounter</span>
+                }
+            </CardPress>
+            <span class="local-slot-label">In play</span>
+        </div>
+    }
+
     <div class="field-center">
         <div class="active-slot">
             @if (Side.Active is null)

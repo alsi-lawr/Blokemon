@@ -776,6 +776,184 @@ public sealed class LocalMatchTests
         await AssertEquivalent(restoredResolution, resolved);
     }
 
+    // KIT-011 (Door Staff) and KIT-009 both reveal the opponent's hand and then ask the player to
+    // choose a Blokemon from it. The candidates used to be filtered back out of the view, leaving
+    // a requirement the player could never satisfy; a card is offered precisely because the effect
+    // entitles the chooser to see it, so both cards are playable again.
+    // The start command id fixes the shuffle, so each case walks the same match every run: the one
+    // where the opponent still holds a Blokemon when the Kit becomes playable.
+    [Test]
+    [Arguments("KIT-011", "30000000-0000-0000-0000-000000000002")]
+    [Arguments("KIT-009", "30000000-0000-0000-0000-000000000004")]
+    public async Task RevealedOpponentHandChoice_OffersItsCandidatesAndResolves(
+        string kitId,
+        string startCommand
+    )
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = ChoiceMatchFixture.Create(database, kitId);
+        var (match, action, requirement) = await ReachRevealKitChoice(
+            fixture,
+            kitId,
+            Guid.Parse(startCommand)
+        );
+
+        requirement.Kind.ShouldBe(MatchChoiceKindView.Cards);
+        requirement.Chooser.IsLocalPlayer.ShouldBeTrue();
+        requirement.Minimum.ShouldBe(1);
+        requirement.EligibleCards.Length.ShouldBeGreaterThanOrEqualTo(requirement.Minimum);
+        requirement.EligibleCards.ShouldAllBe(card =>
+            card.OwnerName != "Local Player" && card.Zone == "Mitt"
+        );
+        // Every candidate carries a real face, so the tray can render what it is asking about.
+        requirement.EligibleCards.ShouldAllBe(card => card.Card.FaceHtml.Length > 0);
+        // The types that pair with the candidates travel with them, so a different-types
+        // requirement could still be validated against the very same set.
+        requirement
+            .EligibleCardTypes.Select(static types => types.CardInstanceId)
+            .ShouldBe(requirement.EligibleCards.Select(static card => card.Id), ignoreOrder: true);
+
+        var chosen = requirement.EligibleCards[0];
+        var opponentHandBefore = match.Frame.Opponent.HandCount;
+        var request = RequestFor(match, action, Guid.NewGuid());
+        var mutation = await fixture.Service.Apply(
+            fixture.Profile,
+            "Local Player",
+            match.Frame.Id,
+            request with
+            {
+                Choices =
+                [
+                    .. request.Choices.Select(choice =>
+                        choice.Id == requirement.Id
+                            ? choice with
+                            {
+                                CardInstanceIds = [chosen.Id],
+                            }
+                            : choice
+                    ),
+                ],
+            }
+        );
+        var resolved = Match(mutation);
+
+        // The choice went through: the card left the hand it was chosen from.
+        var afterChoice = (mutation.Presentation?.Steps ?? [])
+            .Select(static step => step.Frame)
+            .First(frame => frame.Opponent.HandCount < opponentHandBefore);
+        afterChoice.Opponent.HandCount.ShouldBe(opponentHandBefore - 1);
+        // The reveal was scoped to the choice: the opponent's hand is still not projected, and
+        // nothing they hold is shown anywhere once the choice is answered.
+        resolved.Frame.Opponent.Hand.ShouldBeEmpty();
+        AssertNoHiddenOpponentCards(resolved);
+    }
+
+    // A Kit played to the table stays in play as a public card carrying live abilities, so the
+    // board projects it on its owner's side and the ability is driven from that card.
+    [Test]
+    public async Task LocalKitInPlay_IsProjectedOntoItsOwnersSideOfTheBoard()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = ChoiceMatchFixture.Create(database, "KIT-006");
+        var match = Match(
+            await fixture.Service.Start(
+                fixture.Profile,
+                "Local Player",
+                new(_matchCommand, _firstDeckCommand)
+            )
+        );
+        for (var step = 0; step < 240 && match.Frame.Player.InPlayKits.Length == 0; step++)
+        {
+            var hand = match.Frame.Player.Hand.ToDictionary(
+                static card => card.Id,
+                StringComparer.Ordinal
+            );
+            var next =
+                match.LegalActions.FirstOrDefault(action =>
+                    action.Kind == MatchActionKindView.PlayTrainer
+                    && action.SourceCardInstanceId is { } source
+                    && hand.TryGetValue(source, out var card)
+                    && card.Card.Id == "KIT-006"
+                ) ?? ForwardAction(match);
+            if (next is null || match.Frame.IsComplete)
+            {
+                break;
+            }
+
+            match = Match(
+                await fixture.Service.Apply(
+                    fixture.Profile,
+                    "Local Player",
+                    match.Frame.Id,
+                    RequestFor(match, next, Guid.NewGuid())
+                )
+            );
+        }
+
+        var inPlay = match.Frame.Player.InPlayKits.ShouldHaveSingleItem();
+        inPlay.Card.Id.ShouldBe("KIT-006");
+        inPlay.Zone.ShouldBe("Local");
+        inPlay.OwnerName.ShouldBe("Local Player");
+        // The zone is a single match-wide slot, so only one side ever carries one.
+        match.Frame.Opponent.InPlayKits.ShouldBeEmpty();
+        // The projected card is the source the aura hangs off: its ability is a card action
+        // pointing back at the very card the board now shows.
+        match
+            .LegalActions.Where(static action => action.Kind == MatchActionKindView.UseAbility)
+            .Select(static action => action.SourceCardInstanceId)
+            .ShouldContain(inPlay.Id);
+    }
+
+    // The reveal must not become a standing window into the opponent's hand: nothing outside a
+    // choice the player is answering may show a card they are not entitled to see.
+    [Test]
+    public async Task OpponentHiddenCards_NeverAppearInAnyViewOrCue()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = ChoiceMatchFixture.Create(database);
+        var match = Match(
+            await fixture.Service.Start(
+                fixture.Profile,
+                "Local Player",
+                new(_matchCommand, _firstDeckCommand)
+            )
+        );
+        var inspected = 0;
+        for (var step = 0; step < 60 && !match.Frame.IsComplete; step++)
+        {
+            AssertNoHiddenOpponentCards(match);
+            inspected++;
+            var next = ForwardAction(match);
+            if (next is null)
+            {
+                break;
+            }
+            var mutation = await fixture.Service.Apply(
+                fixture.Profile,
+                "Local Player",
+                match.Frame.Id,
+                RequestFor(match, next, Guid.NewGuid())
+            );
+            foreach (var frame in mutation.Presentation?.Steps ?? [])
+            {
+                AssertNoHiddenOpponentCardInstances(frame.Frame);
+                foreach (var cue in frame.Events)
+                {
+                    // A cue only ever turns a card face up for the local player's own hidden
+                    // cards - their Prize Cards and their deck. The two decks share no card, so
+                    // a face from the opponent's deck showing up here would be a leak.
+                    cue.RevealedCards.ShouldAllBe(card =>
+                        card.Id == "BLK-016" || card.Id == "VIM-DODGY"
+                    );
+                }
+            }
+            match = Match(mutation);
+        }
+
+        inspected.ShouldBeGreaterThan(3);
+        AssertNoHiddenOpponentCards(match);
+    }
+
     [Test]
     public async Task SameProfileAndSeed_ProduceTheSameCpuLogAndState()
     {
@@ -1004,6 +1182,128 @@ public sealed class LocalMatchTests
         }
 
         throw new InvalidOperationException("The match did not complete inside the test bound.");
+    }
+
+    // Walks the match forward until the human can play the reveal-then-choose Kit and the
+    // requirement it carries has candidates to offer. Everything here is deterministic: the
+    // shuffle seed is derived from the profile and the fixed start command id.
+    private static async Task<(
+        MatchView Match,
+        MatchActionView Action,
+        MatchChoiceRequirementView Requirement
+    )> ReachRevealKitChoice(ChoiceMatchFixture fixture, string kitId, Guid startCommand)
+    {
+        var match = Match(
+            await fixture.Service.Start(
+                fixture.Profile,
+                "Local Player",
+                new(startCommand, _firstDeckCommand)
+            )
+        );
+        for (var step = 0; step < 240 && !match.Frame.IsComplete; step++)
+        {
+            if (RevealedHandChoice(match) is { } ready)
+            {
+                return (match, ready.Action, ready.Requirement);
+            }
+
+            var next = ForwardAction(match);
+            if (next is null)
+            {
+                break;
+            }
+
+            match = Match(
+                await fixture.Service.Apply(
+                    fixture.Profile,
+                    "Local Player",
+                    match.Frame.Id,
+                    RequestFor(match, next, Guid.NewGuid())
+                )
+            );
+        }
+
+        throw new InvalidOperationException(
+            $"The match never offered a satisfiable {kitId} choice inside the test bound."
+        );
+    }
+
+    // The choice the reveal effects put to the player: pick from the cards the opponent was
+    // holding, whichever action ends up carrying the requirement.
+    private static (
+        MatchActionView Action,
+        MatchChoiceRequirementView Requirement
+    )? RevealedHandChoice(MatchView match) =>
+        match
+            .LegalActions.SelectMany(static action =>
+                action.ChoiceRequirements.Select(requirement =>
+                    (Action: action, Requirement: requirement)
+                )
+            )
+            .Where(static pair =>
+                pair.Requirement.Kind == MatchChoiceKindView.Cards
+                && pair.Requirement.Chooser.IsLocalPlayer
+                && pair.Requirement.EligibleCards.Length > 0
+                && pair.Requirement.EligibleCards.All(static card =>
+                    card.Zone == "Mitt" && card.OwnerName != "Local Player"
+                )
+            )
+            .Select(static pair => ((MatchActionView, MatchChoiceRequirementView)?)pair)
+            .FirstOrDefault();
+
+    // The least interesting legal move: settle anything the engine is waiting on, otherwise end
+    // the round. Resigning is never taken, so the walk always makes progress through the match.
+    private static MatchActionView? ForwardAction(MatchView match) =>
+        match.LegalActions.FirstOrDefault(static action =>
+            action.Kind
+                is MatchActionKindView.ChooseMulliganBonus
+                    or MatchActionKindView.ChooseOpening
+                    or MatchActionKindView.ChooseReplacement
+                    or MatchActionKindView.ResolveChoice
+                    or MatchActionKindView.ResolveKnockout
+                    or MatchActionKindView.TakePrize
+                    or MatchActionKindView.DiscardFossil
+        )
+        ?? match.LegalActions.FirstOrDefault(static action =>
+            action.Kind == MatchActionKindView.EndTurn
+        )
+        ?? match.LegalActions.FirstOrDefault(static action =>
+            action.Kind != MatchActionKindView.Resign
+        );
+
+    private static IEnumerable<MatchCardInstanceView> AllInstances(MatchFrameView frame) =>
+        SideInstances(frame.Player).Concat(SideInstances(frame.Opponent));
+
+    private static IEnumerable<MatchCardInstanceView> SideInstances(MatchSideView side) =>
+        (side.Active is { } active ? new[] { active } : [])
+            .Concat(side.Bench)
+            .Concat(side.Hand)
+            .Concat(side.InPlayKits);
+
+    private static void AssertNoHiddenOpponentCards(MatchView match)
+    {
+        AssertNoHiddenOpponentCardInstances(match.Frame);
+        foreach (var requirement in match.LegalActions.SelectMany(static a => a.ChoiceRequirements))
+        {
+            AssertEntitledCandidates(requirement.EligibleCards);
+            AssertEntitledCandidates(requirement.EligibleTargets);
+        }
+    }
+
+    private static void AssertNoHiddenOpponentCardInstances(MatchFrameView frame)
+    {
+        frame.Opponent.Hand.ShouldBeEmpty();
+        AssertEntitledCandidates(AllInstances(frame));
+    }
+
+    // Nothing the opponent keeps to themselves - their hand, their deck, their face-down Prize
+    // Cards - may be projected with a face on it.
+    private static void AssertEntitledCandidates(IEnumerable<MatchCardInstanceView> cards)
+    {
+        foreach (var card in cards.Where(static card => card.OwnerName != "Local Player"))
+        {
+            card.Zone.ShouldBeOneOf("Oche", "Booth", "Local", "Attached", "Empties Tray");
+        }
     }
 
     private static async Task<(MatchView Match, MatchActionView Action)> ReachCiggySamAttack(
@@ -1294,7 +1594,10 @@ public sealed class LocalMatchTests
             ? succeeded.Value
             : throw new InvalidOperationException("The product fixture transition failed.");
 
-    private static LocalProfile CreateChoiceProfile(BlokemonCatalogue catalogue)
+    private static LocalProfile CreateChoiceProfile(
+        BlokemonCatalogue catalogue,
+        string? kitId = null
+    )
     {
         var profile = ProductValue(
             LocalProfile.Create(
@@ -1319,10 +1622,18 @@ public sealed class LocalMatchTests
             profile.CreateDeck(
                 ProductValue(DeckId.Create(_firstDeckCommand.ToString("D"))),
                 ProductValue(DeckName.Create("Choice deck")),
-                [
-                    new(ProductValue(CardId.Create("BLK-016")), 4),
-                    new(ProductValue(CardId.Create("VIM-DODGY")), 56),
-                ],
+                kitId is null
+                    ?
+                    [
+                        new(ProductValue(CardId.Create("BLK-016")), 4),
+                        new(ProductValue(CardId.Create("VIM-DODGY")), 56),
+                    ]
+                    :
+                    [
+                        new(ProductValue(CardId.Create("BLK-016")), 4),
+                        new DeckCardSelection(ProductValue(CardId.Create(kitId)), 4),
+                        new(ProductValue(CardId.Create("VIM-DODGY")), 52),
+                    ],
                 catalogue.Mechanics
             )
         ).Profile;
@@ -1349,12 +1660,12 @@ public sealed class LocalMatchTests
         LocalProfile Profile
     )
     {
-        public static ChoiceMatchFixture Create(TestDatabase database)
+        public static ChoiceMatchFixture Create(TestDatabase database, string? kitId = null)
         {
             var catalogue = BlokemonCatalogueBuilder.Load(
                 Path.Combine(AppContext.BaseDirectory, "content")
             );
-            var profile = CreateChoiceProfile(catalogue);
+            var profile = CreateChoiceProfile(catalogue, kitId);
             var store = new StateDocumentStore(database);
             return new(catalogue, database, store, new(catalogue, store), profile);
         }

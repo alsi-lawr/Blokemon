@@ -1244,6 +1244,10 @@ public sealed class LocalMatchService(BlokemonCatalogue catalogue, IStateDocumen
                     .Select(card => CardInstance(state, human, name, card.Id))
                     .ToArray()
                 : [],
+            state
+                .CardsIn(player, CardZone.Local)
+                .Select(card => CardInstance(state, human, name, card.Id))
+                .ToArray(),
             // Resignation is always available, so it cannot decide whose turn it is.
             _engine
                 .GetLegalActions(state, player)
@@ -1287,6 +1291,10 @@ public sealed class LocalMatchService(BlokemonCatalogue catalogue, IStateDocumen
         ChoiceRequirement requirement
     )
     {
+        // A candidate is offered to the chooser precisely because the effect entitles them to see
+        // it: an effect that asks you to pick a card from your opponent's hand reveals that hand
+        // to you first. So eligibility is the entitlement, and the candidates are not filtered
+        // again for visibility - only for whether this viewer is the chooser at all.
         var exposeOptions = requirement.Chooser == human;
         return new(
             requirement.Id.Value,
@@ -1301,8 +1309,7 @@ public sealed class LocalMatchService(BlokemonCatalogue catalogue, IStateDocumen
             requirement.Maximum,
             exposeOptions
                 ? requirement
-                    .EligibleCards.Where(card => CanReveal(state, human, card))
-                    .Select(card => CardInstance(state, human, displayName, card))
+                    .EligibleCards.Select(card => CardInstance(state, human, displayName, card))
                     .ToArray()
                 : [],
             exposeOptions
@@ -1324,15 +1331,13 @@ public sealed class LocalMatchService(BlokemonCatalogue catalogue, IStateDocumen
             requirement.DependsOnOptional?.Value,
             exposeOptions
                 ? requirement
-                    .EligibleTargets.Where(card => CanReveal(state, human, card))
-                    .Select(card => CardInstance(state, human, displayName, card))
+                    .EligibleTargets.Select(card => CardInstance(state, human, displayName, card))
                     .ToArray()
                 : [],
             requirement.RequireDifferentMechanicalTypes,
             exposeOptions
                 ? requirement
-                    .EligibleCardTypes.Where(card => CanReveal(state, human, card.Card))
-                    .Select(card => new MatchCardTypesView(
+                    .EligibleCardTypes.Select(card => new MatchCardTypesView(
                         card.Card.Value,
                         card.Types.Select(type => Humanize(type.ToString())).ToArray()
                     ))
