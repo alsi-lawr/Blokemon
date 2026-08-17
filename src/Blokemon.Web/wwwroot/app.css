@@ -4004,8 +4004,9 @@ button.bench-slot.is-aura::after {
     height: 100%;
   }
 
+  /* Squeezed to one shallow row so the opponent's held cards have their strip beneath it. */
   .battle-hud {
-    inset: 8px 8px auto;
+    inset: 6px 8px auto;
     gap: 6px;
   }
 
@@ -4017,7 +4018,7 @@ button.bench-slot.is-aura::after {
   .round-chip {
     flex: 0 1 auto;
     min-width: 0;
-    padding: 6px 9px;
+    padding: 5px 8px;
     overflow: hidden;
     font-size: 10px;
     white-space: nowrap;
@@ -4033,7 +4034,7 @@ button.bench-slot.is-aura::after {
   }
 
   .hud-button {
-    min-height: 34px;
+    min-height: 30px;
     padding: 0 9px;
   }
 
@@ -4048,17 +4049,21 @@ button.bench-slot.is-aura::after {
   }
 
   .fullscreen-toggle {
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
   }
 
   /*
-    Top to bottom: the opponent's Bench, its Active, the table state, your Active, your Bench.
-    Both sides get the same share of the table, so the two halves mirror each other exactly.
+    Top to bottom: the opponent's held cards, their Bench, their Active, the table state, your
+    Active, your Bench. Both sides get the same share of the table, so the two halves mirror
+    each other exactly; the strip the opponent holds its cards in is reserved above them, in the
+    top padding, so it costs neither side any of the table.
   */
   .battlefield {
+    --fan-strip: 40px;
+
     grid-template-rows: 1fr 28px 1fr;
-    padding: 50px 5px 162px;
+    padding: calc(38px + var(--fan-strip)) 5px 162px;
   }
 
   /*
@@ -4109,9 +4114,14 @@ button.bench-slot.is-aura::after {
     right: 0;
   }
 
-  /* The opponent's hand count is on its Deck; the fan of card backs has no room to sit. */
+  /*
+    The opponent holds its cards at the far edge of the table, in the strip reserved above its
+    Bench: the fan is compressed rather than dropped, so you can always see how much they are
+    holding without any of the table being given up for it.
+  */
   .opponent-hand {
-    display: none;
+    top: calc(-1 * var(--fan-strip));
+    bottom: auto;
   }
 
   .deck-card-back {
@@ -4134,8 +4144,10 @@ button.bench-slot.is-aura::after {
   }
 
   .opponent-hand .oche-card-back {
-    width: 38px;
-    margin-left: -20px;
+    width: 26px;
+    margin-left: -17px;
+    border-radius: 4px;
+    box-shadow: 0 3px 6px #0009;
   }
 
   /*
@@ -4171,8 +4183,8 @@ button.bench-slot.is-aura::after {
   .active-slot {
     grid-column: 1;
     height: auto;
-    min-width: 130px;
-    min-height: 156px;
+    min-width: 124px;
+    min-height: 148px;
     padding-bottom: 13px;
   }
 
@@ -4184,11 +4196,11 @@ button.bench-slot.is-aura::after {
   }
 
   .battle-screen .card-face--battle {
-    --blokemon-card-scale: 0.135;
+    --blokemon-card-scale: 0.128;
   }
 
   .battle-screen .card-face--bench {
-    --blokemon-card-scale: 0.072;
+    --blokemon-card-scale: 0.067;
   }
 
   /*
@@ -4198,18 +4210,18 @@ button.bench-slot.is-aura::after {
   .bench-row {
     grid-column: 1;
     display: grid;
-    grid-template-columns: repeat(5, 54px);
+    grid-template-columns: repeat(5, 50px);
     justify-content: center;
     justify-items: center;
     gap: 2px;
-    padding: 4px 10px;
+    padding: 3px 10px;
     overflow: visible;
   }
 
   .bench-slot {
     flex: none;
-    width: 54px;
-    height: 76px;
+    width: 50px;
+    height: 70px;
   }
 
   .damage-badge {
