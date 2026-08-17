@@ -89,7 +89,9 @@ else
     <section class="battle-screen @AnimationClass() @DockClass() @SheetClass(frame, auras, sheet)" aria-label="Blokemon match table" @ref="_battleScreen">
       <div class="battle-canvas">
         <div class="battle-hud">
-            <span class="round-chip"><span class="eyebrow">Turn @frame.Round</span> · @TurnStatus(frame)</span>
+            @* Whose turn it is is written across the middle of the table, so on a phone the chip
+               keeps only the round number and the HUD stays one row deep. *@
+            <span class="round-chip"><span class="eyebrow">Turn @frame.Round</span><span class="round-status"> · @TurnStatus(frame)</span></span>
             @if (_animating)
             {
                 <button class="secondary skip-animation" @onclick="SkipPresentation">Skip animation</button>
@@ -193,7 +195,14 @@ else
                        BenchTapped="TapBench" />
         </div>
 
-        <div class="hand-zone" aria-label="Your hand" @onclick="TapBackground">
+        @*
+            How many cards are held is a layout fact: the hand is laid out from it so that a hand
+            of any size is dealt across the width the screen has rather than off the edge of it.
+        *@
+        <div class="hand-zone"
+             style="@HandStyle(frame.Player.Hand.Length)"
+             aria-label="Your hand"
+             @onclick="TapBackground">
             @if (frame.Player.Hand.Length == 0)
             {
                 <span class="empty-hand">Your hand is empty</span>
@@ -1732,8 +1741,14 @@ else
         var offset = Math.Clamp(index - (count - 1) / 2.0, -3.5, 3.5);
         var turn = (offset * 3.4).ToString("0.##", CultureInfo.InvariantCulture);
         var lift = (offset * offset * 1.7).ToString("0.##", CultureInfo.InvariantCulture);
-        return $"--fan-turn: {turn}deg; --fan-lift: {lift}px";
+        // Where a card sits in the hand is also what stacks it: held cards overlap, so each one
+        // has to lie over the one before it whatever else is true of it, or a card between two
+        // glowing ones would lose the strip it is pressed by.
+        return $"--fan-turn: {turn}deg; --fan-lift: {lift}px; --hand-index: {index.ToString(CultureInfo.InvariantCulture)}";
     }
+
+    private static string HandStyle(int count) =>
+        $"--hand-count: {Math.Max(1, count).ToString(CultureInfo.InvariantCulture)}";
 
     private static string TrayCardClass(string cardInstanceId, AuraView auras) =>
         auras.Selected.Contains(cardInstanceId, StringComparer.Ordinal)

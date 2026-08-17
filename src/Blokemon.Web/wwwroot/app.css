@@ -1948,6 +1948,7 @@ small,
   font: 700 12px "Jost", sans-serif;
 }
 
+/* The row never clips: a benched card's corona has to read whole, the same as anywhere else. */
 .bench-row {
   position: relative;
   z-index: 4;
@@ -1957,8 +1958,8 @@ small,
   justify-content: center;
   max-width: 100%;
   gap: 8px;
-  padding: 8px 4px;
-  overflow-x: auto;
+  padding: 8px;
+  overflow: visible;
 }
 
 .bench-slot {
@@ -1979,12 +1980,13 @@ button.bench-slot {
   cursor: pointer;
 }
 
+/* An empty position glows the same way a card does: the same rim, the same revolving corona. */
 button.bench-slot.is-aura {
+  position: relative;
   border: 2px solid rgb(255 255 255 / 88%);
   box-shadow:
-    0 0 5px rgb(255 255 255 / 70%),
-    0 0 18px rgb(248 252 255 / 42%) inset;
-  animation: aura-bloom 2.9s ease-in-out infinite;
+    0 0 4px rgb(255 255 255 / 55%),
+    0 0 10px rgb(248 252 255 / 28%) inset;
 }
 
 button.bench-slot span {
@@ -2348,6 +2350,8 @@ button.bench-slot span {
 */
 .hand-card {
   position: relative;
+  /* Later in the hand means further forward, so every card keeps a strip of itself showing. */
+  z-index: calc(var(--hand-index, 0) + 1);
   flex: 0 0 auto;
   margin: 0 -30px;
   overflow: visible;
@@ -2367,10 +2371,11 @@ button.bench-slot span {
   transition: filter 0.2s;
 }
 
+/* The card being pressed or chosen comes to the front of the whole hand. */
 .hand-card:hover,
 .hand-card:focus-visible,
 .hand-card.is-aura-selected {
-  z-index: 8;
+  z-index: 60;
   transform: translateY(-68px) rotate(0) scale(1.08);
 }
 
@@ -2392,23 +2397,69 @@ button.bench-slot span {
 /*
   The aura glow lands after the hand's own hover rules so a glowing card in hand keeps its
   aura while hovered, and after the board rules so both zones read identically.
+
+  It is a corona, not a bloom: a narrow white rim hugging the card's own edge, fading to nothing
+  about a dozen pixels out, with a brighter lobe that revolves slowly around the card while the
+  whole rim breathes. Keeping it that tight is what lets it live in every zone without any
+  boundary cutting across it, and the card itself never moves.
 */
-.is-aura .battle-card-shell,
-.is-aura .hand-card-visual,
-.is-aura .tray-card-visual {
-  filter:
-    drop-shadow(0 0 5px rgb(255 255 255 / 82%))
-    drop-shadow(0 0 17px rgb(248 252 255 / 46%));
-  animation: aura-bloom 2.9s ease-in-out infinite;
+.is-aura .battle-card-shell::after,
+.is-aura .hand-card-visual::after,
+.is-aura .tray-card-visual::after,
+button.bench-slot.is-aura::after {
+  content: "";
+  position: absolute;
+  /*
+    Declared here as well as registered below, so a browser that cannot register an angle still
+    resolves it and shows the rim: it simply holds still instead of revolving.
+  */
+  --corona-angle: 0deg;
+  /* Behind the card and behind whatever is tucked under it, never over the printed face. */
+  z-index: -2;
+  inset: -8px;
+  border-radius: 14px;
+  /*
+    An even base rim so the card glows all the way round, and two soft lobes over it that are
+    what actually revolves. One blurred layer, one bounded extent: eight pixels of rim, softened
+    by the blur, and the glow has faded out entirely by about fifteen.
+  */
+  background:
+    conic-gradient(
+      from var(--corona-angle),
+      rgb(255 255 255 / 0%) 0deg,
+      rgb(255 255 255 / 88%) 58deg,
+      rgb(255 255 255 / 0%) 132deg,
+      rgb(255 255 255 / 0%) 196deg,
+      rgb(255 255 255 / 68%) 254deg,
+      rgb(255 255 255 / 0%) 328deg
+    ),
+    rgb(255 255 255 / 26%);
+  filter: blur(4px);
+  pointer-events: none;
+  animation:
+    aura-corona 9s linear infinite,
+    aura-breathe 3.2s ease-in-out infinite;
 }
 
-.is-aura.is-aura-selected .battle-card-shell,
-.is-aura.is-aura-selected .hand-card-visual,
-.is-aura.is-aura-selected .tray-card-visual {
-  filter:
-    drop-shadow(0 0 9px rgb(255 255 255 / 96%))
-    drop-shadow(0 0 26px rgb(226 244 255 / 62%));
-  animation: none;
+/*
+  The card already chosen holds its corona: brighter, and still turning, but it stops breathing.
+*/
+.is-aura.is-aura-selected .battle-card-shell::after,
+.is-aura.is-aura-selected .hand-card-visual::after,
+.is-aura.is-aura-selected .tray-card-visual::after {
+  background:
+    conic-gradient(
+      from var(--corona-angle),
+      rgb(255 255 255 / 0%) 0deg,
+      rgb(255 255 255 / 100%) 58deg,
+      rgb(255 255 255 / 0%) 132deg,
+      rgb(255 255 255 / 0%) 196deg,
+      rgb(255 255 255 / 88%) 254deg,
+      rgb(255 255 255 / 0%) 328deg
+    ),
+    rgb(255 255 255 / 46%);
+  opacity: 1;
+  animation: aura-corona 9s linear infinite;
 }
 
 .action-dock {
@@ -3058,21 +3109,34 @@ button.bench-slot span {
 }
 
 /*
-  The aura breathes: the bloom swells and settles on one continuous ease-in-out curve, with no
-  step, no colour change and no hard edge. The card itself does not move.
+  The corona turns by its own angle rather than by turning its box, so the glow revolves while
+  the rim it lives in stays exactly where the card is. Registering the angle is what makes it
+  animate as an angle instead of jumping between two strings.
 */
-@keyframes aura-bloom {
+@property --corona-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes aura-corona {
+  to {
+    --corona-angle: 360deg;
+  }
+}
+
+/*
+  And it breathes: one continuous ease-in-out swell of the whole rim, no step, no colour change
+  and no hard edge.
+*/
+@keyframes aura-breathe {
   0%,
   100% {
-    filter:
-      drop-shadow(0 0 4px rgb(255 255 255 / 68%))
-      drop-shadow(0 0 12px rgb(248 252 255 / 30%));
+    opacity: 0.52;
   }
 
   50% {
-    filter:
-      drop-shadow(0 0 8px rgb(255 255 255 / 94%))
-      drop-shadow(0 0 24px rgb(248 252 255 / 58%));
+    opacity: 1;
   }
 }
 
@@ -3930,17 +3994,51 @@ button.bench-slot span {
     min-height: 0;
   }
 
+  /*
+    The phone table is exactly as tall as the screen: the two Bench rows, the two Active cards,
+    the table state between them and the hand all have to be on screen at once, so nothing here
+    is allowed to grow the canvas and start a scroll.
+  */
   .battle-canvas {
     min-width: 0;
-    height: max(100%, 760px);
+    height: 100%;
   }
 
   .battle-hud {
     inset: 8px 8px auto;
+    gap: 6px;
   }
 
+  /*
+    One row, and every control on it: the chip drops to the round number alone and the buttons
+    stay inside the width, so nothing in the HUD runs off the side of the screen and the
+    opponent's Bench has the rest of the table to itself.
+  */
   .round-chip {
+    flex: 0 1 auto;
+    min-width: 0;
+    padding: 6px 9px;
+    overflow: hidden;
     font-size: 10px;
+    white-space: nowrap;
+  }
+
+  .round-status {
+    display: none;
+  }
+
+  .hud-actions {
+    min-width: 0;
+    gap: 4px;
+  }
+
+  .hud-button {
+    min-height: 34px;
+    padding: 0 9px;
+  }
+
+  .hud-effect {
+    max-width: 26vw;
   }
 
   .skip-animation {
@@ -3954,18 +4052,66 @@ button.bench-slot span {
     height: 34px;
   }
 
+  /*
+    Top to bottom: the opponent's Bench, its Active, the table state, your Active, your Bench.
+    Both sides get the same share of the table, so the two halves mirror each other exactly.
+  */
   .battlefield {
-    grid-template-rows: 1fr 28px 1.08fr;
-    padding: 38px 5px 214px;
+    grid-template-rows: 1fr 28px 1fr;
+    padding: 50px 5px 162px;
   }
 
+  /*
+    The desktop dock is not on the phone at all, so neither is the room its retracted state
+    reserves: without this the table and the hand both sit off centre.
+  */
+  .dock-retracted .battlefield {
+    padding-right: 5px;
+  }
+
+  .dock-retracted .hand-zone {
+    width: 100%;
+  }
+
+  /*
+    The Bench needs the whole width, so the Deck and the Prize cards leave the flow and sit
+    beside the Active card instead, at the outer edge of the side they belong to.
+  */
   .side-zone {
-    grid-template-columns: 62px minmax(0, 1fr) 48px;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .opponent-zone {
-    transform: scale(0.72);
-    transform-origin: center bottom;
+    transform: none;
+  }
+
+  .deck-stack,
+  .prize-rack {
+    position: absolute;
+    z-index: 2;
+  }
+
+  .opponent-zone .deck-stack,
+  .opponent-zone .prize-rack {
+    bottom: 2px;
+  }
+
+  .player-zone .deck-stack,
+  .player-zone .prize-rack {
+    top: 2px;
+  }
+
+  .deck-stack {
+    left: 0;
+  }
+
+  .prize-rack {
+    right: 0;
+  }
+
+  /* The opponent's hand count is on its Deck; the fan of card backs has no room to sit. */
+  .opponent-hand {
+    display: none;
   }
 
   .deck-card-back {
@@ -3992,39 +4138,78 @@ button.bench-slot span {
     margin-left: -20px;
   }
 
-  .active-slot {
-    height: 100%;
-    min-width: 130px;
-    min-height: 0;
+  /*
+    Each side is one column of two rows: the Bench row and the Active row, with the Bench behind
+    the Active - above it for the opponent, below it for you - so both Benches read as the row
+    furthest from the middle of the table.
+  */
+  .field-center {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-content: center;
+    gap: 2px;
   }
 
-  .field-center {
-    grid-template-columns: minmax(130px, 0.9fr) minmax(0, 1.1fr);
-    grid-template-rows: minmax(0, 1fr);
-    gap: 4px;
+  .opponent-zone .bench-row {
+    grid-row: 1;
+  }
+
+  .opponent-zone .active-slot {
+    grid-row: 2;
+  }
+
+  .player-zone .active-slot {
+    grid-row: 1;
+  }
+
+  .player-zone .bench-row {
+    grid-row: 2;
+  }
+
+  /* The Active card sits in the flow of its own row here, so the row keeps its height. */
+  .active-slot {
+    grid-column: 1;
+    height: auto;
+    min-width: 130px;
+    min-height: 156px;
+    padding-bottom: 13px;
+  }
+
+  .opponent-zone .active-slot > .field-card-button,
+  .player-zone .active-slot > .field-card-button {
+    position: relative;
+    top: auto;
+    bottom: auto;
   }
 
   .battle-screen .card-face--battle {
-    --blokemon-card-scale: 0.17;
+    --blokemon-card-scale: 0.135;
   }
 
   .battle-screen .card-face--bench {
-    --blokemon-card-scale: 0.1;
+    --blokemon-card-scale: 0.072;
   }
 
+  /*
+    Five fixed positions, centred, always all five: no scrolling, and an empty position is as
+    tappable as a card once it is a legal destination.
+  */
   .bench-row {
-    grid-column: 2;
-    max-width: 100%;
-    justify-content: flex-start;
-    gap: 4px;
-    padding: 4px 12px;
-    overflow-x: auto;
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: repeat(5, 54px);
+    justify-content: center;
+    justify-items: center;
+    gap: 2px;
+    padding: 4px 10px;
+    overflow: visible;
   }
 
   .bench-slot {
-    flex: 0 0 75px;
-    width: 75px;
-    height: 105px;
+    flex: none;
+    width: 54px;
+    height: 76px;
   }
 
   .damage-badge {
@@ -4034,6 +4219,15 @@ button.bench-slot span {
     height: 38px;
     border-width: 2px;
     font-size: 12px;
+  }
+
+  /* A benched card is small enough that its damage counter has to be smaller too. */
+  .is-compact .damage-badge {
+    top: 2px;
+    right: -6px;
+    width: 24px;
+    height: 24px;
+    font-size: 9px;
   }
 
   .hp-badge {
@@ -4061,22 +4255,36 @@ button.bench-slot span {
   }
 
   /*
-    On a phone the hand is a flat, swipeable tray rather than a fan: every card is fully
-    tappable and shows its whole aura, which the overlapping fan could not do at this size.
-    The press-and-hold viewer is what makes cards this small readable.
+    On a phone the hand is a flat row rather than a fan, and it is dealt across the width the
+    screen has: the cards slide over one another as the hand grows so that the whole hand stays
+    on the screen, each card keeping a strip wide enough to press and the last one shown whole.
+    Nothing here scrolls and nothing here clips, so a card's corona is never cut off - the side
+    padding is wider than the glow reaches. The press-and-hold viewer makes cards this small
+    readable.
   */
   .hand-zone {
+    --hand-cards: max(1, var(--hand-count, 1));
+    --hand-card-width: 90px;
+    --hand-gap: 6px;
+    --hand-pitch: calc(var(--hand-card-width) + var(--hand-gap));
+    --hand-overlap: clamp(
+      0px,
+      calc(
+        (var(--hand-cards) * var(--hand-pitch) - var(--hand-gap) - 100%) /
+        max(1, var(--hand-cards) - 1)
+      ),
+      calc(var(--hand-pitch) - 12px)
+    );
     right: 0;
-    bottom: 78px;
+    bottom: 8px;
     left: 0;
     width: 100%;
-    height: 166px;
+    height: 154px;
     justify-content: safe center;
-    gap: 6px;
-    padding: 22px 10px 6px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
+    gap: var(--hand-gap);
+    /* The side padding is wider than the corona reaches, so the end cards glow whole. */
+    padding: 22px 20px 6px;
+    overflow: visible;
     transform: none;
     background: linear-gradient(transparent, #090b08 42%);
   }
@@ -4086,19 +4294,35 @@ button.bench-slot span {
     board is the aura surface the rest of the time, so the hand stays down out of the way.
   */
   .hand-forward .hand-zone {
-    bottom: 340px;
+    /* Forward means in front: it rises over the table state rather than under it. */
+    z-index: 32;
+    bottom: 336px;
     background: linear-gradient(transparent, rgb(9 11 8 / 88%) 42%);
   }
 
   .hand-card {
-    margin: 0;
-    scroll-snap-align: center;
+    margin: 0 calc(-1 * var(--hand-overlap)) 0 0;
     touch-action: pan-x pan-y;
     transform: none;
   }
 
+  /* The card on top of the hand is the one held last, and it is shown whole. */
+  .hand-card:last-child {
+    margin-right: 0;
+  }
+
+  /*
+    Held cards sit against one another, so their coronas would otherwise merge into one band of
+    light along the row: in the hand the rim is drawn tighter and softer than on the table.
+  */
+  .hand-card .hand-card-visual::after {
+    inset: -6px;
+    border-radius: 12px;
+    filter: blur(3px);
+  }
+
   .hand-card .card-face--hand {
-    --blokemon-card-scale: 0.13;
+    --blokemon-card-scale: 0.12;
   }
 
   .hand-card:hover,
@@ -4175,10 +4399,6 @@ button.bench-slot span {
     holds its bloom, so every card that can be acted on still reads as glowing. The viewer and
     the pop-up simply appear.
   */
-  .is-aura .battle-card-shell,
-  .is-aura .hand-card-visual,
-  .is-aura .tray-card-visual,
-  button.bench-slot.is-aura,
   .action-sheet,
   .action-sheet.is-centred,
   .card-viewer,
@@ -4186,19 +4406,19 @@ button.bench-slot span {
     animation: none !important;
   }
 
-  .is-aura .battle-card-shell,
-  .is-aura .hand-card-visual,
-  .is-aura .tray-card-visual {
-    filter:
-      drop-shadow(0 0 6px rgb(255 255 255 / 88%))
-      drop-shadow(0 0 20px rgb(248 252 255 / 52%)) !important;
+  /* The corona neither turns nor breathes: it holds one steady, even rim of light. */
+  .is-aura .battle-card-shell::after,
+  .is-aura .hand-card-visual::after,
+  .is-aura .tray-card-visual::after,
+  button.bench-slot.is-aura::after {
+    background: rgb(255 255 255 / 54%) !important;
+    opacity: 1 !important;
+    animation: none !important;
   }
 
-  .is-aura.is-aura-selected .battle-card-shell,
-  .is-aura.is-aura-selected .hand-card-visual,
-  .is-aura.is-aura-selected .tray-card-visual {
-    filter:
-      drop-shadow(0 0 10px rgb(255 255 255 / 100%))
-      drop-shadow(0 0 30px rgb(226 244 255 / 70%)) !important;
+  .is-aura.is-aura-selected .battle-card-shell::after,
+  .is-aura.is-aura-selected .hand-card-visual::after,
+  .is-aura.is-aura-selected .tray-card-visual::after {
+    background: rgb(255 255 255 / 78%) !important;
   }
 }
