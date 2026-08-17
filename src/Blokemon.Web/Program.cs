@@ -1,6 +1,6 @@
+using Blokemon.App;
+using Blokemon.App.Contracts;
 using Blokemon.Web.Api;
-using Blokemon.Web.Application;
-using Blokemon.Web.Client.Api;
 using Blokemon.Web.Components;
 using Blokemon.Web.Content;
 using Blokemon.Web.Persistence;

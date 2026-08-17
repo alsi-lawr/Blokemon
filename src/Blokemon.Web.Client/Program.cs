@@ -1,6 +1,6 @@
-using Blokemon.Web.Application;
+using Blokemon.App;
+using Blokemon.App.Catalogue;
 using Blokemon.Web.Client.Application;
-using Blokemon.Web.Content;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

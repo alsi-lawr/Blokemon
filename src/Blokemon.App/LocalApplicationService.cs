@@ -4,13 +4,12 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Blokemon.App.Catalogue;
+using Blokemon.App.Contracts;
 using Blokemon.Core.SetDesign;
 using Blokemon.Product;
-using Blokemon.Web.Client.Api;
-using Blokemon.Web.Content;
-using Blokemon.Web.Persistence;
 
-namespace Blokemon.Web.Application;
+namespace Blokemon.App;
 
 public sealed class LocalApplicationService(
     BlokemonCatalogue catalogue,

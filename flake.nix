@@ -34,6 +34,9 @@
           fileset = pkgs.lib.fileset.unions (
             commonSourceFiles
             ++ [
+              ./src/Blokemon.App
+              ./src/Blokemon.App.Catalogue
+              ./src/Blokemon.App.Contracts
               ./src/Blokemon.Core
               ./src/Blokemon.Game
               ./src/Blokemon.Product
@@ -53,6 +56,9 @@
           fileset = pkgs.lib.fileset.unions (
             commonSourceFiles
             ++ [
+              ./src/Blokemon.App
+              ./src/Blokemon.App.Catalogue
+              ./src/Blokemon.App.Contracts
               ./src/Blokemon.CardGen
               ./src/Blokemon.Core
               ./src/Blokemon.Game

@@ -24,13 +24,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.csproj" />
-    <ProjectReference Include="../Blokemon.Game/Blokemon.Game.csproj" />
-    <ProjectReference Include="../Blokemon.Product/Blokemon.Product.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="Blokemon.Web.Tests" />
+    <ProjectReference Include="../Blokemon.App/Blokemon.App.csproj" />
+    <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(StandaloneBrowser)' == 'true'">

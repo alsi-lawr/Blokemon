@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Blokemon.App.Catalogue;
 using Blokemon.Web.Content;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;

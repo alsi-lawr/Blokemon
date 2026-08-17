@@ -3,16 +3,15 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Blokemon.App.Catalogue;
+using Blokemon.App.Contracts;
 using Blokemon.Core.SetDesign;
 using Blokemon.Game;
 using Blokemon.Product;
-using Blokemon.Web.Client.Api;
-using Blokemon.Web.Content;
-using Blokemon.Web.Persistence;
-using ClientStartMatchRequest = Blokemon.Web.Client.Api.StartMatchRequest;
+using ClientStartMatchRequest = Blokemon.App.Contracts.StartMatchRequest;
 using GameCommandId = Blokemon.Game.CommandId;
 
-namespace Blokemon.Web.Application;
+namespace Blokemon.App;
 
 public sealed record MatchServiceResult(
     MatchView? View,

@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Blokemon.Core.SetDesign;
 
-namespace Blokemon.Web.Content;
+namespace Blokemon.App.Catalogue;
 
 public sealed record StarterDeckEntry(string CardId, int Quantity);
 

@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using Blokemon.Web.Client.Api;
+using Blokemon.App.Contracts;
 
-namespace Blokemon.Web.Content;
+namespace Blokemon.App.Catalogue;
 
 /// <summary>The card illustrations a browser needs, ordered by how soon it is likely to need them.</summary>
 public static partial class CardArtAssets

@@ -1,7 +1,8 @@
 using System.Text.Json.Nodes;
+using Blokemon.App;
+using Blokemon.App.Catalogue;
+using Blokemon.App.Contracts;
 using Blokemon.Product;
-using Blokemon.Web.Application;
-using Blokemon.Web.Client.Api;
 using Blokemon.Web.Content;
 using Blokemon.Web.Persistence;
 using Microsoft.EntityFrameworkCore;

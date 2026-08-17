@@ -1,4 +1,4 @@
-namespace Blokemon.Web.Persistence;
+namespace Blokemon.App.Contracts;
 
 public sealed record StoredDocument(long Revision, string Json);
 

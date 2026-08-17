@@ -1,3 +1,5 @@
+using Blokemon.App.Catalogue;
+using Blokemon.App.Contracts;
 using Blokemon.CardGen.Authority;
 using Blokemon.CardGen.Domain;
 using Blokemon.CardGen.Rendering;
@@ -6,7 +8,6 @@ using Blokemon.Core.SetDesign;
 using Blokemon.PackGen.Catalogue;
 using Blokemon.PackGen.Domain;
 using Blokemon.PackGen.Rendering;
-using Blokemon.Web.Client.Api;
 
 namespace Blokemon.Web.Content;
 

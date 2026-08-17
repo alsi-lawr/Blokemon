@@ -1,6 +1,7 @@
+using Blokemon.App.Contracts;
 using Microsoft.JSInterop;
 
-namespace Blokemon.Web.Persistence;
+namespace Blokemon.Web.Client.Persistence;
 
 public sealed class IndexedDbStateDocumentStore(IJSRuntime js)
     : IStateDocumentStore,

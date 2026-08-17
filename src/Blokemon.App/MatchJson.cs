@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Blokemon.Game;
 
-namespace Blokemon.Web.Persistence;
+namespace Blokemon.App;
 
 internal static class MatchJson
 {

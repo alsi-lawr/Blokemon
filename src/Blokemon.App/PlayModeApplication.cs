@@ -1,10 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Blokemon.Web.Application;
-using Blokemon.Web.Client.Api;
-using Blokemon.Web.Persistence;
+using Blokemon.App.Contracts;
 
-namespace Blokemon.Web.Client.Application;
+namespace Blokemon.App;
 
 public enum PlayMode
 {

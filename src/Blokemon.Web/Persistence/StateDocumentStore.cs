@@ -1,3 +1,4 @@
+using Blokemon.App.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Blokemon.Web.Persistence;

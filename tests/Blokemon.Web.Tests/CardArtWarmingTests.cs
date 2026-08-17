@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
-using Blokemon.Web.Client.Api;
+using Blokemon.App.Catalogue;
+using Blokemon.App.Contracts;
 using Blokemon.Web.Content;
 using Shouldly;
 

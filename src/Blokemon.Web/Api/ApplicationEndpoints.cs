@@ -1,5 +1,5 @@
-using Blokemon.Web.Application;
-using Blokemon.Web.Client.Api;
+using Blokemon.App;
+using Blokemon.App.Contracts;
 
 namespace Blokemon.Web.Api;
 

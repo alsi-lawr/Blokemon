@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Blokemon.App.Contracts;
 using Blokemon.Core.SetDesign;
-using Blokemon.Web.Client.Api;
 
-namespace Blokemon.Web.Content;
+namespace Blokemon.App.Catalogue;
 
 public sealed record CatalogueEffect(string Id, string Name, string? Text);
 

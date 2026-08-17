@@ -1,5 +1,5 @@
-using Blokemon.Web.Client.Api;
-using Blokemon.Web.Content;
+using Blokemon.App.Catalogue;
+using Blokemon.App.Contracts;
 using Microsoft.JSInterop;
 
 namespace Blokemon.Web.Client.Application;

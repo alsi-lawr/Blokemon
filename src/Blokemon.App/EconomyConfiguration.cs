@@ -2,7 +2,7 @@ using System.Globalization;
 using Blokemon.Product;
 using Microsoft.Extensions.Configuration;
 
-namespace Blokemon.Web.Application;
+namespace Blokemon.App;
 
 // Both hosts resolve their economy from these settings: the server from its appsettings and
 // environment, the browser build from the appsettings.json served beside its boot files.
