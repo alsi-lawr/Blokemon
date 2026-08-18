@@ -4,7 +4,7 @@
     <AssemblyName>Blokemon.Web.Content</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../Blokemon.App.Catalogue/Blokemon.App.Catalogue.csproj" />
+    <ProjectReference Include="../Blokemon.App.Catalogue/Blokemon.App.Catalogue.fsproj" />
     <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
     <ProjectReference Include="../Blokemon.CardGen/Blokemon.CardGen.fsproj" />
     <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />

@@ -1,7 +1,7 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Blokemon.App/Blokemon.App.csproj" />
-    <Project Path="src/Blokemon.App.Catalogue/Blokemon.App.Catalogue.csproj" />
+    <Project Path="src/Blokemon.App/Blokemon.App.fsproj" />
+    <Project Path="src/Blokemon.App.Catalogue/Blokemon.App.Catalogue.fsproj" />
     <Project Path="src/Blokemon.App.Client/Blokemon.App.Client.csproj" />
     <Project Path="src/Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
     <Project Path="src/Blokemon.CardGen/Blokemon.CardGen.fsproj" />

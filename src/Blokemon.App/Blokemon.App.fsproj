@@ -5,16 +5,33 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="ApiResponses.fs" />
+    <Compile Include="EconomyConfiguration.fs" />
+    <Compile Include="MatchJson.fs" />
+    <Compile Include="PlayModeApplication.fs" />
+    <Compile Include="LocalMatchService.fs" />
+    <Compile Include="LocalApplicationService.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!--
       Both hosts hand their own configuration to EconomyConfiguration, so the application tier
       needs the abstraction the Blazor and ASP.NET Core hosts already carry transitively.
     -->
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
-    <ProjectReference Include="../Blokemon.App.Catalogue/Blokemon.App.Catalogue.csproj" />
+    <ProjectReference Include="../Blokemon.App.Catalogue/Blokemon.App.Catalogue.fsproj" />
     <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
     <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
     <ProjectReference Include="../Blokemon.Game/Blokemon.Game.csproj" />
     <ProjectReference Include="../Blokemon.Product/Blokemon.Product.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Central package management sets DisableImplicitFSharpCoreReference, so without this
+      reference the project builds green and fails at runtime with a missing FSharp.Core.
+    -->
+    <PackageReference Include="FSharp.Core" />
   </ItemGroup>
 
   <ItemGroup>

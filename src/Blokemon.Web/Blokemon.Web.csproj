@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Blokemon.App\Blokemon.App.csproj" />
-    <ProjectReference Include="..\Blokemon.App.Catalogue\Blokemon.App.Catalogue.csproj" />
+    <ProjectReference Include="..\Blokemon.App\Blokemon.App.fsproj" />
+    <ProjectReference Include="..\Blokemon.App.Catalogue\Blokemon.App.Catalogue.fsproj" />
     <ProjectReference Include="..\Blokemon.App.Contracts\Blokemon.App.Contracts.csproj" />
     <ProjectReference Include="..\Blokemon.CardGen\Blokemon.CardGen.fsproj" />
     <ProjectReference Include="..\Blokemon.PackGen\Blokemon.PackGen.fsproj" />

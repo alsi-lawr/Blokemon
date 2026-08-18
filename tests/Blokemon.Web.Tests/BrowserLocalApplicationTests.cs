@@ -913,7 +913,7 @@ public sealed class BrowserLocalApplicationTests
             .AddBlokemonClient(
                 new HttpClient { BaseAddress = new Uri("https://browser.invalid/") },
                 Catalogue(),
-                new PlayModeAvailability(ServerBacked: false),
+                new PlayModeAvailability(serverBacked: false),
                 EconomyConfiguration.Resolve(
                     Configuration([
                         new(EconomyConfiguration.ModeKey, "ClassicScarcity"),

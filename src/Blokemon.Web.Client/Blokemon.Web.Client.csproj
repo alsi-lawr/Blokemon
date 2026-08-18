@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-    <ProjectReference Include="../Blokemon.App/Blokemon.App.csproj" />
+    <ProjectReference Include="../Blokemon.App/Blokemon.App.fsproj" />
     <ProjectReference Include="../Blokemon.App.Client/Blokemon.App.Client.csproj" />
     <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
   </ItemGroup>

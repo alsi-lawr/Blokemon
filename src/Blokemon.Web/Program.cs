@@ -1,5 +1,4 @@
 using Blokemon.App;
-using Blokemon.App.Client;
 using Blokemon.App.Contracts;
 using Blokemon.Web.Api;
 using Blokemon.Web.Components;
@@ -31,7 +30,6 @@ builder.Services.AddScoped(serviceProvider => new HttpClient
 {
     BaseAddress = new Uri(serviceProvider.GetRequiredService<NavigationManager>().BaseUri),
 });
-builder.Services.AddScoped<BlokemonApiClient>();
 builder
     .Services.AddRazorComponents()
     .AddInteractiveServerComponents()

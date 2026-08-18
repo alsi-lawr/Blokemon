@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Blokemon.App.Catalogue</RootNamespace>
+    <AssemblyName>Blokemon.App.Catalogue</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="CatalogueValues.fs" />
+    <Compile Include="CatalogueDocuments.fs" />
+    <Compile Include="StarterDeckCatalogue.fs" />
+    <Compile Include="BlokemonCatalogue.fs" />
+    <Compile Include="CardArtAssets.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
+    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      Central package management sets DisableImplicitFSharpCoreReference, so without this
+      reference the project builds green and fails at runtime with a missing FSharp.Core.
+    -->
+    <PackageReference Include="FSharp.Core" />
+  </ItemGroup>
+</Project>

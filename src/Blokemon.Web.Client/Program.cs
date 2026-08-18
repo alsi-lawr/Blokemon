@@ -14,9 +14,9 @@ public static class ClientProgram
         var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
         var bootstrap = await http.GetStringAsync("content/catalogue.json");
 #if BLOKEMON_STANDALONE_BROWSER
-        var playModes = new PlayModeAvailability(ServerBacked: false);
+        var playModes = new PlayModeAvailability(serverBacked: false);
 #else
-        var playModes = new PlayModeAvailability(ServerBacked: true);
+        var playModes = new PlayModeAvailability(serverBacked: true);
 #endif
         builder.Services.AddBlokemonClient(
             http,
