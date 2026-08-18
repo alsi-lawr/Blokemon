@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectTargeting
 open Blokemon.Game.EffectSelection
@@ -36,19 +37,19 @@ module internal EffectCardMoves =
 
             builder.SetCard
                 { builder.Card cardId with
-                    Attachments = FrozenList.empty
-                    UnderlyingCards = FrozenList.empty
+                    Attachments = ImmutableArray<_>.Empty
+                    UnderlyingCards = ImmutableArray<_>.Empty
                     Damage = 0
-                    RoughStates = FrozenList.empty }
+                    RoughStates = ImmutableArray<_>.Empty }
 
         builder.MoveCard(bloke.Id, CardZone.Stack)
 
         builder.SetCard
             { builder.Card bloke.Id with
-                Attachments = FrozenList.empty
-                UnderlyingCards = FrozenList.empty
+                Attachments = ImmutableArray<_>.Empty
+                UnderlyingCards = ImmutableArray<_>.Empty
                 Damage = 0
-                RoughStates = FrozenList.empty }
+                RoughStates = ImmutableArray<_>.Empty }
 
     let private zoneFor (destination: BlokemonEffectDestination) (card: CardState) =
         match destination with

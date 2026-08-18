@@ -1,6 +1,7 @@
 namespace Blokemon.Game.Tests
 
 open System
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game
 open FsUnit
@@ -11,13 +12,14 @@ module private FullSetBehaviorFixtures =
 
     type Execution =
         { State: MatchState
-          Events: FrozenList<MatchEvent> }
+          Events: ImmutableArray<MatchEvent> }
 
     let addCards (state: MatchState) (added: CardState seq) =
         { state with
             Cards =
-                FrozenList<CardState>
-                    .Create(Seq.append state.Cards added |> Seq.sortBy (fun card -> card.Id)) }
+                ImmutableArray.CreateRange(
+                    Seq.append state.Cards added |> Seq.sortBy (fun card -> card.Id)
+                ) }
 
     let seedForBadge () =
         let rec search (seed: uint64) =
@@ -64,7 +66,7 @@ module private FullSetBehaviorFixtures =
             | Some resolution -> state <- apply state resolution.Command
 
         { State = state
-          Events = FrozenList<MatchEvent>.Create events }
+          Events = ImmutableArray.CreateRange events }
 
     let executeAction (initial: MatchState) (select: LegalAction -> bool) =
         let engine = MatchScenario.Engine()
@@ -234,8 +236,7 @@ module private FullSetBehaviorFixtures =
                   (CardInstanceId "defender") ]
 
         let roughStates =
-            FrozenList<RoughStateEntry>
-                .Create(MatchScenario.RoughState BlokemonRoughState.DodgyPint 1)
+            ImmutableArray.Create(MatchScenario.RoughState BlokemonRoughState.DodgyPint 1)
 
         let attackerCard =
             { state.Card(CardInstanceId "attacker") with
@@ -245,29 +246,28 @@ module private FullSetBehaviorFixtures =
         let defenderCard =
             { state.Card(CardInstanceId "defender") with
                 Damage = 10
-                Attachments = FrozenList<CardInstanceId>.Create(CardInstanceId "other-vim")
+                Attachments = ImmutableArray.Create(CardInstanceId "other-vim")
                 RoughStates = roughStates }
 
         { state with
             Cards =
-                FrozenList<CardState>
-                    .Create(
-                        state.Cards
-                        |> Seq.filter (fun card ->
-                            card.Id.Value <> "first-draw"
-                            && card.Id.Value <> "attacker"
-                            && card.Id.Value <> "defender")
-                        |> Seq.append (attackerCard :: defenderCard :: additionalCards)
-                        |> Seq.sortBy (fun card -> card.Id)
-                    )
+                ImmutableArray.CreateRange(
+                    state.Cards
+                    |> Seq.filter (fun card ->
+                        card.Id.Value <> "first-draw"
+                        && card.Id.Value <> "attacker"
+                        && card.Id.Value <> "defender")
+                    |> Seq.append (attackerCard :: defenderCard :: additionalCards)
+                    |> Seq.sortBy (fun card -> card.Id)
+                )
             RoundUsage =
                 { Player = MatchScenario.FirstPlayer
                   VimAttachments = 0
                   MatesPlayed = 1
                   LocalsPlayed = 0
                   TaxisUsed = 0
-                  EffectsUsed = FrozenList.empty
-                  KitsPlayed = FrozenList.empty } }
+                  EffectsUsed = ImmutableArray<_>.Empty
+                  KitsPlayed = ImmutableArray<_>.Empty } }
 
     let kitState (kitId: string) =
         let state = richBattleState "BLK-001"
@@ -282,13 +282,12 @@ module private FullSetBehaviorFixtures =
 
         { state with
             Cards =
-                FrozenList<CardState>
-                    .Create(
-                        state.Cards
-                        |> Seq.filter (fun card -> card.Id.Value <> "local")
-                        |> Seq.append [ kit ]
-                        |> Seq.sortBy (fun card -> card.Id)
-                    )
+                ImmutableArray.CreateRange(
+                    state.Cards
+                    |> Seq.filter (fun card -> card.Id.Value <> "local")
+                    |> Seq.append [ kit ]
+                    |> Seq.sortBy (fun card -> card.Id)
+                )
             RoundUsage = RoundUsage.Empty MatchScenario.FirstPlayer }
 
     let promotionState (promotion: BlokemonCollectible) =
@@ -313,15 +312,14 @@ module private FullSetBehaviorFixtures =
         | "BLK-021" ->
             { state with
                 Players =
-                    FrozenList<PlayerState>
-                        .Create(
-                            state.Players
-                            |> Seq.map (fun player ->
-                                if player.Id = MatchScenario.FirstPlayer then
-                                    { player with RoundsStarted = 1 }
-                                else
-                                    player)
-                        ) }
+                    ImmutableArray.CreateRange(
+                        state.Players
+                        |> Seq.map (fun player ->
+                            if player.Id = MatchScenario.FirstPlayer then
+                                { player with RoundsStarted = 1 }
+                            else
+                                player)
+                    ) }
         | "BLK-034" ->
             addCards
                 state
@@ -354,24 +352,23 @@ module private FullSetBehaviorFixtures =
         | "BLK-122" ->
             let attacker =
                 { state.Card(CardInstanceId "attacker") with
-                    Attachments = FrozenList<CardInstanceId>.Create(CardInstanceId "vim-0") }
+                    Attachments = ImmutableArray.Create(CardInstanceId "vim-0") }
 
             { state with
                 Cards =
-                    FrozenList<CardState>
-                        .Create(
-                            state.Cards
-                            |> Seq.filter (fun card ->
-                                not (
-                                    card.Owner = MatchScenario.FirstPlayer
-                                    && card.Zone = CardZone.Attached
-                                    && card.Kind = CardKind.Vim
-                                    && card.Id.Value <> "vim-0"
-                                )
-                                && card.Id.Value <> "attacker")
-                            |> Seq.append [ attacker ]
-                            |> Seq.sortBy (fun card -> card.Id)
-                        ) }
+                    ImmutableArray.CreateRange(
+                        state.Cards
+                        |> Seq.filter (fun card ->
+                            not (
+                                card.Owner = MatchScenario.FirstPlayer
+                                && card.Zone = CardZone.Attached
+                                && card.Kind = CardKind.Vim
+                                && card.Id.Value <> "vim-0"
+                            )
+                            && card.Id.Value <> "attacker")
+                        |> Seq.append [ attacker ]
+                        |> Seq.sortBy (fun card -> card.Id)
+                    ) }
         | _ -> state
 
     let describe (mechanicalId: string) (exception': exn) =
@@ -559,37 +556,34 @@ type FullSetBehaviorTests() =
         let state =
             { state with
                 Effects =
-                    FrozenList<TemporaryEffect>
-                        .Create(
-                            { SourceEffect = EffectId "BLK-137-B01"
-                              SourceCard = CardInstanceId "chosen-weakness-source"
-                              Owner = MatchScenario.FirstPlayer
-                              TargetCard = ValueSome(CardInstanceId "defender")
-                              Kind = TemporaryEffectKind.ModifySoftSpot
-                              Amount = 1
-                              MechanicalTypes =
-                                FrozenList<BlokemonMechanicalType>.Create
-                                    BlokemonMechanicalType.Grass
-                              RoughStates = FrozenList.empty
-                              RelatedCards = FrozenList.empty
-                              Conditions = FrozenList.empty
-                              Duration = EffectDuration.WhileTargetInPlay
-                              AppliesFromRound = state.RoundNumber
-                              ExpiresAfterRound = state.RoundNumber },
-                            { SourceEffect = EffectId "BLK-141-T01"
-                              SourceCard = CardInstanceId "quadruple-source"
-                              Owner = MatchScenario.FirstPlayer
-                              TargetCard = ValueSome(CardInstanceId "defender")
-                              Kind = TemporaryEffectKind.ModifySoftSpot
-                              Amount = 4
-                              MechanicalTypes = FrozenList.empty
-                              RoughStates = FrozenList.empty
-                              RelatedCards = FrozenList.empty
-                              Conditions = FrozenList.empty
-                              Duration = EffectDuration.WhileSourceInPlay
-                              AppliesFromRound = state.RoundNumber
-                              ExpiresAfterRound = state.RoundNumber }
-                        ) }
+                    ImmutableArray.Create(
+                        { SourceEffect = EffectId "BLK-137-B01"
+                          SourceCard = CardInstanceId "chosen-weakness-source"
+                          Owner = MatchScenario.FirstPlayer
+                          TargetCard = ValueSome(CardInstanceId "defender")
+                          Kind = TemporaryEffectKind.ModifySoftSpot
+                          Amount = 1
+                          MechanicalTypes = ImmutableArray.Create BlokemonMechanicalType.Grass
+                          RoughStates = ImmutableArray<_>.Empty
+                          RelatedCards = ImmutableArray<_>.Empty
+                          Conditions = ImmutableArray<_>.Empty
+                          Duration = EffectDuration.WhileTargetInPlay
+                          AppliesFromRound = state.RoundNumber
+                          ExpiresAfterRound = state.RoundNumber },
+                        { SourceEffect = EffectId "BLK-141-T01"
+                          SourceCard = CardInstanceId "quadruple-source"
+                          Owner = MatchScenario.FirstPlayer
+                          TargetCard = ValueSome(CardInstanceId "defender")
+                          Kind = TemporaryEffectKind.ModifySoftSpot
+                          Amount = 4
+                          MechanicalTypes = ImmutableArray<_>.Empty
+                          RoughStates = ImmutableArray<_>.Empty
+                          RelatedCards = ImmutableArray<_>.Empty
+                          Conditions = ImmutableArray<_>.Empty
+                          Duration = EffectDuration.WhileSourceInPlay
+                          AppliesFromRound = state.RoundNumber
+                          ExpiresAfterRound = state.RoundNumber }
+                    ) }
 
         let applied =
             MatchScenario.Applied(
@@ -635,7 +629,7 @@ type FullSetBehaviorTests() =
 
         let defender =
             { state.Card(CardInstanceId "defender") with
-                Attachments = FrozenList<CardInstanceId>.Create opposingVim.Id }
+                Attachments = ImmutableArray.Create opposingVim.Id }
 
         let state = MatchScenario.WithCards state [ defender; opposingVim ]
 

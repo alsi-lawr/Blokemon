@@ -2,6 +2,7 @@ namespace Blokemon.App
 
 open System
 open System.Collections.Generic
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.App.Catalogue
 open Blokemon.App.Contracts
@@ -170,7 +171,7 @@ module internal MatchReplay =
                     let mutable index = 0
                     let commands = document.Commands
 
-                    while not rejected && index < commands.Count do
+                    while not rejected && index < commands.Length do
                         let command = commands[index]
 
                         if command.Actor = cpuPlayer then
@@ -270,7 +271,7 @@ module internal MatchReplay =
                                 { DocumentRevision = documentRevision
                                   Document = document
                                   State = state
-                                  Events = FrozenList<MatchEvent>.Create events }
+                                  Events = ImmutableArray.CreateRange events }
                               Error = null }
                 | _ -> invalidReplay ()
             | validationError ->

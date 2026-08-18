@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
 open Blokemon.Game.MatchWins
@@ -12,7 +13,7 @@ module internal MatchSendHome =
         (catalog: AuthorityCatalog)
         (builder: MatchBuilder)
         (player: PlayerId)
-        (cards: FrozenList<CardInstanceId>)
+        (cards: ImmutableArray<CardInstanceId>)
         (finishRoundAfterResolution: bool)
         =
         for cardId in cards do
@@ -75,7 +76,7 @@ module internal MatchSendHome =
                 MatchEventKind.BlokeSentHome
                 (builder.Other current.Owner)
                 current.Id
-                (FrozenList<CardInstanceId>.Create current.Id)
+                (ImmutableArray.Create current.Id)
         )
 
         let takingPlayer = builder.Other current.Owner
@@ -94,7 +95,7 @@ module internal MatchSendHome =
                         current,
                         effect,
                         retaliation.Program,
-                        FrozenList.empty,
+                        ImmutableArray<_>.Empty,
                         ValueSome
                             { KnockedOutBloke = ValueSome current.Id
                               AttackingBloke = ValueSome attacker }

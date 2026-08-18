@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
@@ -68,8 +69,8 @@ module internal MatchPlayHandlers =
                         { target with
                             Zone = CardZone.Attached
                             AttachedTo = ValueSome promotion.Id
-                            Attachments = FrozenList.empty
-                            RoughStates = FrozenList.empty }
+                            Attachments = ImmutableArray<_>.Empty
+                            RoughStates = ImmutableArray<_>.Empty }
 
                     builder.SetCard
                         { promotion with
@@ -78,9 +79,10 @@ module internal MatchPlayHandlers =
                             Damage = target.Damage
                             Attachments = target.Attachments
                             UnderlyingCards =
-                                FrozenList<CardInstanceId>
-                                    .Create(Seq.append target.UnderlyingCards [ target.Id ])
-                            RoughStates = FrozenList.empty
+                                ImmutableArray.CreateRange(
+                                    Seq.append target.UnderlyingCards [ target.Id ]
+                                )
+                            RoughStates = ImmutableArray<_>.Empty
                             EnteredAtOwnerRound = target.EnteredAtOwnerRound
                             LastPromotedRound = builder.RoundNumber }
 
@@ -127,7 +129,7 @@ module internal MatchPlayHandlers =
                                     execution.ForcedSendHome
                                     ValueNone
                                     false
-                                    FrozenList.empty
+                                    ImmutableArray<_>.Empty
                                     0
                                 |> ignore
 
@@ -140,7 +142,7 @@ module internal MatchPlayHandlers =
         (builder: MatchBuilder)
         (actor: PlayerId)
         (boothBloke: CardInstanceId)
-        (vimToChuck: FrozenList<CardInstanceId>)
+        (vimToChuck: ImmutableArray<CardInstanceId>)
         =
         match validatePlayingTurn builder actor with
         | ValueSome turn -> HandlerResult.reject turn
@@ -176,8 +178,8 @@ module internal MatchPlayHandlers =
                         |> Seq.toArray
 
                     if
-                        vimToChuck.Count <> fare
-                        || (vimToChuck |> Seq.distinct |> Seq.length) <> vimToChuck.Count
+                        vimToChuck.Length <> fare
+                        || (vimToChuck |> Seq.distinct |> Seq.length) <> vimToChuck.Length
                         || vimToChuck
                            |> Seq.exists (fun id ->
                                not (attachedVim |> Array.exists (fun card -> card.Id = id)))

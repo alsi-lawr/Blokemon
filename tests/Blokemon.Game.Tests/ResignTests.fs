@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Game
 open FsUnit
 open TUnit.Core
@@ -12,7 +13,7 @@ module private ResignFixtures =
             state
             $"resign:{actor.Value}"
             actor
-            FrozenList.empty
+            ImmutableArray<_>.Empty
             MatchAction.Resign
 
     let private suddenDeathState () =
@@ -21,11 +22,9 @@ module private ResignFixtures =
         { state with
             SuddenDeathCount = 1
             Players =
-                FrozenList<PlayerState>
-                    .Create(
-                        state.Players
-                        |> Seq.map (fun player -> { player with BarChitsRemaining = 1 })
-                    ) }
+                ImmutableArray.CreateRange(
+                    state.Players |> Seq.map (fun player -> { player with BarChitsRemaining = 1 })
+                ) }
 
     let private pendingEffectChoiceState () =
         let engine = MatchScenario.Engine()
@@ -82,7 +81,7 @@ module private ResignFixtures =
 
         let defender =
             { state.Card(CardInstanceId "defender") with
-                Attachments = FrozenList<CardInstanceId>.Create(CardInstanceId "movable-vim") }
+                Attachments = ImmutableArray.Create(CardInstanceId "movable-vim") }
 
         let state =
             MatchScenario.WithCards state [ defender; triggerSource; movableVim; prize ]
@@ -143,7 +142,7 @@ module private ResignFixtures =
             )
 
         attacked.Phase |> should equal MatchPhase.AwaitingTriggerChoice
-        attacked.PendingBarChits.Count |> should be (greaterThan 0)
+        attacked.PendingBarChits.Length |> should be (greaterThan 0)
         attacked
 
     let private pendingReplacementState () =
@@ -237,7 +236,7 @@ type ResignTests() =
                 applied.Phase |> should equal MatchPhase.Complete
                 applied.PendingEffect.IsNone |> should be True
                 applied.PendingKnockout.IsNone |> should be True
-                applied.PendingBarChits.Count |> should equal 0
+                applied.PendingBarChits.Length |> should equal 0
                 applied.ReplacementPlayer.IsNone |> should be True
                 applied.PendingRoundEnd |> should be False
                 applied.SuddenDeathCount |> should equal state.SuddenDeathCount
@@ -264,7 +263,7 @@ type ResignTests() =
                 resigned
                 "after-resign"
                 MatchScenario.SecondPlayer
-                FrozenList.empty
+                ImmutableArray<_>.Empty
                 MatchAction.EndRound
 
         let rejectedState, rejection =
@@ -273,10 +272,10 @@ type ResignTests() =
         rejection.Code |> should equal CommandRejectionCode.MatchComplete
         rejectedState |> should equal resigned
 
-        engine.GetLegalActions(resigned, MatchScenario.FirstPlayer).Count
+        engine.GetLegalActions(resigned, MatchScenario.FirstPlayer).Length
         |> should equal 0
 
-        engine.GetLegalActions(resigned, MatchScenario.SecondPlayer).Count
+        engine.GetLegalActions(resigned, MatchScenario.SecondPlayer).Length
         |> should equal 0
 
     [<Test>]

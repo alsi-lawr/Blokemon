@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Text.Json;
 using Blokemon.App;
 using Blokemon.App.Catalogue;
@@ -11,49 +12,44 @@ namespace Blokemon.Web.Tests;
 
 public sealed class MatchJsonTests
 {
-    private static FrozenList<EffectChoice> Choices() =>
-        FrozenList<EffectChoice>.Create(
+    private static ImmutableArray<EffectChoice> Choices() =>
+        ImmutableArray.Create(
             EffectChoice.NewOptional(new("optional"), true),
             EffectChoice.NewAmount(new("amount"), 2),
-            EffectChoice.NewCards(
-                new("cards"),
-                FrozenList<CardInstanceId>.Create(new CardInstanceId("C1"))
-            ),
+            EffectChoice.NewCards(new("cards"), ImmutableArray.Create(new CardInstanceId("C1"))),
             EffectChoice.NewMechanicalType(new("type"), BlokemonMechanicalType.Grass),
             EffectChoice.NewAttack(new("attack"), new("effect")),
             EffectChoice.NewDistribution(
                 new("distribution"),
-                FrozenList<DamageAllocation>.Create(
-                    new DamageAllocation(new CardInstanceId("C2"), 3)
-                )
+                ImmutableArray.Create(new DamageAllocation(new CardInstanceId("C2"), 3))
             ),
             EffectChoice.NewAttachments(
                 new("attachments"),
-                FrozenList<VimAttachment>.Create(
+                ImmutableArray.Create(
                     new VimAttachment(new CardInstanceId("V1"), new CardInstanceId("B1"))
                 )
             )
         );
 
-    private static FrozenList<MatchCommand> Commands()
+    private static ImmutableArray<MatchCommand> Commands()
     {
         var choices = Choices();
-        var empty = FrozenList<EffectChoice>.Empty;
+        var empty = ImmutableArray<EffectChoice>.Empty;
         var match = new MatchId("match");
         var player = new PlayerId("player");
         var revision = new MatchRevision(7);
 
-        MatchCommand Command(string id, FrozenList<EffectChoice> carried, MatchAction action) =>
+        MatchCommand Command(string id, ImmutableArray<EffectChoice> carried, MatchAction action) =>
             new(new CommandId(id), match, player, revision, carried, action);
 
-        return FrozenList<MatchCommand>.Create(
+        return ImmutableArray.Create(
             Command("choose-mulligan", empty, MatchAction.NewChooseMulliganBonus(2)),
             Command(
                 "choose-opening",
                 empty,
                 MatchAction.NewChooseOpening(
                     new("oche"),
-                    FrozenList<CardInstanceId>.Create(new CardInstanceId("booth"))
+                    ImmutableArray.Create(new CardInstanceId("booth"))
                 )
             ),
             Command("attach-vim", empty, MatchAction.NewAttachVim(new("vim"), new("bloke"))),
@@ -77,7 +73,7 @@ public sealed class MatchJsonTests
                 empty,
                 MatchAction.NewTaxi(
                     new("booth-bloke"),
-                    FrozenList<CardInstanceId>.Create(new CardInstanceId("vim-to-chuck"))
+                    ImmutableArray.Create(new CardInstanceId("vim-to-chuck"))
                 )
             ),
             Command(
@@ -121,12 +117,15 @@ public sealed class MatchJsonTests
         var commands = Commands();
 
         var json = JsonSerializer.Serialize(commands, MatchJson.Options);
-        var restored = JsonSerializer.Deserialize<FrozenList<MatchCommand>>(
+        var restored = JsonSerializer.Deserialize<ImmutableArray<MatchCommand>>(
             json,
             MatchJson.Options
         );
 
-        restored.ShouldBe(commands);
+        // ImmutableArray's own == and Equals are reference equality over the backing array, so the
+        // round trip is asserted element-wise; each MatchCommand is an F# record and compares
+        // structurally, including through its own ImmutableArray members.
+        restored.SequenceEqual(commands).ShouldBeTrue();
         await Task.CompletedTask;
     }
 
@@ -138,7 +137,7 @@ public sealed class MatchJsonTests
             new MatchId("match"),
             new PlayerId("player"),
             new MatchRevision(7),
-            FrozenList<EffectChoice>.Create(EffectChoice.NewOptional(new("optional"), true)),
+            ImmutableArray.Create(EffectChoice.NewOptional(new("optional"), true)),
             MatchAction.NewAttack(new("attacker"), new("attack-effect"))
         );
 
@@ -225,14 +224,14 @@ public sealed class MatchJsonTests
 
         var startJson = JsonSerializer.Serialize(start, MatchJson.Options);
         var commandJson = JsonSerializer.Serialize(
-            FrozenList<MatchCommand>.Create(commands),
+            ImmutableArray.CreateRange(commands),
             MatchJson.Options
         );
         var restoredStart = JsonSerializer.Deserialize<MatchStartRequest>(
             startJson,
             MatchJson.Options
         );
-        var restoredCommands = JsonSerializer.Deserialize<FrozenList<MatchCommand>>(
+        var restoredCommands = JsonSerializer.Deserialize<ImmutableArray<MatchCommand>>(
             commandJson,
             MatchJson.Options
         );

@@ -1,6 +1,7 @@
 namespace Blokemon.Game
 
 open System
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.Core.SetDesign
 
@@ -114,8 +115,8 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
                 SourceCard = ValueSome effect.SourceCard
                 TargetCards =
                     match effect.TargetCard with
-                    | ValueSome target -> FrozenList<CardInstanceId>.Create target
-                    | ValueNone -> FrozenList.empty
+                    | ValueSome target -> ImmutableArray.Create target
+                    | ValueNone -> ImmutableArray<_>.Empty
                 Effect = ValueSome effect.SourceEffect
                 Amount = effect.Amount }
 
@@ -134,7 +135,7 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
                 MatchEventKind.CardMoved
                 card.Owner
                 id
-                (FrozenList<CardInstanceId>.Create id)
+                (ImmutableArray.Create id)
         )
 
     member this.MoveCard(id: CardInstanceId, zone: CardZone) = this.MoveCard(id, zone, ValueNone)
@@ -153,13 +154,13 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
             events.Add
                 { PendingMatchEvent.ofKind MatchEventKind.CardsDrawn with
                     Actor = ValueSome player
-                    TargetCards = FrozenList<CardInstanceId>.Create drawn
+                    TargetCards = ImmutableArray.CreateRange drawn
                     DrawReason = ValueSome reason
                     Amount = drawn.Length }
 
-        FrozenList<CardInstanceId>.Create drawn
+        ImmutableArray.CreateRange drawn
 
-    member this.Shuffle(player: PlayerId, excludedCards: FrozenList<CardInstanceId>) =
+    member this.Shuffle(player: PlayerId, excludedCards: ImmutableArray<CardInstanceId>) =
         let stack =
             this.CardsIn(player, CardZone.Stack)
             |> Seq.filter (fun card -> not (Seq.contains card.Id excludedCards))
@@ -178,7 +179,8 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
 
         events.Add(PendingMatchEvent.forActor MatchEventKind.CardsShuffled player)
 
-    member this.Shuffle(player: PlayerId) = this.Shuffle(player, FrozenList.empty)
+    member this.Shuffle(player: PlayerId) =
+        this.Shuffle(player, ImmutableArray<_>.Empty)
 
     member this.ReturnMittToStack(player: PlayerId) =
         let mutable nextPosition = this.CardsIn(player, CardZone.Stack) |> Seq.length
@@ -221,8 +223,7 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
             { current with
                 BarChitsRemaining = current.BarChitsRemaining - cards.Length }
 
-        let taken =
-            FrozenList<CardInstanceId>.Create(cards |> Array.map (fun card -> card.Id))
+        let taken = ImmutableArray.CreateRange(cards |> Array.map (fun card -> card.Id))
 
         events.Add
             { PendingMatchEvent.forCards MatchEventKind.BarChitsTaken player source taken with
@@ -252,8 +253,7 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
         this.SetCard
             { target with
                 Attachments =
-                    FrozenList<CardInstanceId>
-                        .Create(Seq.append target.Attachments [ attachmentId ]) }
+                    ImmutableArray.CreateRange(Seq.append target.Attachments [ attachmentId ]) }
 
     member this.DetachTo(attachmentId: CardInstanceId, zone: CardZone) =
         match (this.Card attachmentId).AttachedTo with
@@ -263,8 +263,9 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
             this.SetCard
                 { target with
                     Attachments =
-                        FrozenList<CardInstanceId>
-                            .Create(target.Attachments |> Seq.filter (fun id -> id <> attachmentId)) }
+                        ImmutableArray.CreateRange(
+                            target.Attachments |> Seq.filter (fun id -> id <> attachmentId)
+                        ) }
         | ValueNone -> ()
 
         this.MoveCard(attachmentId, zone)
@@ -288,7 +289,7 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
                 { PendingMatchEvent.ofKind MatchEventKind.DamagePlaced with
                     Actor = ValueSome actor
                     SourceCard = source
-                    TargetCards = FrozenList<CardInstanceId>.Create targetId
+                    TargetCards = ImmutableArray.Create targetId
                     DamageKind = ValueSome kind
                     Amount = damage }
 
@@ -312,7 +313,7 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
                 { PendingMatchEvent.ofKind MatchEventKind.DamageHealed with
                     Actor = ValueSome actor
                     SourceCard = source
-                    TargetCards = FrozenList<CardInstanceId>.Create targetId
+                    TargetCards = ImmutableArray.Create targetId
                     Amount = healed }
 
     member this.ApplyRoughState
@@ -344,13 +345,13 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
 
             this.SetCard
                 { target with
-                    RoughStates = FrozenList<RoughStateEntry>.Create states }
+                    RoughStates = ImmutableArray.CreateRange states }
 
             events.Add
                 { PendingMatchEvent.ofKind MatchEventKind.RoughStateApplied with
                     Actor = ValueSome actor
                     SourceCard = source
-                    TargetCards = FrozenList<CardInstanceId>.Create targetId
+                    TargetCards = ImmutableArray.Create targetId
                     RoughState = ValueSome state }
 
     member this.ClearRoughStates
@@ -371,19 +372,17 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
                 { target with
                     RoughStates =
                         match state with
-                        | ValueNone -> FrozenList.empty
+                        | ValueNone -> ImmutableArray<_>.Empty
                         | ValueSome value ->
-                            FrozenList<RoughStateEntry>
-                                .Create(
-                                    target.RoughStates
-                                    |> Seq.filter (fun entry -> entry.State <> value)
-                                ) }
+                            ImmutableArray.CreateRange(
+                                target.RoughStates |> Seq.filter (fun entry -> entry.State <> value)
+                            ) }
 
             for entry in cleared do
                 events.Add
                     { PendingMatchEvent.ofKind MatchEventKind.RoughStateCleared with
                         Actor = ValueSome actor
-                        TargetCards = FrozenList<CardInstanceId>.Create targetId
+                        TargetCards = ImmutableArray.Create targetId
                         RoughState = ValueSome entry.State }
 
     member this.ClearRoughStates(actor: PlayerId, targetId: CardInstanceId) =
@@ -422,13 +421,13 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
                     Zone = CardZone.EmptiesTray
                     StackPosition = -1
                     AttachedTo = ValueNone
-                    Attachments = FrozenList.empty
-                    UnderlyingCards = FrozenList.empty
-                    RoughStates = FrozenList.empty }
+                    Attachments = ImmutableArray<_>.Empty
+                    UnderlyingCards = ImmutableArray<_>.Empty
+                    RoughStates = ImmutableArray<_>.Empty }
 
             this.RemoveEffectsFor cardId
 
-        FrozenList<CardInstanceId>.Create chucked
+        ImmutableArray.CreateRange chucked
 
     member this.Snapshot() : MatchState =
         { Id = state.Id
@@ -441,27 +440,23 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
           OpeningPlayer = state.OpeningPlayer
           ActivePlayer = this.ActivePlayer
           RoundNumber = this.RoundNumber
-          Players = FrozenList<PlayerState>.Create players
-          Cards = FrozenList<CardState>.Create(cards |> Seq.sortBy (fun card -> card.Id))
+          Players = ImmutableArray.CreateRange players
+          Cards = ImmutableArray.CreateRange(cards |> Seq.sortBy (fun card -> card.Id))
           Effects =
-            FrozenList<TemporaryEffect>
-                .Create(
-                    effects
-                    |> Seq.sortWith (fun left right ->
-                        match
-                            String.CompareOrdinal(
-                                left.SourceEffect.Value,
-                                right.SourceEffect.Value
-                            )
-                        with
-                        | 0 -> compare left.SourceCard right.SourceCard
-                        | order -> order)
-                )
-          ProcessedCommands = FrozenList<CommandId>.Create processedCommands
+            ImmutableArray.CreateRange(
+                effects
+                |> Seq.sortWith (fun left right ->
+                    match
+                        String.CompareOrdinal(left.SourceEffect.Value, right.SourceEffect.Value)
+                    with
+                    | 0 -> compare left.SourceCard right.SourceCard
+                    | order -> order)
+            )
+          ProcessedCommands = ImmutableArray.CreateRange processedCommands
           RoundUsage = this.RoundUsage
           PendingEffect = this.PendingEffect
           PendingKnockout = this.PendingKnockout
-          PendingBarChits = FrozenList<PendingBarChitResolution>.Create pendingBarChits
+          PendingBarChits = ImmutableArray.CreateRange pendingBarChits
           ReplacementPlayer = this.ReplacementPlayer
           PendingRoundEnd = this.PendingRoundEnd
           Winner = this.Winner

@@ -1,5 +1,7 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
+
 /// Turning the staging area back into an immutable state plus the event tail that describes it.
 module internal MatchCommit =
 
@@ -34,7 +36,7 @@ module internal MatchCommit =
               Kind = MatchEventKind.StateCommitted
               Actor = ValueNone
               SourceCard = ValueNone
-              TargetCards = FrozenList.empty
+              TargetCards = ImmutableArray<_>.Empty
               Effect = ValueNone
               RoughState = ValueNone
               DamageKind = ValueNone
@@ -45,20 +47,20 @@ module internal MatchCommit =
               Command = ValueNone
               CommittedState = ValueSome state }
 
-        FrozenList<MatchEvent>.Create(Seq.append events [ committed ])
+        ImmutableArray.CreateRange(Seq.append events [ committed ])
 
     let commitStart (builder: MatchBuilder) =
         let events = commit builder builder.Revision
-        MatchStartOutcome.Started(events[events.Count - 1].CommittedState.Value, events)
+        MatchStartOutcome.Started(events[events.Length - 1].CommittedState.Value, events)
 
     let commitCommand (builder: MatchBuilder) =
         let events = commit builder (builder.Revision.Next())
-        CommandOutcome.Applied(events[events.Count - 1].CommittedState.Value, events)
+        CommandOutcome.Applied(events[events.Length - 1].CommittedState.Value, events)
 
     let reject
         (state: MatchState)
         (rejection: CommandRejectionCode)
-        (requirements: FrozenList<ChoiceRequirement>)
+        (requirements: ImmutableArray<ChoiceRequirement>)
         =
         CommandOutcome.Rejected(
             state,

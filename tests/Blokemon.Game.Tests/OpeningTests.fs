@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game
 open FsUnit
@@ -43,16 +44,12 @@ type OpeningTests() =
                     state
                     $"opening:{player.Value}"
                     player
-                    FrozenList.empty
+                    ImmutableArray<_>.Empty
                     (MatchAction.ChooseOpening(
                         mitt[0].Id,
-                        FrozenList<CardInstanceId>
-                            .Create(
-                                mitt
-                                |> Seq.skip 1
-                                |> Seq.truncate 5
-                                |> Seq.map (fun card -> card.Id)
-                            )
+                        ImmutableArray.CreateRange(
+                            mitt |> Seq.skip 1 |> Seq.truncate 5 |> Seq.map (fun card -> card.Id)
+                        )
                     ))
 
             state <- MatchScenario.Applied(engine.Apply(state, command))

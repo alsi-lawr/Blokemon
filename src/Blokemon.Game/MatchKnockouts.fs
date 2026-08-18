@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
 open Blokemon.Game.MatchWins
@@ -32,7 +33,7 @@ module internal MatchKnockouts =
                     card,
                     effect,
                     recovery.Program,
-                    FrozenList.empty,
+                    ImmutableArray<_>.Empty,
                     ValueSome
                         { KnockedOutBloke = ValueSome card.Id
                           AttackingBloke = ValueSome attackingCard }
@@ -56,9 +57,9 @@ module internal MatchKnockouts =
         (builder: MatchBuilder)
         (knockedOut: CardState)
         (attackingCard: CardInstanceId)
-        (remainingKnockouts: FrozenList<CardInstanceId>)
+        (remainingKnockouts: ImmutableArray<CardInstanceId>)
         (finishRoundAfterResolution: bool)
-        (attackDamageTargets: FrozenList<CardInstanceId>)
+        (attackDamageTargets: ImmutableArray<CardInstanceId>)
         (extraBarChits: int)
         =
         let attacker = builder.Card attackingCard
@@ -120,10 +121,10 @@ module internal MatchKnockouts =
                         first,
                         effect,
                         trick.Program,
-                        FrozenList<EffectChoice>.Create(EffectChoice.Optional(optional.Id, true)),
+                        ImmutableArray.Create(EffectChoice.Optional(optional.Id, true)),
                         false,
                         false,
-                        FrozenList.empty,
+                        ImmutableArray<_>.Empty,
                         ValueSome context
                     )
 
@@ -144,12 +145,13 @@ module internal MatchKnockouts =
                             { KnockedOutCard = knockedOut.Id
                               RemainingKnockouts = remainingKnockouts
                               TriggerSources =
-                                FrozenList<CardInstanceId>
-                                    .Create(sources |> Seq.skip 1 |> Seq.map (fun card -> card.Id))
+                                ImmutableArray.CreateRange(
+                                    sources |> Seq.skip 1 |> Seq.map (fun card -> card.Id)
+                                )
                               TriggerSource = first.Id
                               TriggerEffect = effect
                               Chooser = knockedOut.Owner
-                              EligibleVim = FrozenList<CardInstanceId>.Create eligibleVim
+                              EligibleVim = ImmutableArray.CreateRange eligibleVim
                               AttackingCard = attackingCard
                               FinishRoundAfterResolution = finishRoundAfterResolution
                               AttackDamageTargets = attackDamageTargets
@@ -162,7 +164,7 @@ module internal MatchKnockouts =
                               MatchEventKind.TriggerQueued
                               knockedOut.Owner
                               first.Id
-                              (FrozenList<CardInstanceId>.Create knockedOut.Id) with
+                              (ImmutableArray.Create knockedOut.Id) with
                             Effect = ValueSome effect }
 
                     true
@@ -173,10 +175,10 @@ module internal MatchKnockouts =
         (catalog: AuthorityCatalog)
         (interpreter: BlokemonInterpreter)
         (builder: MatchBuilder)
-        (forcedSendHome: FrozenList<CardInstanceId>)
+        (forcedSendHome: ImmutableArray<CardInstanceId>)
         (attackingCard: CardInstanceId voption)
         (finishRoundAfterResolution: bool)
-        (attackDamageTargets: FrozenList<CardInstanceId>)
+        (attackDamageTargets: ImmutableArray<CardInstanceId>)
         (extraBarChits: int)
         =
         let mutable extraBarChitsAwarded = false
@@ -226,12 +228,11 @@ module internal MatchKnockouts =
                                 builder
                                 current
                                 attacker
-                                (FrozenList<CardInstanceId>
-                                    .Create(
-                                        candidates
-                                        |> Seq.skip (index + 1)
-                                        |> Seq.map (fun card -> card.Id)
-                                    ))
+                                (ImmutableArray.CreateRange(
+                                    candidates
+                                    |> Seq.skip (index + 1)
+                                    |> Seq.map (fun card -> card.Id)
+                                ))
                                 finishRoundAfterResolution
                                 attackDamageTargets
                                 (if extraBarChitsAwarded then 0 else extraBarChits)
@@ -291,7 +292,7 @@ module internal MatchKnockouts =
         (attacker: CardState)
         (defenderBefore: CardState voption)
         (damageBefore: int)
-        (attackDamageTargets: FrozenList<CardInstanceId>)
+        (attackDamageTargets: ImmutableArray<CardInstanceId>)
         =
         match defenderBefore with
         | ValueNone -> ()
@@ -313,7 +314,7 @@ module internal MatchKnockouts =
                         defender,
                         effect,
                         trick.Program,
-                        FrozenList.empty,
+                        ImmutableArray<_>.Empty,
                         ValueSome
                             { KnockedOutBloke = ValueSome defender.Id
                               AttackingBloke = ValueSome attacker.Id }
@@ -325,7 +326,7 @@ module internal MatchKnockouts =
                               MatchEventKind.TriggerResolved
                               defender.Owner
                               defender.Id
-                              (FrozenList<CardInstanceId>.Create attacker.Id) with
+                              (ImmutableArray.Create attacker.Id) with
                             Effect = ValueSome effect }
             | _ -> ()
 

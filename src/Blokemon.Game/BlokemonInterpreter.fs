@@ -2,6 +2,7 @@ namespace Blokemon.Game
 
 open System
 open System.Collections.Generic
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.ChoiceShapes
 open Blokemon.Game.ChoiceInspection
@@ -52,10 +53,10 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
 
     member this.GetChoiceRequirements(state: MatchState, invocation: EffectInvocation) =
         match state.Cards |> Seq.tryFind (fun card -> card.Id = invocation.Source) with
-        | None -> FrozenList.empty
+        | None -> ImmutableArray<_>.Empty
         | Some source ->
             match this.FindProgram invocation.Effect with
-            | ValueNone -> FrozenList.empty
+            | ValueNone -> ImmutableArray<_>.Empty
             | ValueSome program ->
                 let builder = MatchBuilder(state, catalog)
 
@@ -75,31 +76,29 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             source: CardState,
             effect: EffectId,
             program: BlokemonEffectInstruction array,
-            choices: FrozenList<EffectChoice>,
+            choices: ImmutableArray<EffectChoice>,
             isAttack: bool,
             isHouseRule: bool,
             copyStack: HashSet<EffectId> voption,
-            beerMatResults: FrozenList<bool>,
+            beerMatResults: ImmutableArray<bool>,
             triggerContext: TriggerContext voption
         ) =
         let requirements =
             inspectChoices catalog builder actor source effect program triggerContext
 
         let scopedChoices =
-            FrozenList<EffectChoice>
-                .Create(
-                    choices
-                    |> Seq.filter (fun choice ->
-                        choice.Id.Value.StartsWith(effect.Value + ":", StringComparison.Ordinal))
-                )
+            ImmutableArray.CreateRange(
+                choices
+                |> Seq.filter (fun choice ->
+                    choice.Id.Value.StartsWith(effect.Value + ":", StringComparison.Ordinal))
+            )
 
         let initialChoices =
-            FrozenList<EffectChoice>
-                .Create(
-                    scopedChoices
-                    |> Seq.filter (fun choice ->
-                        requirements |> Seq.exists (fun requirement -> requirement.Id = choice.Id))
-                )
+            ImmutableArray.CreateRange(
+                scopedChoices
+                |> Seq.filter (fun choice ->
+                    requirements |> Seq.exists (fun requirement -> requirement.Id = choice.Id))
+            )
 
         match validateChoices initialChoices requirements with
         | ValueSome rejection -> InterpreterExecution.rejected rejection requirements
@@ -125,7 +124,7 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             runtime.Use requirements
             executeProgram catalog runtime program "root"
 
-            if runtime.DeferredRequirements.Count > 0 then
+            if runtime.DeferredRequirements.Length > 0 then
                 { InterpreterExecution.rejected
                       CommandRejectionCode.ChoiceRequired
                       runtime.DeferredRequirements with
@@ -145,12 +144,11 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
                 { IsApplied = true
                   Rejection = ValueNone
                   Requirements = requirements
-                  ForcedSendHome =
-                    FrozenList<CardInstanceId>.Create(runtime.ForcedSendHome |> Seq.sort)
+                  ForcedSendHome = ImmutableArray.CreateRange(runtime.ForcedSendHome |> Seq.sort)
                   SourceChucked = runtime.SourceChucked
                   BeerMatResults = runtime.BeerMatResults
                   AttackDamageTargets =
-                    FrozenList<CardInstanceId>.Create(runtime.AttackDamageTargets |> Seq.sort)
+                    ImmutableArray.CreateRange(runtime.AttackDamageTargets |> Seq.sort)
                   DeferredAttackKnockoutBarChits = runtime.DeferredAttackKnockoutBarChits }
 
     member internal this.Execute
@@ -160,7 +158,7 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             source: CardState,
             effect: EffectId,
             program: BlokemonEffectInstruction array,
-            choices: FrozenList<EffectChoice>,
+            choices: ImmutableArray<EffectChoice>,
             isAttack: bool
         ) =
         this.Execute(
@@ -173,7 +171,7 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             isAttack,
             false,
             ValueNone,
-            FrozenList.empty,
+            ImmutableArray<_>.Empty,
             ValueNone
         )
 
@@ -184,7 +182,7 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             source: CardState,
             effect: EffectId,
             program: BlokemonEffectInstruction array,
-            choices: FrozenList<EffectChoice>,
+            choices: ImmutableArray<EffectChoice>,
             triggerContext: TriggerContext voption
         ) =
         this.Execute(
@@ -197,7 +195,7 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             false,
             false,
             ValueNone,
-            FrozenList.empty,
+            ImmutableArray<_>.Empty,
             triggerContext
         )
 
@@ -208,10 +206,10 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             source: CardState,
             effect: EffectId,
             program: BlokemonEffectInstruction array,
-            choices: FrozenList<EffectChoice>,
+            choices: ImmutableArray<EffectChoice>,
             isAttack: bool,
             isHouseRule: bool,
-            beerMatResults: FrozenList<bool>,
+            beerMatResults: ImmutableArray<bool>,
             triggerContext: TriggerContext voption
         ) =
         let simulation = MatchBuilder(builder.Snapshot(), catalog)
@@ -237,10 +235,10 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             source: CardState,
             effect: EffectId,
             program: BlokemonEffectInstruction array,
-            choices: FrozenList<EffectChoice>,
+            choices: ImmutableArray<EffectChoice>,
             isAttack: bool,
             isHouseRule: bool,
-            beerMatResults: FrozenList<bool>
+            beerMatResults: ImmutableArray<bool>
         ) =
         this.Plan(
             builder,
@@ -257,8 +255,8 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
 
     member internal _.ValidateChoiceSubmission
         (
-            choices: FrozenList<EffectChoice>,
-            requirements: FrozenList<ChoiceRequirement>,
+            choices: ImmutableArray<EffectChoice>,
+            requirements: ImmutableArray<ChoiceRequirement>,
             chooser: PlayerId
         ) =
         validateChoiceSubmission choices requirements chooser

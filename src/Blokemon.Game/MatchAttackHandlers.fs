@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
@@ -88,10 +89,10 @@ module internal MatchAttackHandlers =
                     catalog
                     interpreter
                     builder
-                    FrozenList.empty
+                    ImmutableArray<_>.Empty
                     ValueNone
                     false
-                    FrozenList.empty
+                    ImmutableArray<_>.Empty
                     0
                 |> ignore
 
@@ -109,7 +110,7 @@ module internal MatchAttackHandlers =
         (attackId: EffectId)
         (isResuming: bool)
         (attackStarted: bool)
-        (beerMatResults: FrozenList<bool>)
+        (beerMatResults: ImmutableArray<bool>)
         =
         match validatePlayingTurn builder command.Actor with
         | ValueSome turn -> HandlerResult.reject turn
@@ -197,8 +198,7 @@ module internal MatchAttackHandlers =
                                                   Source = attacker.Id
                                                   Effect = attackId
                                                   Chooser = chooser
-                                                  Requirements =
-                                                    FrozenList<ChoiceRequirement>.Create deferred
+                                                  Requirements = ImmutableArray.CreateRange deferred
                                                   BeerMatResults = beerMatResults
                                                   AttackStarted = false }
 

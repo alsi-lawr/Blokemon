@@ -2,6 +2,7 @@ namespace Blokemon.Game
 
 open System
 open System.Collections.Generic
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.Core.SetDesign
 
@@ -107,9 +108,9 @@ type internal AuthorityCatalog(manifest: BlokemonRuntimeManifest) =
 
     member this.MechanicalTypes(card: CardState) =
         if card.Kind = CardKind.Bloke then
-            FrozenList<BlokemonMechanicalType>.Create(this.Bloke(card.MechanicalId).MechanicalTypes)
+            ImmutableArray.CreateRange(this.Bloke(card.MechanicalId).MechanicalTypes)
         else
-            FrozenList<BlokemonMechanicalType>.Create BlokemonMechanicalType.Colorless
+            ImmutableArray.Create BlokemonMechanicalType.Colorless
 
     member this.PartyTricks(card: CardState) : BlokemonPartyTrick seq =
         if card.Kind = CardKind.Bloke then

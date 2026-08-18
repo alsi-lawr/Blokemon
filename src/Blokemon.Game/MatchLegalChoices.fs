@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
@@ -16,7 +17,7 @@ module internal MatchLegalChoices =
           MatchId = state.Id
           Actor = actor
           ExpectedRevision = state.Revision
-          Choices = FrozenList.empty
+          Choices = ImmutableArray<_>.Empty
           Action = action }
 
     let private stableChoice (requirement: ChoiceRequirement) : EffectChoice seq =
@@ -27,8 +28,9 @@ module internal MatchLegalChoices =
         | ChoiceRequirementKind.Cards ->
             [ EffectChoice.Cards(
                   requirement.Id,
-                  FrozenList<CardInstanceId>
-                      .Create(requirement.EligibleCards |> Seq.truncate requirement.Minimum)
+                  ImmutableArray.CreateRange(
+                      requirement.EligibleCards |> Seq.truncate requirement.Minimum
+                  )
               ) ]
         | ChoiceRequirementKind.MechanicalType ->
             requirement.EligibleMechanicalTypes
@@ -45,7 +47,7 @@ module internal MatchLegalChoices =
             |> Seq.map (fun card ->
                 EffectChoice.Distribution(
                     requirement.Id,
-                    FrozenList<DamageAllocation>.Create
+                    ImmutableArray.Create
                         { Card = card
                           Counters = requirement.Maximum }
                 ))
@@ -55,17 +57,16 @@ module internal MatchLegalChoices =
             |> Seq.map (fun target ->
                 EffectChoice.Attachments(
                     requirement.Id,
-                    FrozenList<VimAttachment>
-                        .Create(
-                            requirement.EligibleCards
-                            |> Seq.truncate requirement.Minimum
-                            |> Seq.map (fun vim -> { Vim = vim; Bloke = target })
-                        )
+                    ImmutableArray.CreateRange(
+                        requirement.EligibleCards
+                        |> Seq.truncate requirement.Minimum
+                        |> Seq.map (fun vim -> { Vim = vim; Bloke = target })
+                    )
                 ))
         | other -> failwithf "Unhandled choice requirement kind %A." other
 
-    let stableChoices (requirements: FrozenList<ChoiceRequirement>) =
-        FrozenList<EffectChoice>.Create(requirements |> Seq.collect stableChoice)
+    let stableChoices (requirements: ImmutableArray<ChoiceRequirement>) =
+        ImmutableArray.CreateRange(requirements |> Seq.collect stableChoice)
 
     /// Promotion triggers read the table as it will be after the swap, so the requirements have to be
     /// derived from a projected state rather than the one on the table now.
@@ -84,8 +85,8 @@ module internal MatchLegalChoices =
                     { card with
                         Zone = CardZone.Attached
                         AttachedTo = ValueSome promotion.Id
-                        Attachments = FrozenList.empty
-                        RoughStates = FrozenList.empty }
+                        Attachments = ImmutableArray<_>.Empty
+                        RoughStates = ImmutableArray<_>.Empty }
                 elif card.Id = promotion.Id then
                     { card with
                         Zone = target.Zone
@@ -93,9 +94,10 @@ module internal MatchLegalChoices =
                         Damage = target.Damage
                         Attachments = target.Attachments
                         UnderlyingCards =
-                            FrozenList<CardInstanceId>
-                                .Create(Seq.append target.UnderlyingCards [ target.Id ])
-                        RoughStates = FrozenList.empty
+                            ImmutableArray.CreateRange(
+                                Seq.append target.UnderlyingCards [ target.Id ]
+                            )
+                        RoughStates = ImmutableArray<_>.Empty
                         EnteredAtOwnerRound = target.EnteredAtOwnerRound
                         LastPromotedRound = state.RoundNumber }
                 elif Seq.contains card.Id target.Attachments then
@@ -106,22 +108,21 @@ module internal MatchLegalChoices =
 
         let promotedState =
             { state with
-                Cards = FrozenList<CardState>.Create promotedCards }
+                Cards = ImmutableArray.CreateRange promotedCards }
 
-        FrozenList<ChoiceRequirement>
-            .Create(
-                catalog.PartyTricks promotion
-                |> Seq.filter (fun trick -> trick.Trigger = BlokemonTrigger.OnPromotionFromMitt)
-                |> Seq.collect (fun trick ->
-                    interpreter.GetChoiceRequirements(
-                        promotedState,
-                        { Actor = actor
-                          Source = promotion.Id
-                          Effect = EffectId trick.MechanicalId
-                          Choices = FrozenList.empty }
-                    ))
-                |> fun requirements -> requirements.DistinctBy(fun requirement -> requirement.Id)
-            )
+        ImmutableArray.CreateRange(
+            catalog.PartyTricks promotion
+            |> Seq.filter (fun trick -> trick.Trigger = BlokemonTrigger.OnPromotionFromMitt)
+            |> Seq.collect (fun trick ->
+                interpreter.GetChoiceRequirements(
+                    promotedState,
+                    { Actor = actor
+                      Source = promotion.Id
+                      Effect = EffectId trick.MechanicalId
+                      Choices = ImmutableArray<_>.Empty }
+                ))
+            |> fun requirements -> requirements.DistinctBy(fun requirement -> requirement.Id)
+        )
 
     let invocationRequirements
         (interpreter: BlokemonInterpreter)
@@ -135,7 +136,7 @@ module internal MatchLegalChoices =
             { Actor = actor
               Source = source
               Effect = effect
-              Choices = FrozenList.empty }
+              Choices = ImmutableArray<_>.Empty }
         )
 
     let legal
@@ -144,8 +145,8 @@ module internal MatchLegalChoices =
         (actor: PlayerId)
         (key: string)
         (stableKey: string)
-        (requirements: FrozenList<ChoiceRequirement>)
-        (choices: FrozenList<EffectChoice>)
+        (requirements: ImmutableArray<ChoiceRequirement>)
+        (choices: ImmutableArray<EffectChoice>)
         (action: MatchAction)
         =
         { Kind = kind
@@ -162,4 +163,4 @@ module internal MatchLegalChoices =
         (key: string)
         (action: MatchAction)
         =
-        legal kind state actor key key FrozenList.empty FrozenList.empty action
+        legal kind state actor key key ImmutableArray<_>.Empty ImmutableArray<_>.Empty action

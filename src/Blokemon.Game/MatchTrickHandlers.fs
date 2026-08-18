@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
@@ -19,7 +20,7 @@ module internal MatchTrickHandlers =
         (sourceId: CardInstanceId)
         (effect: EffectId)
         (isResuming: bool)
-        (beerMatResults: FrozenList<bool>)
+        (beerMatResults: ImmutableArray<bool>)
         =
         match validatePlayingTurn builder command.Actor with
         | ValueSome turn -> HandlerResult.reject turn
@@ -151,7 +152,7 @@ module internal MatchTrickHandlers =
                                     execution.ForcedSendHome
                                     ValueNone
                                     false
-                                    FrozenList.empty
+                                    ImmutableArray<_>.Empty
                                     0
                                 |> ignore
 

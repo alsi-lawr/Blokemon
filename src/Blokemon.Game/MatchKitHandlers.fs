@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
@@ -19,7 +20,7 @@ module internal MatchKitHandlers =
         (kitId: CardInstanceId)
         (targetId: CardInstanceId voption)
         (isResuming: bool)
-        (beerMatResults: FrozenList<bool>)
+        (beerMatResults: ImmutableArray<bool>)
         =
         match validatePlayingTurn builder command.Actor with
         | ValueSome turn -> HandlerResult.reject turn
@@ -50,21 +51,19 @@ module internal MatchKitHandlers =
                             ValueNone
                         else
                             let requirements =
-                                FrozenList<ChoiceRequirement>
-                                    .Create(
-                                        executableRules
-                                        |> Seq.collect (fun rule ->
-                                            interpreter.InspectChoices(
-                                                builder,
-                                                command.Actor,
-                                                kitCard,
-                                                EffectId rule.MechanicalId,
-                                                rule.Program
-                                            ))
-                                        |> fun requirements ->
-                                            requirements.DistinctBy(fun requirement ->
-                                                requirement.Id)
-                                    )
+                                ImmutableArray.CreateRange(
+                                    executableRules
+                                    |> Seq.collect (fun rule ->
+                                        interpreter.InspectChoices(
+                                            builder,
+                                            command.Actor,
+                                            kitCard,
+                                            EffectId rule.MechanicalId,
+                                            rule.Program
+                                        ))
+                                    |> fun requirements ->
+                                        requirements.DistinctBy(fun requirement -> requirement.Id)
+                                )
 
                             match
                                 interpreter.ValidateChoiceSubmission(
@@ -186,12 +185,11 @@ module internal MatchKitHandlers =
                                 builder.RoundUsage <-
                                     { builder.RoundUsage with
                                         KitsPlayed =
-                                            FrozenList<MechanicalCardId>
-                                                .Create(
-                                                    Seq.append
-                                                        builder.RoundUsage.KitsPlayed
-                                                        [ kitCard.MechanicalId ]
-                                                ) }
+                                            ImmutableArray.CreateRange(
+                                                Seq.append
+                                                    builder.RoundUsage.KitsPlayed
+                                                    [ kitCard.MechanicalId ]
+                                            ) }
 
                                 builder.RoundUsage <-
                                     match kit.Kind with

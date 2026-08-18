@@ -186,13 +186,16 @@ module internal MatchCardProjection =
         | MatchEventKind.CardsDrawn ->
             $"""{actor} drew {matchEvent.Amount} {if matchEvent.Amount = 1 then "card" else "cards"}."""
         | MatchEventKind.CardsRevealed when
-            matchEvent.TargetCards.Count > 0
+            matchEvent.TargetCards.Length > 0
             && matchEvent.TargetCards
                |> Seq.forall (fun card -> (state.Card card).Zone = CardZone.BarChit)
             ->
             $"{actor} looked at their Prize Cards."
         | MatchEventKind.CardsRevealed ->
-            $"""{actor} revealed {matchEvent.TargetCards.Count} {if matchEvent.TargetCards.Count = 1 then "card" else "cards"}."""
+            $"""{actor} revealed {matchEvent.TargetCards.Length} {if matchEvent.TargetCards.Length = 1 then
+                                                                      "card"
+                                                                  else
+                                                                      "cards"}."""
         | MatchEventKind.BeerMatTossed ->
             let landed =
                 if matchEvent.BadgeSide = ValueSome true then

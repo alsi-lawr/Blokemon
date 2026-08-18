@@ -1,6 +1,7 @@
 namespace Blokemon.Game.Tests
 
 open System.Collections.Generic
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game
 open FsUnit
@@ -75,7 +76,7 @@ type DeferredBranchChoiceTests() =
                         state
                         $"mulligan:{player.Value}"
                         player
-                        FrozenList.empty
+                        ImmutableArray<_>.Empty
                         (MatchAction.ChooseMulliganBonus 0)
                 )
                 |> ignore
@@ -96,8 +97,8 @@ type DeferredBranchChoiceTests() =
                 state
                 "opening:first"
                 MatchScenario.FirstPlayer
-                FrozenList.empty
-                (MatchAction.ChooseOpening(attacker.Id, FrozenList.empty))
+                ImmutableArray<_>.Empty
+                (MatchAction.ChooseOpening(attacker.Id, ImmutableArray<_>.Empty))
         )
         |> ignore
 
@@ -106,11 +107,8 @@ type DeferredBranchChoiceTests() =
                 state
                 "opening:second"
                 MatchScenario.SecondPlayer
-                FrozenList.empty
-                (MatchAction.ChooseOpening(
-                    defenders[0].Id,
-                    FrozenList<CardInstanceId>.Create defenders[1].Id
-                ))
+                ImmutableArray<_>.Empty
+                (MatchAction.ChooseOpening(defenders[0].Id, ImmutableArray.Create defenders[1].Id))
         )
         |> ignore
 
@@ -119,7 +117,7 @@ type DeferredBranchChoiceTests() =
                 state
                 "end-opening-round"
                 MatchScenario.SecondPlayer
-                FrozenList.empty
+                ImmutableArray<_>.Empty
                 MatchAction.EndRound
         )
         |> ignore
@@ -133,7 +131,7 @@ type DeferredBranchChoiceTests() =
                 state
                 "attach-for-coin-switch"
                 MatchScenario.FirstPlayer
-                FrozenList.empty
+                ImmutableArray<_>.Empty
                 (MatchAction.AttachVim(vim.Id, attacker.Id))
         )
         |> ignore
@@ -144,7 +142,7 @@ type DeferredBranchChoiceTests() =
                     state
                     "coin-switch"
                     MatchScenario.FirstPlayer
-                    FrozenList.empty
+                    ImmutableArray<_>.Empty
                     (MatchAction.Attack(attacker.Id, EffectId "BLK-052-B01"))
             )
 
@@ -157,10 +155,9 @@ type DeferredBranchChoiceTests() =
                 requested
                 "resolve-coin-switch"
                 pending.Chooser
-                (FrozenList<EffectChoice>
-                    .Create(
-                        EffectChoice.Cards(requirement.Id, FrozenList<CardInstanceId>.Create target)
-                    ))
+                (ImmutableArray.Create(
+                    EffectChoice.Cards(requirement.Id, ImmutableArray.Create target)
+                ))
                 MatchAction.ResolveEffectChoice
 
         let wrongChooser =
@@ -234,7 +231,7 @@ type DeferredBranchChoiceTests() =
 
         let applied = MatchScenario.Applied(engine.Apply(state, action.Command))
 
-        action.ChoiceRequirements.Count |> should equal 0
+        action.ChoiceRequirements.Length |> should equal 0
         (applied.Card(CardInstanceId "defender")).Damage |> should equal 20
         (applied.Card discardedVim.Id).Zone |> should equal CardZone.EmptiesTray
 
@@ -261,7 +258,7 @@ type DeferredBranchChoiceTests() =
 
         let applied = MatchScenario.Applied(engine.Apply(state, action.Command))
 
-        action.ChoiceRequirements.Count |> should equal 0
+        action.ChoiceRequirements.Length |> should equal 0
         applied.PendingEffect.IsNone |> should be True
         (applied.Card kit.Id).Zone |> should equal CardZone.EmptiesTray
         (applied.Card discardedVim.Id).Zone |> should equal CardZone.EmptiesTray
@@ -300,7 +297,7 @@ type DeferredBranchChoiceTests() =
 
         let resolved = MatchScenario.Applied(engine.Apply(requested, choice.Command))
 
-        action.ChoiceRequirements.Count |> should equal 0
+        action.ChoiceRequirements.Length |> should equal 0
         requested.PendingEffect.IsSome |> should be True
 
         (requested.PendingEffect.Value.Requirements |> Seq.exactlyOne).EligibleTargets

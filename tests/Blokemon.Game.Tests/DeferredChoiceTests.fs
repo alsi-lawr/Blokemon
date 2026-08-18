@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Game
 open FsUnit
 open TUnit.Core
@@ -94,13 +95,12 @@ type DeferredChoiceTests() =
                 requested
                 "wrong-chooser"
                 MatchScenario.FirstPlayer
-                (FrozenList<EffectChoice>
-                    .Create(
-                        EffectChoice.Cards(
-                            requirement.Id,
-                            FrozenList<CardInstanceId>.Create(CardInstanceId "defender-bench")
-                        )
-                    ))
+                (ImmutableArray.Create(
+                    EffectChoice.Cards(
+                        requirement.Id,
+                        ImmutableArray.Create(CardInstanceId "defender-bench")
+                    )
+                ))
                 MatchAction.ResolveEffectChoice
 
         let rejectedState, rejection =

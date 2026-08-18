@@ -1,6 +1,7 @@
 namespace Blokemon.Game
 
 open System.Collections.Generic
+open System.Collections.Immutable
 
 type InterpreterAuditIssue =
     { Code: string
@@ -9,15 +10,15 @@ type InterpreterAuditIssue =
 type InterpreterAudit =
     { EffectCount: int
       InstructionCount: int
-      Issues: FrozenList<InterpreterAuditIssue> }
+      Issues: ImmutableArray<InterpreterAuditIssue> }
 
-    member this.IsInventoryComplete = this.Issues.Count = 0
+    member this.IsInventoryComplete = this.Issues.Length = 0
 
 type EffectInvocation =
     { Actor: PlayerId
       Source: CardInstanceId
       Effect: EffectId
-      Choices: FrozenList<EffectChoice> }
+      Choices: ImmutableArray<EffectChoice> }
 
 type internal PendingDamage =
     { Target: CardInstanceId
@@ -27,24 +28,27 @@ type internal PendingDamage =
 type internal InterpreterExecution =
     { IsApplied: bool
       Rejection: CommandRejectionCode voption
-      Requirements: FrozenList<ChoiceRequirement>
-      ForcedSendHome: FrozenList<CardInstanceId>
+      Requirements: ImmutableArray<ChoiceRequirement>
+      ForcedSendHome: ImmutableArray<CardInstanceId>
       SourceChucked: bool
-      BeerMatResults: FrozenList<bool>
-      AttackDamageTargets: FrozenList<CardInstanceId>
+      BeerMatResults: ImmutableArray<bool>
+      AttackDamageTargets: ImmutableArray<CardInstanceId>
       DeferredAttackKnockoutBarChits: int }
 
 [<RequireQualifiedAccess>]
 module internal InterpreterExecution =
 
-    let rejected (rejection: CommandRejectionCode) (requirements: FrozenList<ChoiceRequirement>) =
+    let rejected
+        (rejection: CommandRejectionCode)
+        (requirements: ImmutableArray<ChoiceRequirement>)
+        =
         { IsApplied = false
           Rejection = ValueSome rejection
           Requirements = requirements
-          ForcedSendHome = FrozenList.empty
+          ForcedSendHome = ImmutableArray<_>.Empty
           SourceChucked = false
-          BeerMatResults = FrozenList.empty
-          AttackDamageTargets = FrozenList.empty
+          BeerMatResults = ImmutableArray<_>.Empty
+          AttackDamageTargets = ImmutableArray<_>.Empty
           DeferredAttackKnockoutBarChits = 0 }
 
 /// Everything one effect's execution accumulates: the staged damage, the choices it consumed, the
@@ -56,11 +60,11 @@ type internal EffectRuntime
         actor: PlayerId,
         source: CardState,
         effect: EffectId,
-        choices: FrozenList<EffectChoice>,
+        choices: ImmutableArray<EffectChoice>,
         isAttack: bool,
         isHouseRule: bool,
         copyStack: HashSet<EffectId>,
-        beerMatResults: FrozenList<bool>,
+        beerMatResults: ImmutableArray<bool>,
         triggerContext: TriggerContext voption
     ) =
     let recordedBeerMats = ResizeArray<bool> beerMatResults
@@ -83,11 +87,12 @@ type internal EffectRuntime
     member _.CopyStack = copyStack
     member _.TriggerContext = triggerContext
 
-    member val DeferredRequirements: FrozenList<ChoiceRequirement> = FrozenList.empty with get, set
+    member val DeferredRequirements: ImmutableArray<ChoiceRequirement> =
+        ImmutableArray<_>.Empty with get, set
 
     member _.UsedChoiceIds = usedChoiceIds
 
-    member _.BeerMatResults = FrozenList<bool>.Create recordedBeerMats
+    member _.BeerMatResults = ImmutableArray.CreateRange recordedBeerMats
 
     member _.PendingAttackDamage = pendingAttackDamage
 
@@ -98,7 +103,10 @@ type internal EffectRuntime
     member _.AttackDamageTargets = attackDamageTargets
 
     member val SourceChucked = false with get, set
-    member val LastSelectedCards: FrozenList<CardInstanceId> = FrozenList.empty with get, set
+
+    member val LastSelectedCards: ImmutableArray<CardInstanceId> =
+        ImmutableArray<_>.Empty with get, set
+
     member val HasCardSelection = false with get, set
     member val BadgeSides = 0 with get, set
     member val TossCount = 0 with get, set
@@ -132,10 +140,10 @@ type internal EffectRuntime
                     Effect = ValueSome effect
                     BadgeSide = ValueSome badge }
 
-    member this.Defer(requirements: FrozenList<ChoiceRequirement>) =
+    member this.Defer(requirements: ImmutableArray<ChoiceRequirement>) =
         this.DeferredRequirements <- requirements
 
-    member this.Use(requirements: FrozenList<ChoiceRequirement>) =
+    member this.Use(requirements: ImmutableArray<ChoiceRequirement>) =
         for requirement in requirements do
             this.UsedChoiceIds.Add requirement.Id |> ignore
 

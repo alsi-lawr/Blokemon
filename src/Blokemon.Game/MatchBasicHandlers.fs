@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
 open Blokemon.Game.MatchWins
@@ -41,7 +42,7 @@ module internal MatchBasicHandlers =
         (builder: MatchBuilder)
         (actor: PlayerId)
         (oche: CardInstanceId)
-        (boothChoice: FrozenList<CardInstanceId>)
+        (boothChoice: ImmutableArray<CardInstanceId>)
         =
         if builder.Phase <> MatchPhase.OpeningPlacement then
             HandlerResult.reject CommandRejectionCode.WrongPhase
@@ -57,8 +58,8 @@ module internal MatchBasicHandlers =
                 || ocheCard.Value.Zone <> CardZone.Mitt
                 || ocheCard.Value.Kind <> CardKind.Bloke
                 || not (catalog.IsRegular ocheCard.Value.MechanicalId)
-                || boothChoice.Count > catalog.Manifest.BaseRules.Opening.BoothLimit
-                || (boothChoice |> Seq.distinct |> Seq.length) <> boothChoice.Count
+                || boothChoice.Length > catalog.Manifest.BaseRules.Opening.BoothLimit
+                || (boothChoice |> Seq.distinct |> Seq.length) <> boothChoice.Length
                 || Seq.contains oche boothChoice
                 || booth
                    |> Array.exists (fun card ->

@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 
 type RoughStateEntry =
@@ -13,10 +14,10 @@ type TemporaryEffect =
       TargetCard: CardInstanceId voption
       Kind: TemporaryEffectKind
       Amount: int
-      MechanicalTypes: FrozenList<BlokemonMechanicalType>
-      RoughStates: FrozenList<BlokemonRoughState>
-      RelatedCards: FrozenList<MechanicalCardId>
-      Conditions: FrozenList<BlokemonCondition>
+      MechanicalTypes: ImmutableArray<BlokemonMechanicalType>
+      RoughStates: ImmutableArray<BlokemonRoughState>
+      RelatedCards: ImmutableArray<MechanicalCardId>
+      Conditions: ImmutableArray<BlokemonCondition>
       Duration: EffectDuration
       AppliesFromRound: int
       ExpiresAfterRound: int }
@@ -30,21 +31,21 @@ type PendingEffectResolution =
       Source: CardInstanceId
       Effect: EffectId
       Chooser: PlayerId
-      Requirements: FrozenList<ChoiceRequirement>
-      BeerMatResults: FrozenList<bool>
+      Requirements: ImmutableArray<ChoiceRequirement>
+      BeerMatResults: ImmutableArray<bool>
       AttackStarted: bool }
 
 type PendingKnockoutResolution =
     { KnockedOutCard: CardInstanceId
-      RemainingKnockouts: FrozenList<CardInstanceId>
-      TriggerSources: FrozenList<CardInstanceId>
+      RemainingKnockouts: ImmutableArray<CardInstanceId>
+      TriggerSources: ImmutableArray<CardInstanceId>
       TriggerSource: CardInstanceId
       TriggerEffect: EffectId
       Chooser: PlayerId
-      EligibleVim: FrozenList<CardInstanceId>
+      EligibleVim: ImmutableArray<CardInstanceId>
       AttackingCard: CardInstanceId
       FinishRoundAfterResolution: bool
-      AttackDamageTargets: FrozenList<CardInstanceId>
+      AttackDamageTargets: ImmutableArray<CardInstanceId>
       ExtraBarChits: int }
 
 type PendingBarChitResolution =
@@ -55,11 +56,11 @@ type PendingBarChitResolution =
 
 type FrozenDeckSnapshot =
     { Owner: PlayerId
-      Cards: FrozenList<MechanicalCardId> }
+      Cards: ImmutableArray<MechanicalCardId> }
 
     static member Create(owner: PlayerId, mechanicalIds: string seq) =
         { Owner = owner
-          Cards = FrozenList<MechanicalCardId>.Create(mechanicalIds |> Seq.map MechanicalCardId) }
+          Cards = ImmutableArray.CreateRange(mechanicalIds |> Seq.map MechanicalCardId) }
 
 type MatchStartRequest =
     { MatchId: MatchId
@@ -76,10 +77,10 @@ type CardState =
       IsFaceDown: bool
       StackPosition: int
       AttachedTo: CardInstanceId voption
-      Attachments: FrozenList<CardInstanceId>
-      UnderlyingCards: FrozenList<CardInstanceId>
+      Attachments: ImmutableArray<CardInstanceId>
+      UnderlyingCards: ImmutableArray<CardInstanceId>
       Damage: int
-      RoughStates: FrozenList<RoughStateEntry>
+      RoughStates: ImmutableArray<RoughStateEntry>
       EnteredAtOwnerRound: int
       LastPromotedRound: int }
 
@@ -98,8 +99,8 @@ type RoundUsage =
       MatesPlayed: int
       LocalsPlayed: int
       TaxisUsed: int
-      EffectsUsed: FrozenList<EffectId>
-      KitsPlayed: FrozenList<MechanicalCardId> }
+      EffectsUsed: ImmutableArray<EffectId>
+      KitsPlayed: ImmutableArray<MechanicalCardId> }
 
     static member Empty(player: PlayerId) =
         { Player = player
@@ -107,8 +108,8 @@ type RoundUsage =
           MatesPlayed = 0
           LocalsPlayed = 0
           TaxisUsed = 0
-          EffectsUsed = FrozenList.empty
-          KitsPlayed = FrozenList.empty }
+          EffectsUsed = ImmutableArray<_>.Empty
+          KitsPlayed = ImmutableArray<_>.Empty }
 
 type MatchState =
     { Id: MatchId
@@ -121,14 +122,14 @@ type MatchState =
       OpeningPlayer: PlayerId
       ActivePlayer: PlayerId
       RoundNumber: int
-      Players: FrozenList<PlayerState>
-      Cards: FrozenList<CardState>
-      Effects: FrozenList<TemporaryEffect>
-      ProcessedCommands: FrozenList<CommandId>
+      Players: ImmutableArray<PlayerState>
+      Cards: ImmutableArray<CardState>
+      Effects: ImmutableArray<TemporaryEffect>
+      ProcessedCommands: ImmutableArray<CommandId>
       RoundUsage: RoundUsage
       PendingEffect: PendingEffectResolution voption
       PendingKnockout: PendingKnockoutResolution voption
-      PendingBarChits: FrozenList<PendingBarChitResolution>
+      PendingBarChits: ImmutableArray<PendingBarChitResolution>
       ReplacementPlayer: PlayerId voption
       PendingRoundEnd: bool
       Winner: PlayerId voption

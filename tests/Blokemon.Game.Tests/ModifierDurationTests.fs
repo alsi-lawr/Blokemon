@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Game
 open FsUnit
 open TUnit.Core
@@ -29,7 +30,7 @@ type ModifierDurationTests() =
                 state
                 "end-opponent-round"
                 MatchScenario.SecondPlayer
-                FrozenList.empty
+                ImmutableArray<_>.Empty
                 MatchAction.EndRound
 
         let state = MatchScenario.Applied(engine.Apply(state, endOpponentRound))
@@ -59,18 +60,17 @@ type ModifierDurationTests() =
         let state =
             { state with
                 Cards =
-                    FrozenList<CardState>
-                        .Create(
-                            Seq.append state.Cards [ source ] |> Seq.sortBy (fun card -> card.Id)
-                        ) }
+                    ImmutableArray.CreateRange(
+                        Seq.append state.Cards [ source ] |> Seq.sortBy (fun card -> card.Id)
+                    ) }
 
         let command =
             MatchScenario.Command
                 state
                 "free-taxi"
                 MatchScenario.FirstPlayer
-                FrozenList.empty
-                (MatchAction.Taxi(source.Id, FrozenList.empty))
+                ImmutableArray<_>.Empty
+                (MatchAction.Taxi(source.Id, ImmutableArray<_>.Empty))
 
         let applied = MatchScenario.Applied(engine.Apply(state, command))
 

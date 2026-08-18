@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectSelection
 
@@ -113,17 +114,16 @@ module internal EffectDamage =
 
             let chosenSoftSpot =
                 softSpotEffects
-                |> Array.tryFindBack (fun effect -> effect.MechanicalTypes.Count > 0)
+                |> Array.tryFindBack (fun effect -> effect.MechanicalTypes.Length > 0)
 
             let effectiveSoftSpots =
                 match chosenSoftSpot with
                 | Some effect -> effect.MechanicalTypes
                 | None ->
-                    FrozenList<BlokemonMechanicalType>
-                        .Create(
-                            (catalog.Bloke target.MechanicalId).SoftSpots
-                            |> Array.map (fun softSpot -> softSpot.MechanicalType)
-                        )
+                    ImmutableArray.CreateRange(
+                        (catalog.Bloke target.MechanicalId).SoftSpots
+                        |> Array.map (fun softSpot -> softSpot.MechanicalType)
+                    )
 
             if effectiveSoftSpots |> Seq.exists (fun value -> Seq.contains value attackerTypes) then
                 damage <-

@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game
 open FsUnit
@@ -38,10 +39,9 @@ module private AuthorityErrataFixtures =
         let defender =
             { defender with
                 Attachments =
-                    FrozenList<CardInstanceId>
-                        .Create(
-                            Seq.append defender.Attachments (attachments |> Seq.map (fun c -> c.Id))
-                        ) }
+                    ImmutableArray.CreateRange(
+                        Seq.append defender.Attachments (attachments |> Seq.map (fun c -> c.Id))
+                    ) }
 
         MatchScenario.WithCards state (defender :: attachments)
 
@@ -52,7 +52,7 @@ module private AuthorityErrataFixtures =
             RoundUsage =
                 { state.RoundUsage with
                     MatesPlayed = 1
-                    KitsPlayed = FrozenList<MechanicalCardId>.Create(MechanicalCardId mate) } }
+                    KitsPlayed = ImmutableArray.Create(MechanicalCardId mate) } }
 
     let seedForBadge () =
         let rec search (seed: uint64) =
@@ -132,13 +132,9 @@ type AuthorityErrataTests() =
                     requested,
                     MatchScenario.ResolveEffectChoiceCommand
                         requested
-                        (FrozenList<EffectChoice>
-                            .Create(
-                                EffectChoice.Cards(
-                                    cards.Id,
-                                    FrozenList<CardInstanceId>.Create soberVim.Id
-                                )
-                            ))
+                        (ImmutableArray.Create(
+                            EffectChoice.Cards(cards.Id, ImmutableArray.Create soberVim.Id)
+                        ))
                 )
             )
 
@@ -168,7 +164,7 @@ type AuthorityErrataTests() =
         let protectedCard = retaliation.Card(CardInstanceId "attacker")
 
         protectedCard.Damage |> should equal 0
-        protectedCard.RoughStates.Count |> should equal 0
+        protectedCard.RoughStates.Length |> should equal 0
 
     [<Test>]
     member _.``day two should force the opponent's beer mat to the blank side``() =
@@ -180,10 +176,9 @@ type AuthorityErrataTests() =
                 "BLK-001"
                 [ "VIM-SOBER" ]
                 (seedForBadge ())
-                FrozenList.empty
-                (FrozenList<RoughStateEntry>
-                    .Create(MatchScenario.RoughState BlokemonRoughState.Muddled 1))
-                FrozenList.empty
+                ImmutableArray<_>.Empty
+                (ImmutableArray.Create(MatchScenario.RoughState BlokemonRoughState.Muddled 1))
+                ImmutableArray<_>.Empty
 
         let state = attachToDefender state [ "VIM-BLAZED"; "VIM-SOBER" ]
 
@@ -211,10 +206,9 @@ type AuthorityErrataTests() =
                 "BLK-001"
                 [ "VIM-SOBER" ]
                 (seedForBadge ())
-                FrozenList.empty
-                (FrozenList<RoughStateEntry>
-                    .Create(MatchScenario.RoughState BlokemonRoughState.Singed 1))
-                FrozenList.empty
+                ImmutableArray<_>.Empty
+                (ImmutableArray.Create(MatchScenario.RoughState BlokemonRoughState.Singed 1))
+                ImmutableArray<_>.Empty
 
         let applied, _ =
             applyAttack (MatchScenario.Engine()) state MatchScenario.FirstPlayer "BLK-054-B01"
@@ -253,10 +247,9 @@ type AuthorityErrataTests() =
                 "BLK-001"
                 [ "VIM-SOBER" ]
                 (seedForBadge ())
-                FrozenList.empty
-                (FrozenList<RoughStateEntry>
-                    .Create(MatchScenario.RoughState BlokemonRoughState.Muddled 1))
-                FrozenList.empty
+                ImmutableArray<_>.Empty
+                (ImmutableArray.Create(MatchScenario.RoughState BlokemonRoughState.Muddled 1))
+                ImmutableArray<_>.Empty
 
         let state =
             MatchScenario.WithCards

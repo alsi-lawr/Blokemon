@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Game
 open FsUnit
 open TUnit.Core
@@ -130,7 +131,7 @@ type TriggerTimingTests() =
             )
 
         attacked.Phase |> should equal MatchPhase.AwaitingTriggerChoice
-        attacked.PendingBarChits.Count |> should equal 1
+        attacked.PendingBarChits.Length |> should equal 1
 
         let cpu = DeterministicCpu()
 
@@ -177,7 +178,7 @@ type TriggerTimingTests() =
 
         let defender =
             { state.Card(CardInstanceId "defender") with
-                Attachments = FrozenList<CardInstanceId>.Create movableVim.Id }
+                Attachments = ImmutableArray.Create movableVim.Id }
 
         let state =
             MatchScenario.WithCards state [ defender; triggerSource; movableVim; prize ]

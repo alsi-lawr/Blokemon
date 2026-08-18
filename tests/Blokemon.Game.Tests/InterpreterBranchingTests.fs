@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game
 open FsUnit
@@ -79,7 +80,7 @@ type InterpreterBranchingTests() =
             MatchScenario.AttackCommandWith
                 state
                 "BLK-008-B01"
-                (FrozenList<EffectChoice>.Create(EffectChoice.Optional(optional.Id, false)))
+                (ImmutableArray.Create(EffectChoice.Optional(optional.Id, false)))
 
         let accepted = engine.Apply(state, declined)
 
@@ -153,13 +154,12 @@ type InterpreterBranchingTests() =
                 requested
                 "wrong-branch-chooser"
                 MatchScenario.SecondPlayer
-                (FrozenList<EffectChoice>
-                    .Create(
-                        EffectChoice.Cards(
-                            (pending.Requirements |> Seq.exactlyOne).Id,
-                            FrozenList<CardInstanceId>.Create boothCard.Id
-                        )
-                    ))
+                (ImmutableArray.Create(
+                    EffectChoice.Cards(
+                        (pending.Requirements |> Seq.exactlyOne).Id,
+                        ImmutableArray.Create boothCard.Id
+                    )
+                ))
                 MatchAction.ResolveEffectChoice
 
         let rejectedState, rejection =
@@ -173,8 +173,8 @@ type InterpreterBranchingTests() =
         let resolved =
             MatchScenario.Applied(engine.Apply(requested, choiceDecision.Command))
 
-        legalAttack.ChoiceRequirements.Count |> should equal 0
-        legalAttack.Command.Choices.Count |> should equal 0
+        legalAttack.ChoiceRequirements.Length |> should equal 0
+        legalAttack.Command.Choices.Length |> should equal 0
         attackDecision.Kind |> should equal LegalActionKind.Attack
         requested.Phase |> should equal MatchPhase.AwaitingEffectChoice
 

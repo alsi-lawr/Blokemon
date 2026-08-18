@@ -5,11 +5,10 @@
   </PropertyGroup>
   <ItemGroup>
     <!--
-      F# compile order is the layering: the collection and the value objects first, then the
-      commands and the state they describe, then the staging area, then the engine and the
-      interpreter decomposed by concern.
+      F# compile order is the layering: the value objects first, then the commands and the state
+      they describe, then the staging area, then the engine and the interpreter decomposed by
+      concern.
     -->
-    <Compile Include="FrozenList.fs" />
     <Compile Include="Identifiers.fs" />
     <Compile Include="MatchEnums.fs" />
     <Compile Include="EffectChoices.fs" />

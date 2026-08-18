@@ -1,6 +1,7 @@
 namespace Blokemon.Game.Tests
 
 open System.Collections.Generic
+open System.Collections.Immutable
 open Blokemon.Game
 open FsUnit
 open TUnit.Core
@@ -44,7 +45,7 @@ type DeterminismAndReplayTests() =
                 state
                 "end-round"
                 state.ActivePlayer
-                FrozenList.empty
+                ImmutableArray<_>.Empty
                 MatchAction.EndRound
 
         commands.Add endRound
@@ -89,11 +90,11 @@ type DeterminismAndReplayTests() =
             | CommandOutcome.Applied(applied, events) -> applied, events
             | CommandOutcome.Rejected _ -> failwith "The command was rejected."
 
-        let last = events[events.Count - 1]
+        let last = events[events.Length - 1]
         last.Kind |> should equal MatchEventKind.StateCommitted
         last.CommittedState |> should equal (ValueSome applied)
 
         events
-        |> Seq.take (events.Count - 1)
+        |> Seq.take (events.Length - 1)
         |> Seq.forall (fun recorded -> recorded.CommittedState.IsNone)
         |> should be True

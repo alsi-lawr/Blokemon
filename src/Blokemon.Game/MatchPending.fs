@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Game.MatchRules
 
 /// Parking a command that still needs an answer, and resuming it once the answer arrives.
@@ -10,12 +11,12 @@ module internal MatchPending =
         (command: MatchCommand)
         (source: CardInstanceId)
         (effect: EffectId)
-        (requirements: FrozenList<ChoiceRequirement>)
-        (recordedBeerMats: FrozenList<bool>)
-        (plannedBeerMats: FrozenList<bool>)
+        (requirements: ImmutableArray<ChoiceRequirement>)
+        (recordedBeerMats: ImmutableArray<bool>)
+        (plannedBeerMats: ImmutableArray<bool>)
         (attackStarted: bool)
         =
-        if requirements.Count = 0 then
+        if requirements.Length = 0 then
             HandlerResult.reject CommandRejectionCode.InvalidChoice
         else
             let chooser = requirements[0].Chooser
@@ -25,7 +26,7 @@ module internal MatchPending =
             else
                 let mismatched =
                     plannedBeerMats
-                    |> Seq.skip (min recordedBeerMats.Count plannedBeerMats.Count)
+                    |> Seq.skip (min recordedBeerMats.Length plannedBeerMats.Length)
                     |> Seq.toArray
                     |> Array.exists (fun expected ->
                         let actual = builder.TossBeerMat command.Actor
@@ -69,7 +70,7 @@ module internal MatchPending =
 
     /// The C# original rewrote Choices on exactly Attack, PlayKit and UsePartyTrick; the envelope
     /// makes that one copy-and-update, and the three-case guard survives as the shape it always was.
-    let withChoices (command: MatchCommand) (choices: FrozenList<EffectChoice>) =
+    let withChoices (command: MatchCommand) (choices: ImmutableArray<EffectChoice>) =
         match command.Action with
         | MatchAction.Attack _
         | MatchAction.PlayKit _

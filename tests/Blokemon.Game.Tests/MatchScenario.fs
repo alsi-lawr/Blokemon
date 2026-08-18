@@ -1,6 +1,7 @@
 namespace Blokemon.Game.Tests
 
 open System
+open System.Collections.Immutable
 open System.IO
 open Blokemon.Core.SetDesign
 open Blokemon.Game
@@ -44,8 +45,8 @@ module MatchScenario =
         (owner: PlayerId)
         (zone: CardZone)
         (stackPosition: int)
-        (attachments: FrozenList<CardInstanceId>)
-        (roughStates: FrozenList<RoughStateEntry>)
+        (attachments: ImmutableArray<CardInstanceId>)
+        (roughStates: ImmutableArray<RoughStateEntry>)
         (attachedTo: CardInstanceId voption)
         =
         let kind =
@@ -65,14 +66,22 @@ module MatchScenario =
           StackPosition = stackPosition
           AttachedTo = attachedTo
           Attachments = attachments
-          UnderlyingCards = FrozenList.empty
+          UnderlyingCards = ImmutableArray<_>.Empty
           Damage = 0
           RoughStates = roughStates
           EnteredAtOwnerRound = 1
           LastPromotedRound = -1 }
 
     let PlainCard (id: string) (mechanicalId: string) (owner: PlayerId) (zone: CardZone) position =
-        Card id mechanicalId owner zone position FrozenList.empty FrozenList.empty ValueNone
+        Card
+            id
+            mechanicalId
+            owner
+            zone
+            position
+            ImmutableArray<_>.Empty
+            ImmutableArray<_>.Empty
+            ValueNone
 
     let AttachedCard
         (id: string)
@@ -88,8 +97,8 @@ module MatchScenario =
             owner
             zone
             position
-            FrozenList.empty
-            FrozenList.empty
+            ImmutableArray<_>.Empty
+            ImmutableArray<_>.Empty
             (ValueSome attachedTo)
 
     let RoughState (state: BlokemonRoughState) (appliedAtOwnerRound: int) =
@@ -104,22 +113,21 @@ module MatchScenario =
 
         { state with
             Cards =
-                FrozenList<CardState>
-                    .Create(
-                        state.Cards
-                        |> Seq.filter (fun card -> not (replacedIds.Contains card.Id))
-                        |> Seq.append replaced
-                        |> Seq.sortBy (fun card -> card.Id)
-                    ) }
+                ImmutableArray.CreateRange(
+                    state.Cards
+                    |> Seq.filter (fun card -> not (replacedIds.Contains card.Id))
+                    |> Seq.append replaced
+                    |> Seq.sortBy (fun card -> card.Id)
+                ) }
 
     let BattleStateWith
         (attacker: string)
         (defender: string)
         (attachedVim: string seq)
         (randomSeed: uint64)
-        (attackerRoughStates: FrozenList<RoughStateEntry>)
-        (defenderRoughStates: FrozenList<RoughStateEntry>)
-        (effects: FrozenList<TemporaryEffect>)
+        (attackerRoughStates: ImmutableArray<RoughStateEntry>)
+        (defenderRoughStates: ImmutableArray<RoughStateEntry>)
+        (effects: ImmutableArray<TemporaryEffect>)
         =
         let attachedVim = attachedVim |> Seq.toArray
 
@@ -130,8 +138,9 @@ module MatchScenario =
                 FirstPlayer
                 CardZone.Oche
                 -1
-                (FrozenList<CardInstanceId>
-                    .Create(attachedVim |> Seq.mapi (fun index _ -> CardInstanceId $"vim-{index}")))
+                (ImmutableArray.CreateRange(
+                    attachedVim |> Seq.mapi (fun index _ -> CardInstanceId $"vim-{index}")
+                ))
                 attackerRoughStates
                 ValueNone
 
@@ -142,7 +151,7 @@ module MatchScenario =
                 SecondPlayer
                 CardZone.Oche
                 -1
-                FrozenList.empty
+                ImmutableArray<_>.Empty
                 defenderRoughStates
                 ValueNone
 
@@ -155,8 +164,8 @@ module MatchScenario =
                     FirstPlayer
                     CardZone.Attached
                     -1
-                    FrozenList.empty
-                    FrozenList.empty
+                    ImmutableArray<_>.Empty
+                    ImmutableArray<_>.Empty
                     (ValueSome(CardInstanceId "attacker")))
 
         let cards =
@@ -180,30 +189,29 @@ module MatchScenario =
           ActivePlayer = FirstPlayer
           RoundNumber = 4
           Players =
-            FrozenList<PlayerState>
-                .Create(
-                    { Id = FirstPlayer
-                      BarChitsRemaining = 6
-                      MulliganCount = 0
-                      MulliganBonusAllowance = 0
-                      MulliganBonusChosen = true
-                      OpeningChosen = true
-                      RoundsStarted = 2 },
-                    { Id = SecondPlayer
-                      BarChitsRemaining = 6
-                      MulliganCount = 0
-                      MulliganBonusAllowance = 0
-                      MulliganBonusChosen = true
-                      OpeningChosen = true
-                      RoundsStarted = 2 }
-                )
-          Cards = FrozenList<CardState>.Create(cards |> Seq.sortBy (fun card -> card.Id))
+            ImmutableArray.Create(
+                { Id = FirstPlayer
+                  BarChitsRemaining = 6
+                  MulliganCount = 0
+                  MulliganBonusAllowance = 0
+                  MulliganBonusChosen = true
+                  OpeningChosen = true
+                  RoundsStarted = 2 },
+                { Id = SecondPlayer
+                  BarChitsRemaining = 6
+                  MulliganCount = 0
+                  MulliganBonusAllowance = 0
+                  MulliganBonusChosen = true
+                  OpeningChosen = true
+                  RoundsStarted = 2 }
+            )
+          Cards = ImmutableArray.CreateRange(cards |> Seq.sortBy (fun card -> card.Id))
           Effects = effects
-          ProcessedCommands = FrozenList.empty
+          ProcessedCommands = ImmutableArray<_>.Empty
           RoundUsage = RoundUsage.Empty FirstPlayer
           PendingEffect = ValueNone
           PendingKnockout = ValueNone
-          PendingBarChits = FrozenList.empty
+          PendingBarChits = ImmutableArray<_>.Empty
           ReplacementPlayer = ValueNone
           PendingRoundEnd = false
           Winner = ValueNone
@@ -215,23 +223,22 @@ module MatchScenario =
             defender
             attachedVim
             randomSeed
-            FrozenList.empty
-            FrozenList.empty
-            FrozenList.empty
+            ImmutableArray<_>.Empty
+            ImmutableArray<_>.Empty
+            ImmutableArray<_>.Empty
 
     let WithBarChits (state: MatchState) (player: PlayerId) (remaining: int) =
         { state with
             Players =
-                FrozenList<PlayerState>
-                    .Create(
-                        state.Players
-                        |> Seq.map (fun current ->
-                            if current.Id = player then
-                                { current with
-                                    BarChitsRemaining = remaining }
-                            else
-                                current)
-                    ) }
+                ImmutableArray.CreateRange(
+                    state.Players
+                    |> Seq.map (fun current ->
+                        if current.Id = player then
+                            { current with
+                                BarChitsRemaining = remaining }
+                        else
+                            current)
+                ) }
 
     let Chosen (decision: CpuDecision) =
         match decision with
@@ -255,7 +262,7 @@ module MatchScenario =
             (MatchAction.Attack(CardInstanceId "attacker", EffectId effect))
 
     let AttackCommand (state: MatchState) (effect: string) =
-        AttackCommandWith state effect FrozenList.empty
+        AttackCommandWith state effect ImmutableArray<_>.Empty
 
     let ResolveEffectChoiceCommandBy (state: MatchState) choices (actor: PlayerId) =
         Command
@@ -295,4 +302,4 @@ module MatchScenario =
     let Started (outcome: MatchStartOutcome) =
         match outcome with
         | MatchStartOutcome.Started(state, _) -> state
-        | MatchStartOutcome.Rejected issues -> failwith $"The start was rejected: {issues.Count}."
+        | MatchStartOutcome.Rejected issues -> failwith $"The start was rejected: {issues.Length}."

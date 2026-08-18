@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 
 type MatchEvent =
@@ -8,7 +9,7 @@ type MatchEvent =
       Kind: MatchEventKind
       Actor: PlayerId voption
       SourceCard: CardInstanceId voption
-      TargetCards: FrozenList<CardInstanceId>
+      TargetCards: ImmutableArray<CardInstanceId>
       Effect: EffectId voption
       RoughState: BlokemonRoughState voption
       DamageKind: DamageKind voption
@@ -28,16 +29,16 @@ type DeckIssue =
 
 type CommandRejection =
     { Code: CommandRejectionCode
-      ChoiceRequirements: FrozenList<ChoiceRequirement> }
+      ChoiceRequirements: ImmutableArray<ChoiceRequirement> }
 
 [<RequireQualifiedAccess>]
 type MatchStartOutcome =
-    | Started of state: MatchState * events: FrozenList<MatchEvent>
-    | Rejected of issues: FrozenList<DeckIssue>
+    | Started of state: MatchState * events: ImmutableArray<MatchEvent>
+    | Rejected of issues: ImmutableArray<DeckIssue>
 
 [<RequireQualifiedAccess>]
 type CommandOutcome =
-    | Applied of state: MatchState * events: FrozenList<MatchEvent>
+    | Applied of state: MatchState * events: ImmutableArray<MatchEvent>
     | Rejected of rejectedState: MatchState * rejection: CommandRejection
 
 type ReplayIssueCode =
@@ -59,7 +60,7 @@ type internal PendingMatchEvent =
     { Kind: MatchEventKind
       Actor: PlayerId voption
       SourceCard: CardInstanceId voption
-      TargetCards: FrozenList<CardInstanceId>
+      TargetCards: ImmutableArray<CardInstanceId>
       Effect: EffectId voption
       RoughState: BlokemonRoughState voption
       DamageKind: DamageKind voption
@@ -76,7 +77,7 @@ module internal PendingMatchEvent =
         { Kind = kind
           Actor = ValueNone
           SourceCard = ValueNone
-          TargetCards = FrozenList.empty
+          TargetCards = ImmutableArray<_>.Empty
           Effect = ValueNone
           RoughState = ValueNone
           DamageKind = ValueNone
@@ -99,7 +100,7 @@ module internal PendingMatchEvent =
         (kind: MatchEventKind)
         (actor: PlayerId)
         (sourceCard: CardInstanceId)
-        (targetCards: FrozenList<CardInstanceId>)
+        (targetCards: ImmutableArray<CardInstanceId>)
         =
         { ofKind kind with
             Actor = ValueSome actor

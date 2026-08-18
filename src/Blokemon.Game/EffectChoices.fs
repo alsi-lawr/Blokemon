@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 
 type DamageAllocation = { Card: CardInstanceId; Counters: int }
@@ -10,7 +11,7 @@ type VimAttachment =
 
 type CardMechanicalTypes =
     { Card: CardInstanceId
-      Types: FrozenList<BlokemonMechanicalType> }
+      Types: ImmutableArray<BlokemonMechanicalType> }
 
 /// What a player answered when an effect asked them something. The abstract Id the C# hierarchy
 /// declared is a derived member over the match.
@@ -18,11 +19,11 @@ type CardMechanicalTypes =
 type EffectChoice =
     | Optional of optionalId: EffectChoiceId * isAccepted: bool
     | Amount of amountId: EffectChoiceId * amount: int
-    | Cards of cardsId: EffectChoiceId * cards: FrozenList<CardInstanceId>
+    | Cards of cardsId: EffectChoiceId * cards: ImmutableArray<CardInstanceId>
     | MechanicalType of typeId: EffectChoiceId * mechanicalType: BlokemonMechanicalType
     | Attack of attackId: EffectChoiceId * attack: EffectId
-    | Distribution of distributionId: EffectChoiceId * allocations: FrozenList<DamageAllocation>
-    | Attachments of attachmentsId: EffectChoiceId * placements: FrozenList<VimAttachment>
+    | Distribution of distributionId: EffectChoiceId * allocations: ImmutableArray<DamageAllocation>
+    | Attachments of attachmentsId: EffectChoiceId * placements: ImmutableArray<VimAttachment>
 
     member this.Id =
         match this with

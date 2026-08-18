@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Game.ChoiceShapes
 open Blokemon.Game.ChoiceInspection
 
@@ -15,9 +16,9 @@ module internal ChoiceValidation =
             && amount <= requirement.Maximum
         | EffectChoice.Cards(_, cards) ->
             requirement.Kind = ChoiceRequirementKind.Cards
-            && cards.Count >= requirement.Minimum
-            && cards.Count <= requirement.Maximum
-            && (cards |> Seq.distinct |> Seq.length) = cards.Count
+            && cards.Length >= requirement.Minimum
+            && cards.Length <= requirement.Maximum
+            && (cards |> Seq.distinct |> Seq.length) = cards.Length
             && cards |> Seq.forall (fun card -> Seq.contains card requirement.EligibleCards)
             && (not requirement.RequireDifferentMechanicalTypes
                 || haveDifferentMechanicalTypes cards requirement)
@@ -33,27 +34,27 @@ module internal ChoiceValidation =
             && (allocations
                 |> Seq.map (fun allocation -> allocation.Card)
                 |> Seq.distinct
-                |> Seq.length) = allocations.Count
+                |> Seq.length) = allocations.Length
             && allocations
                |> Seq.forall (fun allocation ->
                    allocation.Counters >= 0
                    && Seq.contains allocation.Card requirement.EligibleCards)
         | EffectChoice.Attachments(_, placements) ->
             requirement.Kind = ChoiceRequirementKind.Attachments
-            && placements.Count >= requirement.Minimum
-            && placements.Count <= requirement.Maximum
+            && placements.Length >= requirement.Minimum
+            && placements.Length <= requirement.Maximum
             && (placements
                 |> Seq.map (fun placement -> placement.Vim)
                 |> Seq.distinct
-                |> Seq.length) = placements.Count
+                |> Seq.length) = placements.Length
             && placements
                |> Seq.forall (fun placement ->
                    Seq.contains placement.Vim requirement.EligibleCards
                    && Seq.contains placement.Bloke requirement.EligibleTargets)
 
     let validateChoices
-        (choices: FrozenList<EffectChoice>)
-        (requirements: FrozenList<ChoiceRequirement>)
+        (choices: ImmutableArray<EffectChoice>)
+        (requirements: ImmutableArray<ChoiceRequirement>)
         =
         let mutable rejection = ValueNone
 
@@ -100,15 +101,14 @@ module internal ChoiceValidation =
             rejection
 
     let validateChoiceSubmission
-        (choices: FrozenList<EffectChoice>)
-        (requirements: FrozenList<ChoiceRequirement>)
+        (choices: ImmutableArray<EffectChoice>)
+        (requirements: ImmutableArray<ChoiceRequirement>)
         (chooser: PlayerId)
         =
         let owned =
-            FrozenList<ChoiceRequirement>
-                .Create(
-                    requirements |> Seq.filter (fun requirement -> requirement.Chooser = chooser)
-                )
+            ImmutableArray.CreateRange(
+                requirements |> Seq.filter (fun requirement -> requirement.Chooser = chooser)
+            )
 
         if
             choices

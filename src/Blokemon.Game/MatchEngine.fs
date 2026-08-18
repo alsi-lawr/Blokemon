@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
 open Blokemon.Game.MatchCommit
@@ -99,7 +100,7 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
         let issues = validateStart catalog authorityIsValid request
 
         if issues.Count > 0 then
-            MatchStartOutcome.Rejected(FrozenList<DeckIssue>.Create issues)
+            MatchStartOutcome.Rejected(ImmutableArray.CreateRange issues)
         else
             let players = [| request.FirstDeck.Owner; request.SecondDeck.Owner |]
 
@@ -127,26 +128,24 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
                   ActivePlayer = openingPlayer
                   RoundNumber = 0
                   Players =
-                    FrozenList<PlayerState>
-                        .Create(
-                            players
-                            |> Seq.map (fun player ->
-                                { Id = player
-                                  BarChitsRemaining =
-                                    catalog.Manifest.BaseRules.Opening.BarChitCount
-                                  MulliganCount = 0
-                                  MulliganBonusAllowance = 0
-                                  MulliganBonusChosen = false
-                                  OpeningChosen = false
-                                  RoundsStarted = 0 })
-                        )
-                  Cards = FrozenList<CardState>.Create cards
-                  Effects = FrozenList.empty
-                  ProcessedCommands = FrozenList.empty
+                    ImmutableArray.CreateRange(
+                        players
+                        |> Seq.map (fun player ->
+                            { Id = player
+                              BarChitsRemaining = catalog.Manifest.BaseRules.Opening.BarChitCount
+                              MulliganCount = 0
+                              MulliganBonusAllowance = 0
+                              MulliganBonusChosen = false
+                              OpeningChosen = false
+                              RoundsStarted = 0 })
+                    )
+                  Cards = ImmutableArray.CreateRange cards
+                  Effects = ImmutableArray<_>.Empty
+                  ProcessedCommands = ImmutableArray<_>.Empty
                   RoundUsage = RoundUsage.Empty openingPlayer
                   PendingEffect = ValueNone
                   PendingKnockout = ValueNone
-                  PendingBarChits = FrozenList.empty
+                  PendingBarChits = ImmutableArray<_>.Empty
                   ReplacementPlayer = ValueNone
                   PendingRoundEnd = false
                   Winner = ValueNone
@@ -166,7 +165,7 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
     /// builder is seeded from the state it was handed and staged forward in place.
     member _.Apply(state: MatchState, command: MatchCommand) =
         match validateCommandBoundary catalog state command with
-        | ValueSome rejection -> reject state rejection FrozenList.empty
+        | ValueSome rejection -> reject state rejection ImmutableArray<_>.Empty
         | ValueNone ->
 
             let builder = MatchBuilder(state, catalog)
@@ -189,7 +188,15 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
                 | MatchAction.Promote(promotion, promoted) ->
                     promote catalog interpreter builder command promotion promoted
                 | MatchAction.PlayKit(kit, target) ->
-                    playKit catalog interpreter builder command kit target false FrozenList.empty
+                    playKit
+                        catalog
+                        interpreter
+                        builder
+                        command
+                        kit
+                        target
+                        false
+                        ImmutableArray<_>.Empty
                 | MatchAction.Taxi(boothBloke, vimToChuck) ->
                     taxi catalog builder command.Actor boothBloke vimToChuck
                 | MatchAction.UsePartyTrick(source, effect) ->
@@ -201,7 +208,7 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
                         source
                         effect
                         false
-                        FrozenList.empty
+                        ImmutableArray<_>.Empty
                 | MatchAction.Attack(attacker, attackId) ->
                     attack
                         catalog
@@ -212,7 +219,7 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
                         attackId
                         false
                         false
-                        FrozenList.empty
+                        ImmutableArray<_>.Empty
                 | MatchAction.ChuckFossil fossil -> chuckFossil catalog builder command.Actor fossil
                 | MatchAction.EndRound -> endRound catalog interpreter builder command.Actor
                 | MatchAction.ChooseReplacement replacement ->
@@ -236,7 +243,7 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
             not (state.Players |> Seq.exists (fun player -> player.Id = actor))
             || state.Phase = MatchPhase.Complete
         then
-            FrozenList.empty
+            ImmutableArray<_>.Empty
         else
             let legalState =
                 if state.Phase = MatchPhase.Playing then
@@ -248,14 +255,13 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
 
             // Resignation sits outside the phase switch: it is legal for either player in every
             // phase this method still serves, because Complete already returned above.
-            FrozenList<LegalAction>
-                .Create(
-                    Seq.append
-                        (proposed catalog interpreter legalState actor)
-                        (Seq.singleton (resignAction state actor))
-                    |> Seq.filter (fun action ->
-                        match this.Apply(state, action.Command) with
-                        | CommandOutcome.Applied _ -> true
-                        | CommandOutcome.Rejected _ -> false)
-                    |> order
-                )
+            ImmutableArray.CreateRange(
+                Seq.append
+                    (proposed catalog interpreter legalState actor)
+                    (Seq.singleton (resignAction state actor))
+                |> Seq.filter (fun action ->
+                    match this.Apply(state, action.Command) with
+                    | CommandOutcome.Applied _ -> true
+                    | CommandOutcome.Rejected _ -> false)
+                |> order
+            )

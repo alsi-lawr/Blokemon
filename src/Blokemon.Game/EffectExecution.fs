@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectTargeting
 open Blokemon.Game.ChoiceShapes
@@ -37,7 +38,7 @@ module internal EffectExecution =
             requirements
             runtime.TriggerContext
 
-        FrozenList<ChoiceRequirement>.Create(requirements |> Seq.distinctBy (fun value -> value.Id))
+        ImmutableArray.CreateRange(requirements |> Seq.distinctBy (fun value -> value.Id))
 
     let private requireBranchChoices
         (runtime: EffectRuntime)
@@ -47,12 +48,11 @@ module internal EffectExecution =
         let distinct = requirementsFor runtime branch branchPath
 
         let branchChoices =
-            FrozenList<EffectChoice>
-                .Create(
-                    runtime.Choices
-                    |> Seq.filter (fun choice ->
-                        distinct |> Seq.exists (fun requirement -> requirement.Id = choice.Id))
-                )
+            ImmutableArray.CreateRange(
+                runtime.Choices
+                |> Seq.filter (fun choice ->
+                    distinct |> Seq.exists (fun requirement -> requirement.Id = choice.Id))
+            )
 
         match validateChoices branchChoices distinct with
         | ValueSome CommandRejectionCode.ChoiceRequired ->
@@ -75,7 +75,7 @@ module internal EffectExecution =
 
         while index < program.Length
               && runtime.Rejection.IsNone
-              && runtime.DeferredRequirements.Count = 0 do
+              && runtime.DeferredRequirements.Length = 0 do
             let instruction = program[index]
 
             if
@@ -186,7 +186,7 @@ module internal EffectExecution =
                 instruction.Destination
 
         runtime.LastSelectedCards <-
-            FrozenList<CardInstanceId>.Create(selected |> Array.map (fun card -> card.Id))
+            ImmutableArray.CreateRange(selected |> Array.map (fun card -> card.Id))
 
         runtime.HasCardSelection <- true
 
@@ -284,11 +284,10 @@ module internal EffectExecution =
                     builder.RoundUsage <-
                         { builder.RoundUsage with
                             EffectsUsed =
-                                FrozenList<EffectId>
-                                    .Create(
-                                        Seq.append builder.RoundUsage.EffectsUsed [ runtime.Effect ]
-                                        |> Seq.distinct
-                                    ) }
+                                ImmutableArray.CreateRange(
+                                    Seq.append builder.RoundUsage.EffectsUsed [ runtime.Effect ]
+                                    |> Seq.distinct
+                                ) }
 
                     true
                 | BlokemonOpcode.EndRoundEffect ->

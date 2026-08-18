@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game
 open FsUnit
@@ -27,7 +28,7 @@ type DamageAndRoughStateTests() =
             MatchScenario.WithCards
                 state
                 [ { defender with
-                      Attachments = FrozenList<CardInstanceId>.Create barKit.Id }
+                      Attachments = ImmutableArray.Create barKit.Id }
                   barKit ]
 
         let engine = MatchScenario.Engine()
@@ -47,12 +48,11 @@ type DamageAndRoughStateTests() =
         ()
         =
         let roughStates =
-            FrozenList<RoughStateEntry>
-                .Create(
-                    MatchScenario.RoughState BlokemonRoughState.DodgyPint 2,
-                    MatchScenario.RoughState BlokemonRoughState.Singed 2,
-                    MatchScenario.RoughState BlokemonRoughState.Legless 1
-                )
+            ImmutableArray.Create(
+                MatchScenario.RoughState BlokemonRoughState.DodgyPint 2,
+                MatchScenario.RoughState BlokemonRoughState.Singed 2,
+                MatchScenario.RoughState BlokemonRoughState.Legless 1
+            )
 
         let state =
             MatchScenario.BattleStateWith
@@ -61,8 +61,8 @@ type DamageAndRoughStateTests() =
                 [ "VIM-BLAZED"; "VIM-BLAZED"; "VIM-SOBER" ]
                 23UL
                 roughStates
-                FrozenList.empty
-                FrozenList.empty
+                ImmutableArray<_>.Empty
+                ImmutableArray<_>.Empty
 
         let engine = MatchScenario.Engine()
 
@@ -71,7 +71,7 @@ type DamageAndRoughStateTests() =
                 state
                 "checkup"
                 MatchScenario.FirstPlayer
-                FrozenList.empty
+                ImmutableArray<_>.Empty
                 MatchAction.EndRound
 
         let applied, events =

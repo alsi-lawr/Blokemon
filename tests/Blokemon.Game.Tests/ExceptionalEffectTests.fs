@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Game
 open FsUnit
 open TUnit.Core
@@ -13,12 +14,9 @@ module private ExceptionalEffectFixtures =
         let host =
             { host with
                 Attachments =
-                    FrozenList<CardInstanceId>
-                        .Create(
-                            Seq.append
-                                host.Attachments
-                                (attachments |> Seq.map (fun card -> card.Id))
-                        ) }
+                    ImmutableArray.CreateRange(
+                        Seq.append host.Attachments (attachments |> Seq.map (fun card -> card.Id))
+                    ) }
 
         MatchScenario.WithCards state (host :: attachments)
 
@@ -30,7 +28,7 @@ module private ExceptionalEffectFixtures =
             choices
             (MatchAction.UsePartyTrick(CardInstanceId "attacker", effect))
 
-    let requirementOfKind kind (requirements: FrozenList<ChoiceRequirement>) =
+    let requirementOfKind kind (requirements: ImmutableArray<ChoiceRequirement>) =
         requirements |> Seq.filter (fun value -> value.Kind = kind) |> Seq.exactlyOne
 
     let kitAction (engine: MatchEngine) (state: MatchState) (kit: CardInstanceId) =
@@ -81,10 +79,9 @@ type ExceptionalEffectTests() =
             MatchScenario.AttackCommandWith
                 state
                 "BLK-106-B01"
-                (FrozenList<EffectChoice>
-                    .Create(
-                        EffectChoice.Cards(choice.Id, FrozenList<CardInstanceId>.Create ownBench.Id)
-                    ))
+                (ImmutableArray.Create(
+                    EffectChoice.Cards(choice.Id, ImmutableArray.Create ownBench.Id)
+                ))
 
         let applied = MatchScenario.Applied(engine.Apply(state, command))
 
@@ -135,7 +132,7 @@ type ExceptionalEffectTests() =
                     MatchScenario.AttackCommandWith
                         state
                         "BLK-101-B01"
-                        (FrozenList<EffectChoice>.Create(EffectChoice.Optional(optional.Id, true)))
+                        (ImmutableArray.Create(EffectChoice.Optional(optional.Id, true)))
                 )
             )
 
@@ -145,13 +142,9 @@ type ExceptionalEffectTests() =
         let command =
             MatchScenario.ResolveEffectChoiceCommand
                 requested
-                (FrozenList<EffectChoice>
-                    .Create(
-                        EffectChoice.Cards(
-                            cards.Id,
-                            FrozenList<CardInstanceId>.Create(firstTool.Id, secondTool.Id)
-                        )
-                    ))
+                (ImmutableArray.Create(
+                    EffectChoice.Cards(cards.Id, ImmutableArray.Create(firstTool.Id, secondTool.Id))
+                ))
 
         let applied = MatchScenario.Applied(engine.Apply(requested, command))
 
@@ -192,13 +185,9 @@ type ExceptionalEffectTests() =
             MatchScenario.AttackCommandWith
                 state
                 "BLK-130-B01"
-                (FrozenList<EffectChoice>
-                    .Create(
-                        EffectChoice.Cards(
-                            cards.Id,
-                            FrozenList<CardInstanceId>.Create opposingVim.Id
-                        )
-                    ))
+                (ImmutableArray.Create(
+                    EffectChoice.Cards(cards.Id, ImmutableArray.Create opposingVim.Id)
+                ))
 
         let applied = MatchScenario.Applied(engine.Apply(state, command))
 
@@ -224,7 +213,9 @@ type ExceptionalEffectTests() =
         let effect = EffectId "BLK-121-T01"
 
         let _, missing =
-            MatchScenario.Rejected(engine.Apply(state, partyTrick state effect FrozenList.empty))
+            MatchScenario.Rejected(
+                engine.Apply(state, partyTrick state effect ImmutableArray<_>.Empty)
+            )
 
         let optional =
             requirementOfKind ChoiceRequirementKind.Optional missing.ChoiceRequirements
@@ -236,7 +227,7 @@ type ExceptionalEffectTests() =
                     partyTrick
                         state
                         effect
-                        (FrozenList<EffectChoice>.Create(EffectChoice.Optional(optional.Id, true)))
+                        (ImmutableArray.Create(EffectChoice.Optional(optional.Id, true)))
                 )
             )
 
@@ -246,13 +237,9 @@ type ExceptionalEffectTests() =
         let command =
             MatchScenario.ResolveEffectChoiceCommand
                 requested
-                (FrozenList<EffectChoice>
-                    .Create(
-                        EffectChoice.Cards(
-                            target.Id,
-                            FrozenList<CardInstanceId>.Create(CardInstanceId "defender")
-                        )
-                    ))
+                (ImmutableArray.Create(
+                    EffectChoice.Cards(target.Id, ImmutableArray.Create(CardInstanceId "defender"))
+                ))
 
         let applied = MatchScenario.Applied(engine.Apply(requested, command))
 
@@ -283,28 +270,28 @@ type ExceptionalEffectTests() =
         let state =
             { state with
                 Players =
-                    FrozenList<PlayerState>
-                        .Create(
-                            state.Players
-                            |> Seq.map (fun player ->
-                                if player.Id = MatchScenario.FirstPlayer then
-                                    { player with RoundsStarted = 1 }
-                                else
-                                    player)
-                        )
+                    ImmutableArray.CreateRange(
+                        state.Players
+                        |> Seq.map (fun player ->
+                            if player.Id = MatchScenario.FirstPlayer then
+                                { player with RoundsStarted = 1 }
+                            else
+                                player)
+                    )
                 Cards =
-                    FrozenList<CardState>
-                        .Create(
-                            state.Cards
-                            |> Seq.filter (fun card -> card.Id.Value <> "first-draw")
-                            |> fun cards -> Seq.append cards [ replacement ]
-                            |> Seq.sortBy (fun card -> card.Id)
-                        ) }
+                    ImmutableArray.CreateRange(
+                        state.Cards
+                        |> Seq.filter (fun card -> card.Id.Value <> "first-draw")
+                        |> fun cards -> Seq.append cards [ replacement ]
+                        |> Seq.sortBy (fun card -> card.Id)
+                    ) }
 
         let effect = EffectId "BLK-132-T01"
 
         let _, missing =
-            MatchScenario.Rejected(engine.Apply(state, partyTrick state effect FrozenList.empty))
+            MatchScenario.Rejected(
+                engine.Apply(state, partyTrick state effect ImmutableArray<_>.Empty)
+            )
 
         let optional =
             requirementOfKind ChoiceRequirementKind.Optional missing.ChoiceRequirements
@@ -316,7 +303,7 @@ type ExceptionalEffectTests() =
                     partyTrick
                         state
                         effect
-                        (FrozenList<EffectChoice>.Create(EffectChoice.Optional(optional.Id, true)))
+                        (ImmutableArray.Create(EffectChoice.Optional(optional.Id, true)))
                 )
             )
 
@@ -326,13 +313,9 @@ type ExceptionalEffectTests() =
         let command =
             MatchScenario.ResolveEffectChoiceCommand
                 requested
-                (FrozenList<EffectChoice>
-                    .Create(
-                        EffectChoice.Cards(
-                            searched.Id,
-                            FrozenList<CardInstanceId>.Create replacement.Id
-                        )
-                    ))
+                (ImmutableArray.Create(
+                    EffectChoice.Cards(searched.Id, ImmutableArray.Create replacement.Id)
+                ))
 
         let applied = MatchScenario.Applied(engine.Apply(requested, command))
 
@@ -424,18 +407,14 @@ type ExceptionalEffectTests() =
         let state =
             { state with
                 Cards =
-                    FrozenList<CardState>
-                        .Create(
-                            state.Cards
-                            |> Seq.filter (fun card -> card.Id.Value <> "first-draw")
-                            |> fun cards ->
-                                Seq.concat
-                                    [ cards
-                                      Seq.singleton kit
-                                      topCards
-                                      Seq.singleton outsideWindow ]
-                            |> Seq.sortBy (fun card -> card.Id)
-                        ) }
+                    ImmutableArray.CreateRange(
+                        state.Cards
+                        |> Seq.filter (fun card -> card.Id.Value <> "first-draw")
+                        |> fun cards ->
+                            Seq.concat
+                                [ cards; Seq.singleton kit; topCards; Seq.singleton outsideWindow ]
+                        |> Seq.sortBy (fun card -> card.Id)
+                    ) }
 
         let play = kitAction engine state kit.Id
         let requested = MatchScenario.Applied(engine.Apply(state, play.Command))
@@ -452,7 +431,7 @@ type ExceptionalEffectTests() =
                     requested,
                     { resolve.Command with
                         Id = CommandId "omit-empty-talent-scout-choice"
-                        Choices = FrozenList.empty }
+                        Choices = ImmutableArray<_>.Empty }
                 )
             )
 
@@ -465,7 +444,7 @@ type ExceptionalEffectTests() =
         requirement.Kind |> should equal ChoiceRequirementKind.Cards
         requirement.Minimum |> should equal 0
         requirement.Maximum |> should equal 0
-        requirement.EligibleCards.Count |> should equal 0
+        requirement.EligibleCards.Length |> should equal 0
         omitted.Code |> should equal CommandRejectionCode.ChoiceRequired
         omittedState |> should equal requested
         appliedState |> should equal repeatedState

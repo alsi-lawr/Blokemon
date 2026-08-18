@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectTargeting
 open Blokemon.Game.EffectSelection
@@ -28,10 +29,10 @@ module internal EffectRegistration =
               TargetCard = ValueNone
               Kind = kind
               Amount = 0
-              MechanicalTypes = FrozenList.empty
-              RoughStates = FrozenList.empty
-              RelatedCards = FrozenList.empty
-              Conditions = FrozenList.empty
+              MechanicalTypes = ImmutableArray<_>.Empty
+              RoughStates = ImmutableArray<_>.Empty
+              RelatedCards = ImmutableArray<_>.Empty
+              Conditions = ImmutableArray<_>.Empty
               Duration = EffectDuration.UntilEndOfOpponentsNextRound
               AppliesFromRound = runtime.Builder.RoundNumber + 1
               ExpiresAfterRound = runtime.Builder.RoundNumber + 1 }
@@ -131,19 +132,17 @@ module internal EffectRegistration =
                           TargetCard = target
                           Kind = kind
                           Amount = instruction.Amount
-                          MechanicalTypes =
-                            FrozenList<BlokemonMechanicalType>.Create mechanicalTypes
-                          RoughStates =
-                            FrozenList<BlokemonRoughState>.Create instruction.RoughStates
+                          MechanicalTypes = ImmutableArray.CreateRange mechanicalTypes
+                          RoughStates = ImmutableArray.CreateRange instruction.RoughStates
                           RelatedCards =
-                            FrozenList<MechanicalCardId>
-                                .Create(instruction.RelatedIds |> Array.map MechanicalCardId)
+                            ImmutableArray.CreateRange(
+                                instruction.RelatedIds |> Array.map MechanicalCardId
+                            )
                           Conditions =
-                            FrozenList<BlokemonCondition>
-                                .Create(
-                                    instruction.Predicates
-                                    |> Array.map (fun predicate -> predicate.Condition)
-                                )
+                            ImmutableArray.CreateRange(
+                                instruction.Predicates
+                                |> Array.map (fun predicate -> predicate.Condition)
+                            )
                           Duration = duration
                           AppliesFromRound = runtime.Builder.RoundNumber
                           ExpiresAfterRound =

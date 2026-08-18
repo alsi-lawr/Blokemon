@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 
 /// What a command asks the match to do. The five properties every command carried abstractly in
@@ -7,12 +8,12 @@ open Blokemon.Core.SetDesign
 [<RequireQualifiedAccess>]
 type MatchAction =
     | ChooseMulliganBonus of cardsToDraw: int
-    | ChooseOpening of oche: CardInstanceId * booth: FrozenList<CardInstanceId>
+    | ChooseOpening of oche: CardInstanceId * booth: ImmutableArray<CardInstanceId>
     | AttachVim of vim: CardInstanceId * vimTarget: CardInstanceId
     | PlayBloke of bloke: CardInstanceId
     | Promote of promotion: CardInstanceId * promoted: CardInstanceId
     | PlayKit of kit: CardInstanceId * kitTarget: CardInstanceId voption
-    | Taxi of boothBloke: CardInstanceId * vimToChuck: FrozenList<CardInstanceId>
+    | Taxi of boothBloke: CardInstanceId * vimToChuck: ImmutableArray<CardInstanceId>
     | UsePartyTrick of trickSource: CardInstanceId * trickEffect: EffectId
     | Attack of attacker: CardInstanceId * attack: EffectId
     | ChuckFossil of fossil: CardInstanceId
@@ -30,7 +31,7 @@ type MatchCommand =
       MatchId: MatchId
       Actor: PlayerId
       ExpectedRevision: MatchRevision
-      Choices: FrozenList<EffectChoice>
+      Choices: ImmutableArray<EffectChoice>
       Action: MatchAction }
 
 type ChoiceRequirement =
@@ -39,18 +40,18 @@ type ChoiceRequirement =
       Chooser: PlayerId
       Minimum: int
       Maximum: int
-      EligibleCards: FrozenList<CardInstanceId>
-      EligibleMechanicalTypes: FrozenList<BlokemonMechanicalType>
-      EligibleEffects: FrozenList<EffectId>
+      EligibleCards: ImmutableArray<CardInstanceId>
+      EligibleMechanicalTypes: ImmutableArray<BlokemonMechanicalType>
+      EligibleEffects: ImmutableArray<EffectId>
       DependsOnOptional: EffectChoiceId voption
-      EligibleTargets: FrozenList<CardInstanceId>
+      EligibleTargets: ImmutableArray<CardInstanceId>
       RequireDifferentMechanicalTypes: bool
-      EligibleCardTypes: FrozenList<CardMechanicalTypes> }
+      EligibleCardTypes: ImmutableArray<CardMechanicalTypes> }
 
 type LegalAction =
     { Kind: LegalActionKind
       Command: MatchCommand
-      ChoiceRequirements: FrozenList<ChoiceRequirement>
+      ChoiceRequirements: ImmutableArray<ChoiceRequirement>
       StableKey: string }
 
 [<RequireQualifiedAccess>]
@@ -65,9 +66,9 @@ module ChoiceRequirement =
         (chooser: PlayerId)
         (minimum: int)
         (maximum: int)
-        (eligibleCards: FrozenList<CardInstanceId>)
-        (eligibleMechanicalTypes: FrozenList<BlokemonMechanicalType>)
-        (eligibleEffects: FrozenList<EffectId>)
+        (eligibleCards: ImmutableArray<CardInstanceId>)
+        (eligibleMechanicalTypes: ImmutableArray<BlokemonMechanicalType>)
+        (eligibleEffects: ImmutableArray<EffectId>)
         (dependsOnOptional: EffectChoiceId voption)
         =
         { Id = id
@@ -79,6 +80,6 @@ module ChoiceRequirement =
           EligibleMechanicalTypes = eligibleMechanicalTypes
           EligibleEffects = eligibleEffects
           DependsOnOptional = dependsOnOptional
-          EligibleTargets = FrozenList.empty
+          EligibleTargets = ImmutableArray<_>.Empty
           RequireDifferentMechanicalTypes = false
-          EligibleCardTypes = FrozenList.empty }
+          EligibleCardTypes = ImmutableArray<_>.Empty }

@@ -1,6 +1,7 @@
 namespace Blokemon.Game
 
 open System
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectTargeting
 open Blokemon.Game.ChoiceShapes
@@ -69,11 +70,11 @@ module internal ChoiceInspection =
                           actor
                           (if hasDeclaredSources instruction then required else 0)
                           required
-                          (FrozenList<CardInstanceId>.Create eligibleVim)
-                          FrozenList.empty
-                          FrozenList.empty
+                          (ImmutableArray.CreateRange eligibleVim)
+                          ImmutableArray<_>.Empty
+                          ImmutableArray<_>.Empty
                           dependency with
-                        EligibleTargets = FrozenList<CardInstanceId>.Create eligibleTargets }
+                        EligibleTargets = ImmutableArray.CreateRange eligibleTargets }
         else
 
             if
@@ -88,9 +89,9 @@ module internal ChoiceInspection =
                         actor
                         1
                         1
-                        FrozenList.empty
-                        (FrozenList<BlokemonMechanicalType>.Create instruction.MechanicalTypes)
-                        FrozenList.empty
+                        ImmutableArray<_>.Empty
+                        (ImmutableArray.CreateRange instruction.MechanicalTypes)
+                        ImmutableArray<_>.Empty
                         dependency
                 )
 
@@ -113,9 +114,9 @@ module internal ChoiceInspection =
                             actor
                             1
                             1
-                            FrozenList.empty
-                            FrozenList.empty
-                            (FrozenList<EffectId>.Create effects)
+                            ImmutableArray<_>.Empty
+                            ImmutableArray<_>.Empty
+                            (ImmutableArray.CreateRange effects)
                             dependency
                     )
             elif instruction.Selection = BlokemonSelection.AnyDistribution then
@@ -133,9 +134,9 @@ module internal ChoiceInspection =
                                 actor
                                 0
                                 instruction.Amount
-                                (FrozenList<CardInstanceId>.Create eligible)
-                                FrozenList.empty
-                                FrozenList.empty
+                                (ImmutableArray.CreateRange eligible)
+                                ImmutableArray<_>.Empty
+                                ImmutableArray<_>.Empty
                                 dependency
                         )
             elif instructionOwnsCardChoice instruction then
@@ -190,22 +191,21 @@ module internal ChoiceInspection =
                               chooser
                               minimum
                               maximum
-                              (FrozenList<CardInstanceId>.Create candidates)
-                              FrozenList.empty
-                              FrozenList.empty
+                              (ImmutableArray.CreateRange candidates)
+                              ImmutableArray<_>.Empty
+                              ImmutableArray<_>.Empty
                               dependency with
                             RequireDifferentMechanicalTypes =
                                 (match instruction.CardFilter with
                                  | null -> false
                                  | filter -> filter.DifferentMechanicalTypes)
                             EligibleCardTypes =
-                                FrozenList<CardMechanicalTypes>
-                                    .Create(
-                                        candidateCards
-                                        |> Array.map (fun card ->
-                                            { Card = card.Id
-                                              Types = catalog.MechanicalTypes card })
-                                    ) }
+                                ImmutableArray.CreateRange(
+                                    candidateCards
+                                    |> Array.map (fun card ->
+                                        { Card = card.Id
+                                          Types = catalog.MechanicalTypes card })
+                                ) }
 
     let rec inspectProgram
         (catalog: AuthorityCatalog)
@@ -239,9 +239,9 @@ module internal ChoiceInspection =
                             actor
                             0
                             1
-                            FrozenList.empty
-                            FrozenList.empty
-                            FrozenList.empty
+                            ImmutableArray<_>.Empty
+                            ImmutableArray<_>.Empty
+                            ImmutableArray<_>.Empty
                             optionalDependency
                     )
 
@@ -316,4 +316,4 @@ module internal ChoiceInspection =
             requirements
             triggerContext
 
-        FrozenList<ChoiceRequirement>.Create(requirements |> Seq.distinctBy (fun value -> value.Id))
+        ImmutableArray.CreateRange(requirements |> Seq.distinctBy (fun value -> value.Id))

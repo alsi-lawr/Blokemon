@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
 open Blokemon.Game.MatchWins
@@ -43,8 +44,9 @@ module internal MatchTriggerHandlers =
                 let resumed =
                     withChoices
                         pending.Command
-                        (FrozenList<EffectChoice>
-                            .Create(Seq.append pending.Command.Choices command.Choices))
+                        (ImmutableArray.CreateRange(
+                            Seq.append pending.Command.Choices command.Choices
+                        ))
 
                 match resumed.Action with
                 | MatchAction.Attack(attacker, attackId) ->
@@ -136,10 +138,10 @@ module internal MatchTriggerHandlers =
                             source,
                             pending.TriggerEffect,
                             trick.Program,
-                            FrozenList<EffectChoice>.Create acceptedOptional,
+                            ImmutableArray.Create acceptedOptional,
                             false,
                             false,
-                            FrozenList.empty,
+                            ImmutableArray<_>.Empty,
                             ValueSome context
                         )
                         .Requirements
@@ -152,9 +154,7 @@ module internal MatchTriggerHandlers =
                     requirements
                     |> Seq.find (fun requirement -> requirement.Kind = ChoiceRequirementKind.Cards)
 
-                choices.Add(
-                    EffectChoice.Cards(cards.Id, FrozenList<CardInstanceId>.Create selected)
-                )
+                choices.Add(EffectChoice.Cards(cards.Id, ImmutableArray.Create selected))
             | ValueNone -> ()
 
             let execution =
@@ -164,7 +164,7 @@ module internal MatchTriggerHandlers =
                     source,
                     pending.TriggerEffect,
                     trick.Program,
-                    FrozenList<EffectChoice>.Create choices,
+                    ImmutableArray.CreateRange choices,
                     ValueSome context
                 )
 
@@ -181,8 +181,8 @@ module internal MatchTriggerHandlers =
                           actor
                           pending.TriggerSource
                           (match vim with
-                           | ValueSome moved -> FrozenList<CardInstanceId>.Create moved
-                           | ValueNone -> FrozenList.empty) with
+                           | ValueSome moved -> ImmutableArray.Create moved
+                           | ValueNone -> ImmutableArray<_>.Empty) with
                         Effect = ValueSome pending.TriggerEffect }
 
                 let remainingVim =
@@ -191,7 +191,7 @@ module internal MatchTriggerHandlers =
                         (builder.Card vim).AttachedTo = ValueSome pending.KnockedOutCard)
                     |> Seq.toArray
 
-                if pending.TriggerSources.Count > 0 && remainingVim.Length > 0 then
+                if pending.TriggerSources.Length > 0 && remainingVim.Length > 0 then
                     let nextSource = pending.TriggerSources[0]
 
                     let nextTrick =
@@ -203,11 +203,10 @@ module internal MatchTriggerHandlers =
                         ValueSome
                             { pending with
                                 TriggerSources =
-                                    FrozenList<CardInstanceId>
-                                        .Create(Seq.skip 1 pending.TriggerSources)
+                                    ImmutableArray.CreateRange(Seq.skip 1 pending.TriggerSources)
                                 TriggerSource = nextSource
                                 TriggerEffect = EffectId nextTrick.MechanicalId
-                                EligibleVim = FrozenList<CardInstanceId>.Create remainingVim }
+                                EligibleVim = ImmutableArray.CreateRange remainingVim }
 
                     HandlerResult.accepted
                 else
@@ -293,8 +292,7 @@ module internal MatchTriggerHandlers =
                         card,
                         pending.Effect,
                         trick.Program,
-                        FrozenList<EffectChoice>
-                            .Create(EffectChoice.Optional(optional.Id, putOntoBooth)),
+                        ImmutableArray.Create(EffectChoice.Optional(optional.Id, putOntoBooth)),
                         false
                     )
 

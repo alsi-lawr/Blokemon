@@ -1,6 +1,7 @@
 namespace Blokemon.Game.Tests
 
 open System
+open System.Collections.Immutable
 open System.IO
 open System.Text.Json
 open Blokemon.Core.SetDesign
@@ -82,7 +83,7 @@ module private AuthorityAuditFixtures =
 
         let defender =
             { state.Card(CardInstanceId "defender") with
-                Attachments = FrozenList<CardInstanceId>.Create movableVim.Id }
+                Attachments = ImmutableArray.Create movableVim.Id }
 
         let state =
             MatchScenario.WithCards state [ defender; triggerSource; movableVim; prize ]
@@ -105,7 +106,7 @@ module private AuthorityAuditFixtures =
                             attacked
                             "resolve-mutated-knockout-trigger"
                             MatchScenario.SecondPlayer
-                            FrozenList.empty
+                            ImmutableArray<_>.Empty
                             (MatchAction.ResolveKnockoutTrigger(ValueSome movableVim.Id))
                     )
                 )
@@ -213,7 +214,7 @@ module private AuthorityAuditFixtures =
                         attacked
                         "resolve-mutated-bar-chit-trigger"
                         MatchScenario.FirstPlayer
-                        FrozenList.empty
+                        ImmutableArray<_>.Empty
                         (MatchAction.ResolveBarChitTrigger true)
                 )
             )
@@ -335,4 +336,4 @@ type AuthorityAuditTests() =
         // Candidate.6's 643 was derived before BLK-113's SV151-correct optional Booth branch
         // (+1) and before the three fossil Kits lost their spurious Optional wrappers (-3).
         audit.InstructionCount |> should equal 641
-        audit.Issues.Count |> should equal 0
+        audit.Issues.Length |> should equal 0

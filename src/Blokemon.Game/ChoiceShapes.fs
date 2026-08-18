@@ -1,6 +1,7 @@
 namespace Blokemon.Game
 
 open System
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectTargeting
 
@@ -40,7 +41,7 @@ module internal ChoiceShapes =
             | _ -> false
 
     let haveDifferentMechanicalTypes
-        (cards: FrozenList<CardInstanceId>)
+        (cards: ImmutableArray<CardInstanceId>)
         (requirement: ChoiceRequirement)
         =
         let used = Collections.Generic.HashSet<BlokemonMechanicalType>()
@@ -53,7 +54,7 @@ module internal ChoiceShapes =
                     requirement.EligibleCardTypes |> Seq.tryFind (fun value -> value.Card = cardId)
                 with
                 | None -> false
-                | Some types when types.Types.Count = 0 -> false
+                | Some types when types.Types.Length = 0 -> false
                 | Some types when types.Types |> Seq.exists used.Contains -> false
                 | Some types ->
                     used.UnionWith types.Types

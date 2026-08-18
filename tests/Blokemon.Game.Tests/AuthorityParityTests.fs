@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game
 open FsUnit
@@ -11,8 +12,9 @@ module private AuthorityParityFixtures =
     let addCards (state: MatchState) (added: CardState seq) =
         { state with
             Cards =
-                FrozenList<CardState>
-                    .Create(Seq.append state.Cards added |> Seq.sortBy (fun card -> card.Id)) }
+                ImmutableArray.CreateRange(
+                    Seq.append state.Cards added |> Seq.sortBy (fun card -> card.Id)
+                ) }
 
     let seedForBadge () =
         let rec search (seed: uint64) =
@@ -26,7 +28,7 @@ module private AuthorityParityFixtures =
         search 0UL
 
     let endRound (state: MatchState) (id: string) (actor: PlayerId) =
-        MatchScenario.Command state id actor FrozenList.empty MatchAction.EndRound
+        MatchScenario.Command state id actor ImmutableArray<_>.Empty MatchAction.EndRound
 
     let attackAction (engine: MatchEngine) (state: MatchState) (actor: PlayerId) (effect: string) =
         engine.GetLegalActions(state, actor)
@@ -62,7 +64,7 @@ module private AuthorityParityFixtures =
         let defender =
             { state.Card(CardInstanceId "defender") with
                 Damage = 80
-                Attachments = FrozenList<CardInstanceId>.Create knockedOutBeer.Id }
+                Attachments = ImmutableArray.Create knockedOutBeer.Id }
 
         let donni =
             if includeDonni then
@@ -165,15 +167,14 @@ type AuthorityParityTests() =
         let state =
             { state with
                 Players =
-                    FrozenList<PlayerState>
-                        .Create(
-                            state.Players
-                            |> Seq.map (fun player ->
-                                if player.Id = MatchScenario.FirstPlayer then
-                                    { player with RoundsStarted = 1 }
-                                else
-                                    player)
-                        ) }
+                    ImmutableArray.CreateRange(
+                        state.Players
+                        |> Seq.map (fun player ->
+                            if player.Id = MatchScenario.FirstPlayer then
+                                { player with RoundsStarted = 1 }
+                            else
+                                player)
+                    ) }
 
         let state = addCards state [ promotion ]
         let engine = MatchScenario.Engine()
@@ -326,30 +327,27 @@ type AuthorityParityTests() =
 
         let defender =
             { state.Card(CardInstanceId "defender") with
-                Attachments = FrozenList<CardInstanceId>.Create opposingVim.Id
-                UnderlyingCards = FrozenList<CardInstanceId>.Create lowerStage.Id }
+                Attachments = ImmutableArray.Create opposingVim.Id
+                UnderlyingCards = ImmutableArray.Create lowerStage.Id }
 
         let state =
             { MatchScenario.WithCards state [ defender; lowerStage; opposingVim ] with
                 Effects =
-                    FrozenList<TemporaryEffect>
-                        .Create(
-                            { SourceEffect = EffectId "BLK-137-B01"
-                              SourceCard = CardInstanceId "attacker"
-                              Owner = MatchScenario.FirstPlayer
-                              TargetCard = ValueSome(CardInstanceId "defender")
-                              Kind = TemporaryEffectKind.ModifySoftSpot
-                              Amount = 2
-                              MechanicalTypes =
-                                FrozenList<BlokemonMechanicalType>.Create
-                                    BlokemonMechanicalType.Grass
-                              RoughStates = FrozenList.empty
-                              RelatedCards = FrozenList.empty
-                              Conditions = FrozenList.empty
-                              Duration = EffectDuration.WhileTargetInPlay
-                              AppliesFromRound = state.RoundNumber
-                              ExpiresAfterRound = state.RoundNumber }
-                        ) }
+                    ImmutableArray.Create(
+                        { SourceEffect = EffectId "BLK-137-B01"
+                          SourceCard = CardInstanceId "attacker"
+                          Owner = MatchScenario.FirstPlayer
+                          TargetCard = ValueSome(CardInstanceId "defender")
+                          Kind = TemporaryEffectKind.ModifySoftSpot
+                          Amount = 2
+                          MechanicalTypes = ImmutableArray.Create BlokemonMechanicalType.Grass
+                          RoughStates = ImmutableArray<_>.Empty
+                          RelatedCards = ImmutableArray<_>.Empty
+                          Conditions = ImmutableArray<_>.Empty
+                          Duration = EffectDuration.WhileTargetInPlay
+                          AppliesFromRound = state.RoundNumber
+                          ExpiresAfterRound = state.RoundNumber }
+                    ) }
 
         let applied =
             MatchScenario.Applied(
@@ -361,8 +359,8 @@ type AuthorityParityTests() =
 
         returned.Zone |> should equal CardZone.Mitt
         returned.Damage |> should equal 0
-        returned.Attachments.Count |> should equal 0
-        returned.UnderlyingCards.Count |> should equal 0
+        returned.Attachments.Length |> should equal 0
+        returned.UnderlyingCards.Length |> should equal 0
         active.Zone |> should equal CardZone.Oche
         active.Damage |> should equal 100
         active.Attachments |> Seq.toList |> should equal [ opposingVim.Id ]
@@ -426,14 +424,14 @@ type AuthorityParityTests() =
 
         let defender =
             { state.Card(CardInstanceId "defender") with
-                Attachments = FrozenList<CardInstanceId>.Create firstTool.Id }
+                Attachments = ImmutableArray.Create firstTool.Id }
 
         let state =
             MatchScenario.WithCards
                 state
                 [ defender
                   { secondTarget with
-                      Attachments = FrozenList<CardInstanceId>.Create secondTool.Id }
+                      Attachments = ImmutableArray.Create secondTool.Id }
                   firstTool
                   secondTool ]
 
@@ -481,13 +479,12 @@ type AuthorityParityTests() =
         let state =
             { state with
                 Cards =
-                    FrozenList<CardState>
-                        .Create(
-                            state.Cards
-                            |> Seq.filter (fun card -> card.Id.Value <> "first-draw")
-                            |> Seq.append (talentScout :: selected :: remaining)
-                            |> Seq.sortBy (fun card -> card.Id)
-                        ) }
+                    ImmutableArray.CreateRange(
+                        state.Cards
+                        |> Seq.filter (fun card -> card.Id.Value <> "first-draw")
+                        |> Seq.append (talentScout :: selected :: remaining)
+                        |> Seq.sortBy (fun card -> card.Id)
+                    ) }
 
         let engine = MatchScenario.Engine()
         let play = playKitAction engine state talentScout.Id
@@ -500,13 +497,9 @@ type AuthorityParityTests() =
                     requested,
                     MatchScenario.ResolveEffectChoiceCommand
                         requested
-                        (FrozenList<EffectChoice>
-                            .Create(
-                                EffectChoice.Cards(
-                                    requirement.Id,
-                                    FrozenList<CardInstanceId>.Create selected.Id
-                                )
-                            ))
+                        (ImmutableArray.Create(
+                            EffectChoice.Cards(requirement.Id, ImmutableArray.Create selected.Id)
+                        ))
                 )
             )
 
@@ -561,13 +554,9 @@ type AuthorityParityTests() =
                     requested,
                     MatchScenario.ResolveEffectChoiceCommand
                         requested
-                        (FrozenList<EffectChoice>
-                            .Create(
-                                EffectChoice.Cards(
-                                    requirement.Id,
-                                    FrozenList<CardInstanceId>.Create secondBench.Id
-                                )
-                            ))
+                        (ImmutableArray.Create(
+                            EffectChoice.Cards(requirement.Id, ImmutableArray.Create secondBench.Id)
+                        ))
                 )
             )
 
@@ -612,13 +601,9 @@ type AuthorityParityTests() =
                     requested,
                     MatchScenario.ResolveEffectChoiceCommandBy
                         requested
-                        (FrozenList<EffectChoice>
-                            .Create(
-                                EffectChoice.Cards(
-                                    requirement.Id,
-                                    FrozenList<CardInstanceId>.Create otherBench.Id
-                                )
-                            ))
+                        (ImmutableArray.Create(
+                            EffectChoice.Cards(requirement.Id, ImmutableArray.Create otherBench.Id)
+                        ))
                         MatchScenario.SecondPlayer
                 )
             )
@@ -643,8 +628,8 @@ type AuthorityParityTests() =
                 MatchScenario.Engine().GetLegalActions(nonMatching, MatchScenario.FirstPlayer)
             )
 
-        freeTaxi.Count |> should equal 0
-        paidTaxi.Count |> should equal 2
+        freeTaxi.Length |> should equal 0
+        paidTaxi.Length |> should equal 2
 
         (matching.CardsIn(MatchScenario.FirstPlayer, CardZone.Mitt)
          |> Seq.filter (fun card -> card.Id = CardInstanceId "mitt-vim")
@@ -685,7 +670,7 @@ type AuthorityParityTests() =
 
         let defender =
             { state.Card(CardInstanceId "defender") with
-                Attachments = FrozenList<CardInstanceId>.Create(firstVim.Id, secondVim.Id) }
+                Attachments = ImmutableArray.Create(firstVim.Id, secondVim.Id) }
 
         let state =
             MatchScenario.WithCards state [ defender; replacement; firstVim; secondVim ]
@@ -705,10 +690,10 @@ type AuthorityParityTests() =
                         attacked
                         "taxi-delayed-target"
                         MatchScenario.SecondPlayer
-                        FrozenList.empty
+                        ImmutableArray<_>.Empty
                         (MatchAction.Taxi(
                             replacement.Id,
-                            FrozenList<CardInstanceId>.Create(firstVim.Id, secondVim.Id)
+                            ImmutableArray.Create(firstVim.Id, secondVim.Id)
                         ))
                 )
             )
@@ -748,7 +733,7 @@ type AuthorityParityTests() =
             addCards
                 (MatchScenario.BattleState "BLK-042" "BLK-150" [ "VIM-SOBER" ] 769UL)
                 [ { boothTarget with
-                      Attachments = FrozenList<CardInstanceId>.Create tool.Id }
+                      Attachments = ImmutableArray.Create tool.Id }
                   tool ]
 
         let engine = MatchScenario.Engine()

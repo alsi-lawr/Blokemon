@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectTargeting
 open Blokemon.Game.ChoiceShapes
@@ -108,7 +109,7 @@ module internal EffectInstructions =
                     selected
 
             runtime.LastSelectedCards <-
-                FrozenList<CardInstanceId>.Create(selected |> Array.map (fun card -> card.Id))
+                ImmutableArray.CreateRange(selected |> Array.map (fun card -> card.Id))
 
             runtime.HasCardSelection <- true
 
@@ -137,15 +138,16 @@ module internal EffectInstructions =
                 if runtime.HasCardSelection then
                     runtime.LastSelectedCards
                 else
-                    FrozenList.empty
+                    ImmutableArray<_>.Empty
             )
 
             ValueSome true
         | BlokemonOpcode.RevealCards ->
             if not runtime.HasCardSelection then
                 runtime.LastSelectedCards <-
-                    FrozenList<CardInstanceId>
-                        .Create(selectedTargets () |> Array.map (fun card -> card.Id))
+                    ImmutableArray.CreateRange(
+                        selectedTargets () |> Array.map (fun card -> card.Id)
+                    )
 
                 runtime.HasCardSelection <- true
 

@@ -19,7 +19,7 @@ module internal EffectSelection =
             runtime.LastSelectedCards <- values
             values |> Seq.map runtime.Builder.Card
         | ValueNone ->
-            if runtime.LastSelectedCards.Count > 0 then
+            if runtime.LastSelectedCards.Length > 0 then
                 runtime.LastSelectedCards
                 |> Seq.map runtime.Builder.Card
                 |> Seq.filter (fun card -> Array.contains card candidates)

@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Game
 open FsUnit
 open TUnit.Core
@@ -40,23 +41,21 @@ type TopStackDistributionTests() =
         let state =
             { state with
                 Cards =
-                    FrozenList<CardState>
-                        .Create(
-                            Seq.append retained [ promotion; topGrass; topBloke; topWater ]
-                            |> Seq.sortBy (fun card -> card.Id)
-                        ) }
+                    ImmutableArray.CreateRange(
+                        Seq.append retained [ promotion; topGrass; topBloke; topWater ]
+                        |> Seq.sortBy (fun card -> card.Id)
+                    ) }
 
         let choices =
-            FrozenList<EffectChoice>
-                .Create(
-                    EffectChoice.Optional(EffectChoiceId "BLK-044-T01:root/0:optional", true),
-                    EffectChoice.Attachments(
-                        EffectChoiceId "BLK-044-T01:root/0/then/3:attachments",
-                        FrozenList<VimAttachment>.Create
-                            { Vim = CardInstanceId "top-grass"
-                              Bloke = CardInstanceId "promotion" }
-                    )
+            ImmutableArray.Create(
+                EffectChoice.Optional(EffectChoiceId "BLK-044-T01:root/0:optional", true),
+                EffectChoice.Attachments(
+                    EffectChoiceId "BLK-044-T01:root/0/then/3:attachments",
+                    ImmutableArray.Create
+                        { Vim = CardInstanceId "top-grass"
+                          Bloke = CardInstanceId "promotion" }
                 )
+            )
 
         let command =
             MatchScenario.Command

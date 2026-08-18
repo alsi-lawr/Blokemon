@@ -90,7 +90,7 @@ module internal EffectPredicates =
                 | ValueNone -> false)
         | BlokemonCondition.OtherOcheIsPromoted ->
             match otherOche () with
-            | ValueSome card -> card.UnderlyingCards.Count > 0
+            | ValueSome card -> card.UnderlyingCards.Length > 0
             | ValueNone -> false
         | BlokemonCondition.OtherOcheIsBigHitter ->
             match otherOche () with

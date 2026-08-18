@@ -1,6 +1,7 @@
 namespace Blokemon.Game
 
 open System
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
@@ -52,9 +53,9 @@ module internal MatchLegalActions =
                         actor
                         0
                         (min catalog.Manifest.BaseRules.Opening.BoothLimit (regulars.Length - 1))
-                        (FrozenList<CardInstanceId>.Create booth)
-                        FrozenList.empty
-                        FrozenList.empty
+                        (ImmutableArray.CreateRange booth)
+                        ImmutableArray<_>.Empty
+                        ImmutableArray<_>.Empty
                         ValueNone
 
                 legal
@@ -63,9 +64,9 @@ module internal MatchLegalActions =
                     actor
                     $"opening:{actor.Value}:{oche.Id.Value}"
                     $"opening:{oche.Id.Value}"
-                    (FrozenList<ChoiceRequirement>.Create requirement)
-                    FrozenList.empty
-                    (MatchAction.ChooseOpening(oche.Id, FrozenList.empty)))
+                    (ImmutableArray.Create requirement)
+                    ImmutableArray<_>.Empty
+                    (MatchAction.ChooseOpening(oche.Id, ImmutableArray<_>.Empty)))
 
     let replacementActions (state: MatchState) (actor: PlayerId) =
         if state.ReplacementPlayer <> ValueSome actor then

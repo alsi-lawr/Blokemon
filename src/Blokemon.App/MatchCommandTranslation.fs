@@ -2,6 +2,7 @@ namespace Blokemon.App
 
 open System
 open System.Collections.Generic
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.App.Contracts
 open Blokemon.App.MatchFailures
@@ -31,8 +32,9 @@ module internal MatchCommandTranslation =
                 ValueSome(
                     EffectChoice.Cards(
                         requirement.Id,
-                        FrozenList<CardInstanceId>
-                            .Create(orEmpty selection.CardInstanceIds |> Seq.map CardInstanceId)
+                        ImmutableArray.CreateRange(
+                            orEmpty selection.CardInstanceIds |> Seq.map CardInstanceId
+                        )
                     )
                 )
             | ChoiceRequirementKind.MechanicalType ->
@@ -48,26 +50,24 @@ module internal MatchCommandTranslation =
                 ValueSome(
                     EffectChoice.Distribution(
                         requirement.Id,
-                        FrozenList<DamageAllocation>
-                            .Create(
-                                orEmpty selection.Distribution
-                                |> Seq.map (fun allocation ->
-                                    { Card = CardInstanceId allocation.CardInstanceId
-                                      Counters = allocation.Counters })
-                            )
+                        ImmutableArray.CreateRange(
+                            orEmpty selection.Distribution
+                            |> Seq.map (fun allocation ->
+                                { Card = CardInstanceId allocation.CardInstanceId
+                                  Counters = allocation.Counters })
+                        )
                     )
                 )
             | ChoiceRequirementKind.Attachments ->
                 ValueSome(
                     EffectChoice.Attachments(
                         requirement.Id,
-                        FrozenList<VimAttachment>
-                            .Create(
-                                orEmpty selection.Attachments
-                                |> Seq.map (fun attachment ->
-                                    { Vim = CardInstanceId attachment.VimCardInstanceId
-                                      Bloke = CardInstanceId attachment.BlokeCardInstanceId })
-                            )
+                        ImmutableArray.CreateRange(
+                            orEmpty selection.Attachments
+                            |> Seq.map (fun attachment ->
+                                { Vim = CardInstanceId attachment.VimCardInstanceId
+                                  Bloke = CardInstanceId attachment.BlokeCardInstanceId })
+                        )
                     )
                 )
             | _ -> ValueNone
@@ -158,7 +158,7 @@ module internal MatchCommandTranslation =
                 match rejection with
                 | null ->
                     let commandId: GameCommandId = CommandId $"client:{clientCommandId:D}"
-                    let frozenChoices = FrozenList<EffectChoice>.Create choices
+                    let carriedChoices = ImmutableArray.CreateRange choices
                     let revision = state.Revision
 
                     // Only five cases ever carried submitted choices: Promote, PlayKit,
@@ -193,7 +193,11 @@ module internal MatchCommandTranslation =
                         { action.Command with
                             Id = commandId
                             ExpectedRevision = revision
-                            Choices = (if carriesChoices then frozenChoices else FrozenList.empty)
+                            Choices =
+                                (if carriesChoices then
+                                     carriedChoices
+                                 else
+                                     ImmutableArray<_>.Empty)
                             Action = resolvedAction }
 
                     { Command = command; Error = null }

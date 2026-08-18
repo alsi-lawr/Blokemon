@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
 
@@ -30,7 +31,7 @@ module internal MatchContinuous =
                     source,
                     effect,
                     trick.Program,
-                    FrozenList.empty,
+                    ImmutableArray<_>.Empty,
                     false
                 )
                 |> ignore
@@ -53,11 +54,11 @@ module internal MatchContinuous =
                     source,
                     effect,
                     rule.Program,
-                    FrozenList.empty,
+                    ImmutableArray<_>.Empty,
                     false,
                     true,
                     ValueNone,
-                    FrozenList.empty,
+                    ImmutableArray<_>.Empty,
                     ValueNone
                 )
                 |> ignore

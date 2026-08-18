@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System.Collections.Immutable
 open Blokemon.Game
 open FsUnit
 open TUnit.Core
@@ -32,13 +33,12 @@ type CardFlowTests() =
         let state =
             { state with
                 Cards =
-                    FrozenList<CardState>
-                        .Create(
-                            state.Cards
-                            |> Seq.filter (fun card -> card.Id.Value <> "first-draw")
-                            |> fun cards -> Seq.append cards [ basic; evolved ]
-                            |> Seq.sortBy (fun card -> card.Id)
-                        ) }
+                    ImmutableArray.CreateRange(
+                        state.Cards
+                        |> Seq.filter (fun card -> card.Id.Value <> "first-draw")
+                        |> fun cards -> Seq.append cards [ basic; evolved ]
+                        |> Seq.sortBy (fun card -> card.Id)
+                    ) }
 
         let _, missing =
             MatchScenario.Rejected(
@@ -56,7 +56,7 @@ type CardFlowTests() =
                     MatchScenario.AttackCommandWith
                         state
                         "BLK-016-B01"
-                        (FrozenList<EffectChoice>.Create(EffectChoice.Optional(optional.Id, true)))
+                        (ImmutableArray.Create(EffectChoice.Optional(optional.Id, true)))
                 )
             )
 
@@ -67,17 +67,13 @@ type CardFlowTests() =
         let command =
             MatchScenario.ResolveEffectChoiceCommand
                 requested
-                (FrozenList<EffectChoice>
-                    .Create(
-                        EffectChoice.Cards(
-                            requirement.Id,
-                            FrozenList<CardInstanceId>.Create basic.Id
-                        )
-                    ))
+                (ImmutableArray.Create(
+                    EffectChoice.Cards(requirement.Id, ImmutableArray.Create basic.Id)
+                ))
 
         let applied = MatchScenario.Applied(engine.Apply(requested, command))
 
-        missing.ChoiceRequirements.Count |> should equal 1
+        missing.ChoiceRequirements.Length |> should equal 1
         requirement.EligibleCards |> Seq.toList |> should equal [ basic.Id ]
         (applied.Card basic.Id).Zone |> should equal CardZone.Booth
         (applied.Card evolved.Id).Zone |> should equal CardZone.Stack
@@ -106,7 +102,7 @@ type CardFlowTests() =
 
         let defender =
             { state.Card(CardInstanceId "defender") with
-                Attachments = FrozenList<CardInstanceId>.Create otherVim.Id }
+                Attachments = ImmutableArray.Create otherVim.Id }
 
         let state = MatchScenario.WithCards state [ defender; kit; ownVim; otherVim ]
 
@@ -130,13 +126,9 @@ type CardFlowTests() =
                     requested,
                     MatchScenario.ResolveEffectChoiceCommand
                         requested
-                        (FrozenList<EffectChoice>
-                            .Create(
-                                EffectChoice.Cards(
-                                    requirement.Id,
-                                    FrozenList<CardInstanceId>.Create ownVim.Id
-                                )
-                            ))
+                        (ImmutableArray.Create(
+                            EffectChoice.Cards(requirement.Id, ImmutableArray.Create ownVim.Id)
+                        ))
                 )
             )
 

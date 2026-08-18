@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
@@ -80,21 +81,20 @@ module internal MatchPlayingActions =
                     Seq.singleton ValueNone
 
             let requirements =
-                FrozenList<ChoiceRequirement>
-                    .Create(
-                        kit.HouseRules
-                        |> Seq.filter (fun rule ->
-                            not (containsOpcode rule.Program BlokemonOpcode.OncePerRound)
-                            && not (isDeclarativeHouseRule rule))
-                        |> Seq.collect (fun rule ->
-                            invocationRequirements
-                                interpreter
-                                state
-                                actor
-                                kitCard.Id
-                                (EffectId rule.MechanicalId))
-                        |> fun values -> values.DistinctBy(fun requirement -> requirement.Id)
-                    )
+                ImmutableArray.CreateRange(
+                    kit.HouseRules
+                    |> Seq.filter (fun rule ->
+                        not (containsOpcode rule.Program BlokemonOpcode.OncePerRound)
+                        && not (isDeclarativeHouseRule rule))
+                    |> Seq.collect (fun rule ->
+                        invocationRequirements
+                            interpreter
+                            state
+                            actor
+                            kitCard.Id
+                            (EffectId rule.MechanicalId))
+                    |> fun values -> values.DistinctBy(fun requirement -> requirement.Id)
+                )
 
             let choices = stableChoices requirements
 
@@ -145,11 +145,10 @@ module internal MatchPlayingActions =
                         key
                         requirements
                         (stableChoices (
-                            FrozenList<ChoiceRequirement>
-                                .Create(
-                                    requirements
-                                    |> Seq.filter (fun requirement -> requirement.Chooser = actor)
-                                )
+                            ImmutableArray.CreateRange(
+                                requirements
+                                |> Seq.filter (fun requirement -> requirement.Chooser = actor)
+                            )
                         ))
                         (MatchAction.UsePartyTrick(source.Id, effect)))
 
@@ -171,11 +170,10 @@ module internal MatchPlayingActions =
                         key
                         requirements
                         (stableChoices (
-                            FrozenList<ChoiceRequirement>
-                                .Create(
-                                    requirements
-                                    |> Seq.filter (fun requirement -> requirement.Chooser = actor)
-                                )
+                            ImmutableArray.CreateRange(
+                                requirements
+                                |> Seq.filter (fun requirement -> requirement.Chooser = actor)
+                            )
                         ))
                         (MatchAction.Attack(source.Id, effect)))
 
@@ -206,7 +204,7 @@ module internal MatchPlayingActions =
                 |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
                 |> Seq.truncate fare
                 |> Seq.map (fun card -> card.Id)
-                |> FrozenList<CardInstanceId>.Create
+                |> ImmutableArray.CreateRange
 
             state.CardsIn(actor, CardZone.Booth)
             |> Seq.map (fun booth ->

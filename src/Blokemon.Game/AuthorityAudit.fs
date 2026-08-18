@@ -1,6 +1,7 @@
 namespace Blokemon.Game
 
 open System
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 
 /// Proving the printed authority only uses shapes this interpreter can actually run.
@@ -196,4 +197,4 @@ module internal AuthorityAudit =
 
         { EffectCount = effectCount
           InstructionCount = instructionCount
-          Issues = FrozenList<InterpreterAuditIssue>.Create issues }
+          Issues = ImmutableArray.CreateRange issues }

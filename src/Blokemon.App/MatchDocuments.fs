@@ -1,6 +1,7 @@
 namespace Blokemon.App
 
 open System
+open System.Collections.Immutable
 open System.Text.Json.Serialization
 open Blokemon.App.Catalogue
 open Blokemon.App.Contracts
@@ -66,9 +67,9 @@ type MatchDocument =
       [<property: JsonRequired>]
       Start: MatchStartRequest
       [<property: JsonRequired>]
-      Commands: FrozenList<MatchCommand>
+      Commands: ImmutableArray<MatchCommand>
       [<property: JsonRequired>]
-      ClientCommands: FrozenList<MatchClientCommandReceipt> }
+      ClientCommands: ImmutableArray<MatchClientCommandReceipt> }
 
 [<CLIMutable>]
 type MatchHistoryDocument =
@@ -77,7 +78,7 @@ type MatchHistoryDocument =
       [<property: JsonRequired>]
       AuthorityVersion: string
       [<property: JsonRequired>]
-      Matches: FrozenList<MatchDocument> }
+      Matches: ImmutableArray<MatchDocument> }
 
 [<CLIMutable>]
 type MatchActionPayload =
@@ -95,7 +96,7 @@ type internal LoadedMatch =
     { DocumentRevision: int64
       Document: MatchDocument
       State: MatchState
-      Events: FrozenList<MatchEvent> }
+      Events: ImmutableArray<MatchEvent> }
 
 type internal MatchLoad =
     { Match: LoadedMatch | null
@@ -107,7 +108,7 @@ type internal CpuAdvance =
 
 type internal PendingPresentation =
     { State: MatchState
-      Events: FrozenList<MatchEvent> }
+      Events: ImmutableArray<MatchEvent> }
 
 type internal ActionSubjectView =
     { Source: string | null

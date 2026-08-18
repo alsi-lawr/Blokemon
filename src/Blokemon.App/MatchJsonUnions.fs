@@ -1,6 +1,7 @@
 namespace Blokemon.App
 
 open System
+open System.Collections.Immutable
 open System.Text.Json
 open System.Text.Json.Serialization
 open Blokemon.Core.SetDesign
@@ -141,7 +142,7 @@ type internal MatchActionJsonConverter() =
             UnionPayload.field<EffectId> name options
 
         let cards name =
-            UnionPayload.field<FrozenList<CardInstanceId>> name options
+            UnionPayload.field<ImmutableArray<CardInstanceId>> name options
 
         match UnionPayload.discriminator "$command" payload with
         | "chooseMulliganBonus" ->

@@ -1,6 +1,7 @@
 namespace Blokemon.App
 
 open System
+open System.Collections.Immutable
 open System.Linq
 open System.Text.Json
 open System.Threading
@@ -106,7 +107,7 @@ module internal MatchStore =
                     Ok
                         { SchemaVersion = matchHistorySchemaVersion
                           AuthorityVersion = catalogue.Mechanics.ManifestVersion
-                          Matches = FrozenList<MatchDocument>.Empty }
+                          Matches = ImmutableArray<MatchDocument>.Empty }
                 | document ->
                     let parsed =
                         try
@@ -192,10 +193,9 @@ module internal MatchStore =
                             let changed =
                                 { document with
                                     Matches =
-                                        FrozenList<MatchDocument>
-                                            .Create(
-                                                Seq.append document.Matches [ completed.Document ]
-                                            ) }
+                                        ImmutableArray.CreateRange(
+                                            Seq.append document.Matches [ completed.Document ]
+                                        ) }
 
                             let json = JsonSerializer.Serialize(changed, MatchJson.Options)
 

@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectTargeting
 open Blokemon.Game.EffectSelection
@@ -37,10 +38,10 @@ module internal EffectCardTransforms =
         | _ -> ()
 
     let demote (catalog: AuthorityCatalog) (runtime: EffectRuntime) (target: CardState) =
-        if target.UnderlyingCards.Count > 0 then
+        if target.UnderlyingCards.Length > 0 then
             resolvePendingDamageFor catalog runtime target.Id
             let target = runtime.Builder.Card target.Id
-            let underlyingId = target.UnderlyingCards[target.UnderlyingCards.Count - 1]
+            let underlyingId = target.UnderlyingCards[target.UnderlyingCards.Length - 1]
             let underlying = runtime.Builder.Card underlyingId
             runtime.Builder.RemoveEffectsFor target.Id
             runtime.Builder.MoveCard(target.Id, CardZone.Mitt)
@@ -48,10 +49,10 @@ module internal EffectCardTransforms =
             runtime.Builder.SetCard
                 { runtime.Builder.Card target.Id with
                     AttachedTo = ValueNone
-                    Attachments = FrozenList.empty
-                    UnderlyingCards = FrozenList.empty
+                    Attachments = ImmutableArray<_>.Empty
+                    UnderlyingCards = ImmutableArray<_>.Empty
                     Damage = 0
-                    RoughStates = FrozenList.empty }
+                    RoughStates = ImmutableArray<_>.Empty }
 
             runtime.Builder.SetCard
                 { underlying with
@@ -59,11 +60,10 @@ module internal EffectCardTransforms =
                     Damage = target.Damage
                     Attachments = target.Attachments
                     UnderlyingCards =
-                        FrozenList<CardInstanceId>
-                            .Create(
-                                target.UnderlyingCards
-                                |> Seq.truncate (target.UnderlyingCards.Count - 1)
-                            )
+                        ImmutableArray.CreateRange(
+                            target.UnderlyingCards
+                            |> Seq.truncate (target.UnderlyingCards.Length - 1)
+                        )
                     AttachedTo = ValueNone }
 
             for attachmentId in target.Attachments do
@@ -178,10 +178,10 @@ module internal EffectCardTransforms =
                       TargetCard = ValueSome runtime.Source.Id
                       Kind = TemporaryEffectKind.ScaleNextAttackDamage
                       Amount = instruction.Amount
-                      MechanicalTypes = FrozenList.empty
-                      RoughStates = FrozenList.empty
-                      RelatedCards = FrozenList.empty
-                      Conditions = FrozenList.empty
+                      MechanicalTypes = ImmutableArray<_>.Empty
+                      RoughStates = ImmutableArray<_>.Empty
+                      RelatedCards = ImmutableArray<_>.Empty
+                      Conditions = ImmutableArray<_>.Empty
                       Duration = EffectDuration.UntilEndOfOpponentsNextRound
                       AppliesFromRound = runtime.Builder.RoundNumber + 2
                       ExpiresAfterRound = runtime.Builder.RoundNumber + 2 }

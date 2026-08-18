@@ -1,6 +1,7 @@
 namespace Blokemon.Game
 
 open System
+open System.Collections.Immutable
 open System.Linq
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectDamage
@@ -9,20 +10,23 @@ open Blokemon.Game.EffectDamage
 /// has to answer.
 type internal HandlerResult =
     { Rejection: CommandRejectionCode voption
-      Requirements: FrozenList<ChoiceRequirement> }
+      Requirements: ImmutableArray<ChoiceRequirement> }
 
 [<RequireQualifiedAccess>]
 module internal HandlerResult =
 
     let accepted =
         { Rejection = ValueNone
-          Requirements = FrozenList.empty }
+          Requirements = ImmutableArray<_>.Empty }
 
     let reject (rejection: CommandRejectionCode) =
         { Rejection = ValueSome rejection
-          Requirements = FrozenList.empty }
+          Requirements = ImmutableArray<_>.Empty }
 
-    let rejectWith (rejection: CommandRejectionCode) (requirements: FrozenList<ChoiceRequirement>) =
+    let rejectWith
+        (rejection: CommandRejectionCode)
+        (requirements: ImmutableArray<ChoiceRequirement>)
+        =
         { Rejection = ValueSome rejection
           Requirements = requirements }
 
@@ -95,7 +99,7 @@ module internal MatchRules =
                 | ValueNone -> false
 
             fare <-
-                if modifier.MechanicalTypes.Count = 0 || continuous then
+                if modifier.MechanicalTypes.Length = 0 || continuous then
                     0
                 else
                     max 0 (fare + modifier.Amount)
@@ -128,7 +132,7 @@ module internal MatchRules =
                     && effectMatchesCardRank catalog effect attacker
                     && effect.Amount > 0)
                 |> Seq.toArray do
-                if effect.MechanicalTypes.Count = 0 then
+                if effect.MechanicalTypes.Length = 0 then
                     costs.AddRange(Seq.replicate effect.Amount BlokemonMechanicalType.Colorless)
                 else
                     costs.AddRange effect.MechanicalTypes
@@ -208,13 +212,13 @@ module internal MatchRules =
               Actual = actual
               Expected = expected }
 
-        if deck.Cards.Count <> catalog.Manifest.BaseRules.Stack.CardCount then
+        if deck.Cards.Length <> catalog.Manifest.BaseRules.Stack.CardCount then
             issues.Add(
                 issue
                     DeckIssueCode.WrongCardCount
                     (ValueSome deck.Owner)
                     ValueNone
-                    deck.Cards.Count
+                    deck.Cards.Length
                     catalog.Manifest.BaseRules.Stack.CardCount
             )
 
@@ -297,7 +301,7 @@ module internal MatchRules =
         issues
 
     let createCards (catalog: AuthorityCatalog) (deck: FrozenDeckSnapshot) (playerNumber: int) =
-        [| for index in 0 .. deck.Cards.Count - 1 ->
+        [| for index in 0 .. deck.Cards.Length - 1 ->
                let mechanicalId = deck.Cards[index]
 
                { Id = CardInstanceId $"C{playerNumber}-%03d{index + 1}"
@@ -308,9 +312,9 @@ module internal MatchRules =
                  IsFaceDown = false
                  StackPosition = index
                  AttachedTo = ValueNone
-                 Attachments = FrozenList.empty
-                 UnderlyingCards = FrozenList.empty
+                 Attachments = ImmutableArray<_>.Empty
+                 UnderlyingCards = ImmutableArray<_>.Empty
                  Damage = 0
-                 RoughStates = FrozenList.empty
+                 RoughStates = ImmutableArray<_>.Empty
                  EnteredAtOwnerRound = 0
                  LastPromotedRound = -1 } |]

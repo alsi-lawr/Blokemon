@@ -2,6 +2,7 @@ namespace Blokemon.App
 
 open System
 open System.Collections.Generic
+open System.Collections.Immutable
 open System.Linq
 open System.Text.Json
 open System.Threading
@@ -192,9 +193,9 @@ module internal MatchStartFlow =
                                                   StartRequestFingerprint =
                                                     gameStartFingerprint start }
                                               Start = start
-                                              Commands = FrozenList<MatchCommand>.Create commands
+                                              Commands = ImmutableArray.CreateRange commands
                                               ClientCommands =
-                                                FrozenList<MatchClientCommandReceipt>.Empty }
+                                                ImmutableArray<MatchClientCommandReceipt>.Empty }
 
                                         let! historyError =
                                             task {
@@ -246,7 +247,7 @@ module internal MatchStartFlow =
                                                     { DocumentRevision = written.Revision
                                                       Document = document
                                                       State = advanced.State
-                                                      Events = FrozenList<MatchEvent>.Create events }
+                                                      Events = ImmutableArray.CreateRange events }
 
                                                 context.Cached <- committed
 

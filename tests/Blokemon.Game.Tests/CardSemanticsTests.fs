@@ -1,6 +1,7 @@
 namespace Blokemon.Game.Tests
 
 open System
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game
 open FsUnit
@@ -9,7 +10,7 @@ open TUnit.Core
 [<AutoOpen>]
 module private CardSemanticsFixtures =
 
-    let attackDamage (events: FrozenList<MatchEvent>) =
+    let attackDamage (events: ImmutableArray<MatchEvent>) =
         events
         |> Seq.filter (fun matchEvent ->
             matchEvent.Kind = MatchEventKind.DamagePlaced
@@ -39,7 +40,7 @@ module private CardSemanticsFixtures =
             RoundUsage =
                 { state.RoundUsage with
                     MatesPlayed = 1
-                    KitsPlayed = FrozenList<MechanicalCardId>.Create(MechanicalCardId mateId) } }
+                    KitsPlayed = ImmutableArray.Create(MechanicalCardId mateId) } }
 
     let attackGateState (seed: uint64) =
         let state =
@@ -47,17 +48,17 @@ module private CardSemanticsFixtures =
 
         { state with
             Effects =
-                FrozenList<TemporaryEffect>.Create
+                ImmutableArray.Create
                     { SourceEffect = EffectId "BLK-117-B01"
                       SourceCard = CardInstanceId "defender"
                       Owner = MatchScenario.SecondPlayer
                       TargetCard = ValueSome(CardInstanceId "attacker")
                       Kind = TemporaryEffectKind.RestrictAttackOnBeerMat
                       Amount = 2
-                      MechanicalTypes = FrozenList.empty
-                      RoughStates = FrozenList.empty
-                      RelatedCards = FrozenList.empty
-                      Conditions = FrozenList.empty
+                      MechanicalTypes = ImmutableArray<_>.Empty
+                      RoughStates = ImmutableArray<_>.Empty
+                      RelatedCards = ImmutableArray<_>.Empty
+                      Conditions = ImmutableArray<_>.Empty
                       Duration = EffectDuration.UntilEndOfOpponentsNextRound
                       AppliesFromRound = state.RoundNumber
                       ExpiresAfterRound = state.RoundNumber + 1 } }
@@ -167,7 +168,7 @@ type CardSemanticsTests() =
 
         let defender =
             { state.Card(CardInstanceId "defender") with
-                Attachments = FrozenList<CardInstanceId>.Create opposingVim.Id }
+                Attachments = ImmutableArray.Create opposingVim.Id }
 
         let state = MatchScenario.WithCards state [ defender; ownVim; opposingVim; kit ]
 
@@ -181,13 +182,9 @@ type CardSemanticsTests() =
                     requested,
                     MatchScenario.ResolveEffectChoiceCommand
                         requested
-                        (FrozenList<EffectChoice>
-                            .Create(
-                                EffectChoice.Cards(
-                                    requirement.Id,
-                                    FrozenList<CardInstanceId>.Create ownVim.Id
-                                )
-                            ))
+                        (ImmutableArray.Create(
+                            EffectChoice.Cards(requirement.Id, ImmutableArray.Create ownVim.Id)
+                        ))
                 )
             )
 
@@ -236,10 +233,9 @@ type CardSemanticsTests() =
                 state
                 [ { attacker with
                       Attachments =
-                          FrozenList<CardInstanceId>
-                              .Create(Seq.append attacker.Attachments [ ownVim.Id ]) }
+                          ImmutableArray.CreateRange(Seq.append attacker.Attachments [ ownVim.Id ]) }
                   { opposingBench with
-                      Attachments = FrozenList<CardInstanceId>.Create opposingVim.Id }
+                      Attachments = ImmutableArray.Create opposingVim.Id }
                   ownVim
                   opposingVim ]
 
@@ -262,13 +258,12 @@ type CardSemanticsTests() =
                     requested,
                     MatchScenario.ResolveEffectChoiceCommand
                         requested
-                        (FrozenList<EffectChoice>
-                            .Create(
-                                EffectChoice.Cards(
-                                    requirement.Id,
-                                    FrozenList<CardInstanceId>.Create opposingBench.Id
-                                )
-                            ))
+                        (ImmutableArray.Create(
+                            EffectChoice.Cards(
+                                requirement.Id,
+                                ImmutableArray.Create opposingBench.Id
+                            )
+                        ))
                 )
             )
 

@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchWins
 open Blokemon.Game.MatchKnockouts
@@ -96,10 +97,10 @@ module internal MatchRounds =
             catalog
             interpreter
             builder
-            FrozenList.empty
+            ImmutableArray<_>.Empty
             ValueNone
             false
-            FrozenList.empty
+            ImmutableArray<_>.Empty
             0
         |> ignore
 

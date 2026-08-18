@@ -2,6 +2,7 @@ namespace Blokemon.App
 
 open System
 open System.Collections.Generic
+open System.Collections.Immutable
 open System.Linq
 open System.Text.Json
 open System.Threading
@@ -225,13 +226,10 @@ module internal MatchActionFlow =
                                                             let document =
                                                                 { current.Document with
                                                                     Commands =
-                                                                        FrozenList<MatchCommand>
-                                                                            .Create
+                                                                        ImmutableArray.CreateRange
                                                                             commands
                                                                     ClientCommands =
-                                                                        FrozenList<
-                                                                            MatchClientCommandReceipt
-                                                                         >.Create
+                                                                        ImmutableArray.CreateRange
                                                                             clientCommands }
 
                                                             let! write =
@@ -253,8 +251,7 @@ module internal MatchActionFlow =
                                                                       Document = document
                                                                       State = advanced.State
                                                                       Events =
-                                                                        FrozenList<MatchEvent>
-                                                                            .Create
+                                                                        ImmutableArray.CreateRange
                                                                             events }
 
                                                                 context.Cached <- committed
