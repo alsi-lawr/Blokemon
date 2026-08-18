@@ -1077,9 +1077,7 @@ else
                     SheetMode.Forced,
                     ForcedHeading(forced[0].Kind),
                     "Required",
-                    ForcedByAura(forced)
-                        ? "Tap one of the glowing cards."
-                        : "Choose how to resolve this.",
+                    ForcedByAura(forced) ? null : "Choose how to resolve this.",
                     null,
                     null,
                     true,
@@ -1095,7 +1093,7 @@ else
                 "Choose a destination",
                 _benchDestination && DestinationCardIds().Length == 0
                     ? "Tap an empty Bench position."
-                    : "Tap a glowing card.",
+                    : null,
                 null,
                 "Cancel",
                 false,
@@ -1971,7 +1969,7 @@ else
             MatchChoiceKindView.Cards =>
                 $"{ChoiceInstruction(requirement)} · {draft.Cards.Count}/{requirement.Maximum} selected",
             MatchChoiceKindView.Distribution =>
-                $"Place {requirement.Maximum} · {draft.Distribution.Values.Sum()} placed. Tap a glowing Blokemon to add one.",
+                $"Place {requirement.Maximum} · {draft.Distribution.Values.Sum()} placed",
             MatchChoiceKindView.Attachments =>
                 _attachmentCardInstanceId is null
                     ? $"Tap an Energy card, then the Blokemon it joins · {draft.Attachments.Count}/{requirement.Maximum}"
