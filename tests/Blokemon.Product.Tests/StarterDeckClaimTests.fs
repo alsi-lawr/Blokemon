@@ -5,7 +5,7 @@ open System.Collections.Immutable
 open System.IO
 open Blokemon.Core.SetDesign
 open Blokemon.Product
-open Shouldly
+open FsUnit
 open TUnit.Core
 
 [<AutoOpen>]
@@ -224,7 +224,9 @@ module private StarterDeckClaimFixtures =
 type StarterDeckClaimTests() =
 
     [<Test>]
-    member _.ClaimStarterDeck_AtomicallyGrantsFullCollectibleContentsAndCreatesEditableDeck() =
+    member _.``claiming a starter deck should atomically grant full collectible contents and create editable deck``
+        ()
+        =
         // The claim records that a starter was claimed and what it granted. The deck it
         // creates is an ordinary saved deck, so revising it leaves the claim untouched.
         let profile = createProfile ()
@@ -248,44 +250,46 @@ type StarterDeckClaimTests() =
         let invalid =
             failure (profile.ClaimStarterDeck(commandId, invalidDefinition, authority.Value))
 
-        invalid.IsInvalidDeck.ShouldBeTrue()
-        profile.StarterDeckClaims.IsEmpty.ShouldBeTrue()
-        (isNull profile.LatestStarterDeckClaim).ShouldBeTrue()
-        profile.SavedDecks.Count.ShouldBe(0)
-        (profile.OwnedCollectibleQuantity fixture.CollectibleId).ShouldBe(0)
+        invalid.IsInvalidDeck |> should be True
+        profile.StarterDeckClaims.IsEmpty |> should be True
+        isNull profile.LatestStarterDeckClaim |> should be True
+        profile.SavedDecks.Count |> should equal 0
+        profile.OwnedCollectibleQuantity fixture.CollectibleId |> should equal 0
 
         let claimedProfile, claim =
             claimedParts (
                 success (profile.ClaimStarterDeck(commandId, fixture.Definition, authority.Value))
             )
 
-        claimedProfile.ShouldNotBeSameAs(profile)
-        claimedProfile.StarterDeckClaims.Length.ShouldBe(1)
-        (latestClaim claimedProfile).ShouldBeSameAs(claim)
-        claimedProfile.SavedDecks.Count.ShouldBe(1)
+        obj.ReferenceEquals(claimedProfile, profile) |> should be False
+        claimedProfile.StarterDeckClaims.Length |> should equal 1
+        obj.ReferenceEquals(latestClaim claimedProfile, claim) |> should be True
+        claimedProfile.SavedDecks.Count |> should equal 1
         let starterDeck = claimedProfile.SavedDecks[fixture.Definition.DeckId]
-        starterDeck.Revision.ShouldBe(DeckRevision.Initial)
-        (starterDeck.Cards.Values |> Seq.sum).ShouldBe(60)
-        claim.Id.ShouldBe(fixture.Definition.Id)
-        claim.CommandId.ShouldBe(commandId)
-        claim.CollectibleGrants.Length.ShouldBe(2)
+        starterDeck.Revision |> should equal DeckRevision.Initial
+        starterDeck.Cards.Values |> Seq.sum |> should equal 60
+        claim.Id |> should equal fixture.Definition.Id
+        claim.CommandId |> should equal commandId
+        claim.CollectibleGrants.Length |> should equal 2
 
         (claim.CollectibleGrants
          |> Seq.find (fun grant -> grant.CardId = fixture.CollectibleId))
-            .Quantity.ShouldBe(fixture.RequiredCollectibleQuantity)
+            .Quantity
+        |> should equal fixture.RequiredCollectibleQuantity
 
         (claim.CollectibleGrants
          |> Seq.find (fun grant -> grant.CardId = profile.GuaranteedRegularCollectibleId))
-            .Quantity.ShouldBe(1)
+            .Quantity
+        |> should equal 1
 
-        (claimedProfile.OwnedCollectibleQuantity fixture.CollectibleId)
-            .ShouldBe(fixture.RequiredCollectibleQuantity)
+        claimedProfile.OwnedCollectibleQuantity fixture.CollectibleId
+        |> should equal fixture.RequiredCollectibleQuantity
 
-        (claimedProfile.OwnedCollectibleQuantity claimedProfile.GuaranteedRegularCollectibleId)
-            .ShouldBe(2)
+        claimedProfile.OwnedCollectibleQuantity claimedProfile.GuaranteedRegularCollectibleId
+        |> should equal 2
 
-        (claimedProfile.OwnedCollectibleQuantity fixture.KitId).ShouldBe(0)
-        (claimedProfile.OwnedCollectibleQuantity fixture.BasicVimId).ShouldBe(0)
+        claimedProfile.OwnedCollectibleQuantity fixture.KitId |> should equal 0
+        claimedProfile.OwnedCollectibleQuantity fixture.BasicVimId |> should equal 0
 
         let revised =
             success (
@@ -298,13 +302,15 @@ type StarterDeckClaimTests() =
                 )
             )
 
-        revised.Deck.Revision.Value.ShouldBe(2L)
-        revised.Deck.Name.Value.ShouldBe<string>("Edited starter")
-        (latestClaim revised.Profile).ShouldBeSameAs(claim)
-        revised.Profile.StarterDeckClaims.Length.ShouldBe(1)
+        revised.Deck.Revision.Value |> should equal 2L
+        revised.Deck.Name.Value |> should equal "Edited starter"
+        obj.ReferenceEquals(latestClaim revised.Profile, claim) |> should be True
+        revised.Profile.StarterDeckClaims.Length |> should equal 1
 
     [<Test>]
-    member _.ClaimStarterDeck_ExactRetryIsIdempotentWhileConflictsAreTypedFailures() =
+    member _.``claiming a starter deck exact retry should be idempotent while conflicts are typed failures``
+        ()
+        =
         let profile = createProfile ()
         let fixture = createStarterFixture profile
         let commandId = value (CommandId.Create "starter-command")
@@ -345,25 +351,25 @@ type StarterDeckClaimTests() =
                 )
             )
 
-        retriedProfile.ShouldBeSameAs(claimedProfile)
-        retriedClaim.ShouldBeSameAs(claim)
-        retriedProfile.SavedDecks.Count.ShouldBe(1)
+        obj.ReferenceEquals(retriedProfile, claimedProfile) |> should be True
+        obj.ReferenceEquals(retriedClaim, claim) |> should be True
+        retriedProfile.SavedDecks.Count |> should equal 1
 
-        (retriedProfile.OwnedCollectibleQuantity fixture.CollectibleId)
-            .ShouldBe(fixture.RequiredCollectibleQuantity)
+        retriedProfile.OwnedCollectibleQuantity fixture.CollectibleId
+        |> should equal fixture.RequiredCollectibleQuantity
 
         match commandConflict with
         | StarterDeckClaimFailure.CommandConflict(_, claimedStarterDeckId, requestedStarterDeckId) ->
-            claimedStarterDeckId.ShouldBe(fixture.Definition.Id)
-            requestedStarterDeckId.Value.ShouldBe<string>("starter-beta")
+            claimedStarterDeckId |> should equal fixture.Definition.Id
+            requestedStarterDeckId.Value |> should equal "starter-beta"
         | other -> failwith $"Expected a command conflict, received {other}."
 
-        claimedProfile.StarterDeckClaims.Length.ShouldBe(1)
-        claimedProfile.SavedDecks.Count.ShouldBe(1)
-        (latestClaim claimedProfile).ShouldBeSameAs(claim)
+        claimedProfile.StarterDeckClaims.Length |> should equal 1
+        claimedProfile.SavedDecks.Count |> should equal 1
+        obj.ReferenceEquals(latestClaim claimedProfile, claim) |> should be True
 
     [<Test>]
-    member _.ClaimingADifferentStarter_AddsASecondClaimAndItsDeck() =
+    member _.``claiming a different starter should add a second claim and its deck``() =
         let profile = createProfile ()
         let fixture = createStarterFixture profile
         let second = secondStarterDefinition profile fixture
@@ -390,19 +396,25 @@ type StarterDeckClaimTests() =
                 )
             )
 
-        betaProfile.StarterDeckClaims.Length.ShouldBe(2)
-        betaProfile.StarterDeckClaims[0].ShouldBeSameAs(alphaClaim)
-        (latestClaim betaProfile).ShouldBeSameAs(betaClaim)
-        betaProfile.SavedDecks.Count.ShouldBe(2)
-        (betaProfile.SavedDecks[second.DeckId].Cards.Values |> Seq.sum).ShouldBe(60)
+        betaProfile.StarterDeckClaims.Length |> should equal 2
 
-        (betaProfile.OwnedCollectibleQuantity fixture.CollectibleId)
-            .ShouldBe(fixture.RequiredCollectibleQuantity + 1)
+        obj.ReferenceEquals(betaProfile.StarterDeckClaims[0], alphaClaim)
+        |> should be True
 
-        (betaProfile.OwnedCollectibleQuantity profile.GuaranteedRegularCollectibleId).ShouldBe(3)
+        obj.ReferenceEquals(latestClaim betaProfile, betaClaim) |> should be True
+        betaProfile.SavedDecks.Count |> should equal 2
+        betaProfile.SavedDecks[second.DeckId].Cards.Values |> Seq.sum |> should equal 60
+
+        betaProfile.OwnedCollectibleQuantity fixture.CollectibleId
+        |> should equal (fixture.RequiredCollectibleQuantity + 1)
+
+        betaProfile.OwnedCollectibleQuantity profile.GuaranteedRegularCollectibleId
+        |> should equal 3
 
     [<Test>]
-    member _.ReclaimingTheSameStarter_DoublesItsGrantsWithoutTouchingTheSavedDeck() =
+    member _.``reclaiming the same starter should double its grants without touching the saved deck``
+        ()
+        =
         let profile = createProfile ()
         let fixture = createStarterFixture profile
 
@@ -439,21 +451,30 @@ type StarterDeckClaimTests() =
                 )
             )
 
-        reclaimedClaim.ShouldNotBeSameAs(claim)
-        reclaimedProfile.StarterDeckClaims.Length.ShouldBe(2)
-        reclaimedProfile.StarterDeckClaims[0].ShouldBeSameAs(claim)
-        (latestClaim reclaimedProfile).ShouldBeSameAs(reclaimedClaim)
-        reclaimedProfile.SavedDecks.Count.ShouldBe(1)
-        reclaimedProfile.SavedDecks[fixture.Definition.DeckId].ShouldBeSameAs(revised.Deck)
+        obj.ReferenceEquals(reclaimedClaim, claim) |> should be False
+        reclaimedProfile.StarterDeckClaims.Length |> should equal 2
 
-        (reclaimedProfile.OwnedCollectibleQuantity fixture.CollectibleId)
-            .ShouldBe(2 * fixture.RequiredCollectibleQuantity)
+        obj.ReferenceEquals(reclaimedProfile.StarterDeckClaims[0], claim)
+        |> should be True
 
-        (reclaimedProfile.OwnedCollectibleQuantity profile.GuaranteedRegularCollectibleId)
-            .ShouldBe(3)
+        obj.ReferenceEquals(latestClaim reclaimedProfile, reclaimedClaim)
+        |> should be True
+
+        reclaimedProfile.SavedDecks.Count |> should equal 1
+
+        obj.ReferenceEquals(reclaimedProfile.SavedDecks[fixture.Definition.DeckId], revised.Deck)
+        |> should be True
+
+        reclaimedProfile.OwnedCollectibleQuantity fixture.CollectibleId
+        |> should equal (2 * fixture.RequiredCollectibleQuantity)
+
+        reclaimedProfile.OwnedCollectibleQuantity profile.GuaranteedRegularCollectibleId
+        |> should equal 3
 
     [<Test>]
-    member _.SnapshotRestore_PreservesRepeatedStarterClaimHistoryAcrossPacksAndDeckEdits() =
+    member _.``snapshot restore should preserve repeated starter claim history across packs and deck edits``
+        ()
+        =
         let persisted = createPersistedClaimFixture ()
         let snapshot = persisted.Snapshot
 
@@ -471,51 +492,59 @@ type StarterDeckClaimTests() =
                 )
             )
 
-        snapshot.StarterDeckClaims.Length.ShouldBe(2)
-        snapshot.StarterDeckClaims[0].StarterDeckId.ShouldBe<string>("starter-alpha")
-        snapshot.StarterDeckClaims[0].CommandId.ShouldBe<string>(persisted.FirstCommandId.Value)
-        snapshot.StarterDeckClaims[1].CommandId.ShouldBe<string>(persisted.SecondCommandId.Value)
+        snapshot.StarterDeckClaims.Length |> should equal 2
+        snapshot.StarterDeckClaims[0].StarterDeckId |> should equal "starter-alpha"
+
+        snapshot.StarterDeckClaims[0].CommandId
+        |> should equal persisted.FirstCommandId.Value
+
+        snapshot.StarterDeckClaims[1].CommandId
+        |> should equal persisted.SecondCommandId.Value
 
         for claim in snapshot.StarterDeckClaims do
-            claim.CollectibleGrants.Length.ShouldBe(2)
+            claim.CollectibleGrants.Length |> should equal 2
 
             (claim.CollectibleGrants
              |> Seq.find (fun grant -> grant.CardId = persisted.Starter.CollectibleId.Value))
-                .Quantity.ShouldBe(persisted.Starter.RequiredCollectibleQuantity)
+                .Quantity
+            |> should equal persisted.Starter.RequiredCollectibleQuantity
 
-        (snapshot.SavedDecks |> Seq.exactlyOne).Revision.ShouldBe(2L)
-        restored.StarterDeckClaims.Length.ShouldBe(2)
-        (latestClaim restored).CommandId.ShouldBe(persisted.SecondCommandId)
-        restored.SavedDecks[persisted.Starter.Definition.DeckId].Revision.Value.ShouldBe(2L)
-        restoredRetryProfile.ShouldBeSameAs(restored)
-        restoredRetryClaim.CommandId.ShouldBe(persisted.FirstCommandId)
-        restoredRetryProfile.SavedDecks.Count.ShouldBe(1)
+        (snapshot.SavedDecks |> Seq.exactlyOne).Revision |> should equal 2L
+        restored.StarterDeckClaims.Length |> should equal 2
+        (latestClaim restored).CommandId |> should equal persisted.SecondCommandId
+
+        restored.SavedDecks[persisted.Starter.Definition.DeckId].Revision.Value
+        |> should equal 2L
+
+        obj.ReferenceEquals(restoredRetryProfile, restored) |> should be True
+        restoredRetryClaim.CommandId |> should equal persisted.FirstCommandId
+        restoredRetryProfile.SavedDecks.Count |> should equal 1
 
         (List.ofSeq restoredSnapshot.CollectibleOwnership = List.ofSeq snapshot.CollectibleOwnership)
-            .ShouldBeTrue()
+        |> should be True
 
-        (packReceiptsEqual restoredSnapshot.PackReceipts snapshot.PackReceipts).ShouldBeTrue()
+        packReceiptsEqual restoredSnapshot.PackReceipts snapshot.PackReceipts
+        |> should be True
 
-        (starterDeckClaimsEqual restoredSnapshot.StarterDeckClaims snapshot.StarterDeckClaims)
-            .ShouldBeTrue()
+        starterDeckClaimsEqual restoredSnapshot.StarterDeckClaims snapshot.StarterDeckClaims
+        |> should be True
 
-        restored.GuaranteedRegularCollectibleId.ShouldBe(
-            persisted.Profile.GuaranteedRegularCollectibleId
-        )
+        restored.GuaranteedRegularCollectibleId
+        |> should equal persisted.Profile.GuaranteedRegularCollectibleId
 
-        (restored.PackReceipts.Keys
-         |> Seq.map (fun key -> key.Value)
-         |> Seq.sort
-         |> List.ofSeq)
-            .ShouldBe(
-                persisted.Profile.PackReceipts.Keys
-                |> Seq.map (fun key -> key.Value)
-                |> Seq.sort
-                |> List.ofSeq
-            )
+        restored.PackReceipts.Keys
+        |> Seq.map (fun key -> key.Value)
+        |> Seq.sort
+        |> List.ofSeq
+        |> should
+            equal
+            (persisted.Profile.PackReceipts.Keys
+             |> Seq.map (fun key -> key.Value)
+             |> Seq.sort
+             |> List.ofSeq)
 
     [<Test>]
-    member _.SnapshotRestore_RejectsCorruptedStarterClaimHistory() =
+    member _.``snapshot restore should reject corrupted starter claim history``() =
         let persisted = createPersistedClaimFixture ()
         let snapshot = persisted.Snapshot
         let firstClaim = snapshot.StarterDeckClaims[0]
@@ -632,23 +661,25 @@ type StarterDeckClaimTests() =
                 )
             )
 
-        missingGrantHistory.IsOwnershipHistoryMismatch.ShouldBeTrue()
-        unknownGrant.IsUnknownCard.ShouldBeTrue()
-        unrecordedGrant.IsOwnershipHistoryMismatch.ShouldBeTrue()
-        nonPositiveGrant.IsNegativeQuantity.ShouldBeTrue()
+        missingGrantHistory.IsOwnershipHistoryMismatch |> should be True
+        unknownGrant.IsUnknownCard |> should be True
+        unrecordedGrant.IsOwnershipHistoryMismatch |> should be True
+        nonPositiveGrant.IsNegativeQuantity |> should be True
 
         match duplicateGrantCard with
         | LocalProfileRestorationFailure.DuplicateValue(kind, _) ->
-            kind.ShouldBe(SnapshotDuplicateKind.StarterGrantCardId)
+            kind |> should equal SnapshotDuplicateKind.StarterGrantCardId
         | other -> failwith $"Expected a duplicate value, received {other}."
 
         match duplicateClaimCommand with
         | LocalProfileRestorationFailure.DuplicateValue(kind, _) ->
-            kind.ShouldBe(SnapshotDuplicateKind.StarterClaimCommandId)
+            kind |> should equal SnapshotDuplicateKind.StarterClaimCommandId
         | other -> failwith $"Expected a duplicate value, received {other}."
 
     [<Test>]
-    member _.DeletingTheStarterCreatedDeck_KeepsItsClaimAndOwnedCardsAcrossRestore() =
+    member _.``deleting the starter created deck should keep its claim and owned cards across restore``
+        ()
+        =
         let persisted = createPersistedClaimFixture ()
         let deckId = persisted.Starter.Definition.DeckId
         let ownershipBefore = ownershipRows persisted.Profile
@@ -657,21 +688,21 @@ type StarterDeckClaimTests() =
         let snapshot = deleted.ToSnapshot()
         let restored = success (LocalProfile.Restore(snapshot, authority.Value))
 
-        deleted.SavedDecks.Count.ShouldBe(0)
-        deleted.StarterDeckClaims.Length.ShouldBe(2)
-        (ownershipRows deleted).ShouldBe(ownershipBefore)
-        snapshot.SavedDecks.IsEmpty.ShouldBeTrue()
-        snapshot.StarterDeckClaims.Length.ShouldBe(2)
-        restored.SavedDecks.Count.ShouldBe(0)
-        restored.StarterDeckClaims.Length.ShouldBe(2)
-        (latestClaim restored).CommandId.ShouldBe(persisted.SecondCommandId)
-        (ownershipRows restored).ShouldBe(ownershipBefore)
+        deleted.SavedDecks.Count |> should equal 0
+        deleted.StarterDeckClaims.Length |> should equal 2
+        ownershipRows deleted |> should equal ownershipBefore
+        snapshot.SavedDecks.IsEmpty |> should be True
+        snapshot.StarterDeckClaims.Length |> should equal 2
+        restored.SavedDecks.Count |> should equal 0
+        restored.StarterDeckClaims.Length |> should equal 2
+        (latestClaim restored).CommandId |> should equal persisted.SecondCommandId
+        ownershipRows restored |> should equal ownershipBefore
 
-        (starterDeckClaimsEqual (restored.ToSnapshot()).StarterDeckClaims snapshot.StarterDeckClaims)
-            .ShouldBeTrue()
+        starterDeckClaimsEqual (restored.ToSnapshot()).StarterDeckClaims snapshot.StarterDeckClaims
+        |> should be True
 
     [<Test>]
-    member _.SnapshotRestore_AcceptsLegacySnapshotsWithoutStarterClaims() =
+    member _.``snapshot restore should accept legacy snapshots without starter claims``() =
         let opened =
             success (
                 (createProfile ())
@@ -695,11 +726,13 @@ type StarterDeckClaimTests() =
         let restored = success (LocalProfile.Restore(legacySnapshot, authority.Value))
         let restoredSnapshot = restored.ToSnapshot()
 
-        restored.StarterDeckClaims.IsEmpty.ShouldBeTrue()
-        (isNull restored.LatestStarterDeckClaim).ShouldBeTrue()
+        restored.StarterDeckClaims.IsEmpty |> should be True
+        isNull restored.LatestStarterDeckClaim |> should be True
 
         (List.ofSeq restoredSnapshot.CollectibleOwnership = List.ofSeq source.CollectibleOwnership)
-            .ShouldBeTrue()
+        |> should be True
 
-        (packReceiptsEqual restoredSnapshot.PackReceipts source.PackReceipts).ShouldBeTrue()
-        restoredSnapshot.SavedDecks.IsEmpty.ShouldBeTrue()
+        packReceiptsEqual restoredSnapshot.PackReceipts source.PackReceipts
+        |> should be True
+
+        restoredSnapshot.SavedDecks.IsEmpty |> should be True

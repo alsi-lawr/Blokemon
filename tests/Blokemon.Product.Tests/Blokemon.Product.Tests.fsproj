@@ -11,7 +11,11 @@
     <ProjectReference Include="../../src/Blokemon.Product/Blokemon.Product.fsproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Shouldly" />
+    <!--
+      FsUnit's NUnit flavour registers no Microsoft Testing Platform test framework, so TUnit
+      stays the only host and an FsUnit assertion failure surfaces as an ordinary TUnit failure.
+    -->
+    <PackageReference Include="FsUnit" />
     <PackageReference Include="TUnit" />
     <!--
       Central package management sets DisableImplicitFSharpCoreReference, so without this

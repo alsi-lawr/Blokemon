@@ -5,7 +5,7 @@ open System.Collections.Immutable
 open System.IO
 open Blokemon.Core.SetDesign
 open Blokemon.Product
-open Shouldly
+open FsUnit
 open TUnit.Core
 
 [<AutoOpen>]
@@ -117,26 +117,28 @@ module private LocalProfileFixtures =
 type LocalProfileTests() =
 
     [<Test>]
-    member _.DisplayNameCreation_TrimsAndAcceptsThirtyTwoCharacters() =
+    member _.``display name creation should trim and accept thirty two characters``() =
         let boundary = String('a', DisplayName.MaximumLength)
 
         let result = success (DisplayName.Create $"  {boundary}\t")
 
-        result.Value.ShouldBe<string>(boundary)
-        result.Value.Length.ShouldBe(DisplayName.MaximumLength)
+        result.Value |> should equal boundary
+        result.Value.Length |> should equal DisplayName.MaximumLength
 
     [<Test>]
-    member _.DisplayNameCreation_RejectsMissingAndOverlongValues() =
+    member _.``display name creation should reject missing and overlong values``() =
         let missing = failure (DisplayName.Create " \t ")
 
         let overlong =
             failure (DisplayName.Create(String('a', DisplayName.MaximumLength + 1)))
 
-        missing.ShouldBe(DisplayNameCreationFailure.Required)
-        overlong.ShouldBe(DisplayNameCreationFailure.TooLong)
+        missing |> should equal DisplayNameCreationFailure.Required
+        overlong |> should equal DisplayNameCreationFailure.TooLong
 
     [<Test>]
-    member _.DuplicatePackCommand_ReturnsPersistedReceiptWithoutSamplingOrDoubleApplying() =
+    member _.``duplicate pack command should return persisted receipt without sampling or double applying``
+        ()
+        =
         let profile = createProfile ()
         let firstRandom = BlokemonSeededRandom 41UL
 
@@ -162,15 +164,15 @@ type LocalProfileTests() =
                 )
             )
 
-        first.Disposition.ShouldBe(PackOpenDisposition.Opened)
-        retried.Disposition.ShouldBe(PackOpenDisposition.AlreadyOpened)
-        retried.Profile.ShouldBeSameAs(first.Profile)
-        retried.Receipt.ShouldBeSameAs(first.Receipt)
-        retried.Receipt.Id.Value.ShouldBe<string>("receipt-1")
-        retried.Receipt.SampledCollectibleIds.Length.ShouldBe(11)
+        first.Disposition |> should equal PackOpenDisposition.Opened
+        retried.Disposition |> should equal PackOpenDisposition.AlreadyOpened
+        obj.ReferenceEquals(retried.Profile, first.Profile) |> should be True
+        obj.ReferenceEquals(retried.Receipt, first.Receipt) |> should be True
+        retried.Receipt.Id.Value |> should equal "receipt-1"
+        retried.Receipt.SampledCollectibleIds.Length |> should equal 11
 
-        (sameItems retried.Receipt.SampledCollectibleIds first.Receipt.SampledCollectibleIds)
-            .ShouldBeTrue()
+        sameItems retried.Receipt.SampledCollectibleIds first.Receipt.SampledCollectibleIds
+        |> should be True
 
         for cardId, drawn in first.Receipt.SampledCollectibleIds |> Seq.countBy id do
             let initialQuantity =
@@ -179,13 +181,16 @@ type LocalProfileTests() =
                 else
                     0
 
-            (first.Profile.OwnedCollectibleQuantity cardId).ShouldBe(initialQuantity + drawn)
+            first.Profile.OwnedCollectibleQuantity cardId
+            |> should equal (initialQuantity + drawn)
 
-        retried.Profile.PackReceipts.Count.ShouldBe(1)
-        retryRandom.ConsumptionIndex.ShouldBe(0)
+        retried.Profile.PackReceipts.Count |> should equal 1
+        retryRandom.ConsumptionIndex |> should equal 0
 
     [<Test>]
-    member _.OpeningPacksBeyondTheFormerTenPackLimit_KeepsGrantingSamplesInSequence() =
+    member _.``opening packs beyond the former ten pack limit should keep granting samples in sequence``
+        ()
+        =
         let mutable profile = createProfile ()
 
         for index in 0..11 do
@@ -201,18 +206,18 @@ type LocalProfileTests() =
 
             profile <- opened.Profile
 
-        profile.PackReceipts.Count.ShouldBe(12)
+        profile.PackReceipts.Count |> should equal 12
 
-        (profile.PackReceipts.Values
-         |> Seq.map (fun receipt -> receipt.Sequence)
-         |> Seq.sort
-         |> List.ofSeq)
-            .ShouldBe([ 1..12 ])
+        profile.PackReceipts.Values
+        |> Seq.map (fun receipt -> receipt.Sequence)
+        |> Seq.sort
+        |> List.ofSeq
+        |> should equal [ 1..12 ]
 
-        (profile.CollectibleOwnership.Values |> Seq.sum).ShouldBe(1 + 12 * 11)
+        profile.CollectibleOwnership.Values |> Seq.sum |> should equal (1 + 12 * 11)
 
     [<Test>]
-    member _.DeckValidation_UsesOwnedCollectiblesAndFreeCatalogueCards() =
+    member _.``deck validation should use owned collectibles and free catalogue cards``() =
         let profile = createProfile ()
         let regular = profile.GuaranteedRegularCollectibleId
         let kit = value (CardId.Create authority.Value.Kits[0].Id)
@@ -244,16 +249,18 @@ type LocalProfileTests() =
                       { CardId = vim; Quantity = 54 } ]
             )
 
-        legal.IsValid.ShouldBeTrue()
+        legal.IsValid |> should be True
 
-        (overOwned |> Seq.exists (fun issue -> issue.IsCollectibleQuantityNotOwned)).ShouldBeTrue()
+        overOwned
+        |> Seq.exists (fun issue -> issue.IsCollectibleQuantityNotOwned)
+        |> should be True
 
-        (overMechanicalLimit
-         |> Seq.exists (fun issue -> issue.IsMechanicalCopyLimitExceeded))
-            .ShouldBeTrue()
+        overMechanicalLimit
+        |> Seq.exists (fun issue -> issue.IsMechanicalCopyLimitExceeded)
+        |> should be True
 
     [<Test>]
-    member _.DeckValidation_RequiresExactlySixtyCardsAndARegularCollectible() =
+    member _.``deck validation should require exactly sixty cards and a regular collectible``() =
         let profile = createProfile ()
         let vim = value (CardId.Create authority.Value.BasicVim[0].Id)
 
@@ -272,12 +279,14 @@ type LocalProfileTests() =
                 DeckValidator.Validate profile authority.Value [ { CardId = vim; Quantity = 60 } ]
             )
 
-        (wrongCount |> Seq.exists (fun issue -> issue.IsWrongCardCount)).ShouldBeTrue()
+        wrongCount |> Seq.exists (fun issue -> issue.IsWrongCardCount) |> should be True
 
-        (noRegular |> Seq.exists (fun issue -> issue.IsRegularCollectibleRequired)).ShouldBeTrue()
+        noRegular
+        |> Seq.exists (fun issue -> issue.IsRegularCollectibleRequired)
+        |> should be True
 
     [<Test>]
-    member _.StaleDeckRevision_IsRejectedWithoutOverwritingSavedDeck() =
+    member _.``stale deck revision should be rejected without overwriting saved deck``() =
         let profile = createProfile ()
         let deckId = value (DeckId.Create "deck-1")
         let cards = legalCards profile
@@ -309,16 +318,16 @@ type LocalProfileTests() =
 
         match failure stale with
         | DeckSaveFailure.StaleRevision(staleDeckId, expectedRevision, actualRevision) ->
-            staleDeckId.ShouldBe(deckId)
-            expectedRevision.ShouldBe(created.Deck.Revision)
-            actualRevision.ShouldBe(revised.Deck.Revision)
+            staleDeckId |> should equal deckId
+            expectedRevision |> should equal created.Deck.Revision
+            actualRevision |> should equal revised.Deck.Revision
         | other -> failwith $"Expected a stale revision, received {other}."
 
-        revised.Profile.SavedDecks[deckId].Name.Value.ShouldBe<string>("Second")
-        revised.Profile.SavedDecks[deckId].Revision.Value.ShouldBe(2L)
+        revised.Profile.SavedDecks[deckId].Name.Value |> should equal "Second"
+        revised.Profile.SavedDecks[deckId].Revision.Value |> should equal 2L
 
     [<Test>]
-    member _.DeletingADeck_RemovesOnlyThatDeckAndTypesAnUnknownOne() =
+    member _.``deleting a deck should remove only that deck and type an unknown one``() =
         let profile = createPopulatedProfile ()
         let deckId = value (DeckId.Create "snapshot-deck")
         let secondId = value (DeckId.Create "second-deck")
@@ -338,26 +347,27 @@ type LocalProfileTests() =
         let deleted = success (withSecond.DeleteDeck deckId)
         let missing = failure (deleted.Profile.DeleteDeck deckId)
 
-        deleted.Deck.Name.Value.ShouldBe<string>("Revised deck")
-        (deleted.Profile.SavedDecks.Keys |> List.ofSeq).ShouldBe([ secondId ])
+        deleted.Deck.Name.Value |> should equal "Revised deck"
+        deleted.Profile.SavedDecks.Keys |> List.ofSeq |> should equal [ secondId ]
 
-        (deleted.Profile.CollectibleOwnership |> List.ofSeq)
-            .ShouldBe(withSecond.CollectibleOwnership |> List.ofSeq)
+        deleted.Profile.CollectibleOwnership
+        |> List.ofSeq
+        |> should equal (withSecond.CollectibleOwnership |> List.ofSeq)
 
-        (deleted.Profile.PackReceipts.Keys
-         |> Seq.map (fun receiptId -> receiptId.Value)
-         |> orderedIds)
-            .ShouldBe(
-                withSecond.PackReceipts.Keys
-                |> Seq.map (fun receiptId -> receiptId.Value)
-                |> orderedIds
-            )
+        deleted.Profile.PackReceipts.Keys
+        |> Seq.map (fun receiptId -> receiptId.Value)
+        |> orderedIds
+        |> should
+            equal
+            (withSecond.PackReceipts.Keys
+             |> Seq.map (fun receiptId -> receiptId.Value)
+             |> orderedIds)
 
-        missing.ShouldBe(DeckDeleteFailure.NotFound)
-        withSecond.SavedDecks.Count.ShouldBe(2)
+        missing |> should equal DeckDeleteFailure.NotFound
+        withSecond.SavedDecks.Count |> should equal 2
 
     [<Test>]
-    member _.SnapshotRestore_RehydratesReceiptsOwnershipAndRevisedDecks() =
+    member _.``snapshot restore should rehydrate receipts ownership and revised decks``() =
         let profile = createPopulatedProfile ()
         let snapshot = profile.ToSnapshot()
 
@@ -376,44 +386,48 @@ type LocalProfileTests() =
                 )
             )
 
-        restored.BoundAuthorityManifestVersion.ShouldBe<string>(snapshot.AuthorityManifestVersion)
+        restored.BoundAuthorityManifestVersion
+        |> should equal snapshot.AuthorityManifestVersion
 
-        (sameItems restoredSnapshot.CollectibleOwnership snapshot.CollectibleOwnership)
-            .ShouldBeTrue()
+        sameItems restoredSnapshot.CollectibleOwnership snapshot.CollectibleOwnership
+        |> should be True
 
-        restoredSnapshot.PackReceipts.Length.ShouldBe(2)
+        restoredSnapshot.PackReceipts.Length |> should equal 2
 
         for index in 0 .. snapshot.PackReceipts.Length - 1 do
-            restoredSnapshot.PackReceipts[index]
-                .ReceiptId.ShouldBe<string>(snapshot.PackReceipts[index].ReceiptId)
+            restoredSnapshot.PackReceipts[index].ReceiptId
+            |> should equal snapshot.PackReceipts[index].ReceiptId
 
-            restoredSnapshot.PackReceipts[index]
-                .CommandId.ShouldBe<string>(snapshot.PackReceipts[index].CommandId)
+            restoredSnapshot.PackReceipts[index].CommandId
+            |> should equal snapshot.PackReceipts[index].CommandId
 
-            restoredSnapshot.PackReceipts[index].Sequence.ShouldBe(index + 1)
+            restoredSnapshot.PackReceipts[index].Sequence |> should equal (index + 1)
 
-            (sameItems
+            sameItems
                 restoredSnapshot.PackReceipts[index].SampledCollectibleIds
-                snapshot.PackReceipts[index].SampledCollectibleIds)
-                .ShouldBeTrue()
+                snapshot.PackReceipts[index].SampledCollectibleIds
+            |> should be True
 
-        restoredSnapshot.SavedDecks.Length.ShouldBe(1)
-        restoredSnapshot.SavedDecks[0].Revision.ShouldBe(2L)
-        restoredSnapshot.SavedDecks[0].Name.ShouldBe<string>("Revised deck")
+        restoredSnapshot.SavedDecks.Length |> should equal 1
+        restoredSnapshot.SavedDecks[0].Revision |> should equal 2L
+        restoredSnapshot.SavedDecks[0].Name |> should equal "Revised deck"
 
-        (sameItems restoredSnapshot.SavedDecks[0].Cards snapshot.SavedDecks[0].Cards).ShouldBeTrue()
+        sameItems restoredSnapshot.SavedDecks[0].Cards snapshot.SavedDecks[0].Cards
+        |> should be True
 
-        retried.Disposition.ShouldBe(PackOpenDisposition.AlreadyOpened)
+        retried.Disposition |> should equal PackOpenDisposition.AlreadyOpened
 
-        (restored.PackReceipts.Values
-         |> Seq.map (fun receipt -> receipt.Sequence)
-         |> Seq.max)
-            .ShouldBe(2)
+        restored.PackReceipts.Values
+        |> Seq.map (fun receipt -> receipt.Sequence)
+        |> Seq.max
+        |> should equal 2
 
-        retryRandom.ConsumptionIndex.ShouldBe(0)
+        retryRandom.ConsumptionIndex |> should equal 0
 
     [<Test>]
-    member _.HistoricalProfile_PreservesPackBindingWhileDecksUseCurrentMechanics() =
+    member _.``historical profile should preserve pack binding while decks use current mechanics``
+        ()
+        =
         let snapshot = (createPopulatedProfile ()).ToSnapshot()
         let firstReceipt = snapshot.PackReceipts[0]
         let replacedCardId = firstReceipt.SampledCollectibleIds[0]
@@ -496,36 +510,44 @@ type LocalProfileTests() =
                 )
             )
 
-        restored.BoundAuthorityManifestVersion.ShouldBe<string>("historical-manifest")
+        restored.BoundAuthorityManifestVersion |> should equal "historical-manifest"
 
-        (restoredSnapshot.CollectibleOwnership
-         |> Seq.exists (fun item -> item.CardId = historicalCardId && item.Quantity = 1))
-            .ShouldBeTrue()
+        restoredSnapshot.CollectibleOwnership
+        |> Seq.exists (fun item -> item.CardId = historicalCardId && item.Quantity = 1)
+        |> should be True
 
-        (restoredSnapshot.PackReceipts[0].SampledCollectibleIds
-         |> Seq.exists (fun cardId -> cardId = historicalCardId))
-            .ShouldBeTrue()
+        restoredSnapshot.PackReceipts[0].SampledCollectibleIds
+        |> Seq.exists (fun cardId -> cardId = historicalCardId)
+        |> should be True
 
-        (restoredSnapshot.SavedDecks[0].Cards
-         |> Seq.exists (fun card -> card.CardId = "HISTORICAL-DECK-CARD" && card.Quantity = 59))
-            .ShouldBeTrue()
+        restoredSnapshot.SavedDecks[0].Cards
+        |> Seq.exists (fun card -> card.CardId = "HISTORICAL-DECK-CARD" && card.Quantity = 59)
+        |> should be True
 
-        (revised.Deck.Cards.Keys |> Seq.map (fun cardId -> cardId.Value) |> orderedIds)
-            .ShouldBe(
-                currentCards |> Seq.map (fun selection -> selection.CardId.Value) |> orderedIds
-            )
+        revised.Deck.Cards.Keys
+        |> Seq.map (fun cardId -> cardId.Value)
+        |> orderedIds
+        |> should
+            equal
+            (currentCards |> Seq.map (fun selection -> selection.CardId.Value) |> orderedIds)
 
-        revised.Deck.Revision.Value.ShouldBe(historicalDeck.Revision + 1L)
+        revised.Deck.Revision.Value |> should equal (historicalDeck.Revision + 1L)
 
-        (created.Deck.Cards.Keys |> Seq.map (fun cardId -> cardId.Value) |> orderedIds)
-            .ShouldBe(revised.Deck.Cards.Keys |> Seq.map (fun cardId -> cardId.Value) |> orderedIds)
+        created.Deck.Cards.Keys
+        |> Seq.map (fun cardId -> cardId.Value)
+        |> orderedIds
+        |> should
+            equal
+            (revised.Deck.Cards.Keys |> Seq.map (fun cardId -> cardId.Value) |> orderedIds)
 
-        created.Profile.BoundAuthorityManifestVersion.ShouldBe<string>("historical-manifest")
-        packFailure.ShouldBe(PackOpenFailure.AuthorityVersionMismatch)
-        random.ConsumptionIndex.ShouldBe(0)
+        created.Profile.BoundAuthorityManifestVersion
+        |> should equal "historical-manifest"
+
+        packFailure |> should equal PackOpenFailure.AuthorityVersionMismatch
+        random.ConsumptionIndex |> should equal 0
 
     [<Test>]
-    member _.SnapshotRestore_RejectsInvalidIdentityQuantitiesAndDuplicates() =
+    member _.``snapshot restore should reject invalid identity quantities and duplicates``() =
         let snapshot = (createPopulatedProfile ()).ToSnapshot()
 
         let invalidIdentity =
@@ -615,17 +637,24 @@ type LocalProfileTests() =
                 )
             )
 
-        invalidIdentity.IsInvalidId.ShouldBeTrue()
-        negativeQuantity.IsNegativeQuantity.ShouldBeTrue()
-        duplicateReceipt.IsDuplicateValue.ShouldBeTrue()
-        (duplicateKind duplicateReceipt).ShouldBe(SnapshotDuplicateKind.PackReceiptId)
-        (duplicateKind duplicateCommand).ShouldBe(SnapshotDuplicateKind.PackCommandId)
-        duplicateSequence.IsInvalidPackSequence.ShouldBeTrue()
-        nonPositiveSequence.IsInvalidPackSequence.ShouldBeTrue()
-        gappedSequence.IsInvalidPackSequence.ShouldBeTrue()
+        invalidIdentity.IsInvalidId |> should be True
+        negativeQuantity.IsNegativeQuantity |> should be True
+        duplicateReceipt.IsDuplicateValue |> should be True
+
+        duplicateKind duplicateReceipt
+        |> should equal SnapshotDuplicateKind.PackReceiptId
+
+        duplicateKind duplicateCommand
+        |> should equal SnapshotDuplicateKind.PackCommandId
+
+        duplicateSequence.IsInvalidPackSequence |> should be True
+        nonPositiveSequence.IsInvalidPackSequence |> should be True
+        gappedSequence.IsInvalidPackSequence |> should be True
 
     [<Test>]
-    member _.SnapshotRestore_RejectsCurrentAuthorityAndDeckClaimsThatAreInvalid() =
+    member _.``snapshot restore should reject current authority and deck claims that are invalid``
+        ()
+        =
         let snapshot = (createPopulatedProfile ()).ToSnapshot()
 
         let unknownCurrentCard =
@@ -675,6 +704,6 @@ type LocalProfileTests() =
                 )
             )
 
-        unknownCurrentCard.IsUnknownCard.ShouldBeTrue()
-        invalidRevision.IsInvalidDeckRevision.ShouldBeTrue()
-        illegalDeck.IsInvalidSavedDeck.ShouldBeTrue()
+        unknownCurrentCard.IsUnknownCard |> should be True
+        invalidRevision.IsInvalidDeckRevision |> should be True
+        illegalDeck.IsInvalidSavedDeck |> should be True

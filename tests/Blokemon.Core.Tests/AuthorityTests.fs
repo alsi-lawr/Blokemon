@@ -7,7 +7,7 @@ open System.Text.Json
 open System.Text.Json.Nodes
 open Blokemon.Core.PublicContent
 open Blokemon.Core.SetDesign
-open Shouldly
+open FsUnit
 open TUnit.Core
 
 module private Authorities =
@@ -23,18 +23,19 @@ module private Authorities =
 type AuthorityTests() =
 
     [<Test>]
-    member _.CurrentAuthorities_PassOwnedValidation() =
-        BlokemonSetValidator.ValidateRuntime(Authorities.mechanics.Value).IsValid.ShouldBeTrue()
+    member _.``current authorities should pass owned validation``() =
+        BlokemonSetValidator.ValidateRuntime(Authorities.mechanics.Value).IsValid
+        |> should be True
 
         let publicValidation =
             BlokemonPublicContentValidator.ValidateDocument
                 Authorities.publicContent.Value
                 Authorities.mechanics.Value
 
-        publicValidation.IsValid.ShouldBeTrue()
+        publicValidation.IsValid |> should be True
 
     [<Test>]
-    member _.ElevenCardSampling_IsDeterministicAndPreservesPackComposition() =
+    member _.``eleven card sampling should be deterministic and preserve pack composition``() =
         let manifest = Authorities.mechanics.Value
         let first = BlokemonSeededRandom(0xB10CE188UL)
         let replay = BlokemonSeededRandom(0xB10CE188UL)
@@ -45,20 +46,20 @@ type AuthorityTests() =
             let pack = BlokemonPackSampler.SampleEleven manifest first
             let repeated = BlokemonPackSampler.SampleEleven manifest replay
 
-            pack.SequenceEqual(repeated).ShouldBeTrue()
-            pack.Distinct(StringComparer.Ordinal).Count().ShouldBe(11)
+            pack.SequenceEqual(repeated) |> should be True
+            pack.Distinct(StringComparer.Ordinal).Count() |> should equal 11
 
             let bucketCount bucket =
                 pack |> Seq.filter (fun id -> cards[id].ProductBucket = bucket) |> Seq.length
 
-            (bucketCount BlokemonProductBucket.Rare).ShouldBe(1)
-            (bucketCount BlokemonProductBucket.Uncommon).ShouldBe(3)
-            (bucketCount BlokemonProductBucket.Common).ShouldBe(7)
+            bucketCount BlokemonProductBucket.Rare |> should equal 1
+            bucketCount BlokemonProductBucket.Uncommon |> should equal 3
+            bucketCount BlokemonProductBucket.Common |> should equal 7
 
-        first.ConsumptionIndex.ShouldBe(replay.ConsumptionIndex)
+        first.ConsumptionIndex |> should equal replay.ConsumptionIndex
 
     [<Test>]
-    member _.RuntimeValidation_RejectsAChangedRoadieAffinity() =
+    member _.``runtime validation should reject a changed roadie affinity``() =
         let manifest = Authorities.mechanics.Value
         let roadie = manifest.Collectibles.Single(fun card -> card.Id = "BLK-035")
 
@@ -71,14 +72,14 @@ type AuthorityTests() =
 
         let result = BlokemonSetValidator.ValidateRuntime(changed)
 
-        result.IsValid.ShouldBeFalse()
+        result.IsValid |> should be False
 
-        (result.Issues
-         |> Array.exists (fun issue -> issue.Code = "runtime.roadie-soft-spots"))
-            .ShouldBeTrue()
+        result.Issues
+        |> Array.exists (fun issue -> issue.Code = "runtime.roadie-soft-spots")
+        |> should be True
 
     [<Test>]
-    member _.RuntimeAuthority_RejectsUnknownFields() =
+    member _.``runtime authority should reject unknown fields``() =
         let document =
             match JsonNode.Parse(Authorities.read "mechanics.json") with
             | null -> failwith "The mechanical authority did not parse as JSON."
@@ -86,7 +87,5 @@ type AuthorityTests() =
 
         document["unsupported"] <- JsonValue.Create(true)
 
-        Should.Throw<JsonException>(
-            Action(fun () -> BlokemonSetJson.RuntimeManifest(document.ToJsonString()) |> ignore)
-        )
-        |> ignore
+        (fun () -> BlokemonSetJson.RuntimeManifest(document.ToJsonString()) |> ignore)
+        |> should throw typeof<JsonException>

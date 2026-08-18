@@ -5,7 +5,7 @@ open System.Collections.Immutable
 open System.IO
 open Blokemon.Core.SetDesign
 open Blokemon.Product
-open Shouldly
+open FsUnit
 open TUnit.Core
 
 [<AutoOpen>]
@@ -133,25 +133,29 @@ module private EconomyModeFixtures =
 type EconomyModeTests() =
 
     [<Test>]
-    member _.UnlimitedIsTheDefaultMode_AndKeepsPacksAndStarterClaimsUncapped() =
+    member _.``unlimited economy mode should be the default and keep packs and starter claims uncapped``
+        ()
+        =
         let profile = createProfile null
 
         let opened = openPacks profile 12 "classic"
         let firstProfile, _ = claimStarter opened "starter-alpha" "claim-1" "deck-1"
         let secondProfile, _ = claimStarter firstProfile "starter-beta" "claim-2" "deck-2"
 
-        profile.Economy.Mode.ShouldBe(EconomyMode.Unlimited)
-        profile.Economy.PackAllowance.HasValue.ShouldBeFalse()
-        profile.Economy.StarterDeckClaimAllowance.HasValue.ShouldBeFalse()
-        profile.RemainingPackAllowance.HasValue.ShouldBeFalse()
-        profile.RemainingStarterDeckClaimAllowance.HasValue.ShouldBeFalse()
-        opened.PackReceipts.Count.ShouldBe(12)
-        opened.RemainingPackAllowance.HasValue.ShouldBeFalse()
-        secondProfile.StarterDeckClaims.Length.ShouldBe(2)
-        secondProfile.RemainingStarterDeckClaimAllowance.HasValue.ShouldBeFalse()
+        profile.Economy.Mode |> should equal EconomyMode.Unlimited
+        profile.Economy.PackAllowance.HasValue |> should be False
+        profile.Economy.StarterDeckClaimAllowance.HasValue |> should be False
+        profile.RemainingPackAllowance.HasValue |> should be False
+        profile.RemainingStarterDeckClaimAllowance.HasValue |> should be False
+        opened.PackReceipts.Count |> should equal 12
+        opened.RemainingPackAllowance.HasValue |> should be False
+        secondProfile.StarterDeckClaims.Length |> should equal 2
+        secondProfile.RemainingStarterDeckClaimAllowance.HasValue |> should be False
 
     [<Test>]
-    member _.ClassicMode_ExhaustsItsPackAllowanceWithATypedFailureAfterTheLastPack() =
+    member _.``classic economy mode should exhaust its pack allowance with a typed failure after the last pack``
+        ()
+        =
         let profile = createProfile (classic 3)
 
         let opened = openPacks profile 3 "classic"
@@ -178,17 +182,17 @@ type EconomyModeTests() =
                 )
             )
 
-        profile.Economy.PackAllowance.ShouldBe(Nullable 3)
-        profile.RemainingPackAllowance.ShouldBe(Nullable 3)
-        opened.RemainingPackAllowance.ShouldBe(Nullable 0)
-        opened.PackReceipts.Count.ShouldBe(3)
-        exhausted.ShouldBe(PackOpenFailure.PackAllowanceExhausted)
-        retried.Disposition.ShouldBe(PackOpenDisposition.AlreadyOpened)
-        retried.Profile.ShouldBeSameAs(opened)
-        retryRandom.ConsumptionIndex.ShouldBe(0)
+        profile.Economy.PackAllowance |> should equal (Nullable 3)
+        profile.RemainingPackAllowance |> should equal (Nullable 3)
+        opened.RemainingPackAllowance |> should equal (Nullable 0)
+        opened.PackReceipts.Count |> should equal 3
+        exhausted |> should equal PackOpenFailure.PackAllowanceExhausted
+        retried.Disposition |> should equal PackOpenDisposition.AlreadyOpened
+        obj.ReferenceEquals(retried.Profile, opened) |> should be True
+        retryRandom.ConsumptionIndex |> should equal 0
 
     [<Test>]
-    member _.ClassicMode_AllowsOneStarterClaimAndTypesEveryLaterClaim() =
+    member _.``classic economy mode should allow one starter claim and type every later claim``() =
         let profile = createProfile (classic 1)
 
         let claimedProfile, _ = claimStarter profile "starter-alpha" "claim-1" "deck-1"
@@ -220,22 +224,24 @@ type EconomyModeTests() =
                 )
             )
 
-        profile.RemainingStarterDeckClaimAllowance.ShouldBe(Nullable 1)
-        claimedProfile.RemainingStarterDeckClaimAllowance.ShouldBe(Nullable 0)
+        profile.RemainingStarterDeckClaimAllowance |> should equal (Nullable 1)
+        claimedProfile.RemainingStarterDeckClaimAllowance |> should equal (Nullable 0)
 
         match secondStarter with
         | StarterDeckClaimFailure.AllowanceExhausted(claimedStarterDeckId, requestedStarterDeckId) ->
-            claimedStarterDeckId.Value.ShouldBe<string>("starter-alpha")
-            requestedStarterDeckId.Value.ShouldBe<string>("starter-beta")
+            claimedStarterDeckId.Value |> should equal "starter-alpha"
+            requestedStarterDeckId.Value |> should equal "starter-beta"
         | other -> failwith $"Expected an exhausted allowance, received {other}."
 
-        retried.IsAlreadyClaimed.ShouldBeTrue()
-        commandConflict.IsCommandConflict.ShouldBeTrue()
-        claimedProfile.StarterDeckClaims.Length.ShouldBe(1)
-        claimedProfile.SavedDecks.Count.ShouldBe(1)
+        retried.IsAlreadyClaimed |> should be True
+        commandConflict.IsCommandConflict |> should be True
+        claimedProfile.StarterDeckClaims.Length |> should equal 1
+        claimedProfile.SavedDecks.Count |> should equal 1
 
     [<Test>]
-    member _.SnapshotRoundTrip_CarriesEachModeAndKeepsRestoringTheSameEnforcement() =
+    member _.``snapshot round trip should carry each economy mode and keep restoring the same enforcement``
+        ()
+        =
         let classicProfile = openPacks (createProfile (classic 2)) 1 "classic"
         let unlimitedProfile = openPacks (createProfile null) 1 "classic"
         let classicSnapshot = classicProfile.ToSnapshot()
@@ -258,20 +264,23 @@ type EconomyModeTests() =
                     )
             )
 
-        classicSnapshot.Economy.ShouldBe(EconomyMode.ClassicScarcity)
-        classicSnapshot.EconomyPackAllowance.ShouldBe(2)
-        unlimitedSnapshot.Economy.ShouldBe(EconomyMode.Unlimited)
-        unlimitedSnapshot.EconomyPackAllowance.ShouldBe(0)
-        restoredClassic.Economy.ShouldBe(classicProfile.Economy)
-        restoredClassic.RemainingPackAllowance.ShouldBe(Nullable 1)
-        (snapshotsMatch (restoredClassic.ToSnapshot()) classicSnapshot).ShouldBeTrue()
-        restoredUnlimited.Economy.ShouldBe(EconomyRules.Unlimited)
-        restoredUnlimited.RemainingPackAllowance.HasValue.ShouldBeFalse()
-        (snapshotsMatch (restoredUnlimited.ToSnapshot()) unlimitedSnapshot).ShouldBeTrue()
-        restoredClassicExhausted.ShouldBe(PackOpenFailure.PackAllowanceExhausted)
+        classicSnapshot.Economy |> should equal EconomyMode.ClassicScarcity
+        classicSnapshot.EconomyPackAllowance |> should equal 2
+        unlimitedSnapshot.Economy |> should equal EconomyMode.Unlimited
+        unlimitedSnapshot.EconomyPackAllowance |> should equal 0
+        restoredClassic.Economy |> should equal classicProfile.Economy
+        restoredClassic.RemainingPackAllowance |> should equal (Nullable 1)
+        snapshotsMatch (restoredClassic.ToSnapshot()) classicSnapshot |> should be True
+        restoredUnlimited.Economy |> should equal EconomyRules.Unlimited
+        restoredUnlimited.RemainingPackAllowance.HasValue |> should be False
+
+        snapshotsMatch (restoredUnlimited.ToSnapshot()) unlimitedSnapshot
+        |> should be True
+
+        restoredClassicExhausted |> should equal PackOpenFailure.PackAllowanceExhausted
 
     [<Test>]
-    member _.SnapshotWithoutEconomyFields_RestoresAsUnlimited() =
+    member _.``snapshot without economy fields should restore as unlimited``() =
         let populated = openPacks (createProfile null) 2 "classic"
         let recorded = populated.ToSnapshot()
 
@@ -291,15 +300,15 @@ type EconomyModeTests() =
 
         let restored = success (LocalProfile.Restore(legacySnapshot, authority.Value))
 
-        legacySnapshot.Economy.ShouldBe(EconomyMode.Unlimited)
-        legacySnapshot.EconomyPackAllowance.ShouldBe(0)
-        restored.Economy.ShouldBe(EconomyRules.Unlimited)
-        restored.RemainingPackAllowance.HasValue.ShouldBeFalse()
-        restored.RemainingStarterDeckClaimAllowance.HasValue.ShouldBeFalse()
-        restored.PackReceipts.Count.ShouldBe(2)
+        legacySnapshot.Economy |> should equal EconomyMode.Unlimited
+        legacySnapshot.EconomyPackAllowance |> should equal 0
+        restored.Economy |> should equal EconomyRules.Unlimited
+        restored.RemainingPackAllowance.HasValue |> should be False
+        restored.RemainingStarterDeckClaimAllowance.HasValue |> should be False
+        restored.PackReceipts.Count |> should equal 2
 
     [<Test>]
-    member _.ClassicRestoration_RejectsHistoryAndRulesThatBreakItsAllowances() =
+    member _.``classic restoration should reject history and rules that break its allowances``() =
         let classicProfile = openPacks (createProfile (classic 2)) 2 "classic"
         let classicSnapshot = classicProfile.ToSnapshot()
 
@@ -366,24 +375,31 @@ type EconomyModeTests() =
                 )
             )
 
-        packsBeyondAllowance.ShouldBe(
-            LocalProfileRestorationFailure.EconomyRuleViolation(
+        packsBeyondAllowance
+        |> should
+            equal
+            (LocalProfileRestorationFailure.EconomyRuleViolation(
                 EconomyViolationKind.PackAllowanceExceeded,
                 2,
                 1
-            )
-        )
+            ))
 
-        claimsBeyondAllowance.ShouldBe(
-            LocalProfileRestorationFailure.EconomyRuleViolation(
+        claimsBeyondAllowance
+        |> should
+            equal
+            (LocalProfileRestorationFailure.EconomyRuleViolation(
                 EconomyViolationKind.StarterDeckClaimAllowanceExceeded,
                 2,
                 1
-            )
-        )
+            ))
 
-        (violationKind unknownMode).ShouldBe(EconomyViolationKind.UnknownMode)
-        (violationKind negativeAllowance).ShouldBe(EconomyViolationKind.InvalidPackAllowance)
-        (violationKind unlimitedWithAllowance).ShouldBe(EconomyViolationKind.InvalidPackAllowance)
-        unlimitedHistory.StarterDeckClaims.Length.ShouldBe(2)
-        unlimitedHistory.Economy.ShouldBe(EconomyRules.Unlimited)
+        violationKind unknownMode |> should equal EconomyViolationKind.UnknownMode
+
+        violationKind negativeAllowance
+        |> should equal EconomyViolationKind.InvalidPackAllowance
+
+        violationKind unlimitedWithAllowance
+        |> should equal EconomyViolationKind.InvalidPackAllowance
+
+        unlimitedHistory.StarterDeckClaims.Length |> should equal 2
+        unlimitedHistory.Economy |> should equal EconomyRules.Unlimited
