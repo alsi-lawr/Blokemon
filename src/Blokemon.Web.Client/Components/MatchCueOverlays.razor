@@ -31,7 +31,9 @@ else if (Cue?.Kind == MatchAnimationKindView.Attack)
 }
 else if (Cue?.Kind == MatchAnimationKindView.Reveal && Cue.RevealedCards.Length > 0)
 {
-    <div class="card-reveal-overlay" role="dialog" aria-modal="true" aria-label="Revealed cards">
+    @* The whole surface acknowledges: the button must never be the only way out of a reveal. *@
+    <div class="card-reveal-overlay" role="dialog" aria-modal="true" aria-label="Revealed cards"
+         @onclick="RevealAcknowledged">
         <span class="eyebrow">@(Cue.ActorIsLocalPlayer == true ? "Your Prize Cards" : "Revealed cards")</span>
         <div class="revealed-cards">
             @foreach (var card in Cue.RevealedCards)

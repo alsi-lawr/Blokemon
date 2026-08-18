@@ -4434,6 +4434,29 @@ button.bench-slot.is-aura::after {
     font-size: clamp(48px, 17vw, 82px);
   }
 
+  /*
+    The reveal has to fit the no-scroll canvas whole, with its Continue button still on the
+    screen: the revealed faces shrink to the sheet-tray size and the column tightens around
+    them, so six cards, the heading and the button all share the phone table's height.
+  */
+  .card-reveal-overlay {
+    gap: 10px;
+    align-content: safe center;
+    overflow-y: auto;
+  }
+
+  .card-reveal-overlay .eyebrow {
+    font-size: 18px;
+  }
+
+  .card-reveal-overlay .revealed-cards {
+    gap: 8px;
+  }
+
+  .card-reveal-overlay .card-face--hand {
+    --blokemon-card-scale: 0.15;
+  }
+
   .blokemon-chip-toss {
     width: 140px;
     height: 140px;
