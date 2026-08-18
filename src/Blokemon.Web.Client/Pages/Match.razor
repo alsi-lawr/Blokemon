@@ -777,6 +777,30 @@ else
             ? [.. match.LegalActions.Where(action => IsCardAction(action) && action.SourceCardInstanceId == origin)]
             : [];
 
+    // A destination step disambiguates itself when everything the chosen card can do is the same
+    // one kind of move onto a place the table shows: the places glow, and tapping one says
+    // everything a sheet could have asked. A second kind of move, or a move with no place on the
+    // table to stand for it, is a real choice between effects and keeps its sheet.
+    private bool DestinationIsUnambiguous()
+    {
+        if (_directActions.Length > 0)
+        {
+            return false;
+        }
+
+        var actions = OriginActions();
+        return actions.Length > 0
+            && actions.DistinctBy(static action => action.Kind).Count() == 1
+            && actions.All(IsBoardPosition);
+    }
+
+    // A place on the table is either a card that is on it or, for a Blokemon coming down, an
+    // empty Bench position - and the Bench is only a place while one is free.
+    private bool IsBoardPosition(MatchActionView action) =>
+        action.TargetCardInstanceId is { } target
+            ? IsVisible(target)
+            : action.Kind == MatchActionKindView.PlayBlokemon && _benchDestination;
+
     private static bool IsCardAction(MatchActionView action) =>
         action.SourceCardInstanceId is not null && _cardKinds.Contains(action.Kind);
 
@@ -1071,29 +1095,32 @@ else
         var frame = DisplayFrame();
         if (_stage == Stage.Idle)
         {
-            return forced.Length == 0
+            // A forced decision whose every candidate glows on the table is asked by the table
+            // itself: a sheet that lists nothing would only restate what the auras already show.
+            return forced.Length == 0 || ForcedByAura(forced)
                 ? null
                 : new(
                     SheetMode.Forced,
                     ForcedHeading(forced[0].Kind),
                     "Required",
-                    ForcedByAura(forced) ? null : "Choose how to resolve this.",
+                    "Choose how to resolve this.",
                     null,
                     null,
                     true,
-                    ForcedByAura(forced) ? [] : forced
+                    forced
                 );
         }
 
         return _stage switch
         {
+            // Where a card goes is a question the table can answer by itself, so it is only asked
+            // in words when tapping a place on the table would not settle it.
+            Stage.Destination when DestinationIsUnambiguous() => null,
             Stage.Destination => new(
                 SheetMode.Destination,
                 DestinationHeading(frame),
                 "Choose a destination",
-                _benchDestination && DestinationCardIds().Length == 0
-                    ? "Tap an empty Bench position."
-                    : null,
+                null,
                 null,
                 "Cancel",
                 false,

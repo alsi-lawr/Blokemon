@@ -102,17 +102,20 @@
                 }
             }
         </div>
-    </div>
 
-    @if (Opponent && Side.HandCount > 0)
-    {
-        <div class="opponent-hand" aria-label="@($"Opponent hand, {Side.HandCount} cards")">
-            @for (var index = 0; index < Math.Min(Side.HandCount, 7); index++)
-            {
-                <CardBack />
-            }
-        </div>
-    }
+        @* Held cards belong with the Bench they are dealt from, at the far side of it: the fan is
+           laid against the Bench itself so it sits at its owner's end of the table rather than
+           anywhere near the middle of it. *@
+        @if (Opponent && Side.HandCount > 0)
+        {
+            <div class="opponent-hand" aria-label="@($"Opponent hand, {Side.HandCount} cards")">
+                @for (var index = 0; index < Math.Min(Side.HandCount, 7); index++)
+                {
+                    <CardBack />
+                }
+            </div>
+        }
+    </div>
 
     <div class="prize-rack" aria-label="@($"{Side.PrizeCards} Prize cards remaining")">
         <div class="prizes" aria-hidden="true">

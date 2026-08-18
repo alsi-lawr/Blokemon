@@ -1852,11 +1852,20 @@ small,
   text-transform: uppercase;
 }
 
+/*
+  The opponent holds their cards at their own end of the table, past the far side of their Bench:
+  the middle of the table is where the two Active cards face each other, so nothing of theirs is
+  laid across it. The fan takes the Bench's own column, so it stays centred over the Bench however
+  the field is divided, and tucks behind the row it is dealt from - the same relationship the
+  phone table gives it in the strip above the Bench.
+*/
 .opponent-hand {
   position: absolute;
   z-index: 3;
+  grid-row: 1;
+  grid-column: 2;
+  top: -40px;
   left: 50%;
-  bottom: 0;
   display: flex;
   transform: translateX(-50%);
 }
@@ -4160,8 +4169,9 @@ button.bench-slot.is-aura::after {
     holding without any of the table being given up for it.
   */
   .opponent-hand {
+    /* One column here, so the fan is placed against the half itself and centred on its Bench. */
+    grid-column: 1;
     top: calc(-1 * var(--fan-strip));
-    bottom: auto;
   }
 
   /*
