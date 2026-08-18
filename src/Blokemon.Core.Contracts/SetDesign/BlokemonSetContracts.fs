@@ -272,49 +272,11 @@ type BlokemonEffectInstruction =
       CardFilter: BlokemonEffectCardFilter | null
       SourceTopCount: int }
 
-    // C# cannot copy-and-update an F# record, so the copy members on this and the five records
-    // below serve the call sites left in Blokemon.Game and Blokemon.Game.Tests. That surface
-    // retires when slice 7 moves those projects to F# and native `with` becomes available again.
-
-    /// The same instruction carrying a replacement Amount.
-    member this.WithAmount(amount: int) = { this with Amount = amount }
-
-    /// The same instruction carrying a replacement Opcode and Amount.
-    member this.WithOpcodeAndAmount(opcode: BlokemonOpcode, amount: int) =
-        { this with
-            Opcode = opcode
-            Amount = amount }
-
-    /// The same instruction with its mechanical-type restriction removed.
-    member this.WithoutMechanicalTypes() =
-        { this with
-            MechanicalTypes = Array.empty }
-
-    /// The same instruction carrying replacement conditional branches.
-    member this.WithBranches
-        (
-            thenBranch: BlokemonEffectInstruction array,
-            otherwiseBranch: BlokemonEffectInstruction array
-        ) =
-        { this with
-            Then = thenBranch
-            Otherwise = otherwiseBranch }
-
-    /// The same instruction aimed at the given targets with its sources consumed.
-    member this.RetargetedTo(targets: BlokemonTarget array) =
-        { this with
-            Targets = targets
-            Sources = null }
-
 type BlokemonPartyTrick =
     { MechanicalId: string
       PresentationStatus: BlokemonPresentationStatus
       Trigger: BlokemonTrigger
       Program: BlokemonEffectInstruction array }
-
-    /// The same party trick carrying a replacement program. Retires with slice 7.
-    member this.WithProgram(program: BlokemonEffectInstruction array) =
-        { this with Program = program }
 
 type BlokemonAttack =
     { MechanicalId: string
@@ -329,10 +291,6 @@ type BlokemonHouseRule =
     { MechanicalId: string
       PresentationStatus: BlokemonPresentationStatus
       Program: BlokemonEffectInstruction array }
-
-    /// The same house rule carrying a replacement program. Retires with slice 7.
-    member this.WithProgram(program: BlokemonEffectInstruction array) =
-        { this with Program = program }
 
 type BlokemonMechanicalTypeModifier =
     { MechanicalType: BlokemonMechanicalType
@@ -358,10 +316,6 @@ type BlokemonCollectible =
       ProductBucket: BlokemonProductBucket
       StackCopyLimit: int }
 
-    /// The same collectible carrying replacement party tricks. Retires with slice 7.
-    member this.WithPartyTricks(partyTricks: BlokemonPartyTrick array) =
-        { this with PartyTricks = partyTricks }
-
 type BlokemonKit =
     { Id: string
       Kind: BlokemonKitKind
@@ -374,10 +328,6 @@ type BlokemonKit =
       Pulled: bool
       Traded: bool
       StackCopyLimit: int }
-
-    /// The same kit carrying replacement house rules. Retires with slice 7.
-    member this.WithHouseRules(houseRules: BlokemonHouseRule array) =
-        { this with HouseRules = houseRules }
 
 type BlokemonBasicVim =
     { Id: string
@@ -601,11 +551,3 @@ type BlokemonRuntimeManifest =
       BasicVim: BlokemonBasicVim array
       Products: BlokemonProducts
       BaseRules: BlokemonBaseRules }
-
-    /// The same manifest carrying replacement collectibles. Retires with slice 7.
-    member this.WithCollectibles(collectibles: BlokemonCollectible array) =
-        { this with
-            Collectibles = collectibles }
-
-    /// The same manifest carrying replacement kits. Retires with slice 7.
-    member this.WithKits(kits: BlokemonKit array) = { this with Kits = kits }

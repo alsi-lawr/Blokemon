@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Blokemon.Game.Tests</RootNamespace>
+    <AssemblyName>Blokemon.Game.Tests</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="MatchScenario.fs" />
+    <Compile Include="OpeningTests.fs" />
+    <Compile Include="CommandBoundaryTests.fs" />
+    <Compile Include="DeterminismAndReplayTests.fs" />
+    <Compile Include="ModifierDurationTests.fs" />
+    <Compile Include="TopStackDistributionTests.fs" />
+    <Compile Include="DamageAndRoughStateTests.fs" />
+    <Compile Include="DeferredChoiceTests.fs" />
+    <Compile Include="CardFlowTests.fs" />
+    <Compile Include="InterpreterBranchingTests.fs" />
+    <Compile Include="TriggerTimingTests.fs" />
+    <Compile Include="DeferredBranchChoiceTests.fs" />
+    <Compile Include="ResignTests.fs" />
+    <Compile Include="AuthorityAuditTests.fs" />
+    <Compile Include="CardSemanticsTests.fs" />
+    <Compile Include="ExceptionalEffectTests.fs" />
+    <Compile Include="AuthorityErrataTests.fs" />
+    <Compile Include="AuthorityParityTests.fs" />
+    <Compile Include="FullSetBehaviorTests.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Blokemon.Core/Blokemon.Core.fsproj" />
+    <ProjectReference Include="../../src/Blokemon.Game/Blokemon.Game.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      FsUnit's NUnit flavour registers no Microsoft Testing Platform test framework, so TUnit
+      stays the only host and an FsUnit assertion failure surfaces as an ordinary TUnit failure.
+    -->
+    <PackageReference Include="FsUnit" />
+    <PackageReference Include="TUnit" />
+    <PackageReference Include="FSharp.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content
+      Include="../../content/authorities/mechanics.json"
+      Link="Authorities/mechanics.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
+  <ItemGroup>
+    <Content
+      Include="../../content/reference/sv151-authority-reconciliation.json"
+      Link="Authorities/sv151-authority-reconciliation.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
+</Project>
