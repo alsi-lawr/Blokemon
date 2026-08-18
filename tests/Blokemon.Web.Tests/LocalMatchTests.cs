@@ -989,7 +989,7 @@ public sealed class LocalMatchTests
         var original = await fixture.Store.Read("match");
         var invalidJson =
             corruption == "version"
-                ? original!.Json.Replace("\"schemaVersion\":1", "\"schemaVersion\":999")[..^1]
+                ? original!.Json.Replace("\"schemaVersion\":2", "\"schemaVersion\":999")[..^1]
                     + ",\"futureField\":true}"
                 : corruption;
         await fixture.Store.Update("match", original!.Revision, invalidJson);

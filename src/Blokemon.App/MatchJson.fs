@@ -4,7 +4,6 @@ open System
 open System.Collections.Generic
 open System.Text.Json
 open System.Text.Json.Serialization
-open System.Text.Json.Serialization.Metadata
 open Blokemon.Game
 
 type internal FrozenListJsonConverter<'T>() =
@@ -60,78 +59,22 @@ type internal FrozenListJsonConverterFactory() =
         | null -> raise (JsonException "The frozen list converter could not be created.")
         | instance -> instance :?> JsonConverter
 
-/// The options the saved battle and its history are written with: the command and choice
-/// hierarchies are Blokemon.Game's, so their polymorphism is registered by hand.
+/// The options the saved battle and its history are written with: Blokemon.Game's command and
+/// choice unions are F#, which System.Text.Json cannot serialize on its own, so each rides a
+/// hand-written converter that writes the ruled $command / $choice payload shape.
 module internal MatchJson =
 
-    let private configurePolymorphism (typeInfo: JsonTypeInfo) =
-        if typeInfo.Type = typeof<MatchCommand> then
-            let polymorphism =
-                JsonPolymorphismOptions(
-                    TypeDiscriminatorPropertyName = "$command",
-                    IgnoreUnrecognizedTypeDiscriminators = false,
-                    UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization
-                )
-
-            for derived in
-                [ JsonDerivedType(typeof<MatchCommand.ChooseMulliganBonus>, "chooseMulliganBonus")
-                  JsonDerivedType(typeof<MatchCommand.ChooseOpening>, "chooseOpening")
-                  JsonDerivedType(typeof<MatchCommand.AttachVim>, "attachVim")
-                  JsonDerivedType(typeof<MatchCommand.PlayBloke>, "playBloke")
-                  JsonDerivedType(typeof<MatchCommand.Promote>, "promote")
-                  JsonDerivedType(typeof<MatchCommand.PlayKit>, "playKit")
-                  JsonDerivedType(typeof<MatchCommand.Taxi>, "taxi")
-                  JsonDerivedType(typeof<MatchCommand.UsePartyTrick>, "usePartyTrick")
-                  JsonDerivedType(typeof<MatchCommand.Attack>, "attack")
-                  JsonDerivedType(typeof<MatchCommand.ChuckFossil>, "chuckFossil")
-                  JsonDerivedType(typeof<MatchCommand.EndRound>, "endRound")
-                  JsonDerivedType(typeof<MatchCommand.ChooseReplacement>, "chooseReplacement")
-                  JsonDerivedType(typeof<MatchCommand.ResolveEffectChoice>, "resolveEffectChoice")
-                  JsonDerivedType(
-                      typeof<MatchCommand.ResolveKnockoutTrigger>,
-                      "resolveKnockoutTrigger"
-                  )
-                  JsonDerivedType(
-                      typeof<MatchCommand.ResolveBarChitTrigger>,
-                      "resolveBarChitTrigger"
-                  )
-                  JsonDerivedType(typeof<MatchCommand.Resign>, "resign") ] do
-                polymorphism.DerivedTypes.Add derived
-
-            typeInfo.PolymorphismOptions <- polymorphism
-        elif typeInfo.Type = typeof<EffectChoice> then
-            let polymorphism =
-                JsonPolymorphismOptions(
-                    TypeDiscriminatorPropertyName = "$choice",
-                    IgnoreUnrecognizedTypeDiscriminators = false,
-                    UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization
-                )
-
-            for derived in
-                [ JsonDerivedType(typeof<EffectChoice.Optional>, "optional")
-                  JsonDerivedType(typeof<EffectChoice.Amount>, "amount")
-                  JsonDerivedType(typeof<EffectChoice.Cards>, "cards")
-                  JsonDerivedType(typeof<EffectChoice.MechanicalType>, "mechanicalType")
-                  JsonDerivedType(typeof<EffectChoice.Attack>, "attack")
-                  JsonDerivedType(typeof<EffectChoice.Distribution>, "distribution")
-                  JsonDerivedType(typeof<EffectChoice.Attachments>, "attachments") ] do
-                polymorphism.DerivedTypes.Add derived
-
-            typeInfo.PolymorphismOptions <- polymorphism
-
     let private createOptions () =
-        let resolver = DefaultJsonTypeInfoResolver()
-        resolver.Modifiers.Add(Action<JsonTypeInfo> configurePolymorphism)
-
         let options =
             JsonSerializerOptions(
                 JsonSerializerDefaults.Web,
-                TypeInfoResolver = resolver,
                 UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
             )
 
         options.Converters.Add(JsonStringEnumConverter())
         options.Converters.Add(FrozenListJsonConverterFactory())
+        options.Converters.Add(EffectChoiceJsonConverter())
+        options.Converters.Add(MatchActionJsonConverter())
         options
 
     let Options = createOptions ()

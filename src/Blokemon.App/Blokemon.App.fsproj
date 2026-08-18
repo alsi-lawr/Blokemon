@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="ApiResponses.fs" />
     <Compile Include="EconomyConfiguration.fs" />
+    <Compile Include="MatchJsonUnions.fs" />
     <Compile Include="MatchJson.fs" />
     <Compile Include="PlayModeApplication.fs" />
     <!--
@@ -54,7 +55,7 @@
     <ProjectReference Include="../Blokemon.App.Catalogue/Blokemon.App.Catalogue.fsproj" />
     <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
     <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
-    <ProjectReference Include="../Blokemon.Game/Blokemon.Game.csproj" />
+    <ProjectReference Include="../Blokemon.Game/Blokemon.Game.fsproj" />
     <ProjectReference Include="../Blokemon.Product/Blokemon.Product.fsproj" />
   </ItemGroup>
 

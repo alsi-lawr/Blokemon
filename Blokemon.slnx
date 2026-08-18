@@ -8,7 +8,7 @@
     <Project Path="src/Blokemon.Core/Blokemon.Core.fsproj" />
     <Project Path="src/Blokemon.Core.Codecs/Blokemon.Core.Codecs.csproj" />
     <Project Path="src/Blokemon.Core.Contracts/Blokemon.Core.Contracts.fsproj" />
-    <Project Path="src/Blokemon.Game/Blokemon.Game.csproj" />
+    <Project Path="src/Blokemon.Game/Blokemon.Game.fsproj" />
     <Project Path="src/Blokemon.PackGen/Blokemon.PackGen.fsproj" />
     <Project Path="src/Blokemon.Product/Blokemon.Product.fsproj" />
     <Project Path="src/Blokemon.Sheet/Blokemon.Sheet.fsproj" />

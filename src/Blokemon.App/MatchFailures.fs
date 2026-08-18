@@ -8,8 +8,10 @@ module internal MatchFailures =
 
     let matchKey = "match"
     let matchHistoryKey = "match-history"
-    let matchSchemaVersion = 1
-    let matchHistorySchemaVersion = 1
+    // Bumped 1 -> 2 by the D3 schema break: the persisted MatchCommand shape moved to the
+    // envelope+payload layout, so a pre-break document is refused by the existing version gates.
+    let matchSchemaVersion = 2
+    let matchHistorySchemaVersion = 2
     let maximumCpuCommandsPerRequest = 256
     let cpuPlayerId = "cpu:local"
     let cpuName = "The Regular"

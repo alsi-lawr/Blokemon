@@ -339,7 +339,7 @@ public sealed class BrowserLocalApplicationTests
         archived["clientCommands"] = new JsonArray();
         var history = new JsonObject
         {
-            ["schemaVersion"] = 1,
+            ["schemaVersion"] = 2,
             ["authorityVersion"] = catalogue.Mechanics.ManifestVersion,
             ["matches"] = new JsonArray(archived),
         };

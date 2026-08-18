@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Blokemon.Game</RootNamespace>
+    <AssemblyName>Blokemon.Game</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <!--
+      F# compile order is the layering: the collection and the value objects first, then the
+      commands and the state they describe, then the staging area, then the engine and the
+      interpreter decomposed by concern.
+    -->
+    <Compile Include="FrozenList.fs" />
+    <Compile Include="Identifiers.fs" />
+    <Compile Include="MatchEnums.fs" />
+    <Compile Include="EffectChoices.fs" />
+    <Compile Include="MatchCommands.fs" />
+    <Compile Include="MatchState.fs" />
+    <Compile Include="MatchEvents.fs" />
+    <Compile Include="DeterministicRandom.fs" />
+    <Compile Include="AuthorityCatalog.fs" />
+    <Compile Include="MatchBuilder.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      Central package management sets DisableImplicitFSharpCoreReference, so without this
+      reference the project builds green and fails at runtime with a missing FSharp.Core.
+    -->
+    <PackageReference Include="FSharp.Core" />
+  </ItemGroup>
+</Project>
