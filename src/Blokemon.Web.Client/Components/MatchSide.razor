@@ -6,9 +6,11 @@
         <small>Hand @Side.HandCount</small>
     </div>
 
-    @foreach (var card in Side.InPlayKits)
-    {
-        <div class="local-slot">
+    @* The place a Kit in play stands in is part of the table, so it is kept whether or not a
+       card is standing in it: nothing else moves when one is played or leaves. *@
+    <div class="local-slot">
+        @foreach (var card in Side.InPlayKits)
+        {
             <CardPress CardInstanceId="@card.Id"
                        Class="@CardClass(card.Id)"
                        AriaLabel="@CardLabel(card, "in play on the table")"
@@ -28,8 +30,12 @@
                 }
             </CardPress>
             <span class="local-slot-label">In play</span>
-        </div>
-    }
+        }
+        @if (Side.InPlayKits.Length == 0)
+        {
+            <span class="local-slot-empty" aria-hidden="true"></span>
+        }
+    </div>
 
     <div class="field-center">
         <div class="active-slot">

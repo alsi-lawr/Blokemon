@@ -164,9 +164,9 @@ else
             <div class="visually-hidden" role="status" aria-live="polite">@_animationStatus</div>
         }
 
-        @* The table opens a place for a Kit in play on both halves at once, so the two sides
-           keep the same share of it however plays the card. *@
-        <div class="battlefield @(auras.Cards.Length > 0 || auras.Bench ? "is-choosing" : null) @(frame.Player.InPlayKits.Length + frame.Opponent.InPlayKits.Length > 0 ? "has-local" : null)" @onclick="TapBackground">
+        @* Both halves keep a place for a Kit in play at all times, so nothing on the table moves
+           when one is played or leaves. *@
+        <div class="battlefield @(auras.Cards.Length > 0 || auras.Bench ? "is-choosing" : null)" @onclick="TapBackground">
             <MatchSide Side="frame.Opponent"
                        Opponent="true"
                        SelectedCardInstanceId="@_selectedCardInstanceId"
@@ -178,7 +178,7 @@ else
                        CardTapped="TapCard"
                        CardViewOpened="OpenViewer"
                        CardViewClosed="CloseViewer" />
-            <div class="turn-ribbon">@TurnRibbon(frame, auras)</div>
+            <div class="turn-ribbon">@TurnRibbon(frame)</div>
             <MatchSide Side="frame.Player"
                        SelectedCardInstanceId="@_selectedCardInstanceId"
                        CueSourceCardInstanceId="@(_activeCue?.SourceCardInstanceId)"
@@ -1762,12 +1762,8 @@ else
             ? $"Choose {card.Card.Name} in your hand. Press and hold to view the card."
             : $"{card.Card.Name} in your hand. Press and hold to view the card.";
 
-    private static string TurnRibbon(MatchFrameView frame, AuraView auras) =>
-        frame.Player.HasTurn
-            ? auras.Cards.Length > 0 || auras.Bench
-                ? "Your turn · tap a glowing card"
-                : "Your turn"
-            : $"{frame.Opponent.Name}'s turn";
+    private static string TurnRibbon(MatchFrameView frame) =>
+        frame.Player.HasTurn ? "Your turn" : $"{frame.Opponent.Name}'s turn";
 
     private void ToggleActionDock() => _dockOpen = !_dockOpen;
 

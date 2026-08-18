@@ -1724,30 +1724,36 @@ small,
   width: min(440px, calc(100% - 40px));
 }
 
+/*
+  Both sides get the same share of the table, so the two halves mirror each other exactly: the
+  Active card that leans out of one row towards the edge of the table has the same room to lean
+  into as the other, and neither is cut off by the edge.
+*/
 .battlefield {
   height: 100%;
   display: grid;
-  grid-template-rows: 1fr 42px 1.22fr;
+  grid-template-rows: 1fr 42px 1fr;
   gap: 3px;
   padding: 48px 510px 350px 52px;
 }
 
+/*
+  The two halves are the same table seen from either end: the same four columns in the same
+  places - Deck, the Kit in play, the field, the Prize cards - so every card on one side lines
+  up with its counterpart on the other. The Kit column is always there, empty or not, so a Kit
+  coming into play or leaving it moves nothing else on the table.
+*/
 .side-zone {
   position: relative;
   min-height: 0;
   display: grid;
-  grid-template-columns: 112px minmax(0, 1fr) 90px;
+  grid-template-columns: 112px 112px minmax(0, 1fr) 90px;
   align-items: center;
   border-radius: 24px;
 }
 
 .side-zone.has-turn {
   background: radial-gradient(ellipse, rgb(244 189 63 / 6%), transparent 68%);
-}
-
-.opponent-zone {
-  transform: scale(0.9);
-  transform-origin: center bottom;
 }
 
 .chooser {
@@ -1774,7 +1780,7 @@ small,
 }
 
 .prize-rack {
-  grid-column: 3;
+  grid-column: 4;
 }
 
 .deck-card-back {
@@ -1813,31 +1819,30 @@ small,
 /*
   A Kit played to the table stays in play as a public card, so it is dealt onto the table itself
   rather than named in the HUD. Only one is ever on the table at a time, and it belongs to the
-  side that played it, so the table opens a place for it beside that side's Deck: the card sits
-  in the flow of the row rather than over it, which is what keeps it clear of the Active card at
-  every width. The slot never clips, so the corona reads whole here as everywhere.
+  side that played it, so each side keeps a place for it beside its own Deck: the card sits in
+  the flow of the row rather than over it, which is what keeps it clear of the Active card at
+  every width. The place is kept whether or not a card is standing in it, so the rest of the
+  table never moves. The slot never clips, so the corona reads whole here as everywhere.
 */
-.battlefield.has-local .side-zone {
-  grid-template-columns: 112px 112px minmax(0, 1fr) 90px;
-}
-
-.battlefield.has-local .field-center {
-  grid-column: 3;
-}
-
-.battlefield.has-local .prize-rack {
-  grid-column: 4;
-}
-
 .local-slot {
   position: relative;
   z-index: 6;
   grid-row: 1;
   grid-column: 2;
   display: grid;
+  grid-template-rows: auto 12px;
   justify-items: center;
+  align-content: center;
   gap: 3px;
   overflow: visible;
+}
+
+/* An empty place reads the way an empty Bench position does: an outline, and nothing else. */
+.local-slot-empty {
+  width: 98px;
+  height: 137px;
+  border: 1px dashed rgb(156 164 128 / 23%);
+  border-radius: 7px;
 }
 
 .local-slot-label {
@@ -1869,7 +1874,7 @@ small,
 
 .field-center {
   position: relative;
-  grid-column: 2;
+  grid-column: 3;
   height: 100%;
   min-height: 0;
   display: grid;
@@ -1916,6 +1921,17 @@ small,
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: 11px;
+}
+
+/*
+  The table is 900px tall at its most common desktop size, and it holds two Active cards leaning
+  away from the middle, a ribbon between them and the hand along the bottom. Both sides being
+  the same size, the room for the far one is the room the table has above it: at the full card
+  size that card runs off the top and loses its name, so the Active card is sized to the table
+  instead - the same on both sides, with the corona of each still whole.
+*/
+.battle-screen .card-face--battle {
+  --blokemon-card-scale: 0.215;
 }
 
 /*
@@ -4073,9 +4089,12 @@ button.bench-slot.is-aura::after {
     font-size: 10px;
   }
 
+  /* The round button carries an icon, not a label, so it keeps no side padding to push it off
+     centre: the narrower phone padding above is for the buttons that carry words. */
   .fullscreen-toggle {
     width: 30px;
     height: 30px;
+    padding: 0;
   }
 
   /*
@@ -4107,13 +4126,8 @@ button.bench-slot.is-aura::after {
     The Bench needs the whole width, so the Deck and the Prize cards leave the flow and sit
     beside the Active card instead, at the outer edge of the side they belong to.
   */
-  .side-zone,
-  .battlefield.has-local .side-zone {
+  .side-zone {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .opponent-zone {
-    transform: none;
   }
 
   .deck-stack,
@@ -4153,10 +4167,10 @@ button.bench-slot.is-aura::after {
   /*
     There is no room for a column of its own on a phone, so the table's card lifts out of the row
     and rests against the inner edge of its owner's half, just inside the Deck: the Bench, the
-    Active card and the hand all keep exactly the room they had.
+    Active card and the hand all keep exactly the room they had, and an empty place costs the
+    phone table nothing at all.
   */
-  .battlefield.has-local .field-center,
-  .battlefield.has-local .prize-rack {
+  .prize-rack {
     grid-column: 1;
   }
 
@@ -4165,6 +4179,10 @@ button.bench-slot.is-aura::after {
     z-index: 6;
     grid-column: 1;
     left: 58px;
+  }
+
+  .local-slot-empty {
+    display: none;
   }
 
   .opponent-zone .local-slot {
