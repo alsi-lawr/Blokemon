@@ -14,7 +14,7 @@
     <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
     <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
     <ProjectReference Include="../Blokemon.Game/Blokemon.Game.csproj" />
-    <ProjectReference Include="../Blokemon.Product/Blokemon.Product.csproj" />
+    <ProjectReference Include="../Blokemon.Product/Blokemon.Product.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
