@@ -1042,6 +1042,68 @@ public sealed class LocalMatchTests
     }
 
     [Test]
+    public async Task PersistedCommandWithoutItsChoicesMember_LoadsWithNoChoices()
+    {
+        // A stored command that never had its choices member written loads as a command with no
+        // choices, which is what the saved battle has always promised: the collection type behind
+        // it changed in BLOKEMON-069, the promise did not.
+        await using var database = await TestDatabase.Create();
+        var fixture = await ReadyFixture.Create(database);
+        var started = Value(
+            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
+        );
+        var applied = Value(
+            await fixture.Application.ApplyMatchAction(
+                started.Match!.Frame.Id,
+                RequestFor(started.Match, started.Match.LegalActions[0], Guid.NewGuid())
+            )
+        );
+        var original = await fixture.Store.Read("match");
+        var strippedJson = original!.Json.Replace(
+            ",\"choices\":[]",
+            string.Empty,
+            StringComparison.Ordinal
+        );
+        strippedJson.ShouldNotBe(original.Json);
+        await fixture.Store.Update("match", original.Revision, strippedJson);
+        var stripped = await fixture.Store.Read("match");
+
+        var state = Value(await fixture.Restart().State());
+        var after = await fixture.Store.Read("match");
+
+        state.MatchError.ShouldBeNull();
+        state.Match.ShouldNotBeNull();
+        await AssertEquivalent(state.Match, applied.Match!);
+        after.ShouldBe(stripped);
+    }
+
+    [Test]
+    public async Task SubmittedActionWithoutItsChoicesMember_IsAcceptedWithNoChoices()
+    {
+        // The same promise on the wire: a submitted payload that never mentions its choices is
+        // read as a submission with no choices rather than refused.
+        await using var database = await TestDatabase.Create();
+        var fixture = await ReadyFixture.Create(database);
+        var started = Value(
+            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
+        );
+        var (view, action) = await ReachChoicelessAction(fixture.Application, started);
+        var match = view.Match!;
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        var wire = JsonSerializer
+            .Serialize(RequestFor(match, action, Guid.NewGuid()), options)
+            .Replace(",\"choices\":[]", string.Empty, StringComparison.Ordinal);
+        wire.ShouldNotContain("choices");
+        var submitted = JsonSerializer.Deserialize<ApplyMatchActionRequest>(wire, options)!;
+
+        var applied = Value(await fixture.Application.ApplyMatchAction(match.Frame.Id, submitted));
+
+        submitted.Choices.ShouldBeNull();
+        applied.MatchError.ShouldBeNull();
+        applied.Match!.Frame.Revision.ShouldBeGreaterThan(match.Frame.Revision);
+    }
+
+    [Test]
     public async Task ActiveMatchCannotBeReplaced()
     {
         await using var database = await TestDatabase.Create();
@@ -1114,6 +1176,37 @@ public sealed class LocalMatchTests
         completed.Match.Frame.Winner.ShouldNotBeNull();
         replaced.Match!.Frame.Id.ShouldBe(nextCommand);
         replaced.Match.Frame.IsComplete.ShouldBeFalse();
+    }
+
+    // The first move the local player can submit that asks them nothing, so the submitted payload
+    // is one whose choice list is legitimately empty.
+    private static async Task<(ApplicationView View, MatchActionView Action)> ReachChoicelessAction(
+        LocalApplicationService application,
+        ApplicationView initial
+    )
+    {
+        var current = initial;
+        for (var step = 0; step < 24; step++)
+        {
+            var match = current.Match!;
+            var choiceless = match.LegalActions.FirstOrDefault(static candidate =>
+                candidate.ChoiceRequirements.Length == 0
+                && candidate.Kind != MatchActionKindView.Resign
+            );
+            if (choiceless is not null)
+            {
+                return (current, choiceless);
+            }
+
+            current = Value(
+                await application.ApplyMatchAction(
+                    match.Frame.Id,
+                    RequestFor(match, ForwardAction(match)!, Guid.NewGuid())
+                )
+            );
+        }
+
+        throw new InvalidOperationException("The match never offered a move with no choices.");
     }
 
     private static async Task<ApplicationView> AdvanceToOpeningChoice(

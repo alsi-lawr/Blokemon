@@ -178,6 +178,111 @@ public sealed class MatchJsonTests
         await Task.CompletedTask;
     }
 
+    // A stored document whose nested collection members were never written: the two deck
+    // snapshots inside the start request, and a command's choices. Everything the document type
+    // itself declares is present, because each of those members carries JsonRequired.
+    private const string DocumentWithAbsentCollectionMembers = """
+        {"schemaVersion":2,"authorityVersion":"authority-1","startCommand":{"clientCommandId":"30000000-0000-0000-0000-000000000001","deckId":"20000000-0000-0000-0000-000000000001","fingerprint":"start","startRequestFingerprint":"game-start"},"start":{"matchId":{"value":"match"},"seed":{"value":7},"firstDeck":{"owner":{"value":"player"}},"secondDeck":{"owner":{"value":"cpu"}}},"commands":[{"id":{"value":"resign"},"matchId":{"value":"match"},"actor":{"value":"player"},"expectedRevision":{"value":0},"action":{"$command":"resign"}}],"clientCommands":[]}
+        """;
+
+    [Test]
+    public async Task DocumentWithAbsentCollectionMembers_NormalizesToEmptyCollections()
+    {
+        var parsed = JsonSerializer.Deserialize<MatchDocument>(
+            DocumentWithAbsentCollectionMembers,
+            MatchJson.Options
+        )!;
+
+        var normalized = MatchDocumentNormalization.matchDocument(parsed);
+
+        // What the deserializer left behind, and what the ingress makes of it.
+        parsed.Start.FirstDeck.Cards.IsDefault.ShouldBeTrue();
+        parsed.Start.SecondDeck.Cards.IsDefault.ShouldBeTrue();
+        parsed.Commands[0].Choices.IsDefault.ShouldBeTrue();
+        normalized.Start.FirstDeck.Cards.ShouldBeEmpty();
+        normalized.Start.SecondDeck.Cards.ShouldBeEmpty();
+        normalized.Commands[0].Choices.ShouldBeEmpty();
+        normalized.ClientCommands.ShouldBeEmpty();
+        await Task.CompletedTask;
+    }
+
+    [Test]
+    public async Task HistoryWithAbsentCollectionMembers_NormalizesEveryArchivedBattle()
+    {
+        var history = $$"""
+            {"schemaVersion":2,"authorityVersion":"authority-1","matches":[{{DocumentWithAbsentCollectionMembers}}]}
+            """;
+
+        var normalized = MatchDocumentNormalization.historyDocument(
+            JsonSerializer.Deserialize<MatchHistoryDocument>(history, MatchJson.Options)!
+        );
+
+        var archived = normalized.Matches.Single();
+        archived.Start.FirstDeck.Cards.ShouldBeEmpty();
+        archived.Start.SecondDeck.Cards.ShouldBeEmpty();
+        archived.Commands[0].Choices.ShouldBeEmpty();
+        await Task.CompletedTask;
+    }
+
+    [Test]
+    public async Task NormalizedDocument_WritesTheAbsentCollectionsAsEmptyArrays()
+    {
+        var normalized = MatchDocumentNormalization.matchDocument(
+            JsonSerializer.Deserialize<MatchDocument>(
+                DocumentWithAbsentCollectionMembers,
+                MatchJson.Options
+            )!
+        );
+
+        var json = JsonSerializer.Serialize(normalized, MatchJson.Options);
+
+        // The same bytes FrozenList<T> wrote for a defaulted member, which is what keeps the
+        // stored schema unchanged when a normalized document is written back out.
+        json.ShouldBe(
+            """
+            {"schemaVersion":2,"authorityVersion":"authority-1","startCommand":{"clientCommandId":"30000000-0000-0000-0000-000000000001","deckId":"20000000-0000-0000-0000-000000000001","fingerprint":"start","startRequestFingerprint":"game-start"},"start":{"matchId":{"value":"match"},"seed":{"value":7},"firstDeck":{"owner":{"value":"player"},"cards":[]},"secondDeck":{"owner":{"value":"cpu"},"cards":[]}},"commands":[{"id":{"value":"resign"},"matchId":{"value":"match"},"actor":{"value":"player"},"expectedRevision":{"value":0},"choices":[],"action":{"$command":"resign"}}],"clientCommands":[]}
+            """
+        );
+        await Task.CompletedTask;
+    }
+
+    [Test]
+    public async Task NullCollectionMember_IsStillRejectedRatherThanNormalized()
+    {
+        // Absent is empty; an explicit null is a damaged document, and stays one.
+        var withNullChoices = DocumentWithAbsentCollectionMembers.Replace(
+            "\"expectedRevision\":{\"value\":0},",
+            "\"expectedRevision\":{\"value\":0},\"choices\":null,",
+            StringComparison.Ordinal
+        );
+
+        Should.Throw<JsonException>(() =>
+            JsonSerializer.Deserialize<MatchDocument>(withNullChoices, MatchJson.Options)
+        );
+        await Task.CompletedTask;
+    }
+
+    [Test]
+    public async Task ActionPayloadWithAnAbsentMember_IsStillRejected()
+    {
+        // The union converters count the members they read, so an absent payload member never
+        // reaches a defaulted collection: it is refused here, as it was before the swap.
+        const string missingBooth = """
+            {"$command":"chooseOpening","oche":{"value":"oche"}}
+            """;
+        const string missingValues = """
+            {"$choice":"cards","choiceId":{"value":"cards"}}
+            """;
+
+        Should.Throw<JsonException>(() =>
+            JsonSerializer.Deserialize<MatchAction>(missingBooth, MatchJson.Options)
+        );
+        Should.Throw<JsonException>(() =>
+            JsonSerializer.Deserialize<EffectChoice>(missingValues, MatchJson.Options)
+        );
+        await Task.CompletedTask;
+    }
+
     [Test]
     public async Task SerializedCommandLog_ReplaysToADeeplyEqualState()
     {

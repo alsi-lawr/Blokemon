@@ -74,7 +74,9 @@ module internal MatchStore =
                                 invalidDocument
                                     "match.document_corrupt"
                                     "The saved battle is damaged. No data changed."
-                        | Ok(NonNull value) ->
+                        | Ok(NonNull stored) ->
+                            let value = MatchDocumentNormalization.matchDocument stored
+
                             if isMissing value.StartCommand || isMissing value.Start then
                                 return
                                     invalidDocument
@@ -118,7 +120,7 @@ module internal MatchStore =
                                 )
                             with
                             | null -> Error(historyCorrupt ())
-                            | value -> Ok value
+                            | value -> Ok(MatchDocumentNormalization.historyDocument value)
                         with
                         | :? JsonException -> Error(historyCorrupt ())
                         | :? NotSupportedException -> Error(historyCorrupt ())
