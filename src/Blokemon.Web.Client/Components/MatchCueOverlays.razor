@@ -1,0 +1,77 @@
+@using static Blokemon.Web.Client.Components.MatchText
+@*
+    The one place over the table where a cue is shown. Exactly one of these is on screen at a
+    time, and when nothing is playing the layer is still there as the live region a screen
+    reader follows, so the table below it never moves.
+*@
+@if (ShowPresentationCard)
+{
+    <div class="card-play-overlay" role="status" aria-live="polite">
+        <CardFace Card="PresentationCard!" Size="CardFaceSize.Showcase" />
+        <strong>@PresentationCard!.Name</strong>
+    </div>
+}
+else if (Cue?.Kind == MatchAnimationKindView.Turn)
+{
+    <div class="turn-change-overlay" role="status" aria-live="polite">@TurnCueText(Cue)</div>
+}
+else if (Cue?.Kind == MatchAnimationKindView.Coin)
+{
+    <div class="coin-toss-overlay" role="status" aria-live="polite">
+        <BlokemonChip BadgeSide="@(Cue.BadgeSide == true)" />
+    </div>
+}
+else if (Cue?.Kind == MatchAnimationKindView.Attack)
+{
+    <div class="attack-result-overlay @(Cue.Amount == 0 ? "is-no-damage" : null)" role="status" aria-live="polite">
+        <span class="eyebrow">Attack</span>
+        <strong>@Cue.Label</strong>
+        <b>@(Cue.Amount == 0 ? "NO DAMAGE" : $"{Cue.Amount} DAMAGE")</b>
+    </div>
+}
+else if (Cue?.Kind == MatchAnimationKindView.Reveal && Cue.RevealedCards.Length > 0)
+{
+    <div class="card-reveal-overlay" role="dialog" aria-modal="true" aria-label="Revealed cards">
+        <span class="eyebrow">@(Cue.ActorIsLocalPlayer == true ? "Your Prize Cards" : "Revealed cards")</span>
+        <div class="revealed-cards">
+            @foreach (var card in Cue.RevealedCards)
+            {
+                <CardFace Card="card" Size="CardFaceSize.Hand" />
+            }
+        </div>
+        <button type="button" class="primary reveal-continue" @onclick="RevealAcknowledged">Continue</button>
+    </div>
+}
+else if (Cue is not null)
+{
+    <div class="event-toast is-visible" role="status" aria-live="polite">@PublicText(Cue.Label)</div>
+}
+else
+{
+    <div class="visually-hidden" role="status" aria-live="polite">@AnimationStatus</div>
+}
+
+@code {
+    [Parameter]
+    public MatchEventCueView? Cue { get; set; }
+
+    [Parameter]
+    public CardView? PresentationCard { get; set; }
+
+    [Parameter]
+    public bool ShowPresentationCard { get; set; }
+
+    [Parameter]
+    public string? AnimationStatus { get; set; }
+
+    [Parameter]
+    public EventCallback RevealAcknowledged { get; set; }
+
+    private static string TurnCueText(MatchEventCueView cue) =>
+        cue.ActorIsLocalPlayer switch
+        {
+            true => "YOUR TURN",
+            false => "OPPONENT'S TURN",
+            null => "NEXT TURN",
+        };
+}

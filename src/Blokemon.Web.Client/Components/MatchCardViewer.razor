@@ -1,0 +1,27 @@
+@*
+    A card held down is read full size, at whatever scale the viewport allows, and released the
+    moment the pointer is. The scale is measured in the browser and handed in.
+*@
+<div class="card-viewer"
+     role="dialog"
+     aria-modal="true"
+     aria-label="@($"{Card.Name}, full size")"
+     style="@Style"
+     @onpointerup="Closed"
+     @onpointercancel="Closed">
+    <CardFace Card="Card"
+              Size="CardFaceSize.Showcase"
+              Class="card-viewer-card"
+              ShowTitle="false" />
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required CardView Card { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    [Parameter]
+    public EventCallback Closed { get; set; }
+}

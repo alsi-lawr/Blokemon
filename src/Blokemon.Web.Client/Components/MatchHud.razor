@@ -1,0 +1,57 @@
+@*
+    The row across the top of the table: whose turn it is, the way out of an animation, and the
+    two moves that belong to the turn rather than to any card. It decides nothing - the page
+    hands it the actions that are legal and hears back which one was pressed.
+*@
+<div class="battle-hud">
+    @* Whose turn it is is written across the middle of the table, so on a phone the chip
+       keeps only the round number and the HUD stays one row deep. *@
+    <span class="round-chip"><span class="eyebrow">Turn @Frame.Round</span><span class="round-status"> · @TurnStatus(Frame)</span></span>
+    @if (Animating)
+    {
+        <button class="secondary skip-animation" @onclick="SkipRequested">Skip animation</button>
+    }
+    <div class="hud-actions">
+        @if (EndTurn is { } endTurn)
+        {
+            <button type="button" class="hud-button hud-end-turn" @onclick="() => ActionStarted.InvokeAsync(endTurn)" disabled="@Busy">End turn</button>
+        }
+        @if (Resign is { } resign)
+        {
+            <button type="button" class="hud-button hud-resign" @onclick="() => ActionStarted.InvokeAsync(resign)" disabled="@Busy">Resign</button>
+        }
+        <button type="button" class="hud-button fullscreen-toggle" aria-label="Toggle full screen" title="Full screen" @onclick="FullscreenToggled">
+            <svg class="fullscreen-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" /></svg>
+            <svg class="fullscreen-exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5" /></svg>
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required MatchFrameView Frame { get; set; }
+
+    [Parameter]
+    public bool Animating { get; set; }
+
+    [Parameter]
+    public bool Busy { get; set; }
+
+    [Parameter]
+    public MatchActionView? EndTurn { get; set; }
+
+    [Parameter]
+    public MatchActionView? Resign { get; set; }
+
+    [Parameter]
+    public EventCallback SkipRequested { get; set; }
+
+    [Parameter]
+    public EventCallback<MatchActionView> ActionStarted { get; set; }
+
+    [Parameter]
+    public EventCallback FullscreenToggled { get; set; }
+
+    private static string TurnStatus(MatchFrameView frame) =>
+        frame.Player.HasTurn ? "Your turn" : $"{frame.Opponent.Name}'s turn";
+}

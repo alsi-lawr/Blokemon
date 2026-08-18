@@ -1,0 +1,62 @@
+@*
+    Both halves keep a place for a Kit in play at all times, so nothing on the table moves
+    when one is played or leaves.
+*@
+<div class="battlefield @(Auras.Cards.Length > 0 || Auras.Bench ? "is-choosing" : null)" @onclick="BackgroundTapped">
+    <MatchSide Side="Frame.Opponent"
+               Opponent="true"
+               SelectedCardInstanceId="@SelectedCardInstanceId"
+               CueSourceCardInstanceId="@(Cue?.SourceCardInstanceId)"
+               CueTargetCardInstanceIds="@(Cue?.TargetCardInstanceIds ?? [])"
+               AuraCardInstanceIds="Auras.Cards"
+               AuraSelectedCardInstanceIds="Auras.Selected"
+               AuraCounters="Auras.Counters"
+               CardTapped="CardTapped"
+               CardViewOpened="CardViewOpened"
+               CardViewClosed="CardViewClosed" />
+    <div class="turn-ribbon">@TurnRibbon(Frame)</div>
+    <MatchSide Side="Frame.Player"
+               SelectedCardInstanceId="@SelectedCardInstanceId"
+               CueSourceCardInstanceId="@(Cue?.SourceCardInstanceId)"
+               CueTargetCardInstanceIds="@(Cue?.TargetCardInstanceIds ?? [])"
+               AuraCardInstanceIds="Auras.Cards"
+               AuraSelectedCardInstanceIds="Auras.Selected"
+               AuraCounters="Auras.Counters"
+               BenchDestination="Auras.Bench"
+               CardTapped="CardTapped"
+               CardViewOpened="CardViewOpened"
+               CardViewClosed="CardViewClosed"
+               BenchTapped="BenchTapped" />
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required MatchFrameView Frame { get; set; }
+
+    [Parameter, EditorRequired]
+    public required MatchAuraView Auras { get; set; }
+
+    [Parameter]
+    public string? SelectedCardInstanceId { get; set; }
+
+    [Parameter]
+    public MatchEventCueView? Cue { get; set; }
+
+    [Parameter]
+    public EventCallback BackgroundTapped { get; set; }
+
+    [Parameter]
+    public EventCallback<string> CardTapped { get; set; }
+
+    [Parameter]
+    public EventCallback<string> CardViewOpened { get; set; }
+
+    [Parameter]
+    public EventCallback CardViewClosed { get; set; }
+
+    [Parameter]
+    public EventCallback BenchTapped { get; set; }
+
+    private static string TurnRibbon(MatchFrameView frame) =>
+        frame.Player.HasTurn ? "Your turn" : $"{frame.Opponent.Name}'s turn";
+}

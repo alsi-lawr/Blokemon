@@ -1,0 +1,154 @@
+@using static Blokemon.Web.Client.Components.MatchText
+@*
+    The card inspector, and the tab that opens it. Both are part of the table whether or not a
+    card is being read, so the dock is always here and only slides: nothing else on the table
+    moves when it opens.
+*@
+<aside class="action-dock @(DockOpen ? "is-open" : "is-retracted")"
+       aria-label="Card inspector"
+       aria-hidden="@(DockOpen ? "false" : "true")"
+       inert="@(!DockOpen)">
+    @if (Selected is null)
+    {
+        <div class="dock-empty"><span class="eyebrow">Card inspector</span><h2>Tap a card.</h2><p>Tap a card to read it here. Press and hold any card to see it full size.</p></div>
+    }
+    else
+    {
+        <div class="selected-card-preview">
+            <CardFace Card="Selected.Card" Size="CardFaceSize.Preview" />
+        </div>
+        <div class="selected-card-head"><div><span class="eyebrow">@PublicZone(Selected.Zone)</span><h2>@Selected.Card.Name</h2><small>@(Math.Max(0, Selected.HitPoints - Selected.Damage)) / @Selected.HitPoints HP</small></div></div>
+        <div class="state-line">
+            <span>@Selected.AttachedEnergy.Length Energy</span>
+            @foreach (var tool in Selected.AttachedTools)
+            {
+                <span>Tool: @tool.Name</span>
+            }
+            <span>@Selected.Damage damage</span>
+            @foreach (var condition in Selected.Conditions)
+            {
+                <span>@condition</span>
+            }
+        </div>
+
+        @if (Selected.Card.Rules.Length > 0)
+        {
+            <section class="selected-card-rules" aria-label="Printed card text">
+                <h3>Card text</h3>
+                @foreach (var rule in Selected.Card.Rules)
+                {
+                    <article class="selected-card-rule">
+                        <div class="selected-card-rule-head">
+                            <span>@RuleKind(rule.Kind)</span>
+                            @if (rule.EnergyCost.Length > 0)
+                            {
+                                <span class="energy-cost" aria-label="@EnergyCostLabel(rule)">@foreach (var energy in rule.EnergyCost){<i title="@($"{energy} Energy")">@EnergyInitial(energy)</i>}</span>
+                            }
+                            <b>@rule.Name</b>
+                            @if (rule.Damage is { } damage)
+                            {
+                                <strong>@damage</strong>
+                            }
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(rule.Text))
+                        {
+                            <p>@rule.Text</p>
+                        }
+                    </article>
+                }
+            </section>
+        }
+
+        @if (Selected.Id == ActiveCardInstanceId && Attacks.Length > 0)
+        {
+            <p class="phase-help">Choose an attack. Attacking ends your turn.</p>
+            <div class="attack-list">
+                @foreach (var attack in Attacks)
+                {
+                    <button class="attack-button @(attack.ActionId is not null ? "ready" : null)"
+                            disabled="@(attack.ActionId is null || Busy)"
+                            aria-describedby="@($"attack-{attack.EffectId}-reason")"
+                            @onclick="() => AttackChosen.InvokeAsync(attack)">
+                        <span class="attack-title">
+                            <span class="energy-cost" aria-label="@EnergyCostLabel(attack)">@foreach (var energy in attack.EnergyCost){<i title="@($"{energy} Energy")">@EnergyInitial(energy)</i>}</span>
+                            <b>@attack.Name</b>
+                            <strong>@(attack.PrintedDamage == 0 ? "—" : attack.PrintedDamage)</strong>
+                        </span>
+                        <small id="@($"attack-{attack.EffectId}-reason")">@(attack.DisabledReason is null ? "Ready · ends your turn" : PublicText(attack.DisabledReason))</small>
+                    </button>
+                }
+            </div>
+        }
+
+        @if (CanPlaySelected)
+        {
+            <div class="dock-actions">
+                <button class="primary" @onclick="() => CardTapped.InvokeAsync(Selected.Id)" disabled="@Busy">Play @Selected.Card.Name</button>
+            </div>
+        }
+    }
+    <details class="dock-log"><summary>Recent events</summary><ol>@foreach (var entry in RecentEvents){<li>@PublicText(entry)</li>}</ol></details>
+</aside>
+<button type="button"
+        class="dock-toggle"
+        aria-label="@(DockOpen ? "Close card inspector" : "Open card inspector")"
+        aria-expanded="@(DockOpen ? "true" : "false")"
+        title="@(DockOpen ? "Close card inspector" : "Open card inspector")"
+        @onclick="DockToggled">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6 8.5 12l6 6" /></svg>
+</button>
+
+@code {
+    [Parameter]
+    public MatchCardInstanceView? Selected { get; set; }
+
+    [Parameter]
+    public string? ActiveCardInstanceId { get; set; }
+
+    [Parameter]
+    public MatchAttackView[] Attacks { get; set; } = [];
+
+    [Parameter]
+    public string[] RecentEvents { get; set; } = [];
+
+    [Parameter]
+    public bool DockOpen { get; set; }
+
+    [Parameter]
+    public bool Busy { get; set; }
+
+    [Parameter]
+    public bool CanPlaySelected { get; set; }
+
+    [Parameter]
+    public EventCallback<MatchAttackView> AttackChosen { get; set; }
+
+    [Parameter]
+    public EventCallback<string> CardTapped { get; set; }
+
+    [Parameter]
+    public EventCallback DockToggled { get; set; }
+
+    private static string RuleKind(CardRuleKindView kind) =>
+        kind switch
+        {
+            CardRuleKindView.Ability => "Ability",
+            CardRuleKindView.Attack => "Attack",
+            CardRuleKindView.Rule => "Rule",
+            CardRuleKindView.Energy => "Energy",
+            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+        };
+
+    private static string EnergyCostLabel(MatchAttackView attack) =>
+        attack.EnergyCost.Length == 0
+            ? "No Energy cost"
+            : string.Join(", ", attack.EnergyCost.Select(static energy => $"{energy} Energy"));
+
+    private static string EnergyCostLabel(CardRuleView rule) =>
+        rule.EnergyCost.Length == 0
+            ? "No Energy cost"
+            : string.Join(", ", rule.EnergyCost.Select(static energy => $"{energy} Energy"));
+
+    private static string EnergyInitial(string energy) =>
+        string.IsNullOrEmpty(energy) ? "?" : energy[..1];
+}

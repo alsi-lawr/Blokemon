@@ -1,0 +1,90 @@
+@using System.Globalization
+@*
+    How many cards are held is a layout fact: the hand is laid out from it so that a hand
+    of any size is dealt across the width the screen has rather than off the edge of it.
+*@
+<div class="hand-zone"
+     style="@HandStyle(Hand.Length)"
+     aria-label="Your hand"
+     @onclick="BackgroundTapped">
+    @if (Hand.Length == 0)
+    {
+        <span class="empty-hand">Your hand is empty</span>
+    }
+    @for (var handIndex = 0; handIndex < Hand.Length; handIndex++)
+    {
+        var card = Hand[handIndex];
+        <CardPress CardInstanceId="@card.Id"
+                   Class="@HandCardClass(card.Id, Auras)"
+                   Style="@FanStyle(handIndex, Hand.Length)"
+                   AriaLabel="@HandCardLabel(card, Auras)"
+                   AriaPressed="@Auras.Pressed(card.Id)"
+                   Tapped="CardTapped"
+                   ViewOpened="CardViewOpened"
+                   ViewClosed="CardViewClosed">
+            <span class="hand-card-visual">
+                <CardFace Card="card.Card" Size="CardFaceSize.Hand" ShowTitle="false" />
+            </span>
+            @if (Auras.Counter(card.Id) is { } handCounter)
+            {
+                <span class="aura-counter">@handCounter</span>
+            }
+        </CardPress>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required MatchCardInstanceView[] Hand { get; set; }
+
+    [Parameter, EditorRequired]
+    public required MatchAuraView Auras { get; set; }
+
+    [Parameter]
+    public EventCallback BackgroundTapped { get; set; }
+
+    [Parameter]
+    public EventCallback<string> CardTapped { get; set; }
+
+    [Parameter]
+    public EventCallback<string> CardViewOpened { get; set; }
+
+    [Parameter]
+    public EventCallback CardViewClosed { get; set; }
+
+    private static string HandCardClass(string cardInstanceId, MatchAuraView auras)
+    {
+        var classes = new List<string>(3) { "hand-card" };
+        if (auras.IsSelected(cardInstanceId))
+        {
+            classes.Add("is-aura is-aura-selected");
+        }
+        else if (auras.IsAura(cardInstanceId))
+        {
+            classes.Add("is-aura");
+        }
+        return string.Join(' ', classes);
+    }
+
+    // The fan is measured from the hand's own size, so every card keeps a clear press area
+    // however many are held: a fixed repeating pattern folds back on itself once the hand grows
+    // past the pattern and stacks two cards almost exactly on top of each other.
+    private static string FanStyle(int index, int count)
+    {
+        var offset = Math.Clamp(index - (count - 1) / 2.0, -3.5, 3.5);
+        var turn = (offset * 3.4).ToString("0.##", CultureInfo.InvariantCulture);
+        var lift = (offset * offset * 1.7).ToString("0.##", CultureInfo.InvariantCulture);
+        // Where a card sits in the hand is also what stacks it: held cards overlap, so each one
+        // has to lie over the one before it whatever else is true of it, or a card between two
+        // glowing ones would lose the strip it is pressed by.
+        return $"--fan-turn: {turn}deg; --fan-lift: {lift}px; --hand-index: {index.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static string HandStyle(int count) =>
+        $"--hand-count: {Math.Max(1, count).ToString(CultureInfo.InvariantCulture)}";
+
+    private static string HandCardLabel(MatchCardInstanceView card, MatchAuraView auras) =>
+        auras.IsAura(card.Id) || auras.IsSelected(card.Id)
+            ? $"Choose {card.Card.Name} in your hand. Press and hold to view the card."
+            : $"{card.Card.Name} in your hand. Press and hold to view the card.";
+}
