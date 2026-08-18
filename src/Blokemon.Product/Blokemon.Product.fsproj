@@ -10,7 +10,19 @@
     <Compile Include="Decks.fs" />
     <Compile Include="StarterDecks.fs" />
     <Compile Include="LocalProfileSnapshot.fs" />
+    <Compile Include="ProfileValues.fs" />
+    <Compile Include="ProfileState.fs" />
+    <Compile Include="DeckRules.fs" />
+    <Compile Include="ProfilePacks.fs" />
+    <Compile Include="ProfileDecks.fs" />
+    <Compile Include="ProfileClaims.fs" />
+    <Compile Include="ProfileSnapshotProjection.fs" />
+    <Compile Include="ProfileRestorationSteps.fs" />
+    <Compile Include="ProfileRestorationHistory.fs" />
+    <Compile Include="ProfileRestorationDecks.fs" />
+    <Compile Include="ProfileRestoration.fs" />
     <Compile Include="LocalProfile.fs" />
+    <Compile Include="DeckValidator.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
