@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Blokemon.App;
 using Blokemon.App.Catalogue;
 using Blokemon.App.Contracts;
@@ -1075,6 +1076,53 @@ public sealed class LocalMatchTests
         state.Match.ShouldNotBeNull();
         await AssertEquivalent(state.Match, applied.Match!);
         after.ShouldBe(stripped);
+    }
+
+    [Test]
+    [Arguments("absent")]
+    [Arguments("null")]
+    public async Task PersistedCommandWithoutItsActionMember_IsTypedAndNonMutating(string damage)
+    {
+        // The other half of the same promise: a stored command whose action member is absent, or
+        // written as an explicit null, carries a null union that the deserializer does not refuse.
+        // Reading its case would throw a NullReferenceException past every JsonException handler
+        // around the load, so the ingress guard rejects the saved battle as damaged instead.
+        await using var database = await TestDatabase.Create();
+        var fixture = await ReadyFixture.Create(database);
+        var started = Value(
+            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
+        );
+        Value(
+            await fixture.Application.ApplyMatchAction(
+                started.Match!.Frame.Id,
+                RequestFor(started.Match, started.Match.LegalActions[0], Guid.NewGuid())
+            )
+        );
+        var original = await fixture.Store.Read("match");
+        var document = JsonNode.Parse(original!.Json)!.AsObject();
+        var command = document["commands"]!.AsArray()[0]!.AsObject();
+        if (damage == "absent")
+        {
+            command.Remove("action");
+        }
+        else
+        {
+            command["action"] = null;
+        }
+        var damagedJson = document.ToJsonString();
+        damagedJson.ShouldNotBe(original.Json);
+        await fixture.Store.Update("match", original.Revision, damagedJson);
+        var damaged = await fixture.Store.Read("match");
+
+        var state = Value(await fixture.Restart().State());
+        var after = await fixture.Store.Read("match");
+
+        state.Match.ShouldBeNull();
+        state.MatchError!.Code.ShouldBe("match.replay_invalid");
+        state.MatchError.Message.ShouldBe("The saved battle is damaged. No data changed.");
+        after.ShouldBe(damaged);
+        state.Profile.ShouldNotBeNull();
+        state.Decks.ShouldHaveSingleItem();
     }
 
     [Test]

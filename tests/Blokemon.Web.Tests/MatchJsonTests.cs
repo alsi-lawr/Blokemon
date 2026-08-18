@@ -283,6 +283,40 @@ public sealed class MatchJsonTests
         await Task.CompletedTask;
     }
 
+    private const string CommandEnvelope =
+        "{\"id\":{\"value\":\"c1\"},\"matchId\":{\"value\":\"match\"},"
+        + "\"actor\":{\"value\":\"player\"},\"expectedRevision\":{\"value\":0}";
+
+    [Test]
+    public async Task CommandWithANullUnionMember_IsRefusedByTheStructuralGuard()
+    {
+        // A union member is read by a hand-written converter, and System.Text.Json neither writes
+        // over an absent member nor calls a converter for a null token: both shapes arrive as a
+        // null union rather than as the JsonException a null collection member raises. Reading the
+        // case of one throws past the deserializer's handlers, so the ingress guard refuses it.
+        const string absentAction = $"{CommandEnvelope},\"choices\":[]}}";
+        const string nullAction = $"{CommandEnvelope},\"choices\":[],\"action\":null}}";
+        const string nullChoice =
+            $"{CommandEnvelope},\"choices\":[null],\"action\":{{\"$command\":\"resign\"}}}}";
+        // The worst nested case the census found: a record carried inside a choice payload.
+        const string nullAllocation =
+            $"{CommandEnvelope},\"choices\":[{{\"$choice\":\"distribution\","
+            + "\"choiceId\":{\"value\":\"d\"},\"values\":[null]}],\"action\":{\"$command\":\"resign\"}}";
+
+        var damaged = new[] { absentAction, nullAction, nullChoice, nullAllocation }
+            .Select(json => JsonSerializer.Deserialize<MatchCommand>(json, MatchJson.Options)!)
+            .ToArray();
+
+        ReferenceEquals(damaged[0].Action, null).ShouldBeTrue();
+        ReferenceEquals(damaged[1].Action, null).ShouldBeTrue();
+        ReferenceEquals(damaged[2].Choices[0], null).ShouldBeTrue();
+        foreach (var command in damaged)
+        {
+            MatchIdentity.commandIsStructurallyValid(command).ShouldBeFalse();
+        }
+        await Task.CompletedTask;
+    }
+
     [Test]
     public async Task SerializedCommandLog_ReplaysToADeeplyEqualState()
     {

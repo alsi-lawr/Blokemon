@@ -49,6 +49,12 @@ module internal MatchIdentity =
         && start.FirstDeck.Cards |> Seq.forall (fun card -> hasValue card.Value)
         && start.SecondDeck.Cards |> Seq.forall (fun card -> hasValue card.Value)
 
+    /// A union member a stored document never wrote, or wrote as an explicit null, arrives here as
+    /// a null reference: System.Text.Json leaves an unmentioned member alone, and it never calls a
+    /// converter for a null token, so neither shape is refused by the deserialiser. Reading the
+    /// case tag of one throws a NullReferenceException past the JsonException handlers around the
+    /// deserialise, so the guards test the reference before they match on it. The nested records a
+    /// choice payload carries are read the same way and get the same test.
     let effectChoiceIsStructurallyValid (choice: EffectChoice | null) =
         match choice with
         | null -> false
@@ -56,10 +62,12 @@ module internal MatchIdentity =
         | EffectChoice.Cards(_, cards) -> cards |> Seq.forall cardIdHasValue
         | EffectChoice.Attack(_, attack) -> hasValue attack.Value
         | EffectChoice.Distribution(_, allocations) ->
-            allocations |> Seq.forall (fun item -> hasValue item.Card.Value)
+            allocations
+            |> Seq.forall (fun item -> not (isMissing item) && hasValue item.Card.Value)
         | EffectChoice.Attachments(_, placements) ->
             placements
-            |> Seq.forall (fun item -> hasValue item.Vim.Value && hasValue item.Bloke.Value)
+            |> Seq.forall (fun item ->
+                not (isMissing item) && hasValue item.Vim.Value && hasValue item.Bloke.Value)
         | EffectChoice.Optional _
         | EffectChoice.Amount _
         | EffectChoice.MechanicalType _ -> true
@@ -72,6 +80,7 @@ module internal MatchIdentity =
             || not (hasValue value.MatchId.Value)
             || not (hasValue value.Actor.Value)
             || value.ExpectedRevision.Value < 0L
+            || isMissing value.Action
             || value.Choices
                |> Seq.exists (fun choice -> not (effectChoiceIsStructurallyValid choice))
             ->
