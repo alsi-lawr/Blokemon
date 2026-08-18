@@ -168,15 +168,13 @@ module internal MatchActionFlow =
                                                 | command ->
 
                                                     match engine.Apply(current.State, command) with
-                                                    | :? CommandOutcome.Rejected as rejected ->
+                                                    | CommandOutcome.Rejected(_, rejected) ->
                                                         return
                                                             { View = null
-                                                              Error =
-                                                                rejection rejected.Rejection.Code
+                                                              Error = rejection rejected.Code
                                                               Presentation = null }
-                                                    | outcome ->
-                                                        let applied =
-                                                            outcome :?> CommandOutcome.Applied
+                                                    | CommandOutcome.Applied(appliedState,
+                                                                             appliedEvents) ->
 
                                                         let commands =
                                                             List<MatchCommand>(
@@ -188,17 +186,17 @@ module internal MatchActionFlow =
                                                         let events =
                                                             List<MatchEvent>(current.Events)
 
-                                                        events.AddRange applied.Events
+                                                        events.AddRange appliedEvents
 
                                                         let presentation =
                                                             List<PendingPresentation>(
-                                                                [ { State = applied.State
-                                                                    Events = applied.Events } ]
+                                                                [ { State = appliedState
+                                                                    Events = appliedEvents } ]
                                                             )
 
                                                         let advanced =
                                                             advanceCpu
-                                                                applied.State
+                                                                appliedState
                                                                 commands
                                                                 events
                                                                 presentation

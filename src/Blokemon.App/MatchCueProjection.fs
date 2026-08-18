@@ -29,13 +29,15 @@ module internal MatchCueProjection =
         else
 
             let eventSource =
-                if matchEvent.SourceCard.HasValue then
+                if matchEvent.SourceCard.IsSome then
                     matchEvent.SourceCard
                 else
-                    commandSource matchEvent.Command
+                    match matchEvent.Command with
+                    | ValueSome command -> commandSource command
+                    | ValueNone -> ValueNone
 
             let source: string | null =
-                if eventSource.HasValue && canReveal state human eventSource.Value then
+                if eventSource.IsSome && canReveal state human eventSource.Value then
                     eventSource.Value.Value
                 else
                     null
@@ -68,11 +70,14 @@ module internal MatchCueProjection =
                      resolvedAttackDamage matchEvent stepEvents
                  else
                      matchEvent.Amount),
-                matchEvent.BadgeSide,
-                (if matchEvent.Actor.HasValue then
-                     Nullable(matchEvent.Actor.Value = human)
-                 else
-                     Nullable()),
+                (match matchEvent.BadgeSide with
+                 | ValueSome badge -> Nullable badge
+                 | ValueNone -> Nullable()),
+                (match matchEvent.Actor with
+                 | ValueSome eventActor ->
+                     let isHuman = eventActor = human
+                     Nullable isHuman
+                 | ValueNone -> Nullable()),
                 revealed
             )
 

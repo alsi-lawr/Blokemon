@@ -87,114 +87,75 @@ module internal MatchCardProjection =
         )
 
     let actionSubject (command: MatchCommand) : ActionSubjectView =
-        // A Game union, so this stays visitor-style until Blokemon.Game migrates in slice 7.
-        command.Match<ActionSubjectView>(
-            (fun _ ->
-                { Source = null
-                  Target = null
-                  Effect = null }),
-            (fun opening ->
-                { Source = opening.Oche.Value
-                  Target = null
-                  Effect = null }),
-            (fun attach ->
-                { Source = attach.Vim.Value
-                  Target = attach.Bloke.Value
-                  Effect = null }),
-            (fun play ->
-                { Source = play.Bloke.Value
-                  Target = null
-                  Effect = null }),
-            (fun promote ->
-                { Source = promote.Promotion.Value
-                  Target = promote.Bloke.Value
-                  Effect = null }),
-            (fun kit ->
-                { Source = kit.Kit.Value
-                  Target = if kit.Target.HasValue then kit.Target.Value.Value else null
-                  Effect = null }),
-            (fun taxi ->
-                { Source = taxi.BoothBloke.Value
-                  Target = null
-                  Effect = null }),
-            (fun trick ->
-                { Source = trick.Source.Value
-                  Target = null
-                  Effect = trick.Effect.Value }),
-            (fun attack ->
-                { Source = attack.Attacker.Value
-                  Target = null
-                  Effect = attack.AttackId.Value }),
-            (fun fossil ->
-                { Source = fossil.Fossil.Value
-                  Target = null
-                  Effect = null }),
-            (fun _ ->
-                { Source = null
-                  Target = null
-                  Effect = null }),
-            (fun replacement ->
-                { Source = replacement.BoothBloke.Value
-                  Target = null
-                  Effect = null }),
-            (fun _ ->
-                { Source = null
-                  Target = null
-                  Effect = null }),
-            (fun knockout ->
-                { Source =
-                    if knockout.Vim.HasValue then
-                        knockout.Vim.Value.Value
-                    else
-                        null
-                  Target = null
-                  Effect = null }),
-            (fun _ ->
-                { Source = null
-                  Target = null
-                  Effect = null }),
-            (fun _ ->
-                { Source = null
-                  Target = null
-                  Effect = null })
-        )
+        let subject (source: string | null) (target: string | null) (effect: string | null) =
+            { Source = source
+              Target = target
+              Effect = effect }
+
+        match command.Action with
+        | MatchAction.ChooseOpening(oche, _) -> subject oche.Value null null
+        | MatchAction.AttachVim(vim, bloke) -> subject vim.Value bloke.Value null
+        | MatchAction.PlayBloke bloke -> subject bloke.Value null null
+        | MatchAction.Promote(promotion, promoted) -> subject promotion.Value promoted.Value null
+        | MatchAction.PlayKit(kit, target) ->
+            subject
+                kit.Value
+                (match target with
+                 | ValueSome value -> value.Value
+                 | ValueNone -> null)
+                null
+        | MatchAction.Taxi(boothBloke, _) -> subject boothBloke.Value null null
+        | MatchAction.UsePartyTrick(source, effect) -> subject source.Value null effect.Value
+        | MatchAction.Attack(attacker, attackId) -> subject attacker.Value null attackId.Value
+        | MatchAction.ChuckFossil fossil -> subject fossil.Value null null
+        | MatchAction.ChooseReplacement replacement -> subject replacement.Value null null
+        | MatchAction.ResolveKnockoutTrigger vim ->
+            subject
+                (match vim with
+                 | ValueSome value -> value.Value
+                 | ValueNone -> null)
+                null
+                null
+        | MatchAction.ChooseMulliganBonus _
+        | MatchAction.EndRound
+        | MatchAction.ResolveEffectChoice
+        | MatchAction.ResolveBarChitTrigger _
+        | MatchAction.Resign -> subject null null null
 
     let actionLabel (catalogue: BlokemonCatalogue) (state: MatchState) (command: MatchCommand) =
         let cardName = cardName catalogue
 
-        // A Game union, so this stays visitor-style until Blokemon.Game migrates in slice 7.
-        command.Match(
-            (fun bonus ->
-                if bonus.CardsToDraw = 0 then
-                    "Draw no extra cards"
-                else
-                    $"""Draw {bonus.CardsToDraw} extra {if bonus.CardsToDraw = 1 then "card" else "cards"}"""),
-            (fun opening -> $"Make {cardName state opening.Oche} your Active Blokemon"),
-            (fun attach -> $"Attach {cardName state attach.Vim} to {cardName state attach.Bloke}"),
-            (fun play -> $"Play {cardName state play.Bloke} to the Bench"),
-            (fun promote ->
-                $"Evolve {cardName state promote.Bloke} into {cardName state promote.Promotion}"),
-            (fun kit -> $"Play {cardName state kit.Kit}"),
-            (fun taxi -> $"Retreat to {cardName state taxi.BoothBloke}"),
-            (fun trick -> catalogue.EffectName trick.Effect.Value),
-            (fun attack -> $"Attack with {catalogue.EffectName attack.AttackId.Value}"),
-            (fun fossil -> $"Discard {cardName state fossil.Fossil}"),
-            (fun _ -> "End the turn"),
-            (fun replacement ->
-                $"Move {cardName state replacement.BoothBloke} from the Bench to Active"),
-            (fun _ -> "Make the required choice"),
-            (fun knockout ->
-                if knockout.Vim.HasValue then
-                    $"Attach {cardName state knockout.Vim.Value}"
-                else
-                    "Do not attach Energy"),
-            (fun barChit ->
-                if barChit.PutOntoBooth then
-                    "Put the card on the Bench"
-                else
-                    "Put the card in your Hand"),
-            (fun _ -> "Resign the battle")
-        )
+        match command.Action with
+        | MatchAction.ChooseMulliganBonus cardsToDraw ->
+            if cardsToDraw = 0 then
+                "Draw no extra cards"
+            else
+                $"""Draw {cardsToDraw} extra {if cardsToDraw = 1 then "card" else "cards"}"""
+        | MatchAction.ChooseOpening(oche, _) -> $"Make {cardName state oche} your Active Blokemon"
+        | MatchAction.AttachVim(vim, bloke) ->
+            $"Attach {cardName state vim} to {cardName state bloke}"
+        | MatchAction.PlayBloke bloke -> $"Play {cardName state bloke} to the Bench"
+        | MatchAction.Promote(promotion, promoted) ->
+            $"Evolve {cardName state promoted} into {cardName state promotion}"
+        | MatchAction.PlayKit(kit, _) -> $"Play {cardName state kit}"
+        | MatchAction.Taxi(boothBloke, _) -> $"Retreat to {cardName state boothBloke}"
+        | MatchAction.UsePartyTrick(_, effect) -> catalogue.EffectName effect.Value
+        | MatchAction.Attack(_, attackId) -> $"Attack with {catalogue.EffectName attackId.Value}"
+        | MatchAction.ChuckFossil fossil -> $"Discard {cardName state fossil}"
+        | MatchAction.EndRound -> "End the turn"
+        | MatchAction.ChooseReplacement replacement ->
+            $"Move {cardName state replacement} from the Bench to Active"
+        | MatchAction.ResolveEffectChoice -> "Make the required choice"
+        | MatchAction.ResolveKnockoutTrigger vim ->
+            match vim with
+            | ValueSome value -> $"Attach {cardName state value}"
+            | ValueNone -> "Do not attach Energy"
+        | MatchAction.ResolveBarChitTrigger putOntoBooth ->
+            if putOntoBooth then
+                "Put the card on the Bench"
+            else
+                "Put the card in your Hand"
+        | MatchAction.Resign -> "Resign the battle"
 
     let eventLabel
         (catalogue: BlokemonCatalogue)
@@ -207,19 +168,20 @@ module internal MatchCardProjection =
         let actionLabel = actionLabel catalogue
 
         let actor =
-            if matchEvent.Actor.HasValue then
-                playerName matchEvent.Actor.Value human displayName
-            else
-                "The match"
+            match matchEvent.Actor with
+            | ValueSome value -> playerName value human displayName
+            | ValueNone -> "The match"
 
         match matchEvent.Kind with
         | MatchEventKind.MatchStarted -> "The battle started."
         | MatchEventKind.CommandApplied ->
             match matchEvent.Command with
-            | :? MatchCommand.PlayKit as playKit when playKit.Target.HasValue ->
-                $"{actor}: Attached {cardName state playKit.Kit} to {cardName state playKit.Target.Value}."
-            | null -> raise (UnreachableException())
-            | command -> $"{actor}: {actionLabel state command}."
+            | ValueSome command ->
+                match command.Action with
+                | MatchAction.PlayKit(kit, ValueSome target) ->
+                    $"{actor}: Attached {cardName state kit} to {cardName state target}."
+                | _ -> $"{actor}: {actionLabel state command}."
+            | ValueNone -> raise (UnreachableException())
         | MatchEventKind.CardsShuffled -> $"{actor} shuffled the Deck."
         | MatchEventKind.CardsDrawn ->
             $"""{actor} drew {matchEvent.Amount} {if matchEvent.Amount = 1 then "card" else "cards"}."""
@@ -233,7 +195,7 @@ module internal MatchCardProjection =
             $"""{actor} revealed {matchEvent.TargetCards.Count} {if matchEvent.TargetCards.Count = 1 then "card" else "cards"}."""
         | MatchEventKind.BeerMatTossed ->
             let landed =
-                if matchEvent.BadgeSide.HasValue && matchEvent.BadgeSide.Value then
+                if matchEvent.BadgeSide = ValueSome true then
                     "badge"
                 else
                     "blank"
@@ -250,7 +212,7 @@ module internal MatchCardProjection =
         | MatchEventKind.RoundStarted -> $"{actor}'s turn started."
         | MatchEventKind.RoundEnded -> $"{actor} ended the turn."
         | MatchEventKind.BlokeSentHome -> "A Blokemon was Knocked Out."
-        | MatchEventKind.AttackDeclared when matchEvent.Effect.HasValue ->
+        | MatchEventKind.AttackDeclared when matchEvent.Effect.IsSome ->
             $"{actor} used {catalogue.EffectName matchEvent.Effect.Value.Value}."
         | MatchEventKind.AttackDeclared -> $"{actor} attacked."
         | MatchEventKind.AttackCancelled -> "The attack stopped."

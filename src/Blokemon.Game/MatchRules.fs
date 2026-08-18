@@ -1,0 +1,316 @@
+namespace Blokemon.Game
+
+open System
+open System.Linq
+open Blokemon.Core.SetDesign
+open Blokemon.Game.EffectDamage
+
+/// What a handler returns: either accepted, or a rejection plus the requirements the caller still
+/// has to answer.
+type internal HandlerResult =
+    { Rejection: CommandRejectionCode voption
+      Requirements: FrozenList<ChoiceRequirement> }
+
+[<RequireQualifiedAccess>]
+module internal HandlerResult =
+
+    let accepted =
+        { Rejection = ValueNone
+          Requirements = FrozenList.empty }
+
+    let reject (rejection: CommandRejectionCode) =
+        { Rejection = ValueSome rejection
+          Requirements = FrozenList.empty }
+
+    let rejectWith (rejection: CommandRejectionCode) (requirements: FrozenList<ChoiceRequirement>) =
+        { Rejection = ValueSome rejection
+          Requirements = requirements }
+
+/// The rule questions the engine asks that do not change anything: deck legality, turn legality,
+/// what an effect costs and what it is worth after modifiers.
+module internal MatchRules =
+
+    let isInPlay (card: CardState) =
+        card.Zone = CardZone.Oche || card.Zone = CardZone.Booth
+
+    let rec containsOpcode (program: BlokemonEffectInstruction array) (opcode: BlokemonOpcode) =
+        program
+        |> Array.exists (fun instruction ->
+            instruction.Opcode = opcode
+            || containsOpcode instruction.Then opcode
+            || containsOpcode instruction.Otherwise opcode)
+
+    let rec containsCondition
+        (program: BlokemonEffectInstruction array)
+        (condition: BlokemonCondition)
+        =
+        program
+        |> Array.exists (fun instruction ->
+            (instruction.Predicates
+             |> Array.exists (fun predicate -> predicate.Condition = condition))
+            || containsCondition instruction.Then condition
+            || containsCondition instruction.Otherwise condition)
+
+    let rec private flattenProgram (program: BlokemonEffectInstruction array) =
+        program
+        |> Seq.collect (fun instruction ->
+            Seq.append
+                (Seq.singleton instruction)
+                (Seq.append
+                    (flattenProgram instruction.Then)
+                    (flattenProgram instruction.Otherwise)))
+
+    let isDeclarativeHouseRule (rule: BlokemonHouseRule) =
+        flattenProgram rule.Program
+        |> Seq.forall (fun instruction ->
+            instruction.Opcode = BlokemonOpcode.Conditional
+            || instruction.Opcode = BlokemonOpcode.ContinuousPartyTrick)
+
+    let effectiveStayingPower
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (card: CardState)
+        =
+        catalog.StayingPower card
+        + (builder.Effects
+           |> Seq.filter (fun effect ->
+               effect.TargetCard = ValueSome card.Id
+               && effect.Kind = TemporaryEffectKind.ModifyStayingPower
+               && effectMatchesCardRank catalog effect card)
+           |> Seq.sumBy (fun effect -> effect.Amount))
+
+    let effectiveTaxiFare (catalog: AuthorityCatalog) (builder: MatchBuilder) (card: CardState) =
+        let mutable fare = catalog.TaxiFare card
+
+        for modifier in
+            builder.Effects
+            |> Seq.filter (fun effect ->
+                (effect.TargetCard = ValueSome card.Id || effect.TargetCard.IsNone)
+                && effect.Kind = TemporaryEffectKind.ModifyTaxiFare
+                && effectMatchesCardRank catalog effect card)
+            |> Seq.toArray do
+            let continuous =
+                match catalog.PartyTrick modifier.SourceEffect with
+                | ValueSome trick -> trick.Trigger = BlokemonTrigger.Continuous
+                | ValueNone -> false
+
+            fare <-
+                if modifier.MechanicalTypes.Count = 0 || continuous then
+                    0
+                else
+                    max 0 (fare + modifier.Amount)
+
+        fare
+
+    let canPayAttack
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (attacker: CardState)
+        (attack: BlokemonAttack)
+        =
+        if
+            builder.Effects
+            |> Seq.exists (fun effect ->
+                effect.TargetCard = ValueSome attacker.Id
+                && effect.Kind = TemporaryEffectKind.ModifyAttackCost
+                && effectMatchesCardRank catalog effect attacker
+                && effect.Amount < 0)
+        then
+            true
+        else
+            let costs = ResizeArray<BlokemonMechanicalType> attack.VimCost
+
+            for effect in
+                builder.Effects
+                |> Seq.filter (fun effect ->
+                    effect.TargetCard = ValueSome attacker.Id
+                    && effect.Kind = TemporaryEffectKind.ModifyAttackCost
+                    && effectMatchesCardRank catalog effect attacker
+                    && effect.Amount > 0)
+                |> Seq.toArray do
+                if effect.MechanicalTypes.Count = 0 then
+                    costs.AddRange(Seq.replicate effect.Amount BlokemonMechanicalType.Colorless)
+                else
+                    costs.AddRange effect.MechanicalTypes
+
+            let available =
+                ResizeArray<BlokemonMechanicalType>(
+                    attacker.Attachments
+                    |> Seq.map builder.Card
+                    |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
+                    |> Seq.map (fun card -> (catalog.Vim card.MechanicalId).MechanicalType)
+                )
+
+            let mutable payable = true
+
+            for typedCost in
+                costs
+                |> Seq.filter (fun cost -> cost <> BlokemonMechanicalType.Colorless)
+                |> Seq.toArray do
+                if payable then
+                    let index = available.FindIndex(fun vim -> vim = typedCost)
+
+                    if index < 0 then
+                        payable <- false
+                    else
+                        available.RemoveAt index
+
+            payable
+            && available.Count
+               >= (costs
+                   |> Seq.filter (fun cost -> cost = BlokemonMechanicalType.Colorless)
+                   |> Seq.length)
+
+    let validatePlayingTurn (builder: MatchBuilder) (actor: PlayerId) =
+        if builder.Phase <> MatchPhase.Playing then
+            ValueSome CommandRejectionCode.WrongPhase
+        elif builder.ActivePlayer <> actor then
+            ValueSome CommandRejectionCode.NotActorsTurn
+        else
+            ValueNone
+
+    let validateCommandBoundary
+        (catalog: AuthorityCatalog)
+        (state: MatchState)
+        (command: MatchCommand)
+        =
+        if command.MatchId <> state.Id then
+            ValueSome CommandRejectionCode.WrongMatch
+        elif Seq.contains command.Id state.ProcessedCommands then
+            ValueSome CommandRejectionCode.DuplicateCommand
+        elif command.ExpectedRevision <> state.Revision then
+            ValueSome CommandRejectionCode.StaleRevision
+        elif
+            not (
+                StringComparer.Ordinal.Equals(
+                    state.AuthorityVersion,
+                    catalog.Manifest.ManifestVersion
+                )
+            )
+        then
+            ValueSome CommandRejectionCode.AuthorityMismatch
+        elif not (state.Players |> Seq.exists (fun player -> player.Id = command.Actor)) then
+            ValueSome CommandRejectionCode.UnknownActor
+        elif state.Phase = MatchPhase.Complete then
+            ValueSome CommandRejectionCode.MatchComplete
+        else
+            ValueNone
+
+    let private validateDeck
+        (catalog: AuthorityCatalog)
+        (deck: FrozenDeckSnapshot)
+        (issues: ResizeArray<DeckIssue>)
+        =
+        let issue code player card actual expected =
+            { Code = code
+              Player = player
+              Card = card
+              Actual = actual
+              Expected = expected }
+
+        if deck.Cards.Count <> catalog.Manifest.BaseRules.Stack.CardCount then
+            issues.Add(
+                issue
+                    DeckIssueCode.WrongCardCount
+                    (ValueSome deck.Owner)
+                    ValueNone
+                    deck.Cards.Count
+                    catalog.Manifest.BaseRules.Stack.CardCount
+            )
+
+        for unknown in
+            deck.Cards
+            |> Seq.filter (fun card -> not (catalog.Contains card))
+            |> Seq.distinct do
+            issues.Add(
+                issue
+                    DeckIssueCode.UnknownMechanicalCard
+                    (ValueSome deck.Owner)
+                    (ValueSome unknown)
+                    0
+                    0
+            )
+
+        for group in deck.Cards |> Seq.filter catalog.Contains |> Seq.groupBy id do
+            let card, copies = group
+            let limit = catalog.CopyLimit card
+            let count = Seq.length copies
+
+            if count > limit then
+                issues.Add(
+                    issue
+                        DeckIssueCode.TooManyCopies
+                        (ValueSome deck.Owner)
+                        (ValueSome card)
+                        count
+                        limit
+                )
+
+        if not (deck.Cards |> Seq.filter catalog.Contains |> Seq.exists catalog.IsRegular) then
+            issues.Add(issue DeckIssueCode.MissingRegularBloke (ValueSome deck.Owner) ValueNone 0 1)
+
+    let validateStart
+        (catalog: AuthorityCatalog)
+        (authorityIsValid: bool)
+        (request: MatchStartRequest)
+        =
+        let issues = ResizeArray<DeckIssue>()
+
+        if not authorityIsValid then
+            issues.Add
+                { Code = DeckIssueCode.AuthorityInvalid
+                  Player = ValueNone
+                  Card = ValueNone
+                  Actual = 0
+                  Expected = 0 }
+        else
+            if String.IsNullOrWhiteSpace request.MatchId.Value then
+                issues.Add
+                    { Code = DeckIssueCode.InvalidMatchId
+                      Player = ValueNone
+                      Card = ValueNone
+                      Actual = 0
+                      Expected = 0 }
+
+            if
+                String.IsNullOrWhiteSpace request.FirstDeck.Owner.Value
+                || String.IsNullOrWhiteSpace request.SecondDeck.Owner.Value
+            then
+                issues.Add
+                    { Code = DeckIssueCode.InvalidPlayerId
+                      Player = ValueNone
+                      Card = ValueNone
+                      Actual = 0
+                      Expected = 0 }
+
+            if request.FirstDeck.Owner = request.SecondDeck.Owner then
+                issues.Add
+                    { Code = DeckIssueCode.DuplicatePlayer
+                      Player = ValueSome request.FirstDeck.Owner
+                      Card = ValueNone
+                      Actual = 2
+                      Expected = 1 }
+
+            validateDeck catalog request.FirstDeck issues
+            validateDeck catalog request.SecondDeck issues
+
+        issues
+
+    let createCards (catalog: AuthorityCatalog) (deck: FrozenDeckSnapshot) (playerNumber: int) =
+        [| for index in 0 .. deck.Cards.Count - 1 ->
+               let mechanicalId = deck.Cards[index]
+
+               { Id = CardInstanceId $"C{playerNumber}-%03d{index + 1}"
+                 MechanicalId = mechanicalId
+                 Owner = deck.Owner
+                 Kind = catalog.Kind mechanicalId
+                 Zone = CardZone.Stack
+                 IsFaceDown = false
+                 StackPosition = index
+                 AttachedTo = ValueNone
+                 Attachments = FrozenList.empty
+                 UnderlyingCards = FrozenList.empty
+                 Damage = 0
+                 RoughStates = FrozenList.empty
+                 EnteredAtOwnerRound = 0
+                 LastPromotedRound = -1 } |]

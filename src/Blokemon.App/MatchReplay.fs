@@ -33,17 +33,17 @@ module internal MatchReplay =
 
         while isNull (box settled) && count < maximumCpuCommandsPerRequest do
             match cpu.Choose(engine, state, cpuPlayer) with
-            | :? CpuDecision.Selected as selected ->
-                match engine.Apply(state, selected.Action.Command) with
-                | :? CommandOutcome.Applied as applied ->
-                    commands.Add selected.Action.Command
-                    events.AddRange applied.Events
+            | CpuDecision.Selected action ->
+                match engine.Apply(state, action.Command) with
+                | CommandOutcome.Applied(appliedState, appliedEvents) ->
+                    commands.Add action.Command
+                    events.AddRange appliedEvents
 
                     presentation.Add
-                        { State = applied.State
-                          Events = applied.Events }
+                        { State = appliedState
+                          Events = appliedEvents }
 
-                    state <- applied.State
+                    state <- appliedState
                 | _ ->
                     settled <-
                         { State = state
@@ -56,7 +56,7 @@ module internal MatchReplay =
         match settled with
         | null ->
             match cpu.Choose(engine, state, cpuPlayer) with
-            | :? CpuDecision.Selected ->
+            | CpuDecision.Selected _ ->
                 { State = state
                   Error = ApiError("match.cpu_limit", "The computer could not complete its turn.") }
             | _ -> { State = state; Error = null }
@@ -130,8 +130,7 @@ module internal MatchReplay =
                        || String.IsNullOrWhiteSpace receipt.Fingerprint
                        || String.IsNullOrWhiteSpace receipt.RequestPayload
                        || fingerprint receipt.RequestPayload <> receipt.Fingerprint
-                       || receipt.AppliedCommand
-                          <> GameCommandId $"client:{receipt.ClientCommandId:D}")
+                       || receipt.AppliedCommand <> CommandId $"client:{receipt.ClientCommandId:D}")
             then
                 invalidReplayError ()
             else
@@ -158,14 +157,14 @@ module internal MatchReplay =
             match validateDocument profile document with
             | null ->
                 match engine.Start document.Start with
-                | :? MatchStartOutcome.Started as started ->
+                | MatchStartOutcome.Started(startedState, startedEvents) ->
                     let human = humanPlayer profile
 
                     let receipts =
                         document.ClientCommands.ToDictionary(fun receipt -> receipt.AppliedCommand)
 
-                    let mutable state = started.State
-                    let events = List<MatchEvent>(started.Events)
+                    let mutable state = startedState
+                    let events = List<MatchEvent>(startedEvents)
                     let mutable pendingReceipt: MatchClientCommandReceipt | null = null
                     let mutable rejected = false
                     let mutable index = 0
@@ -176,10 +175,7 @@ module internal MatchReplay =
 
                         if command.Actor = cpuPlayer then
                             match cpu.Choose(engine, state, cpuPlayer) with
-                            | :? CpuDecision.Selected as selected when
-                                selected.Action.Command = command
-                                ->
-                                ()
+                            | CpuDecision.Selected action when action.Command = command -> ()
                             | _ -> rejected <- true
                         elif command.Actor = human then
                             if
@@ -235,9 +231,9 @@ module internal MatchReplay =
 
                         if not rejected then
                             match engine.Apply(state, command) with
-                            | :? CommandOutcome.Applied as applied ->
-                                state <- applied.State
-                                events.AddRange applied.Events
+                            | CommandOutcome.Applied(appliedState, appliedEvents) ->
+                                state <- appliedState
+                                events.AddRange appliedEvents
                             | _ -> rejected <- true
 
                         index <- index + 1
@@ -248,7 +244,7 @@ module internal MatchReplay =
 
                         let cpuStillMoves =
                             match cpu.Choose(engine, state, cpuPlayer) with
-                            | :? CpuDecision.Selected -> true
+                            | CpuDecision.Selected _ -> true
                             | _ -> false
 
                         if

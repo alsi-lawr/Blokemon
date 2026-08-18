@@ -152,29 +152,28 @@ module internal MatchStartFlow =
                                     )
 
                                 let start =
-                                    MatchStartRequest(
-                                        MatchId(request.CommandId.ToString "D"),
-                                        matchSeedFor profile request.CommandId,
-                                        FrozenDeckSnapshot.Create(human, cards),
+                                    { MatchId = MatchId(request.CommandId.ToString "D")
+                                      Seed = matchSeedFor profile request.CommandId
+                                      FirstDeck = FrozenDeckSnapshot.Create(human, cards)
+                                      SecondDeck =
                                         FrozenDeckSnapshot.Create(
                                             cpuPlayer,
                                             cpuDeck.ExpandedCardIds
-                                        )
-                                    )
+                                        ) }
 
                                 match engine.Start start with
-                                | :? MatchStartOutcome.Started as started ->
+                                | MatchStartOutcome.Started(startedState, startedEvents) ->
                                     let commands = List<MatchCommand>()
-                                    let events = List<MatchEvent>(started.Events)
+                                    let events = List<MatchEvent>(startedEvents)
 
                                     let presentation =
                                         List<PendingPresentation>(
-                                            [ { State = started.State
-                                                Events = started.Events } ]
+                                            [ { State = startedState
+                                                Events = startedEvents } ]
                                         )
 
                                     let advanced =
-                                        advanceCpu started.State commands events presentation
+                                        advanceCpu startedState commands events presentation
 
                                     if not (isNull (box advanced.Error)) then
                                         return

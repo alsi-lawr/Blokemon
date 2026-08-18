@@ -119,14 +119,17 @@ module internal MatchLabels =
         | MatchEventKind.BeerMatTossed -> Nullable MatchAnimationKindView.Coin
         | MatchEventKind.CommandApplied ->
             match matchEvent.Command with
-            | :? MatchCommand.ChooseOpening -> Nullable MatchAnimationKindView.Setup
-            | :? MatchCommand.AttachVim -> Nullable MatchAnimationKindView.Attach
-            | :? MatchCommand.Promote -> Nullable MatchAnimationKindView.Evolve
-            | :? MatchCommand.PlayBloke
-            | :? MatchCommand.PlayKit
-            | :? MatchCommand.UsePartyTrick
-            | :? MatchCommand.Taxi -> Nullable MatchAnimationKindView.Play
-            | _ -> Nullable()
+            | ValueSome command ->
+                match command.Action with
+                | MatchAction.ChooseOpening _ -> Nullable MatchAnimationKindView.Setup
+                | MatchAction.AttachVim _ -> Nullable MatchAnimationKindView.Attach
+                | MatchAction.Promote _ -> Nullable MatchAnimationKindView.Evolve
+                | MatchAction.PlayBloke _
+                | MatchAction.PlayKit _
+                | MatchAction.UsePartyTrick _
+                | MatchAction.Taxi _ -> Nullable MatchAnimationKindView.Play
+                | _ -> Nullable()
+            | ValueNone -> Nullable()
         | MatchEventKind.AttackDeclared -> Nullable MatchAnimationKindView.Attack
         | MatchEventKind.DamagePlaced -> Nullable MatchAnimationKindView.Damage
         | MatchEventKind.DamageHealed -> Nullable MatchAnimationKindView.Heal
@@ -138,18 +141,18 @@ module internal MatchLabels =
         | MatchEventKind.MatchWon -> Nullable MatchAnimationKindView.Victory
         | _ -> Nullable()
 
-    let commandSource (command: MatchCommand | null) =
-        match command with
-        | :? MatchCommand.ChooseOpening as value -> Nullable value.Oche
-        | :? MatchCommand.AttachVim as value -> Nullable value.Vim
-        | :? MatchCommand.PlayBloke as value -> Nullable value.Bloke
-        | :? MatchCommand.Promote as value -> Nullable value.Promotion
-        | :? MatchCommand.PlayKit as value -> Nullable value.Kit
-        | :? MatchCommand.Taxi as value -> Nullable value.BoothBloke
-        | :? MatchCommand.UsePartyTrick as value -> Nullable value.Source
-        | :? MatchCommand.Attack as value -> Nullable value.Attacker
-        | :? MatchCommand.ChuckFossil as value -> Nullable value.Fossil
-        | _ -> Nullable()
+    let commandSource (command: MatchCommand) =
+        match command.Action with
+        | MatchAction.ChooseOpening(oche, _) -> ValueSome oche
+        | MatchAction.AttachVim(vim, _) -> ValueSome vim
+        | MatchAction.PlayBloke bloke -> ValueSome bloke
+        | MatchAction.Promote(promotion, _) -> ValueSome promotion
+        | MatchAction.PlayKit(kit, _) -> ValueSome kit
+        | MatchAction.Taxi(boothBloke, _) -> ValueSome boothBloke
+        | MatchAction.UsePartyTrick(source, _) -> ValueSome source
+        | MatchAction.Attack(attacker, _) -> ValueSome attacker
+        | MatchAction.ChuckFossil fossil -> ValueSome fossil
+        | _ -> ValueNone
 
     let canReveal (state: MatchState) (human: PlayerId) (cardId: CardInstanceId) =
         let card = state.Card cardId
@@ -177,7 +180,6 @@ module internal MatchLabels =
             && matchEvent.Kind = MatchEventKind.DamagePlaced
             && matchEvent.Actor = attack.Actor
             && matchEvent.SourceCard = attack.SourceCard
-            && matchEvent.DamageKind.HasValue
-            && (matchEvent.DamageKind.Value = DamageKind.Attack
-                || matchEvent.DamageKind.Value = DamageKind.BoothAttack))
+            && (matchEvent.DamageKind = ValueSome DamageKind.Attack
+                || matchEvent.DamageKind = ValueSome DamageKind.BoothAttack))
         |> Seq.sumBy _.Amount

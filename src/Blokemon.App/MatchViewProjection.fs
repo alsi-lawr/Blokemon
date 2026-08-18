@@ -30,10 +30,9 @@ module internal MatchViewProjection =
         let exposeOptions = requirement.Chooser = human
 
         let dependsOnOptional: string | null =
-            if requirement.DependsOnOptional.HasValue then
-                requirement.DependsOnOptional.Value.Value
-            else
-                null
+            match requirement.DependsOnOptional with
+            | ValueSome parent -> parent.Value
+            | ValueNone -> null
 
         MatchChoiceRequirementView(
             requirement.Id.Value,
@@ -131,17 +130,16 @@ module internal MatchViewProjection =
         let energyLabel = energyLabel catalogue
 
         match state.Oche human with
-        | null -> Array.empty
-        | active when active.Kind <> CardKind.Bloke -> Array.empty
-        | active ->
+        | ValueNone -> Array.empty
+        | ValueSome active when active.Kind <> CardKind.Bloke -> Array.empty
+        | ValueSome active ->
             let legal =
                 legalActions
-                    .Where(fun action -> action.Command :? MatchCommand.Attack)
-                    .ToDictionary(
-                        (fun action -> (action.Command :?> MatchCommand.Attack).AttackId.Value),
-                        (fun action -> action.StableKey),
-                        StringComparer.Ordinal
-                    )
+                |> Seq.choose (fun action ->
+                    match action.Command.Action with
+                    | MatchAction.Attack(_, attackId) -> Some(attackId.Value, action.StableKey)
+                    | _ -> None)
+                |> dict
 
             let mechanical =
                 catalogue.Mechanics.Collectibles.Single(fun card ->
@@ -191,8 +189,8 @@ module internal MatchViewProjection =
             state.CardsIn(player, CardZone.Mitt).Count(),
             (state.Player player).BarChitsRemaining,
             (match active with
-             | null -> null
-             | card -> cardInstance state human name card.Id),
+             | ValueNone -> null
+             | ValueSome card -> cardInstance state human name card.Id),
             state.CardsIn(player, CardZone.Booth)
             |> Seq.map (fun card -> cardInstance state human name card.Id)
             |> Seq.toArray,
@@ -225,10 +223,9 @@ module internal MatchViewProjection =
         let cpuSide = document.Start.SecondDeck.Owner
 
         let winner: string | null =
-            if state.Winner.HasValue then
-                playerName state.Winner.Value human displayName
-            else
-                null
+            match state.Winner with
+            | ValueSome value -> playerName value human displayName
+            | ValueNone -> null
 
         MatchFrameView(
             Guid.Parse state.Id.Value,

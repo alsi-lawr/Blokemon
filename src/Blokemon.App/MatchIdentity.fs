@@ -53,21 +53,16 @@ module internal MatchIdentity =
         match choice with
         | null -> false
         | value when not (hasValue value.Id.Value) -> false
-        | value ->
-            // A Game union, so this stays visitor-style until Blokemon.Game migrates in slice 7.
-            value.Match(
-                (fun _ -> true),
-                (fun _ -> true),
-                (fun cards -> cards.Values |> Seq.forall cardIdHasValue),
-                (fun _ -> true),
-                (fun attack -> hasValue attack.Value.Value),
-                (fun distribution ->
-                    distribution.Values |> Seq.forall (fun item -> hasValue item.Card.Value)),
-                (fun attachments ->
-                    attachments.Values
-                    |> Seq.forall (fun item ->
-                        hasValue item.Vim.Value && hasValue item.Bloke.Value))
-            )
+        | EffectChoice.Cards(_, cards) -> cards |> Seq.forall cardIdHasValue
+        | EffectChoice.Attack(_, attack) -> hasValue attack.Value
+        | EffectChoice.Distribution(_, allocations) ->
+            allocations |> Seq.forall (fun item -> hasValue item.Card.Value)
+        | EffectChoice.Attachments(_, placements) ->
+            placements
+            |> Seq.forall (fun item -> hasValue item.Vim.Value && hasValue item.Bloke.Value)
+        | EffectChoice.Optional _
+        | EffectChoice.Amount _
+        | EffectChoice.MechanicalType _ -> true
 
     let commandIsStructurallyValid (command: MatchCommand | null) =
         match command with
@@ -82,29 +77,29 @@ module internal MatchIdentity =
             ->
             false
         | value ->
-            // A Game union, so this stays visitor-style until Blokemon.Game migrates in slice 7.
-            value.Match(
-                (fun _ -> true),
-                (fun opening ->
-                    hasValue opening.Oche.Value && Seq.forall cardIdHasValue opening.Booth),
-                (fun attach -> hasValue attach.Vim.Value && hasValue attach.Bloke.Value),
-                (fun play -> hasValue play.Bloke.Value),
-                (fun promote -> hasValue promote.Promotion.Value && hasValue promote.Bloke.Value),
-                (fun kit ->
-                    hasValue kit.Kit.Value
-                    && (not kit.Target.HasValue || hasValue kit.Target.Value.Value)),
-                (fun taxi ->
-                    hasValue taxi.BoothBloke.Value && Seq.forall cardIdHasValue taxi.VimToChuck),
-                (fun trick -> hasValue trick.Source.Value && hasValue trick.Effect.Value),
-                (fun attack -> hasValue attack.Attacker.Value && hasValue attack.AttackId.Value),
-                (fun fossil -> hasValue fossil.Fossil.Value),
-                (fun _ -> true),
-                (fun replacement -> hasValue replacement.BoothBloke.Value),
-                (fun _ -> true),
-                (fun knockout -> not knockout.Vim.HasValue || hasValue knockout.Vim.Value.Value),
-                (fun _ -> true),
-                (fun _ -> true)
-            )
+            match value.Action with
+            | MatchAction.ChooseOpening(oche, booth) ->
+                hasValue oche.Value && Seq.forall cardIdHasValue booth
+            | MatchAction.AttachVim(vim, bloke) -> hasValue vim.Value && hasValue bloke.Value
+            | MatchAction.PlayBloke bloke -> hasValue bloke.Value
+            | MatchAction.Promote(promotion, promoted) ->
+                hasValue promotion.Value && hasValue promoted.Value
+            | MatchAction.PlayKit(kit, target) ->
+                hasValue kit.Value && (target.IsNone || hasValue target.Value.Value)
+            | MatchAction.Taxi(boothBloke, vimToChuck) ->
+                hasValue boothBloke.Value && Seq.forall cardIdHasValue vimToChuck
+            | MatchAction.UsePartyTrick(source, effect) ->
+                hasValue source.Value && hasValue effect.Value
+            | MatchAction.Attack(attacker, attackId) ->
+                hasValue attacker.Value && hasValue attackId.Value
+            | MatchAction.ChuckFossil fossil -> hasValue fossil.Value
+            | MatchAction.ChooseReplacement replacement -> hasValue replacement.Value
+            | MatchAction.ResolveKnockoutTrigger vim -> vim.IsNone || hasValue vim.Value.Value
+            | MatchAction.ChooseMulliganBonus _
+            | MatchAction.EndRound
+            | MatchAction.ResolveEffectChoice
+            | MatchAction.ResolveBarChitTrigger _
+            | MatchAction.Resign -> true
 
     let choiceSubmissionIsStructurallyValid (choice: MatchChoiceSelectionRequest | null) =
         match choice with
