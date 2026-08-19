@@ -23,7 +23,12 @@ public sealed record MatchLandingSlot(bool Opponent, MatchLandingKind Kind, int 
 // means anything against the frame it was measured from.
 public sealed record MatchPresentationOverlay(
     IReadOnlyDictionary<string, int> DamageDeltas,
-    MatchLandingSlot? Landing
+    MatchLandingSlot? Landing,
+    // The card part way through throwing a blow. A blow is declared by one cue and lands on the
+    // next, so which card is throwing it is a thing that outlives a single cue: this is what
+    // carries it across, and what tells damage that came out of an attack from damage a card
+    // simply did to another one.
+    string? StrikingCardInstanceId = null
 )
 {
     public static readonly MatchPresentationOverlay Empty = new(
@@ -58,6 +63,12 @@ public sealed record MatchPresentationOverlay(
             DamageDeltas = deltas,
         };
     }
+
+    public MatchPresentationOverlay Striking(string? cardInstanceId) =>
+        this with
+        {
+            StrikingCardInstanceId = cardInstanceId,
+        };
 
     public MatchPresentationOverlay LandingOn(MatchLandingSlot? landing) =>
         this with

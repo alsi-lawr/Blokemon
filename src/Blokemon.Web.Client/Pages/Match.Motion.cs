@@ -26,6 +26,9 @@ public partial class Match
         {
             MatchAnimationKindView.Draw => "positionDrawCards",
             MatchAnimationKindView.Play or MatchAnimationKindView.Evolve => "positionPlayCard",
+            // The blow is measured once, on the cue that throws it. The cue that lands it measures
+            // nothing: by then the card is part way across and no longer where it started.
+            MatchAnimationKindView.Attack => "positionAttack",
             _ => null,
         };
         if (measure is not null)
@@ -102,6 +105,13 @@ public partial class Match
     // motion finish together, and the pause after a step lets the table settle before the next
     // command speaks. Changing one of these without the keyframe it belongs to desynchronises
     // them; nothing may depend on the numbers themselves.
+    //
+    // The two halves of a blow are the one place where a beat is held to a length the keyframe
+    // decides rather than the other way round. A blow makes contact 47% of the way through
+    // itself and the damage it caused becomes true when its own cue begins, so the declaration
+    // is held for exactly the part of the lunge before contact: the card arrives as the number
+    // turns over. What is left of the lunge, and the recoil that starts at contact, both have to
+    // finish inside the beat that follows, so that one is the longer of the two.
     private static int BeatDuration(MatchEventCueView? cue) =>
         cue?.Kind switch
         {
@@ -109,8 +119,8 @@ public partial class Match
             MatchAnimationKindView.Shuffle => 1200,
             MatchAnimationKindView.Draw => 900,
             MatchAnimationKindView.Play or MatchAnimationKindView.Evolve => 1000,
-            MatchAnimationKindView.Attack => 850,
-            MatchAnimationKindView.Damage => 700,
+            MatchAnimationKindView.Attack => 658,
+            MatchAnimationKindView.Damage => 840,
             MatchAnimationKindView.Knockout => 900,
             MatchAnimationKindView.Turn => 950,
             MatchAnimationKindView.Coin => 1400,

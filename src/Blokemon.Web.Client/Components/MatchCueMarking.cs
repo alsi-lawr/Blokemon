@@ -19,6 +19,13 @@ public static class MatchCueMarking
 
     public const string Landing = "is-cue-landing";
 
+    // The two ends of a blow. The card throwing it keeps its mark from the declaration through
+    // the damage, so the one movement is not cut in half where the cues change; the card taking
+    // it is marked only while the damage is landing.
+    public const string Striking = "is-cue-striking";
+
+    public const string Struck = "is-cue-struck";
+
     // Everything true of a held card at once: whether it can be chosen, whether it has been, and
     // whether the cue on screen is about it. A held card is one end of both journeys between the
     // hand and the table, so the marking is built here rather than in the hand zone, where the
@@ -63,6 +70,32 @@ public static class MatchCueMarking
             (false, true) => Target,
             _ => null,
         };
+    }
+
+    // Which end of a blow a card on the table is, if it is either. Who is throwing it is not
+    // something a single cue knows - the declaration and the damage are two cues - so it is asked
+    // of the presentation, which worked it out before any of this was drawn. Damage nobody swung
+    // for names nobody, and nothing here marks anything.
+    public static string? Blow(
+        string? strikingCardInstanceId,
+        MatchEventCueView? cue,
+        string cardInstanceId
+    )
+    {
+        if (strikingCardInstanceId is null)
+        {
+            return null;
+        }
+
+        if (strikingCardInstanceId == cardInstanceId)
+        {
+            return Striking;
+        }
+
+        return cue?.Kind == MatchAnimationKindView.Damage
+            && cue.TargetCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal)
+            ? Struck
+            : null;
     }
 
     // How many cards a Deck is shown to be made of while it is being shuffled: half of them part

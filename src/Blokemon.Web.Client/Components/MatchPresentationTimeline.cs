@@ -46,7 +46,7 @@ public static class MatchPresentationTimeline
                     overlay = MatchPresentationOverlay.Empty;
                 }
 
-                overlay = Applied(overlay, cue);
+                overlay = Applied(overlay, cue).Striking(Striking(overlay, cue));
                 beats.Add(new(frame, cue, overlay.LandingOn(Landing(cue, step.Frame))));
             }
 
@@ -58,6 +58,21 @@ public static class MatchPresentationTimeline
 
         return beats;
     }
+
+    // A blow is one movement told over two cues: the declaration throws it and the damage lands
+    // it, and the card throwing it has to stay named across both or the movement is cut in half
+    // where the cues change. It is named by the declaration and stays named only for the damage
+    // that same card declared - damage from anything else, a Kit doing its work to a Bloke, names
+    // nobody, because nobody swung at anything.
+    private static string? Striking(MatchPresentationOverlay overlay, MatchEventCueView cue) =>
+        cue.Kind switch
+        {
+            MatchAnimationKindView.Attack => cue.SourceCardInstanceId,
+            MatchAnimationKindView.Damage
+                when overlay.StrikingCardInstanceId is { } striking
+                    && striking == cue.SourceCardInstanceId => striking,
+            _ => null,
+        };
 
     private static MatchPresentationOverlay Applied(
         MatchPresentationOverlay overlay,

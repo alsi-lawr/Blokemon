@@ -1,4 +1,4 @@
-<div class="battle-card-shell @(Compact ? "is-compact" : null) @(Selected ? "is-selected" : null) @CueClass()">
+<div class="battle-card-shell @(Compact ? "is-compact" : null) @(Selected ? "is-selected" : null) @CueClass() @Blow">
     <CardFace Card="Instance.Card"
               Size="@(Compact ? CardFaceSize.Bench : CardFaceSize.Battle)"
               ShowTitle="false" />
@@ -64,6 +64,11 @@
 
     [Parameter]
     public string[] CueTargetCardInstanceIds { get; set; } = [];
+
+    // Which end of a blow this card is, worked out by the presentation rather than by the card:
+    // a blow spans two cues and no single one of them knows.
+    [Parameter]
+    public string? Blow { get; set; }
 
     private int Shown => Damage ?? Instance.Damage;
 

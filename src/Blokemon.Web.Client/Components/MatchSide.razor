@@ -58,7 +58,8 @@
                             ShowVitals="false"
                             Selected="@(card.Id == SelectedCardInstanceId)"
                             CueSourceCardInstanceId="@CueSourceCardInstanceId"
-                            CueTargetCardInstanceIds="CueTargetCardInstanceIds" />
+                            CueTargetCardInstanceIds="CueTargetCardInstanceIds"
+                            Blow="@MatchCueMarking.Blow(Overlay.StrikingCardInstanceId, Cue, card.Id)" />
                 @if (Counter(card.Id) is { } localCounter)
                 {
                     <span class="aura-counter">@localCounter</span>
@@ -91,7 +92,8 @@
                                 Damage="@Overlay.Damage(Side.Active)"
                                 Selected="@(Side.Active.Id == SelectedCardInstanceId)"
                                 CueSourceCardInstanceId="@CueSourceCardInstanceId"
-                                CueTargetCardInstanceIds="CueTargetCardInstanceIds" />
+                                CueTargetCardInstanceIds="CueTargetCardInstanceIds"
+                                Blow="@MatchCueMarking.Blow(Overlay.StrikingCardInstanceId, Cue, Side.Active.Id)" />
                     @if (Counter(Side.Active.Id) is { } activeCounter)
                     {
                         <span class="aura-counter">@activeCounter</span>
@@ -115,7 +117,8 @@
                                 Compact="true"
                                 Selected="@(card.Id == SelectedCardInstanceId)"
                                 CueSourceCardInstanceId="@CueSourceCardInstanceId"
-                                CueTargetCardInstanceIds="CueTargetCardInstanceIds" />
+                                CueTargetCardInstanceIds="CueTargetCardInstanceIds"
+                                Blow="@MatchCueMarking.Blow(Overlay.StrikingCardInstanceId, Cue, card.Id)" />
                     @if (Counter(card.Id) is { } benchCounter)
                     {
                         <span class="aura-counter">@benchCounter</span>

@@ -231,6 +231,44 @@ export function positionPlayCard(table) {
   void table.offsetWidth;
 }
 
+// A blow needs to know which way it is going and how far, and neither is a thing a stylesheet can
+// be told once: both ends of the table move with the size of the screen. It is measured on the cue
+// that throws the blow, while the card throwing it is still standing where it started, and handed
+// back as a direction, the gap across, and the width of a card at either end. The cue that lands
+// the blow measures nothing - by then the card is part way across - and reads what was left here.
+export function positionAttack(table) {
+  const striking = table?.querySelector(".is-cue-striking");
+  if (!striking) {
+    return;
+  }
+
+  // A blow is thrown across the table at whoever is standing opposite, so the place it is aimed
+  // at is the far half's Active position: the card standing there if there is one, and the place
+  // kept for it if there is not.
+  const facingZone = table.classList.contains("cue-actor-opponent")
+    ? ".player-zone"
+    : ".opponent-zone";
+  const facing =
+    table.querySelector(`${facingZone} .active-slot .battle-card-shell`) ??
+    table.querySelector(`${facingZone} .active-slot`);
+  if (!facing) {
+    return;
+  }
+
+  const from = centre(striking);
+  const to = centre(facing);
+  const gap = Math.hypot(to.x - from.x, to.y - from.y);
+  if (gap < 1) {
+    return;
+  }
+
+  table.style.setProperty("--blow-x", `${(to.x - from.x) / gap}`);
+  table.style.setProperty("--blow-y", `${(to.y - from.y) / gap}`);
+  table.style.setProperty("--blow-gap", `${gap}px`);
+  table.style.setProperty("--blow-width", `${from.rect.width}px`);
+  table.style.setProperty("--struck-width", `${to.rect.width}px`);
+}
+
 export async function toggleFullscreen(element) {
   if (document.fullscreenElement === element) {
     await document.exitFullscreen();

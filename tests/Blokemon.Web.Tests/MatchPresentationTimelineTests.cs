@@ -157,6 +157,44 @@ public sealed class MatchPresentationTimelineTests
                 : beat.Frame.Player.Active!
         );
 
+    [Test]
+    public void TheCardThrowingABlowStaysNamedFromTheDeclarationUntilTheDamageLands()
+    {
+        // The blow is one movement and the cues are two, so the card throwing it has to be named
+        // across both of them or the movement is cut in half where they change - and it has to
+        // stop being named the moment the exchange is over.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                Frame(defenderDamage: 30, playerHasTurn: false),
+                Cue(1, MatchAnimationKindView.Attack, amount: 30, source: Attacker),
+                Cue(2, MatchAnimationKindView.Damage, amount: 30, source: Attacker),
+                Cue(3, MatchAnimationKindView.Turn)
+            ),
+            Frame(defenderDamage: 0, playerHasTurn: true)
+        );
+
+        beats
+            .Select(beat => beat.Overlay.StrikingCardInstanceId)
+            .ShouldBe([Attacker, Attacker, null, null]);
+    }
+
+    [Test]
+    public void DamageNobodySwungForNamesNobody()
+    {
+        // A Kit doing its work damages a Blokemon without anything having lunged at it. Nothing
+        // is marked, so the plain cue presentation is what plays and no blow is drawn.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                Frame(defenderDamage: 30, playerHasTurn: true),
+                Cue(1, MatchAnimationKindView.Play, source: "card-kit", targets: []),
+                Cue(2, MatchAnimationKindView.Damage, amount: 30, source: "card-kit")
+            ),
+            Frame(defenderDamage: 0, playerHasTurn: true)
+        );
+
+        beats.Select(beat => beat.Overlay.StrikingCardInstanceId).ShouldBe([null, null, null]);
+    }
+
     private static MatchPresentationView Presentation(
         MatchFrameView frame,
         params MatchEventCueView[] cues
