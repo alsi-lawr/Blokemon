@@ -68,6 +68,10 @@ module private FullSetBehaviorFixtures =
         { State = state
           Events = ImmutableArray.CreateRange events }
 
+    let offers (initial: MatchState) (select: LegalAction -> bool) =
+        MatchScenario.Engine().GetLegalActions(initial, MatchScenario.FirstPlayer)
+        |> Seq.exists select
+
     let executeAction (initial: MatchState) (select: LegalAction -> bool) =
         let engine = MatchScenario.Engine()
 
@@ -668,11 +672,17 @@ type FullSetBehaviorTests() =
                 |> Array.filter (fun trick -> trick.Trigger = BlokemonTrigger.Activated) do
                 try
                     let state = richBattleState card.Id
-                    let first = executeAction state (usesPartyTrick trick.MechanicalId)
-                    let repeated = executeAction state (usesPartyTrick trick.MechanicalId)
 
-                    if first <> repeated then
-                        failures.Add $"{trick.MechanicalId}: repeated execution diverged"
+                    // The rich table does not stand every trick up: one whose conditions this
+                    // table fails, or whose body has nothing here to work on, is not offered at
+                    // all, and there is no execution to be deterministic about. Which tricks
+                    // those are, and why, is what ActivatedEffectLegalityTests pins.
+                    if offers state (usesPartyTrick trick.MechanicalId) then
+                        let first = executeAction state (usesPartyTrick trick.MechanicalId)
+                        let repeated = executeAction state (usesPartyTrick trick.MechanicalId)
+
+                        if first <> repeated then
+                            failures.Add $"{trick.MechanicalId}: repeated execution diverged"
                 with exception' ->
                     failures.Add(describe trick.MechanicalId exception')
 

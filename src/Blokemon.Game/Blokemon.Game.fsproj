@@ -26,6 +26,7 @@
     <Compile Include="EffectSelection.fs" />
     <Compile Include="EffectDamage.fs" />
     <Compile Include="EffectPredicates.fs" />
+    <Compile Include="EffectViability.fs" />
     <Compile Include="EffectRegistration.fs" />
     <Compile Include="EffectCardMoves.fs" />
     <Compile Include="EffectVimOperations.fs" />

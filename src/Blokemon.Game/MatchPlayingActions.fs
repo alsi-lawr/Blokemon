@@ -128,7 +128,18 @@ module internal MatchPlayingActions =
         |> Seq.collect (fun source ->
             let tricks =
                 catalog.PartyTricks source
-                |> Seq.filter (fun trick -> trick.Trigger = BlokemonTrigger.Activated)
+                |> Seq.filter (fun trick ->
+                    trick.Trigger = BlokemonTrigger.Activated
+                    // An activation that could not change anything is not a move to offer: the
+                    // card would glow, the player would take it, and the table would sit still.
+                    && EffectViability.activationCanAct
+                        catalog
+                        state
+                        actor
+                        source
+                        (EffectId trick.MechanicalId)
+                        trick.Program
+                        false)
                 |> Seq.map (fun trick ->
                     let effect = EffectId trick.MechanicalId
 
@@ -225,7 +236,16 @@ module internal MatchPlayingActions =
         |> Seq.filter (fun card -> card.Zone = CardZone.Local)
         |> Seq.collect (fun source ->
             catalog.HouseRules source
-            |> Seq.filter (fun rule -> containsOpcode rule.Program BlokemonOpcode.OncePerRound)
+            |> Seq.filter (fun rule ->
+                containsOpcode rule.Program BlokemonOpcode.OncePerRound
+                && EffectViability.activationCanAct
+                    catalog
+                    state
+                    actor
+                    source
+                    (EffectId rule.MechanicalId)
+                    rule.Program
+                    true)
             |> Seq.map (fun rule ->
                 let effect = EffectId rule.MechanicalId
 

@@ -19,6 +19,7 @@
     <Compile Include="DeferredBranchChoiceTests.fs" />
     <Compile Include="ResignTests.fs" />
     <Compile Include="KnockoutResolutionTests.fs" />
+    <Compile Include="ActivatedEffectLegalityTests.fs" />
     <Compile Include="AuthorityAuditTests.fs" />
     <Compile Include="CardSemanticsTests.fs" />
     <Compile Include="ExceptionalEffectTests.fs" />
