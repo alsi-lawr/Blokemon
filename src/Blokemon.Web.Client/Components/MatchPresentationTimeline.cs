@@ -36,13 +36,16 @@ public static class MatchPresentationTimeline
         {
             var overlay = MatchPresentationOverlay.Empty;
             var gone = new List<string>(2);
-            foreach (var cue in step.Events)
+            var dealing = Dealing(step);
+            for (var index = 0; index < step.Events.Length; index++)
             {
+                var cue = step.Events[index];
+
                 // A drawn card has to be in the hand before it can be dealt into it, so a draw
                 // takes its step's frame early. The deltas go with the frame they were measured
                 // against - and a frame that has caught up needs nothing hidden from it, because
                 // it no longer has anybody anywhere they have already left.
-                if (cue.Kind == MatchAnimationKindView.Draw)
+                if (cue.Kind == MatchAnimationKindView.Draw && index >= dealing)
                 {
                     frame = step.Frame;
                     overlay = MatchPresentationOverlay.Empty;
@@ -86,6 +89,50 @@ public static class MatchPresentationTimeline
 
         return beats;
     }
+
+    // Which cue of a step the frame is the hand of, so that the draws before it leave the table
+    // alone.
+    //
+    // A step normally draws once and the frame it settles on is that draw's own, which is why a
+    // draw takes it early. An opening draws several times and keeps only the last: a hand with no
+    // Blokemon in it goes back into the Deck, and the frame holds the hand that stayed. Taking the
+    // frame for one of the hands that went back deals the kept hand before the deal that keeps it,
+    // and the deal then plays over cards already lying in front of the player - which is the same
+    // hand appearing from nowhere that a new game opening on the last game's table is.
+    //
+    // So the frame belongs to the first draw it can show whole, and to every draw after that one. A
+    // step whose draws it can show none of keeps it from the first of them, exactly as every draw
+    // did before: the opponent's cards are nobody's to name, and a card drawn and spent inside the
+    // same command is in neither hand by the end of it, so in both cases there is nothing to wait
+    // for.
+    private static int Dealing(MatchPresentationStepView step)
+    {
+        for (var index = 0; index < step.Events.Length; index++)
+        {
+            if (
+                step.Events[index].Kind == MatchAnimationKindView.Draw
+                && Dealt(step.Frame, step.Events[index])
+            )
+            {
+                return index;
+            }
+        }
+
+        return 0;
+    }
+
+    // Whether this frame is the hand this draw dealt - all of it, rather than some of it. A hand
+    // that went back is shuffled into the Deck it came from and drawn from again, so the hand that
+    // stays routinely shares a card or two with the one that went: a draw the frame agrees with on
+    // one card out of seven is still a draw of six cards the frame has never had.
+    private static bool Dealt(MatchFrameView frame, MatchEventCueView cue) =>
+        cue.TargetCardInstanceIds.Length > 0
+        && cue.TargetCardInstanceIds.All(target =>
+            Held(frame.Player, target) || Held(frame.Opponent, target)
+        );
+
+    private static bool Held(MatchSideView side, string cardInstanceId) =>
+        side.Hand.Any(card => card.Id == cardInstanceId);
 
     // The cards this cue takes out of the place the frame still has them in. A card being played
     // or promoted is carried out of the hand by the presentation itself - it is drawn travelling,

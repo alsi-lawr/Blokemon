@@ -1,4 +1,5 @@
 using Blokemon.App.Contracts;
+using Blokemon.Web.Client.Components;
 using Microsoft.JSInterop;
 
 namespace Blokemon.Web.Client.Pages;
@@ -71,9 +72,11 @@ public partial class Match
     {
         _working = true;
         _commandId ??= Guid.NewGuid();
-        var previousFrame = _view?.Match?.Frame;
         var response = await Api.StartMatch(new(_commandId.Value, deckId));
-        await CompleteMutation(response, previousFrame);
+        // A new game is not a move that can be seen happening: what came before it is the game
+        // before. So it is presented over an empty table rather than over whatever the last battle
+        // left standing, and the opening hands are dealt onto it.
+        await CompleteMutation(response, MatchOpening.EmptyTable(response.Value?.Presentation));
     }
 
     private bool Busy() => _working || _animating;

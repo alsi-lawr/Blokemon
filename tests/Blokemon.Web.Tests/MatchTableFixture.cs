@@ -156,7 +156,13 @@ internal static class MatchTableFixture
         {
             MatchAnimationKindView.Setup => (Standing, [Cue(kind, doing.Held)]),
             MatchAnimationKindView.Shuffle => (Standing, [Cue(kind)]),
-            MatchAnimationKindView.Draw => (Standing, [Cue(kind, targets: [Drawn(doing)])]),
+            // A draw says how many cards it dealt, and the smallest draw there is deals one: the
+            // strip the opponent's held cards are drawn as has nothing else to tell it which of
+            // them have just arrived.
+            MatchAnimationKindView.Draw => (
+                Standing,
+                [Cue(kind, targets: [Drawn(doing)], amount: 1)]
+            ),
             MatchAnimationKindView.Play => (
                 Landed(MatchLandingKind.Bench),
                 [Cue(kind, doing.Held)]

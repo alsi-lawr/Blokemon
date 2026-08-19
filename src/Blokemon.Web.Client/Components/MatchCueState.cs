@@ -115,11 +115,13 @@ public static class MatchCueState
             : MatchCueRole.None;
     }
 
-    // The Deck deals one card at a time whoever is drawing, so the arriving back is the newest one
-    // in the strip; a strip already showing its full width has nowhere to put another and shows
-    // none arriving.
+    // The backs a draw is dealing into the strip, which are the newest ones in it: the opponent's
+    // held cards have no identity to pick them out by, so the only thing that says which of them
+    // have just arrived is how many the draw dealt. An ordinary draw deals one and the newest back
+    // is it; the deal that opens a game deals a whole hand and every back in the strip is arriving.
+    // A strip already showing its full width has nowhere to put another and shows none arriving.
     public static MatchCueRole ArrivingBack(MatchEventCueView? cue, int index, int shown) =>
-        cue?.Kind == MatchAnimationKindView.Draw && index == shown - 1
+        cue?.Kind == MatchAnimationKindView.Draw && index >= shown - cue.Amount
             ? MatchCueRole.Arriving
             : MatchCueRole.None;
 
