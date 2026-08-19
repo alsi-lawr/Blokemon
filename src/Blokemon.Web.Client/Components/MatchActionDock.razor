@@ -17,14 +17,14 @@
         <div class="selected-card-preview">
             <CardFace Card="Selected.Card" Size="CardFaceSize.Preview" />
         </div>
-        <div class="selected-card-head"><div><span class="eyebrow">@PublicZone(Selected.Zone)</span><h2>@Selected.Card.Name</h2><small>@(Math.Max(0, Selected.HitPoints - Selected.Damage)) / @Selected.HitPoints HP</small></div></div>
+        <div class="selected-card-head"><div><span class="eyebrow">@PublicZone(Selected.Zone)</span><h2>@Selected.Card.Name</h2><small>@(Math.Max(0, Selected.HitPoints - Shown)) / @Selected.HitPoints HP</small></div></div>
         <div class="state-line">
             <span>@Selected.AttachedEnergy.Length Energy</span>
             @foreach (var tool in Selected.AttachedTools)
             {
                 <span>Tool: @tool.Name</span>
             }
-            <span>@Selected.Damage damage</span>
+            <span>@Shown damage</span>
             @foreach (var condition in Selected.Conditions)
             {
                 <span>@condition</span>
@@ -103,6 +103,11 @@
     [Parameter]
     public MatchCardInstanceView? Selected { get; set; }
 
+    // The inspector reads the same card the table is drawing, so while a cue is playing it
+    // reads what the cue has already made true rather than contradicting the badge beside it.
+    [Parameter]
+    public int? Damage { get; set; }
+
     [Parameter]
     public string? ActiveCardInstanceId { get; set; }
 
@@ -152,4 +157,6 @@
 
     private static string EnergyInitial(string energy) =>
         string.IsNullOrEmpty(energy) ? "?" : energy[..1];
+
+    private int Shown => Damage ?? Selected?.Damage ?? 0;
 }

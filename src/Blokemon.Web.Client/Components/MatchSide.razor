@@ -5,7 +5,19 @@
     @{
         RenderFragment deckStack =
             @<text>
-                <div class="deck-card-back"><CardBack /></div>
+                <div class="deck-card-back">
+                    <CardBack />
+                    @* A Deck being shuffled splits into halves that riffle back together over
+                       it. They exist only while it is happening: at rest the stack is one
+                       stack, and it keeps the box they are measured against. *@
+                    @if (Riffling)
+                    {
+                        <span class="shuffle-riffle" aria-hidden="true">
+                            <span class="shuffle-half is-left"><CardBack /></span>
+                            <span class="shuffle-half is-right"><CardBack /></span>
+                        </span>
+                    }
+                </div>
                 <b>Deck @Side.DeckCount</b>
                 <small>Hand @Side.HandCount</small>
             </text>;
@@ -25,7 +37,7 @@
 
     @* The place a Kit in play stands in is part of the table, so it is kept whether or not a
        card is standing in it: nothing else moves when one is played or leaves. *@
-    <div class="local-slot">
+    <div class="local-slot @Landing(MatchLandingKind.InPlay)">
         @foreach (var card in Side.InPlayKits)
         {
             <CardPress CardInstanceId="@card.Id"
@@ -36,6 +48,7 @@
                        ViewOpened="CardViewOpened"
                        ViewClosed="CardViewClosed">
                 <BattleCard Instance="card"
+                            Damage="@Overlay.Damage(card)"
                             Compact="true"
                             ShowVitals="false"
                             Selected="@(card.Id == SelectedCardInstanceId)"
@@ -55,7 +68,7 @@
     </div>
 
     <div class="field-center">
-        <div class="active-slot">
+        <div class="active-slot @Landing(MatchLandingKind.Active)">
             @if (Side.Active is null)
             {
                 <span class="empty-slot">Active</span>
@@ -70,6 +83,7 @@
                            ViewOpened="CardViewOpened"
                            ViewClosed="CardViewClosed">
                     <BattleCard Instance="Side.Active"
+                                Damage="@Overlay.Damage(Side.Active)"
                                 Selected="@(Side.Active.Id == SelectedCardInstanceId)"
                                 CueSourceCardInstanceId="@CueSourceCardInstanceId"
                                 CueTargetCardInstanceIds="CueTargetCardInstanceIds" />
@@ -81,16 +95,18 @@
             }
         </div>
         <div class="bench-row" aria-label="Bench">
-            @foreach (var card in Side.Bench)
+            @for (var benchIndex = 0; benchIndex < Side.Bench.Length; benchIndex++)
             {
+                var card = Side.Bench[benchIndex];
                 <CardPress CardInstanceId="@card.Id"
-                           Class="@CardClass(card.Id)"
+                           Class="@($"{CardClass(card.Id)} {Landing(MatchLandingKind.Bench, benchIndex)}")"
                            AriaLabel="@CardLabel(card, "Benched Blokemon")"
                            AriaPressed="@CardPressed(card.Id)"
                            Tapped="CardTapped"
                            ViewOpened="CardViewOpened"
                            ViewClosed="CardViewClosed">
                     <BattleCard Instance="card"
+                                Damage="@Overlay.Damage(card)"
                                 Compact="true"
                                 Selected="@(card.Id == SelectedCardInstanceId)"
                                 CueSourceCardInstanceId="@CueSourceCardInstanceId"
@@ -106,7 +122,7 @@
                 @if (BenchDestination)
                 {
                     <button type="button"
-                            class="bench-slot is-bench-destination is-aura"
+                            class="bench-slot is-bench-destination is-aura @Landing(MatchLandingKind.Bench, index)"
                             aria-label="Play to this empty Bench position"
                             @onclick:stopPropagation="true"
                             @onclick="BenchTapped">
@@ -115,7 +131,7 @@
                 }
                 else
                 {
-                    <span class="bench-slot" aria-hidden="true"></span>
+                    <span class="bench-slot @Landing(MatchLandingKind.Bench, index)" aria-hidden="true"></span>
                 }
             }
         </div>
@@ -125,10 +141,13 @@
            anywhere near the middle of it. *@
         @if (Opponent && Side.HandCount > 0)
         {
+            var shown = Math.Min(Side.HandCount, 7);
             <div class="opponent-hand" aria-label="@($"Opponent hand, {Side.HandCount} cards")">
-                @for (var index = 0; index < Math.Min(Side.HandCount, 7); index++)
+                @for (var index = 0; index < shown; index++)
                 {
-                    <CardBack />
+                    @* A card dealt to the opponent is the newest back in the strip: it is pulled
+                       from their Deck the same way, and stays face down all the way there. *@
+                    <CardBack Class="@(Drawing && MatchCueMarking.Arrives(Cue, index, shown) ? MatchCueMarking.Arriving : null)" />
                 }
             </div>
         }
@@ -162,6 +181,18 @@
     public string[] CueTargetCardInstanceIds { get; set; } = [];
 
     [Parameter]
+    public MatchEventCueView? Cue { get; set; }
+
+    [Parameter]
+    public MatchPresentationOverlay Overlay { get; set; } = MatchPresentationOverlay.Empty;
+
+    [Parameter]
+    public bool Riffling { get; set; }
+
+    [Parameter]
+    public bool Drawing { get; set; }
+
+    [Parameter]
     public string[] AuraCardInstanceIds { get; set; } = [];
 
     [Parameter]
@@ -190,6 +221,11 @@
 
     [Parameter]
     public EventCallback DeckTapped { get; set; }
+
+    // The place a card being played is heading for, marked while it is on its way so the motion
+    // has something to aim at and the place itself can take the landing.
+    private string? Landing(MatchLandingKind kind, int index = 0) =>
+        MatchCueMarking.LandingClass(Overlay.LandingFor(Opponent), kind, index);
 
     private bool IsAura(string cardInstanceId) =>
         AuraCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal);

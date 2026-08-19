@@ -15,7 +15,7 @@
     {
         var card = Hand[handIndex];
         <CardPress CardInstanceId="@card.Id"
-                   Class="@HandCardClass(card.Id, Auras)"
+                   Class="@MatchCueMarking.HandCard(card.Id, Auras, Cue)"
                    Style="@FanStyle(handIndex, Hand.Length)"
                    AriaLabel="@HandCardLabel(card, Auras)"
                    AriaPressed="@Auras.Pressed(card.Id)"
@@ -24,6 +24,13 @@
                    ViewClosed="CardViewClosed">
             <span class="hand-card-visual">
                 <CardFace Card="card.Card" Size="CardFaceSize.Hand" ShowTitle="false" />
+                @* A card is pulled from the Deck face down and only turns over on the way in, so
+                   while it is being dealt its face is covered by the back it left the Deck with.
+                   The cover is part of the deal and exists for no longer than one. *@
+                @if (IsBeingDealt(card.Id))
+                {
+                    <span class="draw-cover" aria-hidden="true"><CardBack /></span>
+                }
             </span>
             @if (Auras.Counter(card.Id) is { } handCounter)
             {
@@ -41,6 +48,9 @@
     public required MatchAuraView Auras { get; set; }
 
     [Parameter]
+    public MatchEventCueView? Cue { get; set; }
+
+    [Parameter]
     public EventCallback BackgroundTapped { get; set; }
 
     [Parameter]
@@ -52,19 +62,9 @@
     [Parameter]
     public EventCallback CardViewClosed { get; set; }
 
-    private static string HandCardClass(string cardInstanceId, MatchAuraView auras)
-    {
-        var classes = new List<string>(3) { "hand-card" };
-        if (auras.IsSelected(cardInstanceId))
-        {
-            classes.Add("is-aura is-aura-selected");
-        }
-        else if (auras.IsAura(cardInstanceId))
-        {
-            classes.Add("is-aura");
-        }
-        return string.Join(' ', classes);
-    }
+    private bool IsBeingDealt(string cardInstanceId) =>
+        Cue?.Kind == MatchAnimationKindView.Draw
+        && Cue.TargetCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal);
 
     // The fan is measured from the hand's own size, so every card keeps a clear press area
     // however many are held: a fixed repeating pattern folds back on itself once the hand grows

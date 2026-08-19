@@ -1796,7 +1796,9 @@ button.deck-stack {
   grid-column: 4;
 }
 
+/* Positioned so the halves a shuffle splits it into have the stack's own box to riffle in. */
 .deck-card-back {
+  position: relative;
   width: 96px;
   aspect-ratio: 5 / 7;
   margin-bottom: 8px;
@@ -2426,7 +2428,12 @@ button.bench-slot span {
   transform-origin: 50% 130%;
   /* The page measures each card's place in the fan; the arc itself is declared here. */
   transform: rotate(var(--fan-turn, 0deg)) translateY(var(--fan-lift, 0px));
-  transition: transform 0.2s;
+  /*
+    Held cards make room for an arriving one rather than jumping aside for it, and each takes its
+    own time over it: a hand that moves as one block reads as a list being rewritten, and a hand
+    whose cards settle a moment apart reads as cards.
+  */
+  transition: transform calc(0.2s + var(--hand-index, 0) * 0.014s);
 }
 
 .hand-card-visual {
@@ -3015,30 +3022,120 @@ button.deck-stack.is-aura::after {
   animation: target-pulse 0.7s ease-in-out;
 }
 
-.cue-shuffle .deck-card-back,
 .cue-setup .deck-card-back {
   animation: shuffle 0.65s ease-in-out;
 }
 
+/*
+  ---- The table's motion language ------------------------------------------------------------
+
+  Every movement below is one card going from somewhere to somewhere else, and each is declared
+  against the marks the presenters put on the cards a cue is about. Two of them cross the table,
+  and the distance they cross depends on where the two ends happen to be at this size: those two
+  are given their offsets by matchPresentation.js, which measures the page and writes them here
+  as custom properties. Nothing is timed to anything but itself, and every duration is free to
+  change: the page holds each cue for as long as the run below takes, in one place.
+
+  A Deck being shuffled splits and riffles back together, each half on its own period, and the
+  stack squares up with a tap once they have.
+*/
+.shuffle-riffle {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+
+.shuffle-half {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.cue-shuffle .shuffle-half.is-left {
+  animation: riffle-left 0.58s ease-in-out both;
+}
+
+.cue-shuffle .shuffle-half.is-right {
+  animation: riffle-right 0.66s ease-in-out both;
+}
+
+.cue-shuffle .deck-card-back {
+  animation: deck-square-up 0.7s ease-out;
+}
+
+/*
+  A card is drawn face down: the Deck presses under the pull, the card slips off the top, arcs
+  across the table, turns over at the top of the arc and settles into the hand. The card the
+  opponent draws makes the same journey and never turns over. The rest of the hand moves aside
+  for it, each held card on its own period so the fan opens rather than snapping.
+*/
 .cue-draw .hand-card.is-cue-target {
   z-index: 30;
 }
 
 .cue-draw .hand-card.is-cue-target .hand-card-visual {
-  animation: draw-card 0.9s cubic-bezier(0.2, 0.72, 0.25, 1);
+  animation: draw-arc 0.86s cubic-bezier(0.22, 0.66, 0.22, 1);
+}
+
+.cue-draw .opponent-hand .oche-card-back.is-drawn {
+  position: relative;
+  z-index: 4;
+  animation: draw-arc-face-down 0.86s cubic-bezier(0.22, 0.66, 0.22, 1);
+}
+
+/* The face is covered until the card is edge on, and gone before there is any of it to see. */
+.draw-cover {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: block;
+  animation: draw-cover-lift 0.86s linear both;
+}
+
+.draw-cover .oche-card-back,
+.shuffle-half .oche-card-back {
+  width: 100%;
+  height: 100%;
 }
 
 .cue-draw.cue-actor-local .player-zone .deck-card-back,
 .cue-draw.cue-actor-opponent .opponent-zone .deck-card-back {
-  animation: deck-draw 0.9s cubic-bezier(0.2, 0.72, 0.25, 1);
+  animation: deck-press 0.86s cubic-bezier(0.22, 0.66, 0.22, 1);
 }
 
+/*
+  A card is played to a place, so it goes there: it dips as it is picked up, travels to the exact
+  spot it ends up standing in, and lands slightly past itself before settling. The place it
+  arrives at takes the landing once. A card with nowhere on the table to land keeps the plain
+  presentation it has always had, which is what the travelling mark distinguishes.
+*/
 .cue-play .hand-card.is-cue-source .hand-card-visual {
-  animation: hand-play 0.52s ease-out;
+  animation: hand-play 0.52s ease-out both;
 }
 
-.cue-damage .damage-badge,
-.cue-heal .damage-badge {
+.card-play-overlay.is-travelling {
+  animation: play-veil 1s ease-out both;
+}
+
+.card-travel {
+  display: block;
+}
+
+.card-play-overlay.is-travelling .card-travel {
+  animation: play-travel 1s cubic-bezier(0.32, 0.7, 0.2, 1) both;
+}
+
+.card-play-overlay.is-travelling strong {
+  animation: play-name-out 1s ease-out both;
+}
+
+.is-cue-landing {
+  animation: slot-land 1s ease-out both;
+}
+
+.cue-damage .is-cue-target .damage-badge,
+.cue-heal .is-cue-target .damage-badge {
   animation: counter-pop 0.55s ease-out;
 }
 
@@ -3222,31 +3319,293 @@ button.deck-stack.is-aura::after {
   }
 }
 
-@keyframes draw-card {
-  from {
-    opacity: 1;
+/*
+  The arc: the card leaves the Deck small and turned away, rises over the middle of its journey,
+  is edge on at the top of it - which is where the cover comes off and the face arrives - and
+  settles into its place in the fan, rocking once or twice as it lands.
+*/
+@keyframes draw-arc {
+  0% {
     transform:
       translate(var(--draw-from-x, -420px), var(--draw-from-y, -190px))
-      rotate(-14deg)
-      scale(0.58);
+      rotate(-16deg)
+      scale(0.6)
+      scaleX(1);
+  }
+
+  50% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.5),
+        calc(var(--draw-from-y, -190px) * 0.5 - 76px)
+      )
+      rotate(-7deg)
+      scale(0.84)
+      scaleX(0.02);
+  }
+
+  74% {
+    transform: translate(0, 0) rotate(5deg) scale(1.05) scaleX(1);
+  }
+
+  86% {
+    transform: translate(0, 0) rotate(-3deg) scale(0.99) scaleX(1);
+  }
+
+  94% {
+    transform: translate(0, 0) rotate(1.2deg) scale(1.01) scaleX(1);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0) scale(1) scaleX(1);
+  }
+}
+
+/* The same journey, by a card that never turns over. */
+@keyframes draw-arc-face-down {
+  0% {
+    transform:
+      translate(var(--draw-from-x, -420px), var(--draw-from-y, -190px))
+      rotate(-16deg)
+      scale(0.6);
+  }
+
+  50% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.5),
+        calc(var(--draw-from-y, -190px) * 0.5 - 76px)
+      )
+      rotate(-7deg)
+      scale(0.84);
+  }
+
+  74% {
+    transform: translate(0, 0) rotate(6deg) scale(1.04);
+  }
+
+  88% {
+    transform: translate(0, 0) rotate(-2deg) scale(0.99);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(3deg) scale(1);
+  }
+}
+
+/* Off at the exact moment the card is edge on, so neither side of it is ever seen twice. */
+@keyframes draw-cover-lift {
+  0%,
+  49.9% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
   }
 }
 
 @keyframes hand-play {
-  to {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  14% {
+    opacity: 1;
+    transform: translateY(9px) scale(0.97);
+  }
+
+  36%,
+  100% {
     opacity: 0;
-    transform: translateY(-170px) rotate(0) scale(1.12);
+    transform: translateY(-14px) scale(1.02);
   }
 }
 
-@keyframes deck-draw {
+/* The Deck presses down under the pull before the card comes off the top of it. */
+@keyframes deck-press {
   0%,
   100% {
     transform: translate(0) rotate(0);
   }
 
-  28% {
-    transform: translate(18px, -12px) rotate(5deg);
+  13% {
+    transform: translateY(5px) scale(0.96);
+  }
+
+  32% {
+    transform: translate(16px, -11px) rotate(5deg);
+  }
+}
+
+/* Two halves, each on its own period, closing back into one stack. */
+@keyframes riffle-left {
+  0% {
+    opacity: 1;
+    transform: translate(0) rotate(0);
+  }
+
+  34% {
+    transform: translate(-27px, -7px) rotate(-8deg);
+  }
+
+  68% {
+    transform: translate(-9px, -2px) rotate(-2deg);
+  }
+
+  92% {
+    opacity: 1;
+    transform: translate(0) rotate(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(0) rotate(0);
+  }
+}
+
+@keyframes riffle-right {
+  0% {
+    opacity: 1;
+    transform: translate(0) rotate(0);
+  }
+
+  34% {
+    transform: translate(25px, -4px) rotate(7deg);
+  }
+
+  68% {
+    transform: translate(8px, -1px) rotate(2deg);
+  }
+
+  92% {
+    opacity: 1;
+    transform: translate(0) rotate(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(0) rotate(0);
+  }
+}
+
+/* And the stack is squared up against the table once the halves are back together. */
+@keyframes deck-square-up {
+  0%,
+  62% {
+    transform: translate(0);
+  }
+
+  76% {
+    transform: translateY(-5px) scale(1.03);
+  }
+
+  88% {
+    transform: translateY(2px) scale(0.98);
+  }
+
+  100% {
+    transform: translate(0);
+  }
+}
+
+/*
+  The journey a played card makes: picked up with a dip, carried to the place it ends up in, and
+  set down slightly past itself. Both ends are measured by the page; with nothing measured the
+  card simply lifts where it stands.
+*/
+@keyframes play-travel {
+  0% {
+    transform:
+      translate(var(--play-from-x, 0px), var(--play-from-y, 0px))
+      scale(var(--play-from-scale, 1));
+  }
+
+  16% {
+    transform:
+      translate(var(--play-from-x, 0px), calc(var(--play-from-y, 0px) + 13px))
+      scale(calc(var(--play-from-scale, 1) * 0.96));
+  }
+
+  70% {
+    opacity: 1;
+    transform:
+      translate(var(--play-to-x, 0px), var(--play-to-y, 0px))
+      scale(calc(var(--play-to-scale, 1) * 1.14));
+  }
+
+  84% {
+    transform:
+      translate(var(--play-to-x, 0px), var(--play-to-y, 0px))
+      scale(calc(var(--play-to-scale, 1) * 0.95));
+  }
+
+  96% {
+    opacity: 1;
+    transform:
+      translate(var(--play-to-x, 0px), var(--play-to-y, 0px))
+      scale(var(--play-to-scale, 1));
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translate(var(--play-to-x, 0px), var(--play-to-y, 0px))
+      scale(var(--play-to-scale, 1));
+  }
+}
+
+/* The table is dimmed only while the card is being picked up; it is clear before it lands. */
+@keyframes play-veil {
+  0% {
+    opacity: 0;
+  }
+
+  14%,
+  40% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes play-name-out {
+  0% {
+    opacity: 0;
+  }
+
+  14%,
+  38% {
+    opacity: 1;
+  }
+
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The place receiving the card takes it, once. */
+@keyframes slot-land {
+  0%,
+  64% {
+    transform: scale(1);
+  }
+
+  76% {
+    transform: scale(1.06);
+  }
+
+  88% {
+    transform: scale(0.985);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }
 
@@ -4396,10 +4755,14 @@ button.deck-stack.is-aura::after {
     background: linear-gradient(transparent, rgb(9 11 8 / 88%) 42%);
   }
 
+  /* The fan is flat on a phone, so the room made for an arriving card is made along the row. */
   .hand-card {
     margin: 0 calc(-1 * var(--hand-overlap)) 0 0;
     touch-action: pan-x pan-y;
     transform: none;
+    transition:
+      transform calc(0.2s + var(--hand-index, 0) * 0.014s),
+      margin-right calc(0.24s + var(--hand-index, 0) * 0.014s);
   }
 
   /* The card on top of the hand is the one held last, and it is shown whole. */
@@ -4540,5 +4903,25 @@ button.deck-stack.is-aura::after {
   .is-aura.is-aura-selected .hand-card-visual::after,
   .is-aura.is-aura-selected .tray-card-visual::after {
     background: rgb(255 255 255 / 78%) !important;
+  }
+
+  /*
+    Nothing travels: a card that would have made a journey is simply where the journey would have
+    left it, and the covers and halves that exist only in order to be moved are not shown at all.
+    What the motion was there to say is said by the frame it settles on.
+  */
+  .card-play-overlay.is-travelling .card-travel,
+  .cue-play .hand-card.is-cue-source .hand-card-visual,
+  .cue-draw .hand-card.is-cue-target .hand-card-visual,
+  .cue-draw .opponent-hand .oche-card-back.is-drawn,
+  .is-cue-landing {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .draw-cover,
+  .shuffle-riffle {
+    display: none !important;
   }
 }

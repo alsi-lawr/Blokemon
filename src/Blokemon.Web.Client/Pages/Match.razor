@@ -105,6 +105,7 @@ else
         <MatchCueOverlays Cue="_activeCue"
                           PresentationCard="_presentationCard"
                           ShowPresentationCard="@(_activeCue is not null && IsCardPresentationCue(_activeCue.Kind) && _presentationCard is not null)"
+                          CardTravels="CardTravels()"
                           AnimationStatus="@_animationStatus"
                           RevealAcknowledged="AcknowledgeReveal" />
 
@@ -112,6 +113,7 @@ else
                           Auras="auras"
                           SelectedCardInstanceId="@_selectedCardInstanceId"
                           Cue="_activeCue"
+                          Overlay="_overlay"
                           BackgroundTapped="TapBackground"
                           CardTapped="TapCard"
                           CardViewOpened="OpenViewer"
@@ -121,12 +123,14 @@ else
 
         <MatchHandZone Hand="frame.Player.Hand"
                        Auras="auras"
+                       Cue="_activeCue"
                        BackgroundTapped="TapBackground"
                        CardTapped="TapCard"
                        CardViewOpened="OpenViewer"
                        CardViewClosed="CloseViewer" />
 
         <MatchActionDock Selected="selected"
+                         Damage="@(selected is null ? null : _overlay.Damage(selected))"
                          ActiveCardInstanceId="@frame.Player.Active?.Id"
                          Attacks="match.Attacks"
                          RecentEvents="match.RecentEvents"
@@ -195,6 +199,9 @@ else
     private MatchFrameView? _presentedFrame;
     private MatchEventCueView? _activeCue;
     private CardView? _presentationCard;
+    // What the cue on screen has already made true of the frame behind it. Presenters read it as
+    // they draw; nothing writes to the page behind the renderer's back.
+    private MatchPresentationOverlay _overlay = MatchPresentationOverlay.Empty;
     private CardView? _viewerCard;
     private MatchActionView? _pending;
     private MatchActionView[] _directActions = [];

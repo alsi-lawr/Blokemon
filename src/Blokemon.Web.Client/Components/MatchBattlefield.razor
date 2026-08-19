@@ -8,6 +8,10 @@
                SelectedCardInstanceId="@SelectedCardInstanceId"
                CueSourceCardInstanceId="@(Cue?.SourceCardInstanceId)"
                CueTargetCardInstanceIds="@(Cue?.TargetCardInstanceIds ?? [])"
+               Cue="Cue"
+               Overlay="Overlay"
+               Riffling="@ActingOn(true, MatchAnimationKindView.Shuffle)"
+               Drawing="@ActingOn(true, MatchAnimationKindView.Draw)"
                AuraCardInstanceIds="Auras.Cards"
                AuraSelectedCardInstanceIds="Auras.Selected"
                AuraCounters="Auras.Counters"
@@ -19,6 +23,9 @@
                SelectedCardInstanceId="@SelectedCardInstanceId"
                CueSourceCardInstanceId="@(Cue?.SourceCardInstanceId)"
                CueTargetCardInstanceIds="@(Cue?.TargetCardInstanceIds ?? [])"
+               Cue="Cue"
+               Overlay="Overlay"
+               Riffling="@ActingOn(false, MatchAnimationKindView.Shuffle)"
                AuraCardInstanceIds="Auras.Cards"
                AuraSelectedCardInstanceIds="Auras.Selected"
                AuraCounters="Auras.Counters"
@@ -45,6 +52,9 @@
     public MatchEventCueView? Cue { get; set; }
 
     [Parameter]
+    public MatchPresentationOverlay Overlay { get; set; } = MatchPresentationOverlay.Empty;
+
+    [Parameter]
     public EventCallback BackgroundTapped { get; set; }
 
     [Parameter]
@@ -64,4 +74,9 @@
 
     private static string TurnRibbon(MatchFrameView frame) =>
         frame.Player.HasTurn ? "Your turn" : $"{frame.Opponent.Name}'s turn";
+
+    // A cue belongs to the half of the table that is doing it: only that Deck shuffles, and only
+    // that hand is dealt into.
+    private bool ActingOn(bool opponent, MatchAnimationKindView kind) =>
+        Cue?.Kind == kind && Cue.ActorIsLocalPlayer == !opponent;
 }

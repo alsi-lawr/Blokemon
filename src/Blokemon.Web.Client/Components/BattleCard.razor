@@ -2,9 +2,9 @@
     <CardFace Card="Instance.Card"
               Size="@(Compact ? CardFaceSize.Bench : CardFaceSize.Battle)"
               ShowTitle="false" />
-    @if (Instance.Damage > 0)
+    @if (Shown > 0)
     {
-        <span class="damage-badge" aria-label="@Instance.Damage damage">@Instance.Damage</span>
+        <span class="damage-badge" aria-label="@Shown damage">@Shown</span>
     }
     @if (Instance.AttachedEnergy.Length > 0)
     {
@@ -35,13 +35,19 @@
     }
     @if (ShowVitals)
     {
-        <span class="hp-badge">@(Math.Max(0, Instance.HitPoints - Instance.Damage)) / @Instance.HitPoints HP</span>
+        <span class="hp-badge">@(Math.Max(0, Instance.HitPoints - Shown)) / @Instance.HitPoints HP</span>
     }
 </div>
 
 @code {
     [Parameter, EditorRequired]
     public required MatchCardInstanceView Instance { get; set; }
+
+    // The damage the table is showing, which during a presentation is what the cues so far have
+    // announced rather than what the frame behind them still says. The card's own figure is the
+    // default, so a card drawn outside a presentation reads exactly as it always has.
+    [Parameter]
+    public int? Damage { get; set; }
 
     [Parameter]
     public bool Compact { get; set; }
@@ -58,6 +64,8 @@
 
     [Parameter]
     public string[] CueTargetCardInstanceIds { get; set; } = [];
+
+    private int Shown => Damage ?? Instance.Damage;
 
     private string? CueClass()
     {

@@ -6,8 +6,14 @@
 *@
 @if (ShowPresentationCard)
 {
-    <div class="card-play-overlay" role="status" aria-live="polite">
-        <CardFace Card="PresentationCard!" Size="CardFaceSize.Showcase" />
+    @* A card being played travels from where it was to the place it ends up standing in, so the
+       card on this layer is the one making the journey: the page measures both ends and this
+       carries it between them. A card with nowhere on the table to land - one that does its work
+       and is discarded - is simply shown instead. *@
+    <div class="card-play-overlay @(CardTravels ? "is-travelling" : null)" role="status" aria-live="polite">
+        <span class="card-travel">
+            <CardFace Card="PresentationCard!" Size="CardFaceSize.Showcase" />
+        </span>
         <strong>@PresentationCard!.Name</strong>
     </div>
 }
@@ -44,6 +50,13 @@ else if (Cue?.Kind == MatchAnimationKindView.Reveal && Cue.RevealedCards.Length 
         <button type="button" class="primary reveal-continue" @onclick="RevealAcknowledged">Continue</button>
     </div>
 }
+else if (Cue?.Kind == MatchAnimationKindView.Shuffle)
+{
+    @* A Deck being shuffled is shown being shuffled: the stack splits and riffles back together
+       on the table itself, and nothing is written over it. The words stay for anyone reading the
+       table rather than watching it. *@
+    <div class="visually-hidden" role="status" aria-live="polite">@PublicText(Cue.Label)</div>
+}
 else if (Cue is not null)
 {
     <div class="event-toast is-visible" role="status" aria-live="polite">@PublicText(Cue.Label)</div>
@@ -62,6 +75,9 @@ else
 
     [Parameter]
     public bool ShowPresentationCard { get; set; }
+
+    [Parameter]
+    public bool CardTravels { get; set; }
 
     [Parameter]
     public string? AnimationStatus { get; set; }

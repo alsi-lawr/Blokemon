@@ -1,14 +1,15 @@
 using Blokemon.App.Contracts;
-using Microsoft.JSInterop;
+using Blokemon.Web.Client.Components;
 using static Blokemon.Web.Client.Components.MatchText;
 
 namespace Blokemon.Web.Client.Pages;
 
 // ---- Applying, and the presentation that follows ---------------------------------------
 //
-// A move is sent, and what comes back is played out cue by cue before the table settles on the
-// new frame. The loop, its skip and reveal signals, and the durations matched to the stylesheet
-// all stay here: the overlay layer is only ever told which cue is on screen.
+// A move is sent, and what comes back is played out beat by beat before the table settles on the
+// new frame. What is on screen in what order is worked out by MatchPresentationTimeline; the loop
+// here holds each beat for as long as the stylesheet takes to play it and owns the two things
+// that can interrupt it - the skip, and the reveal that refuses to be skipped.
 public partial class Match
 {
     private Task ChooseAttack(MatchAttackView attack)
@@ -126,63 +127,55 @@ public partial class Match
         }
         _animating = true;
         _presentedFrame = previousFrame ?? presentation.Steps[0].Frame;
+        _overlay = MatchPresentationOverlay.Empty;
 
-        foreach (var step in presentation.Steps)
+        foreach (var beat in MatchPresentationTimeline.Beats(presentation, previousFrame))
         {
-            foreach (var cue in step.Events)
+            if (!ReferenceEquals(_skipSignal, skipSignal))
             {
-                if (!ReferenceEquals(_skipSignal, skipSignal))
-                {
-                    return;
-                }
-
-                // A reveal carries gameplay information: it stays up until the player
-                // confirms, even when the rest of the presentation is skipped.
-                var mandatoryReveal =
-                    cue.Kind == MatchAnimationKindView.Reveal && cue.RevealedCards.Length > 0;
-                if (skipSignal.Task.IsCompleted && !mandatoryReveal)
-                {
-                    continue;
-                }
-
-                _activeCue = cue;
-                if (cue.Kind == MatchAnimationKindView.Draw && cue.TargetCardInstanceIds.Length > 0)
-                {
-                    _presentedFrame = step.Frame;
-                }
-                _presentationCard = PresentationCard(step.Frame, cue);
-                _animationStatus = PublicText(cue.Label);
-                await InvokeAsync(StateHasChanged);
-                if (cue.Kind == MatchAnimationKindView.Draw && _presentationModule is not null)
-                {
-                    await _presentationModule.InvokeVoidAsync("positionDrawCards", _battleScreen);
-                }
-                if (mandatoryReveal)
-                {
-                    await WaitForRevealAcknowledgement();
-                    if (!ReferenceEquals(_skipSignal, skipSignal))
-                    {
-                        return;
-                    }
-                    _activeCue = null;
-                    await InvokeAsync(StateHasChanged);
-                }
-                else
-                {
-                    await WaitForPresentation(AnimationDuration(cue.Kind), skipSignal.Task);
-                }
+                return;
             }
 
-            if (skipSignal.Task.IsCompleted)
+            // A reveal carries gameplay information: it stays up until the player confirms,
+            // even when the rest of the presentation is skipped.
+            var mandatoryReveal =
+                beat.Cue is { Kind: MatchAnimationKindView.Reveal, RevealedCards.Length: > 0 };
+            if (skipSignal.Task.IsCompleted && !mandatoryReveal)
             {
                 continue;
             }
 
-            _activeCue = null;
-            _presentationCard = null;
-            _presentedFrame = step.Frame;
+            // A skipped presentation stops at its reveals without moving the table underneath
+            // them: the frame it lands on is the one the mutation already carries.
+            if (!skipSignal.Task.IsCompleted)
+            {
+                _presentedFrame = beat.Frame;
+                _overlay = beat.Overlay;
+            }
+
+            _activeCue = beat.Cue;
+            _presentationCard = beat.Cue is null ? null : PresentationCard(beat.Frame, beat.Cue);
+            if (beat.Cue is not null)
+            {
+                _animationStatus = PublicText(beat.Cue.Label);
+            }
             await InvokeAsync(StateHasChanged);
-            await WaitForPresentation(140, skipSignal.Task);
+            await PositionCueMotion(beat.Cue);
+
+            if (mandatoryReveal)
+            {
+                await WaitForRevealAcknowledgement();
+                if (!ReferenceEquals(_skipSignal, skipSignal))
+                {
+                    return;
+                }
+                _activeCue = null;
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                await WaitForPresentation(BeatDuration(beat.Cue), skipSignal.Task);
+            }
         }
 
         if (ReferenceEquals(_skipSignal, skipSignal))
@@ -220,83 +213,9 @@ public partial class Match
         _presentedFrame = null;
         _activeCue = null;
         _presentationCard = null;
+        _overlay = MatchPresentationOverlay.Empty;
         _skipSignal = null;
         _revealSignal = null;
         _animationStatus = "Animation complete.";
     }
-
-    private async Task ToggleFullscreen()
-    {
-        if (_presentationModule is null)
-        {
-            return;
-        }
-
-        try
-        {
-            await _presentationModule.InvokeAsync<bool>("toggleFullscreen", _battleScreen);
-        }
-        catch (JSException)
-        {
-            _operationError = "Full screen is not available in this browser.";
-        }
-    }
-
-    private CardView? PresentationCard(MatchFrameView frame, MatchEventCueView cue)
-    {
-        if (!IsCardPresentationCue(cue.Kind))
-        {
-            return null;
-        }
-
-        var cardInstanceId = cue.SourceCardInstanceId ?? cue.TargetCardInstanceIds.FirstOrDefault();
-        if (cardInstanceId is null)
-        {
-            return null;
-        }
-
-        return AllVisibleCards(frame).FirstOrDefault(card => card.Id == cardInstanceId)?.Card
-            ?? (
-                _presentedFrame is null
-                    ? null
-                    : AllVisibleCards(_presentedFrame)
-                        .FirstOrDefault(card => card.Id == cardInstanceId)
-                        ?.Card
-            );
-    }
-
-    private string? AnimationClass() =>
-        _activeCue is null
-            ? null
-            : $"cue-{_activeCue.Kind.ToString().ToLowerInvariant()}{ActorCueClass(_activeCue)}";
-
-    private static string ActorCueClass(MatchEventCueView cue) =>
-        cue.ActorIsLocalPlayer switch
-        {
-            true => " cue-actor-local",
-            false => " cue-actor-opponent",
-            null => string.Empty,
-        };
-
-    private static bool IsCardPresentationCue(MatchAnimationKindView kind) =>
-        kind is MatchAnimationKindView.Play or MatchAnimationKindView.Evolve;
-
-    // Each cue is held for as long as the stylesheet takes to play it, so the words and the
-    // motion finish together. Changing one of these without the keyframe it belongs to
-    // desynchronises them.
-    private static int AnimationDuration(MatchAnimationKindView kind) =>
-        kind switch
-        {
-            MatchAnimationKindView.Setup => 900,
-            MatchAnimationKindView.Shuffle => 700,
-            MatchAnimationKindView.Draw => 900,
-            MatchAnimationKindView.Play or MatchAnimationKindView.Evolve => 1000,
-            MatchAnimationKindView.Attack => 850,
-            MatchAnimationKindView.Damage => 700,
-            MatchAnimationKindView.Knockout => 900,
-            MatchAnimationKindView.Turn => 950,
-            MatchAnimationKindView.Coin => 1400,
-            MatchAnimationKindView.Victory => 1100,
-            _ => 520,
-        };
 }

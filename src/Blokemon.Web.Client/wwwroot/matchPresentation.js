@@ -53,25 +53,37 @@ window.addEventListener("resize", () => {
   viewer?.style.setProperty("--viewer-scale", `${viewerScale()}`);
 });
 
+// How far apart two elements are on this screen at this size, which is the one thing about a
+// card's journey that cannot be written in a stylesheet. Everything measured here is handed back
+// as a custom property on an element the renderer owns; nothing is added to the page, and nothing
+// is remembered between calls.
+function centre(element) {
+  const rect = element.getBoundingClientRect();
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, rect };
+}
+
 export function positionDrawCards(table) {
   const deckZone = table?.classList.contains("cue-actor-opponent")
     ? ".opponent-zone"
     : ".player-zone";
   const deck = table?.querySelector(`${deckZone} .deck-card-back`);
-  const cards = table?.querySelectorAll(".cue-draw .hand-card.is-cue-target");
-  if (!deck || !cards?.length) {
+  if (!deck) {
     return;
   }
 
-  // The draw-card animation is declared on the inner visual, so the suppression,
-  // the measurements, and the replay below all address the visual rather than its
-  // hand-card button.
+  // The card being dealt is the player's own held card, whose motion is declared on the visual
+  // inside its press surface, or - when the opponent is the one drawing - the newest back in
+  // their strip. Either way it is that element the suppression, the measurements and the replay
+  // below all address.
   const visuals = [];
-  for (const card of cards) {
+  for (const card of table.querySelectorAll(".hand-card.is-cue-target")) {
     const visual = card.querySelector(".hand-card-visual");
     if (visual) {
       visuals.push(visual);
     }
+  }
+  for (const back of table.querySelectorAll(`${deckZone} .opponent-hand .is-drawn`)) {
+    visuals.push(back);
   }
 
   if (!visuals.length) {
@@ -85,15 +97,11 @@ export function positionDrawCards(table) {
   }
 
   // Measure at rest so the offsets carry each card back to the deck it came from.
-  const deckRect = deck.getBoundingClientRect();
-  const deckX = deckRect.left + deckRect.width / 2;
-  const deckY = deckRect.top + deckRect.height / 2;
+  const { x: deckX, y: deckY } = centre(deck);
   for (const visual of visuals) {
-    const visualRect = visual.getBoundingClientRect();
-    const visualX = visualRect.left + visualRect.width / 2;
-    const visualY = visualRect.top + visualRect.height / 2;
-    visual.style.setProperty("--draw-from-x", `${deckX - visualX}px`);
-    visual.style.setProperty("--draw-from-y", `${deckY - visualY}px`);
+    const at = centre(visual);
+    visual.style.setProperty("--draw-from-x", `${deckX - at.x}px`);
+    visual.style.setProperty("--draw-from-y", `${deckY - at.y}px`);
   }
 
   void table.offsetWidth;
@@ -105,7 +113,7 @@ export function positionDrawCards(table) {
   void table.offsetWidth;
   const deckAnimation = deck
     .getAnimations()
-    .find((animation) => animation.animationName === "deck-draw");
+    .find((animation) => animation.animationName === "deck-press");
   deckAnimation?.pause();
   if (deckAnimation) {
     deckAnimation.currentTime = 0;
@@ -114,7 +122,7 @@ export function positionDrawCards(table) {
   for (const visual of visuals) {
     const animation = visual
       .getAnimations()
-      .find((candidate) => candidate.animationName === "draw-card");
+      .find((candidate) => candidate.animationName.startsWith("draw-arc"));
     if (!animation) {
       continue;
     }
@@ -124,18 +132,83 @@ export function positionDrawCards(table) {
     // that into the offsets before playing the run once.
     animation.pause();
     animation.currentTime = 0;
-    const startRect = visual.getBoundingClientRect();
-    const startX = startRect.left + startRect.width / 2;
-    const startY = startRect.top + startRect.height / 2;
+    const start = centre(visual);
     const fromX = Number.parseFloat(visual.style.getPropertyValue("--draw-from-x"));
     const fromY = Number.parseFloat(visual.style.getPropertyValue("--draw-from-y"));
-    visual.style.setProperty("--draw-from-x", `${fromX + deckX - startX}px`);
-    visual.style.setProperty("--draw-from-y", `${fromY + deckY - startY}px`);
+    visual.style.setProperty("--draw-from-x", `${fromX + deckX - start.x}px`);
+    visual.style.setProperty("--draw-from-y", `${fromY + deckY - start.y}px`);
     animation.currentTime = 0;
     animation.play();
   }
 
   deckAnimation?.play();
+}
+
+// Where the card the page is holding on its travelling layer has come from, which is wherever it
+// was standing a moment ago: in a hand, or on the table, or - for a card played from the hand
+// nobody can see - the strip that hand is drawn as.
+function playOrigin(table) {
+  return (
+    table.querySelector(".hand-card.is-cue-source .hand-card-visual") ??
+    table.querySelector(".battle-card-shell.is-cue-source") ??
+    table.querySelector(
+      table.classList.contains("cue-actor-opponent")
+        ? ".opponent-zone .opponent-hand"
+        : ".hand-zone",
+    )
+  );
+}
+
+// The place a card ends up standing in, at the size it will stand there. The Active card leans
+// against its own end of its slot rather than sitting in the middle of it, so the landing is
+// taken from the edge the page marked; the size comes from a card already on the table, which is
+// the only honest measure of how big this one is about to be.
+function playLanding(table, landing) {
+  const rect = landing.getBoundingClientRect();
+  const compact = landing.classList.contains("is-landing-centre");
+  const sample =
+    table.querySelector(
+      compact ? ".battle-card-shell.is-compact" : ".battle-card-shell:not(.is-compact)",
+    ) ?? table.querySelector(".battle-card-shell");
+  const size = sample?.getBoundingClientRect();
+  const width = size?.width || rect.width;
+  const height = size?.height || rect.height;
+  const y = landing.classList.contains("is-landing-top")
+    ? rect.top + height / 2
+    : landing.classList.contains("is-landing-bottom")
+      ? rect.bottom - height / 2
+      : rect.top + rect.height / 2;
+  return { x: rect.left + rect.width / 2, y, width };
+}
+
+export function positionPlayCard(table) {
+  const traveller = table?.querySelector(".card-play-overlay.is-travelling .card-travel");
+  const landing = table?.querySelector(".is-cue-landing");
+  const origin = table ? playOrigin(table) : null;
+  if (!traveller || !landing || !origin) {
+    return;
+  }
+
+  // Suppress the stylesheet's own run before it can paint a frame of it, so the card is measured
+  // where it rests rather than part way through its journey.
+  traveller.style.animation = "none";
+  void table.offsetWidth;
+
+  const rest = centre(traveller);
+  const from = centre(origin);
+  const to = playLanding(table, landing);
+  traveller.style.setProperty("--play-from-x", `${from.x - rest.x}px`);
+  traveller.style.setProperty("--play-from-y", `${from.y - rest.y}px`);
+  traveller.style.setProperty(
+    "--play-from-scale",
+    `${Math.max(0.05, from.rect.width / rest.rect.width)}`,
+  );
+  traveller.style.setProperty("--play-to-x", `${to.x - rest.x}px`);
+  traveller.style.setProperty("--play-to-y", `${to.y - rest.y}px`);
+  traveller.style.setProperty("--play-to-scale", `${Math.max(0.05, to.width / rest.rect.width)}`);
+
+  traveller.style.removeProperty("animation");
+  void table.offsetWidth;
 }
 
 export async function toggleFullscreen(element) {
