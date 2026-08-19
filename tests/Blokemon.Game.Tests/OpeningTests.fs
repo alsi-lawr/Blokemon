@@ -8,6 +8,99 @@ open TUnit.Core
 
 type OpeningTests() =
 
+    /// A table stopped on the extra draw: the first player is owed two cards with three in the
+    /// deck to take them from, and the second player is owed none.
+    let ExtraDrawTable () =
+        let state = MatchScenario.BattleState "BLK-001" "BLK-003" [] 41UL
+
+        let deck =
+            [ for index in 0..2 ->
+                  MatchScenario.PlainCard
+                      $"bonus-{index}"
+                      "VIM-SOBER"
+                      MatchScenario.FirstPlayer
+                      CardZone.Stack
+                      index ]
+
+        { MatchScenario.WithCards state deck with
+            Phase = MatchPhase.MulliganBonus
+            Players =
+                ImmutableArray.CreateRange(
+                    state.Players
+                    |> Seq.map (fun player ->
+                        if player.Id = MatchScenario.FirstPlayer then
+                            { player with
+                                MulliganBonusAllowance = 2
+                                MulliganBonusChosen = false }
+                        else
+                            player)
+                ) }
+
+    let TakeExtraDraw (state: MatchState) (cards: int) =
+        MatchScenario.Applied(
+            MatchScenario
+                .Engine()
+                .Apply(
+                    state,
+                    MatchScenario.Command
+                        state
+                        $"bonus:{state.Revision.Value}:{cards}"
+                        MatchScenario.FirstPlayer
+                        ImmutableArray<_>.Empty
+                        (MatchAction.ChooseMulliganBonus cards)
+                )
+        )
+
+    let ExtraDrawsOffered (state: MatchState) =
+        MatchScenario.Engine().GetLegalActions(state, MatchScenario.FirstPlayer)
+        |> Seq.filter (fun action -> action.Kind = LegalActionKind.ChooseMulliganBonus)
+        |> Seq.length
+
+    let MittSize (state: MatchState) =
+        state.CardsIn(MatchScenario.FirstPlayer, CardZone.Mitt) |> Seq.length
+
+    [<Test>]
+    member _.``taking one card of the extra draw should leave the rest of it owed``() =
+        // The bonus is taken a card at a time, so a table owed two cards offers taking none, one
+        // or both, and taking one leaves a table owed one that offers taking none or that one.
+        let state = ExtraDrawTable()
+        ExtraDrawsOffered state |> should equal 3
+
+        let afterOne = TakeExtraDraw state 1
+        MittSize afterOne |> should equal 1
+        afterOne.Phase |> should equal MatchPhase.MulliganBonus
+
+        (afterOne.Player MatchScenario.FirstPlayer).MulliganBonusAllowance
+        |> should equal 1
+
+        (afterOne.Player MatchScenario.FirstPlayer).MulliganBonusChosen
+        |> should be False
+
+        ExtraDrawsOffered afterOne |> should equal 2
+
+        // Taking the last of it closes the draw and the setup moves on.
+        let afterBoth = TakeExtraDraw afterOne 1
+        MittSize afterBoth |> should equal 2
+        afterBoth.Phase |> should equal MatchPhase.OpeningPlacement
+        ExtraDrawsOffered afterBoth |> should equal 0
+
+    [<Test>]
+    member _.``taking none of the extra draw should close it with nothing drawn``() =
+        // Declining is still one command and still final: the rest of the allowance goes with it.
+        let declined = TakeExtraDraw (ExtraDrawTable()) 0
+
+        MittSize declined |> should equal 0
+        declined.Phase |> should equal MatchPhase.OpeningPlacement
+        ExtraDrawsOffered declined |> should equal 0
+
+    [<Test>]
+    member _.``taking the whole extra draw at once should close it``() =
+        let taken = TakeExtraDraw (ExtraDrawTable()) 2
+
+        MittSize taken |> should equal 2
+        taken.Phase |> should equal MatchPhase.OpeningPlacement
+        ExtraDrawsOffered taken |> should equal 0
+
     [<Test>]
     member _.``the opening player should be drawn before the decks are shuffled and both explicit placements should start the match``
         ()

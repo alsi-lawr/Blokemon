@@ -39,9 +39,17 @@ public partial class Match
         }
 
         await StartAction(forced[0]);
+
+        // An answer the match refused leaves nothing on the table to try again with, so the
+        // decision holds here, with the answers it already has, and one press sends them again.
+        if (_operationError is not null && _pending is not null && _stage == Stage.Idle)
+        {
+            _stage = Stage.Confirm;
+        }
+
         // Its own questions, if it has any, are now the only thing on screen, and there is
         // nothing behind the first of them to go back to.
-        _autoStarted = _stage == Stage.Choice;
+        _autoStarted = _stage is Stage.Choice or Stage.Confirm;
     }
 
     private async Task CommitPending()
@@ -51,9 +59,10 @@ public partial class Match
             return;
         }
 
-        var action = _pending;
-        CancelFlow();
-        await Apply(action, choices);
+        // The flow is not torn down before the answer goes: a move the match refuses keeps the
+        // surface it was made on, and the answers already given, so it can be sent again. One it
+        // accepts is cleared by the mutation itself.
+        await Apply(_pending, choices);
     }
 
     private async Task Apply(MatchActionView action, MatchChoiceSelectionRequest[] choices)

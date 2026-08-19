@@ -30,12 +30,13 @@ public partial class Match
             // A forced decision the table can put a place to - a card that glows, the Deck the
             // cards come from - is asked by the table itself, and one with a single possible
             // answer has already answered itself. Either way a sheet would only be in the way,
-            // unless the move it took came back refused: then it is the way to try again.
+            // including when the answer it sent came back refused: the decision holds where it
+            // is instead, so no surface here ever has to print the engine's word for it.
             return
                 forced.Length == 0
                 || ForcedByAura(forced)
                 || ForcedByDeck(forced)
-                || (ForcedIsAutomatic(forced) && _operationError is null)
+                || ForcedIsAutomatic(forced)
                 ? null
                 : new(
                     MatchSheetMode.Forced,
@@ -84,8 +85,13 @@ public partial class Match
                 _forcedKinds.Contains(_pending!.Kind),
                 []
             ),
-            // The only moves that still stop to be confirmed are the two that end something and
-            // belong to the turn rather than to a place on the table.
+            // A decision the match posed and then refused holds here, because the table has
+            // nowhere to show it.
+            Stage.Confirm when _pending is not null && _autoStarted => MatchSheetView.PosedRetry(
+                _pending
+            ),
+            // The only moves that stop to be confirmed are the two that end something and belong
+            // to the turn rather than to a place on the table.
             Stage.Confirm when _pending is not null => new(
                 MatchSheetMode.Confirm,
                 ConfirmationHeading(_pending),
@@ -127,8 +133,8 @@ public partial class Match
         : sheet is not null ? "has-sheet"
         : null;
 
-    // What a listed decision is about. A kind that has no name of its own is named by the
-    // options themselves, which are already worded for the player.
+    // What a listed decision is about. A kind with no name of its own is named by the question
+    // it carries, never by the engine's word for itself.
     private static string ForcedHeading(MatchActionView[] forced) =>
         forced[0].Kind switch
         {
@@ -136,7 +142,7 @@ public partial class Match
             MatchActionKindView.ChooseReplacement => "Choose a new Active Blokemon.",
             MatchActionKindView.ResolveKnockout => "Resolve the Knock Out.",
             MatchActionKindView.TakePrize => "Take your Prize card.",
-            _ => PublicText(forced[0].Label),
+            _ => PosedHeading(forced[0]),
         };
 
     // The question is about the destination, so it is the action that has one that names it: a

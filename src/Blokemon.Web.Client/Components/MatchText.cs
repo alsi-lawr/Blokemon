@@ -1,3 +1,5 @@
+using Blokemon.App.Contracts;
+
 namespace Blokemon.Web.Client.Components;
 
 // The engine's own vocabulary is not the game's. Everything the battle surfaces print passes
@@ -5,6 +7,15 @@ namespace Blokemon.Web.Client.Components;
 // thing whichever of them happens to be printing it.
 public static class MatchText
 {
+    // A decision the match poses has no name of its own that means anything at the table: the
+    // engine's word for it describes its own machinery rather than the game. What the player is
+    // about to be asked is the question it carries, which is the same wording the choice step
+    // prints, so that is what names it wherever the decision itself has to be shown.
+    public static string PosedHeading(MatchActionView action) =>
+        action.ChoiceRequirements.Length > 0
+            ? PublicText(action.ChoiceRequirements[0].Label)
+            : "Required";
+
     public static string PublicZone(string zone) =>
         zone switch
         {

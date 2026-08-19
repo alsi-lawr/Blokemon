@@ -25,9 +25,16 @@ module internal MatchBasicHandlers =
             else
                 builder.Draw(actor, cardsToDraw, DrawReason.MulliganBonus) |> ignore
 
+                // The bonus can be taken a card at a time: what is left of the allowance stays
+                // on offer, and the choice only closes when the player takes none of it or has
+                // taken all of it. Taking the whole allowance in one command, or declining it
+                // outright, closes it exactly as it always did.
+                let remaining = player.MulliganBonusAllowance - cardsToDraw
+
                 builder.SetPlayer
                     { player with
-                        MulliganBonusChosen = true }
+                        MulliganBonusAllowance = remaining
+                        MulliganBonusChosen = cardsToDraw = 0 || remaining = 0 }
 
                 if
                     builder.Players

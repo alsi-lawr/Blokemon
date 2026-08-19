@@ -62,6 +62,18 @@ public partial class Match
                     )
                     : new([], [], false, false, _noCounters);
 
+            // A card that has been picked up holds the chosen glow while everything else that
+            // could be played still offers itself: putting this one down is a tap away either
+            // way, on the card itself to play it or on another to swap to that one.
+            case Stage.Armed:
+                return new(
+                    PlayableCardIds(match),
+                    [_originCardInstanceId!],
+                    false,
+                    false,
+                    _noCounters
+                );
+
             case Stage.Destination:
                 return new(
                     DestinationCardIds(),
@@ -229,13 +241,16 @@ public partial class Match
     private bool ForcedByAura(MatchActionView[] forced) =>
         forced.All(option => IsVisible(option.SourceCardInstanceId));
 
-    // A draw asks nothing but how many, and the Deck is where the cards come from: it glows, and
-    // tapping it takes them. The engine offers one action per possible count under a stable key
-    // that sorts by that count, so the last of them is the whole allowance.
+    // A draw is taken from the Deck, so the Deck is what glows and what is tapped.
     private static bool ForcedByDeck(MatchActionView[] forced) =>
         forced[0].Kind == MatchActionKindView.ChooseMulliganBonus;
 
-    private static MatchActionView DeckDraw(MatchActionView[] forced) => forced[^1];
+    // One card a tap, the way a card is taken off a real deck. The engine offers one action per
+    // count it would accept, from taking none upwards, under a stable key that sorts by that
+    // count: the one after declining is the single card. What is left of the allowance is still
+    // offered afterwards, so the Deck keeps glowing until it has all been taken.
+    private static MatchActionView DeckDraw(MatchActionView[] forced) =>
+        forced.Length > 1 ? forced[1] : forced[0];
 
     // A decision with one possible answer is not a decision. It is taken as soon as it is
     // offered, so nothing goes on screen to ask a question that has already answered itself.

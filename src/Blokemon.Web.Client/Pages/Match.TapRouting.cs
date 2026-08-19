@@ -53,13 +53,20 @@ public partial class Match
                         .Where(action => action.TargetCardInstanceId == cardInstanceId),
                 ]);
 
+            // The armed card is played by tapping it again: the first tap picked it up, and this
+            // is the one that puts it down.
+            case Stage.Armed when cardInstanceId == _originCardInstanceId:
+                return StartAction(_menu[0]);
+
             case Stage.Idle
                 when PlayableCardIds(match).Contains(cardInstanceId, StringComparer.Ordinal):
                 return SelectOrigin(cardInstanceId);
 
-            case Stage.Destination
+            case Stage.Armed
+            or Stage.Destination
                 when PlayableCardIds(match).Contains(cardInstanceId, StringComparer.Ordinal):
-                // Tapping another playable card while choosing a destination switches origin.
+                // Tapping another playable card puts the first one back down and picks that one
+                // up instead, whichever kind of move was being set up.
                 CancelFlow();
                 return SelectOrigin(cardInstanceId);
 
@@ -86,7 +93,7 @@ public partial class Match
     }
 
     // The Deck is a place on the table like any other. While a draw is outstanding it glows, and
-    // tapping it takes the cards - the whole allowance, because the draw is one move.
+    // tapping it takes one card off it; what is left of the draw keeps it glowing for the next.
     private Task TapDeck()
     {
         if (_view?.Match is not { } match || _stage != Stage.Idle || Busy())
@@ -137,9 +144,23 @@ public partial class Match
         }
 
         _hadDestinationStep = false;
+
+        // A card with one move and no place on the table to send it to is picked up rather than
+        // played outright: it holds the chosen glow, everything else that could be played still
+        // glows behind it, and tapping it again is the move. Anywhere else puts it back down.
+        if (_directActions.Length == 1)
+        {
+            _menu = _directActions;
+            _directActions = [];
+            _stage = Stage.Armed;
+            return Task.CompletedTask;
+        }
+
         return OpenMenu(_directActions);
     }
 
+    // A tap on a place the table shows - a destination card, an empty Bench position - has said
+    // everything a move needs, so the move it settles on happens.
     private Task OpenMenu(MatchActionView[] actions)
     {
         _menu = actions;
