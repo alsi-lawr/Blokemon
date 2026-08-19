@@ -289,12 +289,13 @@ public sealed class MatchPresentationTimelineTests
         beat.Cue?.Kind is MatchAnimationKindView.Play or MatchAnimationKindView.Evolve
         && beat.Cue.SourceCardInstanceId == cardInstanceId;
 
-    // Whether the hand draws this card at this beat, which it does not if it is marked as gone.
+    // Whether the hand draws this card at this beat, which it does not once the presentation says
+    // the hand has lost it.
     private static bool HandDraws(MatchPresentationBeat beat, string cardInstanceId) =>
         beat.Frame.Player.Hand.Any(card => card.Id == cardInstanceId)
-        && !MatchCueMarking
-            .HandCard(cardInstanceId, NoAuras, beat.Cue, beat.Overlay)
-            .Contains(MatchCueMarking.Gone, StringComparison.Ordinal);
+        && !MatchCueState
+            .HeldCard(beat.Cue, beat.Overlay, cardInstanceId)
+            .HasFlag(MatchCueRole.Gone);
 
     // And whether the field does.
     private static bool TableDraws(MatchPresentationBeat beat, string cardInstanceId) =>
@@ -303,9 +304,9 @@ public sealed class MatchPresentationTimelineTests
             || side.Bench.Any(card => card.Id == cardInstanceId)
             || side.InPlayKits.Any(card => card.Id == cardInstanceId)
         )
-        && MatchCueMarking
-            .TableCard(beat.Overlay, cardInstanceId)
-            ?.Contains(MatchCueMarking.Gone, StringComparison.Ordinal) != true;
+        && !MatchCueState
+            .FieldCard(beat.Cue, beat.Overlay, cardInstanceId)
+            .HasFlag(MatchCueRole.Gone);
 
     private static int VisibleCopies(MatchPresentationBeat beat, string cardInstanceId) =>
         (Carried(beat, cardInstanceId) ? 1 : 0)
@@ -409,14 +410,6 @@ public sealed class MatchPresentationTimelineTests
             false,
             null
         );
-
-    private static readonly MatchAuraView NoAuras = new(
-        [],
-        [],
-        false,
-        false,
-        new Dictionary<string, int>(StringComparer.Ordinal)
-    );
 
     private const string Held = "card-held";
 

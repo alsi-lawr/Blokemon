@@ -1,4 +1,4 @@
-<div class="battle-card-shell @(Compact ? "is-compact" : null) @(Selected ? "is-selected" : null) @CueClass() @Marking">
+<div class="battle-card-shell @(Compact ? "is-compact" : null) @(Selected ? "is-selected" : null) @MatchCueMarking.Classes(Role)">
     <CardFace Card="Instance.Card"
               Size="@(Compact ? CardFaceSize.Bench : CardFaceSize.Battle)"
               ShowTitle="false" />
@@ -59,31 +59,11 @@
     [Parameter]
     public bool Selected { get; set; }
 
+    // What the presentation says about this card - which end of the cue it is, which end of a blow,
+    // and whether it has already been taken off the table - worked out by the presentation rather
+    // than by the card, because every one of those facts outlives the cue that made it true.
     [Parameter]
-    public string? CueSourceCardInstanceId { get; set; }
-
-    [Parameter]
-    public string[] CueTargetCardInstanceIds { get; set; } = [];
-
-    // What the presentation says about this card - which end of a blow it is, and whether it has
-    // already been taken off the table - worked out by the presentation rather than by the card,
-    // because every one of those facts outlives the cue that made it true.
-    [Parameter]
-    public string? Marking { get; set; }
+    public MatchCueRole Role { get; set; }
 
     private int Shown => Damage ?? Instance.Damage;
-
-    private string? CueClass()
-    {
-        var classes = new List<string>(2);
-        if (Instance.Id == CueSourceCardInstanceId)
-        {
-            classes.Add("is-cue-source");
-        }
-        if (CueTargetCardInstanceIds.Contains(Instance.Id, StringComparer.Ordinal))
-        {
-            classes.Add("is-cue-target");
-        }
-        return classes.Count == 0 ? null : string.Join(' ', classes);
-    }
 }

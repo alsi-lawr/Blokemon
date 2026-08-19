@@ -6,10 +6,10 @@ namespace Blokemon.Web.Tests;
 // One table, and one beat of a presentation on it for each thing a cue can be about, played once
 // by each half of the table.
 //
-// The beats are built by the real timeline from a real step, so what the presenters are handed is
-// what the product hands them: which cards a cue names, which of them the presentation has already
-// carried off, where a played card is heading, and which card is part way through a blow. Nothing
-// here decides any of that on the timeline's behalf.
+// The beats are built by the real timeline from a real step, so what is asked about is what the
+// product works out: which cards a cue names, which of them the presentation has already carried
+// off, where a played card is heading, and which card is part way through a blow. Nothing here
+// decides any of that on the timeline's behalf.
 //
 // Both halves are played out because a cue belongs to the half doing it, and that is exactly the
 // thing a rule can get wrong while looking right: the opponent's cues name the opponent's cards,
@@ -27,14 +27,6 @@ internal static class MatchTableFixture
         [],
         0,
         false
-    );
-
-    public static readonly MatchAuraView NothingGlowing = new(
-        [],
-        [],
-        false,
-        false,
-        new Dictionary<string, int>(StringComparer.Ordinal)
     );
 
     // Who is doing it, and which cards are therefore theirs. A held card of the opponent's has no
@@ -55,6 +47,52 @@ internal static class MatchTableFixture
         var (after, events) = Step(kind, doing);
         var beats = MatchPresentationTimeline.Beats(new([new(after, events)]), Standing);
         return beats.Last(beat => beat.Cue?.Kind == kind);
+    }
+
+    // What the presentation says about every card the table draws for a beat, asked of the
+    // presentation the same way each of them is drawn: your held cards are asked as held cards,
+    // and everything standing on either half of the table is asked as a card on the field.
+    //
+    // Their held cards are not here because they are not drawn: the opponent's hand is a count of
+    // backs, so a cue of theirs about one names a card nothing on the table is.
+    public static IReadOnlyDictionary<string, MatchCueRole> Roles(MatchPresentationBeat beat)
+    {
+        var roles = new Dictionary<string, MatchCueRole>(StringComparer.Ordinal);
+        foreach (var side in new[] { beat.Frame.Player, beat.Frame.Opponent })
+        {
+            foreach (var held in side.Hand)
+            {
+                Record(roles, held.Id, MatchCueState.HeldCard(beat.Cue, beat.Overlay, held.Id));
+            }
+
+            foreach (var standing in OnTheTable(side))
+            {
+                Record(
+                    roles,
+                    standing.Id,
+                    MatchCueState.FieldCard(beat.Cue, beat.Overlay, standing.Id)
+                );
+            }
+        }
+
+        return roles;
+    }
+
+    private static IEnumerable<MatchCardInstanceView> OnTheTable(MatchSideView side) =>
+        (side.Active is null ? [] : new[] { side.Active })
+            .Concat(side.Bench)
+            .Concat(side.InPlayKits);
+
+    private static void Record(
+        Dictionary<string, MatchCueRole> roles,
+        string cardInstanceId,
+        MatchCueRole role
+    )
+    {
+        if (role != MatchCueRole.None)
+        {
+            roles[cardInstanceId] = role;
+        }
     }
 
     private static (MatchFrameView After, MatchEventCueView[] Events) Step(

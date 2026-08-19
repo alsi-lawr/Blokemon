@@ -57,9 +57,7 @@
                             Compact="true"
                             ShowVitals="false"
                             Selected="@(card.Id == SelectedCardInstanceId)"
-                            CueSourceCardInstanceId="@CueSourceCardInstanceId"
-                            CueTargetCardInstanceIds="CueTargetCardInstanceIds"
-                            Marking="@MatchCueMarking.TableCard(Overlay, card.Id)" />
+                            Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)" />
                 @if (Counter(card.Id) is { } localCounter)
                 {
                     <span class="aura-counter">@localCounter</span>
@@ -91,9 +89,7 @@
                     <BattleCard Instance="Side.Active"
                                 Damage="@Overlay.Damage(Side.Active)"
                                 Selected="@(Side.Active.Id == SelectedCardInstanceId)"
-                                CueSourceCardInstanceId="@CueSourceCardInstanceId"
-                                CueTargetCardInstanceIds="CueTargetCardInstanceIds"
-                                Marking="@MatchCueMarking.TableCard(Overlay, Side.Active.Id)" />
+                                Role="@MatchCueState.FieldCard(Cue, Overlay, Side.Active.Id)" />
                     @if (Counter(Side.Active.Id) is { } activeCounter)
                     {
                         <span class="aura-counter">@activeCounter</span>
@@ -116,9 +112,7 @@
                                 Damage="@Overlay.Damage(card)"
                                 Compact="true"
                                 Selected="@(card.Id == SelectedCardInstanceId)"
-                                CueSourceCardInstanceId="@CueSourceCardInstanceId"
-                                CueTargetCardInstanceIds="CueTargetCardInstanceIds"
-                                Marking="@MatchCueMarking.TableCard(Overlay, card.Id)" />
+                                Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)" />
                     @if (Counter(card.Id) is { } benchCounter)
                     {
                         <span class="aura-counter">@benchCounter</span>
@@ -155,7 +149,7 @@
                 {
                     @* A card dealt to the opponent is the newest back in the strip: it is pulled
                        from their Deck the same way, and stays face down all the way there. *@
-                    <CardBack Class="@(Drawing && MatchCueMarking.Arrives(Cue, index, shown) ? MatchCueMarking.Arriving : null)" />
+                    <CardBack Class="@MatchCueMarking.Classes(Arriving(index, shown))" />
                 }
             </div>
         }
@@ -181,12 +175,6 @@
 
     [Parameter]
     public string? SelectedCardInstanceId { get; set; }
-
-    [Parameter]
-    public string? CueSourceCardInstanceId { get; set; }
-
-    [Parameter]
-    public string[] CueTargetCardInstanceIds { get; set; } = [];
 
     [Parameter]
     public MatchEventCueView? Cue { get; set; }
@@ -234,6 +222,11 @@
     // has something to aim at and the place itself can take the landing.
     private string? Landing(MatchLandingKind kind, int index = 0) =>
         MatchCueMarking.LandingClass(Overlay.LandingFor(Opponent), kind, index);
+
+    // The back being dealt into this strip, which only ever exists on the half of the table being
+    // dealt to: the other half is asked the same question every render and always hears no.
+    private MatchCueRole Arriving(int index, int shown) =>
+        Drawing ? MatchCueState.ArrivingBack(Cue, index, shown) : MatchCueRole.None;
 
     private bool IsAura(string cardInstanceId) =>
         AuraCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal);
