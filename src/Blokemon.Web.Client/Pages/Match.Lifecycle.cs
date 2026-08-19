@@ -14,6 +14,8 @@ public partial class Match
             _view = response.Value;
             _selectedDeckId = ReadyDecks().FirstOrDefault()?.Id;
             EnsureCardSelection(selectDefault: true);
+            // A battle resumed from this device can already be waiting on such a decision.
+            await ResolveAutomaticDecisions();
         }
         else
         {

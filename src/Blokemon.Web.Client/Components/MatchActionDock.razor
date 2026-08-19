@@ -61,7 +61,8 @@
 
         @if (Selected.Id == ActiveCardInstanceId && Attacks.Length > 0)
         {
-            <p class="phase-help">Choose an attack. Attacking ends your turn.</p>
+            @* Each attack prints its own cost, its damage and what it costs the turn: a line
+               above the list telling the player to choose one would only say it again. *@
             <div class="attack-list">
                 @foreach (var attack in Attacks)
                 {

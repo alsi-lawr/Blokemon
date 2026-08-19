@@ -11,19 +11,40 @@ namespace Blokemon.Web.Client.Pages;
 // all stay here: the overlay layer is only ever told which cue is on screen.
 public partial class Match
 {
-    private void ChooseAttack(MatchAttackView attack)
+    private Task ChooseAttack(MatchAttackView attack)
     {
         if (attack.ActionId is null || _view?.Match is not { } match)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         CancelFlow();
         _originCardInstanceId = attack.SourceCardInstanceId;
-        StartAction(match.LegalActions.Single(candidate => candidate.Id == attack.ActionId));
+        return StartAction(match.LegalActions.Single(candidate => candidate.Id == attack.ActionId));
     }
 
-    private async Task ConfirmPending()
+    // A decision the engine offers with a single possible answer is taken as soon as the table
+    // settles: it is not a question, and a sheet asking it would be a step with no alternative.
+    private async Task ResolveAutomaticDecisions()
+    {
+        if (_view?.Match is not { } match || _stage != Stage.Idle || Busy())
+        {
+            return;
+        }
+
+        var forced = ForcedDecision(match);
+        if (forced.Length == 0 || !ForcedIsAutomatic(forced))
+        {
+            return;
+        }
+
+        await StartAction(forced[0]);
+        // Its own questions, if it has any, are now the only thing on screen, and there is
+        // nothing behind the first of them to go back to.
+        _autoStarted = _stage == Stage.Choice;
+    }
+
+    private async Task CommitPending()
     {
         if (_pending is null || !TryBuildChoices(_pending, out var choices))
         {
@@ -75,6 +96,7 @@ public partial class Match
 
         _working = false;
         EnsureCardSelection(selectDefault: false);
+        await ResolveAutomaticDecisions();
     }
 
     private async Task PlayPresentation(

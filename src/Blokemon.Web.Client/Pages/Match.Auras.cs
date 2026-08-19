@@ -42,26 +42,32 @@ public partial class Match
     {
         if (_view?.Match is not { } match || Busy())
         {
-            return new([], [], false, _noCounters);
+            return new([], [], false, false, _noCounters);
         }
 
         switch (_stage)
         {
+            // A draw is asked for by the Deck itself: it glows, and tapping it takes the cards.
+            case Stage.Idle when forced.Length > 0 && ForcedByDeck(forced):
+                return new([], [], false, true, _noCounters);
+
             case Stage.Idle when forced.Length > 0:
                 return ForcedByAura(forced)
                     ? new(
                         [.. forced.Select(static option => option.SourceCardInstanceId!)],
                         [],
                         false,
+                        false,
                         _noCounters
                     )
-                    : new([], [], false, _noCounters);
+                    : new([], [], false, false, _noCounters);
 
             case Stage.Destination:
                 return new(
                     DestinationCardIds(),
                     [_originCardInstanceId!],
                     _benchDestination,
+                    false,
                     _noCounters
                 );
 
@@ -77,6 +83,7 @@ public partial class Match
                         }.OfType<string>(),
                     ],
                     false,
+                    false,
                     _noCounters
                 );
 
@@ -84,10 +91,10 @@ public partial class Match
                 return ChoiceAuras(requirement);
 
             case Stage.Idle:
-                return new(PlayableCardIds(match), [], false, _noCounters);
+                return new(PlayableCardIds(match), [], false, false, _noCounters);
 
             default:
-                return new([], [], false, _noCounters);
+                return new([], [], false, false, _noCounters);
         }
     }
 
@@ -101,6 +108,7 @@ public partial class Match
                 [.. requirement.EligibleCards.Select(static card => card.Id)],
                 [.. draft.Cards],
                 false,
+                false,
                 _noCounters
             ),
             MatchChoiceKindView.Distribution => new(
@@ -111,11 +119,13 @@ public partial class Match
                         .Select(static item => item.Key),
                 ],
                 false,
+                false,
                 draft.Distribution
             ),
             MatchChoiceKindView.Attachments when _attachmentCardInstanceId is { } energy => new(
                 [.. requirement.EligibleTargets.Select(static card => card.Id)],
                 [energy],
+                false,
                 false,
                 _noCounters
             ),
@@ -127,9 +137,10 @@ public partial class Match
                 ],
                 [.. draft.Attachments.Keys],
                 false,
+                false,
                 _noCounters
             ),
-            _ => new([], origin, false, _noCounters),
+            _ => new([], origin, false, false, _noCounters),
         };
     }
 
@@ -214,10 +225,22 @@ public partial class Match
         return [];
     }
 
-    // A decision whose every candidate is a card the table shows hands off to the auras; one
-    // that is not card-shaped, such as the mulligan bonus, stays a list of options.
+    // A decision whose every candidate is a card the table shows hands off to the auras.
     private bool ForcedByAura(MatchActionView[] forced) =>
         forced.All(option => IsVisible(option.SourceCardInstanceId));
+
+    // A draw asks nothing but how many, and the Deck is where the cards come from: it glows, and
+    // tapping it takes them. The engine offers one action per possible count under a stable key
+    // that sorts by that count, so the last of them is the whole allowance.
+    private static bool ForcedByDeck(MatchActionView[] forced) =>
+        forced[0].Kind == MatchActionKindView.ChooseMulliganBonus;
+
+    private static MatchActionView DeckDraw(MatchActionView[] forced) => forced[^1];
+
+    // A decision with one possible answer is not a decision. It is taken as soon as it is
+    // offered, so nothing goes on screen to ask a question that has already answered itself.
+    private bool ForcedIsAutomatic(MatchActionView[] forced) =>
+        forced.Length == 1 && !ForcedByAura(forced) && !ForcedByDeck(forced);
 
     private static MatchActionView? GlobalAction(MatchView match, MatchActionKindView kind) =>
         match.LegalActions.FirstOrDefault(action => action.Kind == kind);

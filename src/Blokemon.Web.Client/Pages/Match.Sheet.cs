@@ -27,15 +27,21 @@ public partial class Match
         var frame = DisplayFrame();
         if (_stage == Stage.Idle)
         {
-            // A forced decision whose every candidate glows on the table is asked by the table
-            // itself: a sheet that lists nothing would only restate what the auras already show.
-            return forced.Length == 0 || ForcedByAura(forced)
+            // A forced decision the table can put a place to - a card that glows, the Deck the
+            // cards come from - is asked by the table itself, and one with a single possible
+            // answer has already answered itself. Either way a sheet would only be in the way,
+            // unless the move it took came back refused: then it is the way to try again.
+            return
+                forced.Length == 0
+                || ForcedByAura(forced)
+                || ForcedByDeck(forced)
+                || (ForcedIsAutomatic(forced) && _operationError is null)
                 ? null
                 : new(
                     MatchSheetMode.Forced,
-                    ForcedHeading(forced[0].Kind),
+                    ForcedHeading(forced),
                     "Required",
-                    "Choose how to resolve this.",
+                    null,
                     null,
                     null,
                     true,
@@ -51,7 +57,7 @@ public partial class Match
             Stage.Destination => new(
                 MatchSheetMode.Destination,
                 DestinationHeading(frame),
-                "Choose a destination",
+                null,
                 null,
                 null,
                 "Cancel",
@@ -60,7 +66,7 @@ public partial class Match
             ),
             Stage.Actions => new(
                 MatchSheetMode.Actions,
-                $"{OriginName(frame)}: choose a move.",
+                OriginName(frame),
                 "Available moves",
                 null,
                 null,
@@ -74,23 +80,38 @@ public partial class Match
                 PublicText(_pending!.Label),
                 ChoiceProgress(requirement),
                 EffectDescription(_pending),
-                "Back",
+                StepBackLabel(),
                 _forcedKinds.Contains(_pending!.Kind),
                 []
             ),
+            // The only moves that still stop to be confirmed are the two that end something and
+            // belong to the turn rather than to a place on the table.
             Stage.Confirm when _pending is not null => new(
                 MatchSheetMode.Confirm,
                 ConfirmationHeading(_pending),
                 "Confirm",
-                ChoiceSummary(_pending),
-                EffectDescription(_pending),
+                null,
+                null,
                 "Cancel",
-                _forcedKinds.Contains(_pending.Kind),
+                false,
                 []
             ),
             _ => null,
         };
     }
+
+    // The step in front of the last one continues; the last one plays the move, and says so with
+    // the same word the move would have been confirmed with.
+    private string? ChoiceAdvanceLabel() =>
+        _pending is null ? null
+        : NextActiveStep(_choiceStep) < 0 ? ConfirmationButton(_pending)
+        : "Continue";
+
+    // Going back is offered while there is something behind: an earlier step of the same
+    // question, or the flow the player started. A question that opened itself has nothing behind
+    // its first step, and a Back there would leave the table with no way on.
+    private string? StepBackLabel() =>
+        !_autoStarted || PreviousActiveStep(_choiceStep) >= 0 ? "Back" : null;
 
     // A phone can show the sheet or the hand at the bottom, not both: the hand comes forward
     // only while the cards still to be chosen are in it. The already-chosen origin does not
@@ -106,15 +127,16 @@ public partial class Match
         : sheet is not null ? "has-sheet"
         : null;
 
-    private static string ForcedHeading(MatchActionKindView kind) =>
-        kind switch
+    // What a listed decision is about. A kind that has no name of its own is named by the
+    // options themselves, which are already worded for the player.
+    private static string ForcedHeading(MatchActionView[] forced) =>
+        forced[0].Kind switch
         {
-            MatchActionKindView.ChooseMulliganBonus => "Take your bonus cards.",
             MatchActionKindView.ChooseOpening => "Choose your Active Blokemon.",
             MatchActionKindView.ChooseReplacement => "Choose a new Active Blokemon.",
             MatchActionKindView.ResolveKnockout => "Resolve the Knock Out.",
             MatchActionKindView.TakePrize => "Take your Prize card.",
-            _ => "Make the required choice.",
+            _ => PublicText(forced[0].Label),
         };
 
     // The question is about the destination, so it is the action that has one that names it: a
@@ -168,56 +190,6 @@ public partial class Match
         return string.IsNullOrWhiteSpace(rule?.Text) ? null : rule.Text;
     }
 
-    private string? ChoiceSummary(MatchActionView action)
-    {
-        var frame = DisplayFrame();
-        var parts = new List<string>();
-        foreach (var requirement in LocalRequirements(action).Where(ChoiceHasStep))
-        {
-            var draft = Draft(requirement);
-            var value = requirement.Kind switch
-            {
-                MatchChoiceKindView.Optional => draft.Accepted ? "Yes" : "No",
-                MatchChoiceKindView.Amount => draft.Amount.ToString(),
-                MatchChoiceKindView.Cards => draft.Cards.Count == 0
-                    ? "None"
-                    : string.Join(
-                        ", ",
-                        draft.Cards.Select(card => CardName(frame, requirement, card))
-                    ),
-                MatchChoiceKindView.MechanicalType => requirement
-                    .EligibleMechanicalTypes.FirstOrDefault(option =>
-                        option.Value == draft.MechanicalType
-                    )
-                    ?.Label
-                    ?? "—",
-                MatchChoiceKindView.Attack => requirement
-                    .EligibleEffects.FirstOrDefault(option => option.Id == draft.EffectId)
-                    ?.Label
-                    ?? "—",
-                MatchChoiceKindView.Distribution => string.Join(
-                    ", ",
-                    draft
-                        .Distribution.Where(static item => item.Value > 0)
-                        .Select(item => $"{CardName(frame, requirement, item.Key)} {item.Value}")
-                ),
-                MatchChoiceKindView.Attachments => string.Join(
-                    ", ",
-                    draft.Attachments.Select(item =>
-                        $"{CardName(frame, requirement, item.Key)} → {CardName(frame, requirement, item.Value)}"
-                    )
-                ),
-                _ => null,
-            };
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                parts.Add($"{PublicText(requirement.Label)}: {value}");
-            }
-        }
-
-        return parts.Count == 0 ? null : string.Join(" · ", parts);
-    }
-
     private string CardName(
         MatchFrameView frame,
         MatchChoiceRequirementView requirement,
@@ -230,15 +202,16 @@ public partial class Match
             ?.Card.Name
         ?? "that card";
 
-    private string ConfirmationHeading(MatchActionView action) =>
+    private static string ConfirmationHeading(MatchActionView action) =>
         action.Kind switch
         {
-            MatchActionKindView.Attack => $"Use {SimpleActionName(action.Label)}?",
             MatchActionKindView.EndTurn => "End your turn?",
             MatchActionKindView.Resign => "Resign and lose this battle?",
             _ => $"{PublicText(action.Label)}?",
         };
 
+    // The word on the button that commits a move: the last step of a question ends with the move
+    // itself, so it says what the move is rather than that there is more to come.
     private static string ConfirmationButton(MatchActionView action) =>
         action.Kind switch
         {

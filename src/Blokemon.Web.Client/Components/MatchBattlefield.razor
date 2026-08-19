@@ -2,7 +2,7 @@
     Both halves keep a place for a Kit in play at all times, so nothing on the table moves
     when one is played or leaves.
 *@
-<div class="battlefield @(Auras.Cards.Length > 0 || Auras.Bench ? "is-choosing" : null)" @onclick="BackgroundTapped">
+<div class="battlefield @(Auras.Cards.Length > 0 || Auras.Bench || Auras.Deck ? "is-choosing" : null)" @onclick="BackgroundTapped">
     <MatchSide Side="Frame.Opponent"
                Opponent="true"
                SelectedCardInstanceId="@SelectedCardInstanceId"
@@ -23,10 +23,12 @@
                AuraSelectedCardInstanceIds="Auras.Selected"
                AuraCounters="Auras.Counters"
                BenchDestination="Auras.Bench"
+               DeckDraw="Auras.Deck"
                CardTapped="CardTapped"
                CardViewOpened="CardViewOpened"
                CardViewClosed="CardViewClosed"
-               BenchTapped="BenchTapped" />
+               BenchTapped="BenchTapped"
+               DeckTapped="DeckTapped" />
 </div>
 
 @code {
@@ -56,6 +58,9 @@
 
     [Parameter]
     public EventCallback BenchTapped { get; set; }
+
+    [Parameter]
+    public EventCallback DeckTapped { get; set; }
 
     private static string TurnRibbon(MatchFrameView frame) =>
         frame.Player.HasTurn ? "Your turn" : $"{frame.Opponent.Name}'s turn";

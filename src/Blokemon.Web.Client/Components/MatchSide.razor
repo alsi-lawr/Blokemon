@@ -1,10 +1,27 @@
 <section class="side-zone @(Opponent ? "opponent-zone" : "player-zone") @(Side.HasTurn ? "has-turn" : null)"
          aria-label="@(Opponent ? $"Opponent, {Side.Name}" : $"You, {Side.Name}")">
-    <div class="deck-stack" aria-label="@($"Deck, {Side.DeckCount} cards")">
-        <div class="deck-card-back"><CardBack /></div>
-        <b>Deck @Side.DeckCount</b>
-        <small>Hand @Side.HandCount</small>
-    </div>
+    @* The Deck keeps its place whatever is happening, and only becomes a control while a draw
+       is waiting on it: the same box, in the same position, glowing and pressable. *@
+    @{
+        RenderFragment deckStack =
+            @<text>
+                <div class="deck-card-back"><CardBack /></div>
+                <b>Deck @Side.DeckCount</b>
+                <small>Hand @Side.HandCount</small>
+            </text>;
+    }
+    @if (DeckDraw)
+    {
+        <button type="button"
+                class="deck-stack is-aura"
+                aria-label="@($"Draw from the Deck, {Side.DeckCount} cards")"
+                @onclick:stopPropagation="true"
+                @onclick="DeckTapped">@deckStack</button>
+    }
+    else
+    {
+        <div class="deck-stack" aria-label="@($"Deck, {Side.DeckCount} cards")">@deckStack</div>
+    }
 
     @* The place a Kit in play stands in is part of the table, so it is kept whether or not a
        card is standing in it: nothing else moves when one is played or leaves. *@
@@ -157,6 +174,9 @@
     public bool BenchDestination { get; set; }
 
     [Parameter]
+    public bool DeckDraw { get; set; }
+
+    [Parameter]
     public EventCallback<string> CardTapped { get; set; }
 
     [Parameter]
@@ -167,6 +187,9 @@
 
     [Parameter]
     public EventCallback BenchTapped { get; set; }
+
+    [Parameter]
+    public EventCallback DeckTapped { get; set; }
 
     private bool IsAura(string cardInstanceId) =>
         AuraCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal);

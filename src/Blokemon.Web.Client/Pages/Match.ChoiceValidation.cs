@@ -146,7 +146,10 @@ public partial class Match
             : $"Choose {requirement.Minimum} to {requirement.Maximum}";
     }
 
-    private string ChoiceProgress(MatchChoiceRequirementView requirement)
+    // How far through a counted answer the player is. A step whose options are on screen as
+    // buttons, or whose eligible cards are already glowing, says nothing at all: the count is
+    // state the table cannot show by itself, and everything else would be narration.
+    private string? ChoiceProgress(MatchChoiceRequirementView requirement)
     {
         var draft = Draft(requirement);
         return requirement.Kind switch
@@ -155,12 +158,10 @@ public partial class Match
                 $"{ChoiceInstruction(requirement)} · {draft.Cards.Count}/{requirement.Maximum} selected",
             MatchChoiceKindView.Distribution =>
                 $"Place {requirement.Maximum} · {draft.Distribution.Values.Sum()} placed",
-            MatchChoiceKindView.Attachments => _attachmentCardInstanceId is null
-                ? $"Tap an Energy card, then the Blokemon it joins · {draft.Attachments.Count}/{requirement.Maximum}"
-                : "Now tap the Blokemon it joins.",
+            MatchChoiceKindView.Attachments => $"{draft.Attachments.Count}/{requirement.Maximum}",
             MatchChoiceKindView.Amount =>
                 $"Between {requirement.Minimum} and {requirement.Maximum}",
-            _ => ChoiceInstruction(requirement),
+            _ => null,
         };
     }
 

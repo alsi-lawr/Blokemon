@@ -40,10 +40,12 @@
                 @switch (requirement.Kind)
                 {
                     case MatchChoiceKindView.Optional:
-                        @* Answering is the step: a yes or a no moves the flow on by itself. *@
+                        @* Answering is the step: a yes or a no moves the flow on by itself. The
+                           heading has asked the question and the effect is printed under it, so
+                           the buttons answer it rather than describing themselves. *@
                         <div class="sheet-options">
-                            <button type="button" class="sheet-option is-primary" @onclick="() => OptionalAnswered.InvokeAsync(true)">Use this effect</button>
-                            <button type="button" class="sheet-option" @onclick="() => OptionalAnswered.InvokeAsync(false)">Skip it</button>
+                            <button type="button" class="sheet-option is-primary" @onclick="() => OptionalAnswered.InvokeAsync(true)">Yes</button>
+                            <button type="button" class="sheet-option" @onclick="() => OptionalAnswered.InvokeAsync(false)">No</button>
                         </div>
                         break;
 
@@ -131,7 +133,7 @@
     }
     @if (Sheet.Mode == MatchSheetMode.Choice && Requirement?.Kind != MatchChoiceKindView.Optional)
     {
-        <button type="button" class="primary sheet-continue" @onclick="ChoiceAdvanced" disabled="@(Busy || !StepComplete)">Continue</button>
+        <button type="button" class="primary sheet-continue" @onclick="ChoiceAdvanced" disabled="@(Busy || !StepComplete)">@AdvanceLabel</button>
     }
     else if (ShowConfirm)
     {
@@ -178,6 +180,9 @@
 
     [Parameter]
     public string? ConfirmLabel { get; set; }
+
+    [Parameter]
+    public string? AdvanceLabel { get; set; }
 
     [Parameter]
     public EventCallback<MatchActionView> OptionStarted { get; set; }

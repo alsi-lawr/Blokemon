@@ -5,14 +5,23 @@ namespace Blokemon.Web.Client.Pages;
 // ---- Tap routing ----------------------------------------------------------------------
 //
 // Where a tap goes is decided here and nowhere else. The presenters report that a card, the
-// Bench or the table itself was pressed; the stage says what that means.
+// Bench, the Deck or the table itself was pressed; the stage says what that means. A tap that
+// leaves nothing further to ask is the move itself, so it is played rather than confirmed.
 public partial class Match
 {
-    private void TapCard(string cardInstanceId)
+    // The only moves that still stop to be confirmed: they end something, and neither of them
+    // has a place on the table that could have said it instead.
+    private static readonly MatchActionKindView[] _confirmKinds =
+    [
+        MatchActionKindView.EndTurn,
+        MatchActionKindView.Resign,
+    ];
+
+    private Task TapCard(string cardInstanceId)
     {
         if (_view?.Match is not { } match || Busy())
         {
-            return;
+            return Task.CompletedTask;
         }
 
         _selectedCardInstanceId = cardInstanceId;
@@ -23,57 +32,51 @@ public partial class Match
         {
             case Stage.Choice when CurrentRequirement() is { } requirement:
                 TapChoiceCard(requirement, cardInstanceId);
-                return;
+                return Task.CompletedTask;
 
             case Stage.Idle when forced.Length > 0:
-                if (
+                return
                     ForcedByAura(forced)
                     && forced.FirstOrDefault(option =>
                         option.SourceCardInstanceId == cardInstanceId
                     )
                         is { } candidate
-                )
-                {
-                    StartAction(candidate);
-                }
-                return;
+                    ? StartAction(candidate)
+                    : Task.CompletedTask;
 
             case Stage.Destination
                 when DestinationCardIds().Contains(cardInstanceId, StringComparer.Ordinal):
                 _destinationCardInstanceId = cardInstanceId;
                 _benchDestination = false;
-                OpenMenu([
+                return OpenMenu([
                     .. OriginActions()
                         .Where(action => action.TargetCardInstanceId == cardInstanceId),
                 ]);
-                return;
 
             case Stage.Idle
                 when PlayableCardIds(match).Contains(cardInstanceId, StringComparer.Ordinal):
-                SelectOrigin(cardInstanceId);
-                return;
+                return SelectOrigin(cardInstanceId);
 
             case Stage.Destination
                 when PlayableCardIds(match).Contains(cardInstanceId, StringComparer.Ordinal):
                 // Tapping another playable card while choosing a destination switches origin.
                 CancelFlow();
-                SelectOrigin(cardInstanceId);
-                return;
+                return SelectOrigin(cardInstanceId);
 
             default:
-                return;
+                return Task.CompletedTask;
         }
     }
 
-    private void TapBench()
+    private Task TapBench()
     {
         if (_stage != Stage.Destination || _originCardInstanceId is null || Busy())
         {
-            return;
+            return Task.CompletedTask;
         }
 
         _destinationCardInstanceId = null;
-        OpenMenu([
+        return OpenMenu([
             .. OriginActions()
                 .Where(static action =>
                     action.Kind == MatchActionKindView.PlayBlokemon
@@ -82,9 +85,27 @@ public partial class Match
         ]);
     }
 
+    // The Deck is a place on the table like any other. While a draw is outstanding it glows, and
+    // tapping it takes the cards - the whole allowance, because the draw is one move.
+    private Task TapDeck()
+    {
+        if (_view?.Match is not { } match || _stage != Stage.Idle || Busy())
+        {
+            return Task.CompletedTask;
+        }
+
+        _operationError = null;
+        var forced = ForcedDecision(match);
+        return forced.Length > 0 && ForcedByDeck(forced)
+            ? StartAction(DeckDraw(forced))
+            : Task.CompletedTask;
+    }
+
     private void TapBackground()
     {
-        if (_stage == Stage.Idle)
+        // A question that opened itself has nothing to go back to, so the table cannot dismiss
+        // it: the match is waiting on the answer.
+        if (_stage == Stage.Idle || _autoStarted)
         {
             return;
         }
@@ -92,7 +113,7 @@ public partial class Match
         CancelFlow();
     }
 
-    private void SelectOrigin(string cardInstanceId)
+    private Task SelectOrigin(string cardInstanceId)
     {
         _originCardInstanceId = cardInstanceId;
         _destinationCardInstanceId = null;
@@ -112,38 +133,39 @@ public partial class Match
         {
             _hadDestinationStep = true;
             _stage = Stage.Destination;
-            return;
+            return Task.CompletedTask;
         }
 
         _hadDestinationStep = false;
-        OpenMenu(_directActions);
+        return OpenMenu(_directActions);
     }
 
-    private void OpenMenu(MatchActionView[] actions)
+    private Task OpenMenu(MatchActionView[] actions)
     {
         _menu = actions;
         _directActions = [];
         if (actions.Length == 0)
         {
             CancelFlow();
-            return;
+            return Task.CompletedTask;
         }
 
         if (actions.Length == 1)
         {
-            // One available action needs no menu: the pop-up is its confirmation.
-            StartAction(actions[0]);
-            return;
+            // One available action needs no menu: the tap that reached it already said it.
+            return StartAction(actions[0]);
         }
 
         _stage = Stage.Actions;
+        return Task.CompletedTask;
     }
 
-    private void StartAction(MatchActionView action)
+    private Task StartAction(MatchActionView action)
     {
         _pending = action;
         _choiceValidation = null;
         _attachmentCardInstanceId = null;
+        _autoStarted = false;
         _drafts.Clear();
         foreach (var requirement in LocalRequirements(action))
         {
@@ -151,7 +173,21 @@ public partial class Match
         }
 
         _choiceStep = NextActiveStep(-1);
-        _stage = _choiceStep < 0 ? Stage.Confirm : Stage.Choice;
+        if (_choiceStep >= 0)
+        {
+            _stage = Stage.Choice;
+            return Task.CompletedTask;
+        }
+
+        // Nothing is left to ask. A move that ends the turn stops to be confirmed; every other
+        // move was already said by the place that was tapped, so it is played.
+        if (_confirmKinds.Contains(action.Kind))
+        {
+            _stage = Stage.Confirm;
+            return Task.CompletedTask;
+        }
+
+        return CommitPending();
     }
 
     // One step back at a time, so cancelling is reachable from every surface without ever
@@ -172,16 +208,9 @@ public partial class Match
             return;
         }
 
+        // Only a move with nothing to ask still confirms, so there is never a step behind it.
         if (_stage == Stage.Confirm && _pending is not null)
         {
-            var last = PreviousActiveStep(LocalRequirements(_pending).Length);
-            if (last >= 0)
-            {
-                _choiceStep = last;
-                _stage = Stage.Choice;
-                return;
-            }
-
             BackFromAction();
             return;
         }
@@ -231,6 +260,7 @@ public partial class Match
         _benchDestination = false;
         _hadDestinationStep = false;
         _choiceValidation = null;
+        _autoStarted = false;
         _choiceStep = -1;
         _drafts.Clear();
     }

@@ -1,12 +1,13 @@
 namespace Blokemon.Web.Client.Components;
 
-// Which cards glow on this frame, which of those are already chosen, whether the Bench is a
-// destination, and what counter each carries. The match page derives it from the stage every
-// render and hands it down; the presenters only ask it questions.
+// Which cards glow on this frame, which of those are already chosen, whether the Bench or the
+// Deck is a place that can be tapped, and what counter each card carries. The match page derives
+// it from the stage every render and hands it down; the presenters only ask it questions.
 public sealed record MatchAuraView(
     string[] Cards,
     string[] Selected,
     bool Bench,
+    bool Deck,
     IReadOnlyDictionary<string, int> Counters
 )
 {

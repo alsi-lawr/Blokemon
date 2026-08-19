@@ -82,11 +82,13 @@ public partial class Match
         return -1;
     }
 
-    private void AdvanceChoice()
+    // Answering the last question is the move: there is nothing further to ask, so the answer is
+    // played rather than shown back to the player to agree with.
+    private Task AdvanceChoice()
     {
         if (!StepComplete())
         {
-            return;
+            return Task.CompletedTask;
         }
 
         _attachmentCardInstanceId = null;
@@ -94,11 +96,11 @@ public partial class Match
         var next = NextActiveStep(_choiceStep);
         if (next < 0)
         {
-            _stage = Stage.Confirm;
-            return;
+            return CommitPending();
         }
 
         _choiceStep = next;
+        return Task.CompletedTask;
     }
 
     private void TapChoiceCard(MatchChoiceRequirementView requirement, string cardInstanceId)
@@ -159,10 +161,10 @@ public partial class Match
     private static bool Eligible(MatchChoiceRequirementView requirement, string cardInstanceId) =>
         requirement.EligibleCards.Any(card => card.Id == cardInstanceId);
 
-    private void AnswerOptional(MatchChoiceRequirementView requirement, bool accepted)
+    private Task AnswerOptional(MatchChoiceRequirementView requirement, bool accepted)
     {
         Draft(requirement).Accepted = accepted;
-        AdvanceChoice();
+        return AdvanceChoice();
     }
 
     private void StepAmount(MatchChoiceRequirementView requirement, int delta)
@@ -171,16 +173,16 @@ public partial class Match
         draft.Amount = Math.Clamp(draft.Amount + delta, requirement.Minimum, requirement.Maximum);
     }
 
-    private void PickMechanicalType(MatchChoiceRequirementView requirement, string value)
+    private Task PickMechanicalType(MatchChoiceRequirementView requirement, string value)
     {
         Draft(requirement).MechanicalType = value;
-        AdvanceChoice();
+        return AdvanceChoice();
     }
 
-    private void PickEffect(MatchChoiceRequirementView requirement, string effectId)
+    private Task PickEffect(MatchChoiceRequirementView requirement, string effectId)
     {
         Draft(requirement).EffectId = effectId;
-        AdvanceChoice();
+        return AdvanceChoice();
     }
 
     private void ClearAttachment(MatchChoiceRequirementView requirement, string energy) =>

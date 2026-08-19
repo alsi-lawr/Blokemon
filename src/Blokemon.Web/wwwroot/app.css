@@ -1775,8 +1775,21 @@ small,
   gap: 5px;
 }
 
+/* Positioned so the corona it can wear has the stack itself to sit around. The phone table
+   places it absolutely instead, which serves the same purpose. */
 .deck-stack {
+  position: relative;
   grid-column: 1;
+}
+
+/* The Deck only becomes a control while a draw is waiting on it, and looks no different for it:
+   the button carries none of a button's own furniture, so the stack keeps its exact box. */
+button.deck-stack {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
 }
 
 .prize-rack {
@@ -2460,7 +2473,8 @@ button.bench-slot span {
 .is-aura .battle-card-shell::after,
 .is-aura .hand-card-visual::after,
 .is-aura .tray-card-visual::after,
-button.bench-slot.is-aura::after {
+button.bench-slot.is-aura::after,
+button.deck-stack.is-aura::after {
   content: "";
   position: absolute;
   /*
@@ -2668,15 +2682,6 @@ button.bench-slot.is-aura::after {
   color: #d1cbb9;
   font-size: 12px;
   line-height: 1.38;
-}
-
-.phase-help {
-  margin: 7px 0 10px;
-  padding-left: 10px;
-  border-left: 2px solid var(--gold);
-  color: #c8c2ad;
-  font-size: 12px;
-  line-height: 1.35;
 }
 
 .attack-list {
@@ -4524,7 +4529,8 @@ button.bench-slot.is-aura::after {
   .is-aura .battle-card-shell::after,
   .is-aura .hand-card-visual::after,
   .is-aura .tray-card-visual::after,
-  button.bench-slot.is-aura::after {
+  button.bench-slot.is-aura::after,
+  button.deck-stack.is-aura::after {
     background: rgb(255 255 255 / 54%) !important;
     opacity: 1 !important;
     animation: none !important;

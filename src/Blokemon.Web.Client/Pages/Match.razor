@@ -116,7 +116,8 @@ else
                           CardTapped="TapCard"
                           CardViewOpened="OpenViewer"
                           CardViewClosed="CloseViewer"
-                          BenchTapped="TapBench" />
+                          BenchTapped="TapBench"
+                          DeckTapped="TapDeck" />
 
         <MatchHandZone Hand="frame.Player.Hand"
                        Auras="auras"
@@ -165,6 +166,7 @@ else
                                   ShowConfirm="@(sheet.Mode == MatchSheetMode.Confirm && _pending is not null)"
                                   ChoicesValid="@(_pending is not null && PlayerChoicesValid(_pending))"
                                   ConfirmLabel="@(_pending is null ? null : ConfirmationButton(_pending))"
+                                  AdvanceLabel="@ChoiceAdvanceLabel()"
                                   OptionStarted="StartAction"
                                   OptionalAnswered="@(accepted => AnswerOptional(requirement!, accepted))"
                                   AmountStepped="@(delta => StepAmount(requirement!, delta))"
@@ -176,7 +178,7 @@ else
                                   CardViewClosed="CloseViewer"
                                   SteppedBack="StepBack"
                                   ChoiceAdvanced="AdvanceChoice"
-                                  Confirmed="ConfirmPending" />
+                                  Confirmed="CommitPending" />
             </div>
         }
 
@@ -220,6 +222,7 @@ else
     private bool _hadDestinationStep;
     private bool _working;
     private bool _animating;
+    private bool _autoStarted;
     private bool _reducedMotion;
     private string? _sheetKey;
     private string? _focusedSheetKey;
