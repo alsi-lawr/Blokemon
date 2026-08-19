@@ -237,36 +237,54 @@ export function positionPlayCard(table) {
 // back as a direction, the gap across, and the width of a card at either end. The cue that lands
 // the blow measures nothing - by then the card is part way across - and reads what was left here.
 export function positionAttack(table) {
-  const striking = table?.querySelector(".is-cue-striking");
-  if (!striking) {
+  // The measurements live on the field rather than on the screen around it, because the page
+  // renders a style of its own onto the screen and the two would take turns overwriting each
+  // other. Whatever an earlier blow left here goes first: a blow with nothing to aim at must
+  // find nothing, not the last thing somebody else aimed at.
+  const field = table?.querySelector(".battlefield");
+  if (!field) {
     return;
   }
 
-  // A blow is thrown across the table at whoever is standing opposite, so the place it is aimed
-  // at is the far half's Active position: the card standing there if there is one, and the place
-  // kept for it if there is not.
-  const facingZone = table.classList.contains("cue-actor-opponent")
-    ? ".player-zone"
-    : ".opponent-zone";
-  const facing =
-    table.querySelector(`${facingZone} .active-slot .battle-card-shell`) ??
-    table.querySelector(`${facingZone} .active-slot`);
-  if (!facing) {
+  for (const property of ["--blow-x", "--blow-y", "--blow-gap", "--blow-width", "--struck-width"]) {
+    field.style.removeProperty(property);
+  }
+
+  // A blow is aimed at what it is about to damage - which the page has already worked out, and
+  // marked, so that it can be measured here before the blow is thrown. An attack that reaches
+  // past the card standing opposite and hits the Bench is aimed at the Bench; one that catches
+  // several cards is aimed between them, so the swing crosses all of them rather than one and
+  // past the rest. A card that only hurts itself is aimed at nothing at all.
+  const striking = table.querySelector(".is-cue-striking");
+  const struck = table.querySelectorAll(".is-cue-struck");
+  if (!striking || !struck.length) {
     return;
   }
 
   const from = centre(striking);
-  const to = centre(facing);
-  const gap = Math.hypot(to.x - from.x, to.y - from.y);
+  let toX = 0;
+  let toY = 0;
+  let struckWidth = 0;
+  for (const card of struck) {
+    const at = centre(card);
+    toX += at.x;
+    toY += at.y;
+    struckWidth += at.rect.width;
+  }
+  toX /= struck.length;
+  toY /= struck.length;
+  struckWidth /= struck.length;
+
+  const gap = Math.hypot(toX - from.x, toY - from.y);
   if (gap < 1) {
     return;
   }
 
-  table.style.setProperty("--blow-x", `${(to.x - from.x) / gap}`);
-  table.style.setProperty("--blow-y", `${(to.y - from.y) / gap}`);
-  table.style.setProperty("--blow-gap", `${gap}px`);
-  table.style.setProperty("--blow-width", `${from.rect.width}px`);
-  table.style.setProperty("--struck-width", `${to.rect.width}px`);
+  field.style.setProperty("--blow-x", `${(toX - from.x) / gap}`);
+  field.style.setProperty("--blow-y", `${(toY - from.y) / gap}`);
+  field.style.setProperty("--blow-gap", `${gap}px`);
+  field.style.setProperty("--blow-width", `${from.rect.width}px`);
+  field.style.setProperty("--struck-width", `${struckWidth}px`);
 }
 
 export async function toggleFullscreen(element) {

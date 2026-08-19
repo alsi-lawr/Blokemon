@@ -24,17 +24,25 @@ public sealed record MatchLandingSlot(bool Opponent, MatchLandingKind Kind, int 
 public sealed record MatchPresentationOverlay(
     IReadOnlyDictionary<string, int> DamageDeltas,
     MatchLandingSlot? Landing,
-    // The card part way through throwing a blow. A blow is declared by one cue and lands on the
-    // next, so which card is throwing it is a thing that outlives a single cue: this is what
-    // carries it across, and what tells damage that came out of an attack from damage a card
-    // simply did to another one.
-    string? StrikingCardInstanceId = null
+    // The card part way through throwing a blow. A blow is declared by one cue and lands on
+    // another, with anything the engine does in between - a beer mat tossed to find out whether
+    // it connects at all - happening while it is in the air, so which card is throwing it is a
+    // thing that outlives a single cue: this is what carries it across, and what tells damage
+    // that came out of an attack from damage a card simply did to another one.
+    string? StrikingCardInstanceId = null,
+    // And what it is aimed at, which is whatever the blow actually damages rather than whoever
+    // happens to be standing opposite. Known from the declaration, because the whole exchange is
+    // worked out before any of it is drawn, so the blow can be aimed before it is thrown.
+    IReadOnlyList<string>? StruckCardInstanceIds = null
 )
 {
     public static readonly MatchPresentationOverlay Empty = new(
         new Dictionary<string, int>(StringComparer.Ordinal),
         null
     );
+
+    public bool IsStruck(string cardInstanceId) =>
+        StruckCardInstanceIds?.Contains(cardInstanceId, StringComparer.Ordinal) == true;
 
     // The damage the table shows for a card: what the frame has, plus whatever the cues since
     // that frame have already announced.
@@ -64,10 +72,11 @@ public sealed record MatchPresentationOverlay(
         };
     }
 
-    public MatchPresentationOverlay Striking(string? cardInstanceId) =>
+    public MatchPresentationOverlay Blow(string? striking, IReadOnlyList<string>? struck) =>
         this with
         {
-            StrikingCardInstanceId = cardInstanceId,
+            StrikingCardInstanceId = striking,
+            StruckCardInstanceIds = striking is null ? null : struck,
         };
 
     public MatchPresentationOverlay LandingOn(MatchLandingSlot? landing) =>

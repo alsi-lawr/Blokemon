@@ -129,11 +129,25 @@ public partial class Match
         _presentedFrame = previousFrame ?? presentation.Steps[0].Frame;
         _overlay = MatchPresentationOverlay.Empty;
 
-        foreach (var beat in MatchPresentationTimeline.Beats(presentation, previousFrame))
+        var beats = MatchPresentationTimeline.Beats(presentation, previousFrame);
+        for (var index = 0; index < beats.Count; index++)
         {
+            var beat = beats[index];
             if (!ReferenceEquals(_skipSignal, skipSignal))
             {
                 return;
+            }
+
+            // The wait a declared blow takes before it is thrown is worked out once, on the cue
+            // that declares it, and held still for as long as the blow is in the air: changing it
+            // part way through would move the movement rather than delay it.
+            if (beat.Cue?.Kind == MatchAnimationKindView.Attack)
+            {
+                _blowLead = LeadToBlow(beats, index);
+            }
+            else if (beat.Overlay.StrikingCardInstanceId is null)
+            {
+                _blowLead = 0;
             }
 
             // A reveal carries gameplay information: it stays up until the player confirms,
@@ -214,6 +228,7 @@ public partial class Match
         _activeCue = null;
         _presentationCard = null;
         _overlay = MatchPresentationOverlay.Empty;
+        _blowLead = 0;
         _skipSignal = null;
         _revealSignal = null;
         _animationStatus = "Animation complete.";

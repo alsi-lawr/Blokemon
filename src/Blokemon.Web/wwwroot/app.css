@@ -3182,22 +3182,30 @@ button.deck-stack.is-aura::after {
 }
 
 /*
-  A blow, which is one movement told over two cues: the card winds up away from what it is about
-  to hit, throws itself across the gap, and is still recovering while the number it caused is
-  turning over. The declaration and the damage are separate cues, so the mark that carries the
-  movement is put on by the presentation rather than by either of them, and the page holds the
-  declaration for exactly as long as the wind-up and the strike take - the blow therefore lands
-  on the frame the number changes on, without anything having to know about anything else. The
-  distances are the gap the page measured and the card's own width; with nothing measured the
-  card turns a little where it stands. These come after the plain source and target rules on
-  purpose: for the card at either end of a blow, this is what it is doing.
+  A blow, which is one movement told over several cues: the card winds up away from what it is
+  about to hit, throws itself across the gap, and is still recovering while the number it caused
+  is turning over. The declaration and the damage are separate cues and the engine can put others
+  between them - a beer mat tossed to find out whether the attack connects at all - so the mark
+  that carries the movement is put on by the presentation rather than by any one of them, and it
+  survives everything in between. The wait, if there is one, is the page's: it knows how long the
+  table will spend on whatever comes between, and holds the wind-up back by exactly that, so the
+  blow lands on the frame the number changes on however much happens first.
+
+  The distances are the gap the page measured and the card's own width; with nothing measured -
+  a swing at nothing, which is what a fumble is - the card turns where it stands. These come
+  after the plain source and target rules on purpose: for the card at either end of a blow, this
+  is what it is doing.
 */
 .battle-card-shell.is-cue-striking {
   z-index: 9;
-  animation: attack-lunge 1.4s linear both;
+  animation: attack-lunge 1.4s linear var(--blow-lead, 0ms) both;
 }
 
-.battle-card-shell.is-cue-struck {
+/*
+  What it lands on is marked from the declaration, because the blow has to be aimed before it is
+  thrown, but it is only knocked back at the moment the damage is on it.
+*/
+.cue-damage .battle-card-shell.is-cue-struck {
   z-index: 8;
   animation: attack-recoil 0.84s linear both;
 }
@@ -5668,7 +5676,7 @@ button.deck-stack.is-aura::after {
     anyway, because both of them start and end where the card already is.
   */
   .battle-card-shell.is-cue-striking,
-  .battle-card-shell.is-cue-struck {
+  .cue-damage .battle-card-shell.is-cue-struck {
     animation: none !important;
   }
 

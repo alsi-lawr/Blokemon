@@ -158,11 +158,12 @@ public sealed class MatchPresentationTimelineTests
         );
 
     [Test]
-    public void TheCardThrowingABlowStaysNamedFromTheDeclarationUntilTheDamageLands()
+    public void TheCardThrowingABlowStaysNamedUntilTheTableSettles()
     {
-        // The blow is one movement and the cues are two, so the card throwing it has to be named
-        // across both of them or the movement is cut in half where they change - and it has to
-        // stop being named the moment the exchange is over.
+        // The blow is one movement and the cues it spans are several, so the card throwing it has
+        // to stay named across all of them or the movement is taken off it part way through. It
+        // is done with when the step is: the table settles on what the command did, and nobody is
+        // mid-swing any more.
         var beats = MatchPresentationTimeline.Beats(
             Presentation(
                 Frame(defenderDamage: 30, playerHasTurn: false),
@@ -175,7 +176,86 @@ public sealed class MatchPresentationTimelineTests
 
         beats
             .Select(beat => beat.Overlay.StrikingCardInstanceId)
-            .ShouldBe([Attacker, Attacker, null, null]);
+            .ShouldBe([Attacker, Attacker, Attacker, null]);
+    }
+
+    [Test]
+    public void ABlowSurvivesWhateverTheEngineDoesBetweenDeclaringItAndLandingIt()
+    {
+        // An attack that has to toss a beer mat to find out whether it connects puts a Coin cue
+        // between the declaration and the damage - always, because the toss happens inside the
+        // program and every bit of damage is placed at the end of it. If that clears the mark the
+        // movement is taken off the card half way through, which reads as a glitch rather than as
+        // a blow, and nothing is left to be knocked back either.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                Frame(defenderDamage: 30, playerHasTurn: false),
+                Cue(1, MatchAnimationKindView.Attack, amount: 30, source: Attacker),
+                Cue(2, MatchAnimationKindView.Coin, targets: []),
+                Cue(3, MatchAnimationKindView.Damage, amount: 30, source: Attacker),
+                Cue(4, MatchAnimationKindView.Turn)
+            ),
+            Frame(defenderDamage: 0, playerHasTurn: true)
+        );
+
+        beats
+            .Select(beat => beat.Overlay.StrikingCardInstanceId)
+            .ShouldBe([Attacker, Attacker, Attacker, Attacker, null]);
+        beats
+            .Select(beat => beat.Overlay.IsStruck(Defender))
+            .ShouldBe([true, true, true, true, false]);
+    }
+
+    [Test]
+    public void ABlowIsAimedAtWhatItDamagesRatherThanAtWhoeverIsStandingOpposite()
+    {
+        // An attack that reaches past the Active card and hits the Bench is aimed at the Bench,
+        // and one that catches several cards is aimed at all of them, so the swing crosses them
+        // rather than one of them and past the rest. Both are known from the declaration, because
+        // the whole step is laid out before any of it is drawn.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                Frame(defenderDamage: 30, playerHasTurn: false),
+                Cue(1, MatchAnimationKindView.Attack, source: Attacker, targets: []),
+                Cue(
+                    2,
+                    MatchAnimationKindView.Damage,
+                    amount: 30,
+                    source: Attacker,
+                    targets: ["bench-one", "bench-two"]
+                )
+            ),
+            Frame(defenderDamage: 0, playerHasTurn: true)
+        );
+
+        beats[0].Overlay.StruckCardInstanceIds.ShouldBe(["bench-one", "bench-two"]);
+        beats[0].Overlay.IsStruck(Defender).ShouldBeFalse();
+    }
+
+    [Test]
+    public void ACardThatOnlyHurtsItselfIsAimedAtNothing()
+    {
+        // The Muddled fumble: the attacker damages itself instead of what it swung at. It is
+        // throwing the blow, so it is not also what the blow struck - which leaves the blow with
+        // nothing to aim at, and it turns where it stands instead of crossing the table at nobody.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                Frame(defenderDamage: 0, playerHasTurn: true),
+                Cue(1, MatchAnimationKindView.Attack, source: Attacker, targets: []),
+                Cue(
+                    2,
+                    MatchAnimationKindView.Damage,
+                    amount: 20,
+                    source: Attacker,
+                    targets: [Attacker]
+                )
+            ),
+            Frame(defenderDamage: 0, playerHasTurn: true)
+        );
+
+        beats[0].Overlay.StrikingCardInstanceId.ShouldBe(Attacker);
+        beats[0].Overlay.StruckCardInstanceIds.ShouldBeEmpty();
+        beats[0].Overlay.IsStruck(Attacker).ShouldBeFalse();
     }
 
     [Test]

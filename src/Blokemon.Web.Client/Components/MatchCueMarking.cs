@@ -72,29 +72,24 @@ public static class MatchCueMarking
         };
     }
 
-    // Which end of a blow a card on the table is, if it is either. Who is throwing it is not
-    // something a single cue knows - the declaration and the damage are two cues - so it is asked
-    // of the presentation, which worked it out before any of this was drawn. Damage nobody swung
-    // for names nobody, and nothing here marks anything.
-    public static string? Blow(
-        string? strikingCardInstanceId,
-        MatchEventCueView? cue,
-        string cardInstanceId
-    )
+    // Which end of a blow a card on the table is, if it is either. Neither is something a single
+    // cue knows - a blow is declared by one and lands on another - so both are asked of the
+    // presentation, which worked the whole exchange out before any of this was drawn. Damage
+    // nobody swung for names nobody, and nothing here marks anything.
+    //
+    // A card can only be one end of it. One that damages itself is throwing the blow, not taking
+    // it: it is already making a movement of its own, and a card cannot be knocked back by the
+    // thing it is in the middle of doing. The presentation leaves it out of what the blow struck
+    // for that reason, and this says the same thing again so that the two can never disagree.
+    public static string? Blow(MatchPresentationOverlay overlay, string cardInstanceId)
     {
-        if (strikingCardInstanceId is null)
+        if (overlay.StrikingCardInstanceId is not { } striking)
         {
             return null;
         }
 
-        if (strikingCardInstanceId == cardInstanceId)
-        {
-            return Striking;
-        }
-
-        return cue?.Kind == MatchAnimationKindView.Damage
-            && cue.TargetCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal)
-            ? Struck
+        return striking == cardInstanceId ? Striking
+            : overlay.IsStruck(cardInstanceId) ? Struck
             : null;
     }
 

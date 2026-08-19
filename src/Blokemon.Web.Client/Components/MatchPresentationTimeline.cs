@@ -46,7 +46,27 @@ public static class MatchPresentationTimeline
                     overlay = MatchPresentationOverlay.Empty;
                 }
 
-                overlay = Applied(overlay, cue).Striking(Striking(overlay, cue));
+                overlay = Applied(overlay, cue);
+                overlay = cue.Kind switch
+                {
+                    // A declaration throws a blow, and what it is aimed at is whatever it is
+                    // about to damage - which is knowable here, because the whole step is laid
+                    // out before any of it is drawn.
+                    MatchAnimationKindView.Attack => overlay.Blow(
+                        cue.SourceCardInstanceId,
+                        Struck(step.Events, cue.SourceCardInstanceId)
+                    ),
+                    // The blow landing. Damage from anyone but the card that swung is not this
+                    // blow landing and ends it: nobody is mid-movement any more.
+                    MatchAnimationKindView.Damage
+                        when overlay.StrikingCardInstanceId != cue.SourceCardInstanceId =>
+                        overlay.Blow(null, null),
+                    // Everything else that can happen between the two - the beer mat tossed to
+                    // find out whether the attack happens at all - happens while the blow is in
+                    // the air, and leaves it alone. Clearing here took the movement off the card
+                    // half way through it.
+                    _ => overlay,
+                };
                 beats.Add(new(frame, cue, overlay.LandingOn(Landing(cue, step.Frame))));
             }
 
@@ -59,20 +79,45 @@ public static class MatchPresentationTimeline
         return beats;
     }
 
-    // A blow is one movement told over two cues: the declaration throws it and the damage lands
-    // it, and the card throwing it has to stay named across both or the movement is cut in half
-    // where the cues change. It is named by the declaration and stays named only for the damage
-    // that same card declared - damage from anything else, a Kit doing its work to a Bloke, names
-    // nobody, because nobody swung at anything.
-    private static string? Striking(MatchPresentationOverlay overlay, MatchEventCueView cue) =>
-        cue.Kind switch
+    // What a declared blow goes on to damage, which is what it should be aimed at: an attack that
+    // reaches past the card standing opposite and hits the Bench is aimed at the Bench. Every
+    // card the same swing damages is collected, so a blow that catches several is aimed between
+    // them rather than at whichever of them the engine happened to name first.
+    //
+    // A card that damages itself is left out. It is throwing the blow, and a card cannot both
+    // throw one and be knocked back by it: the movement it is already making is the cause of what
+    // is happening to it. An attack whose only damage is to itself - a fumble - is therefore
+    // aimed at nothing, and turns where it stands rather than crossing the table at nobody.
+    private static IReadOnlyList<string> Struck(
+        MatchEventCueView[] cues,
+        string? strikingCardInstanceId
+    )
+    {
+        var struck = new List<string>(2);
+        foreach (var cue in cues)
         {
-            MatchAnimationKindView.Attack => cue.SourceCardInstanceId,
-            MatchAnimationKindView.Damage
-                when overlay.StrikingCardInstanceId is { } striking
-                    && striking == cue.SourceCardInstanceId => striking,
-            _ => null,
-        };
+            if (
+                cue.Kind != MatchAnimationKindView.Damage
+                || cue.SourceCardInstanceId != strikingCardInstanceId
+            )
+            {
+                continue;
+            }
+
+            foreach (var target in cue.TargetCardInstanceIds)
+            {
+                if (
+                    target != strikingCardInstanceId
+                    && !struck.Contains(target, StringComparer.Ordinal)
+                )
+                {
+                    struck.Add(target);
+                }
+            }
+        }
+
+        return struck;
+    }
 
     private static MatchPresentationOverlay Applied(
         MatchPresentationOverlay overlay,

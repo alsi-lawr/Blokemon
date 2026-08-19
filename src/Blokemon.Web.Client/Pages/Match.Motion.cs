@@ -1,3 +1,4 @@
+using System.Globalization;
 using Blokemon.App.Contracts;
 using Blokemon.Web.Client.Components;
 using Microsoft.JSInterop;
@@ -76,6 +77,38 @@ public partial class Match
                         ?.Card
             );
     }
+
+    // A blow is thrown by the cue that declares it and lands on the cue that damages, and the
+    // engine is free to put others between the two - tossing a beer mat to find out whether the
+    // attack happens at all. The movement carries across them, so the only thing that has to give
+    // is when it starts: the declaration waits out everything the table will spend on what comes
+    // between, and the strike then lands exactly as the damage does. Nothing between the two is
+    // shortened for it, and with nothing between it the wait is nothing.
+    private static int LeadToBlow(IReadOnlyList<MatchPresentationBeat> beats, int declaration)
+    {
+        var striking = beats[declaration].Cue?.SourceCardInstanceId;
+        var lead = 0;
+        for (var index = declaration + 1; index < beats.Count; index++)
+        {
+            var cue = beats[index].Cue;
+            if (cue is null || beats[index].Overlay.StrikingCardInstanceId != striking)
+            {
+                return 0;
+            }
+
+            if (cue.Kind == MatchAnimationKindView.Damage)
+            {
+                return lead;
+            }
+
+            lead += BeatDuration(cue);
+        }
+
+        return 0;
+    }
+
+    private string BlowLeadStyle() =>
+        $"--blow-lead: {_blowLead.ToString(CultureInfo.InvariantCulture)}ms";
 
     private string? AnimationClass() =>
         _activeCue is null

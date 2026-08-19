@@ -94,20 +94,26 @@ public sealed class MatchCueMarkingTests
     [Test]
     public void BothEndsOfABlowAreMarkedAndOnlyWhileThereIsOne()
     {
-        var declaration = Cue(MatchAnimationKindView.Attack, source: "attacker");
-        var landing = Cue(MatchAnimationKindView.Damage, source: "attacker", targets: ["target"]);
+        var blow = MatchPresentationOverlay.Empty.Blow("attacker", ["target"]);
 
-        // The card throwing it is marked for the whole exchange; the card taking it only as the
-        // damage lands.
-        MatchCueMarking.Blow("attacker", declaration, "attacker").ShouldBe("is-cue-striking");
-        MatchCueMarking.Blow("attacker", landing, "attacker").ShouldBe("is-cue-striking");
-        MatchCueMarking.Blow("attacker", landing, "target").ShouldBe("is-cue-struck");
-        MatchCueMarking.Blow("attacker", declaration, "target").ShouldBeNull();
-        MatchCueMarking.Blow("attacker", landing, "bystander").ShouldBeNull();
+        MatchCueMarking.Blow(blow, "attacker").ShouldBe("is-cue-striking");
+        MatchCueMarking.Blow(blow, "target").ShouldBe("is-cue-struck");
+        MatchCueMarking.Blow(blow, "bystander").ShouldBeNull();
 
         // Damage nobody swung for is not a blow, so neither end of it is one.
-        MatchCueMarking.Blow(null, landing, "attacker").ShouldBeNull();
-        MatchCueMarking.Blow(null, landing, "target").ShouldBeNull();
+        MatchCueMarking.Blow(MatchPresentationOverlay.Empty, "attacker").ShouldBeNull();
+        MatchCueMarking.Blow(MatchPresentationOverlay.Empty, "target").ShouldBeNull();
+    }
+
+    [Test]
+    public void ACardThatHurtsItselfIsThrowingTheBlowRatherThanTakingIt()
+    {
+        // A fumble damages the card that swung. It cannot be knocked back by the movement it is
+        // in the middle of making, so it keeps the swing and takes no recoil - and this holds
+        // even if something ever names it at both ends at once.
+        MatchCueMarking
+            .Blow(MatchPresentationOverlay.Empty.Blow("attacker", ["attacker"]), "attacker")
+            .ShouldBe("is-cue-striking");
     }
 
     [Test]
