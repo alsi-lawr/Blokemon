@@ -449,6 +449,11 @@ small,
   font-size: 13px;
 }
 
+/* A notice about a Deck stands off from what it is about rather than butting against it. */
+.deck-notice {
+  margin: 10px;
+}
+
 .notice {
   border-left-width: 3px;
   border-radius: 0 10px 10px 0;
