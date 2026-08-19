@@ -110,18 +110,7 @@ public partial class Match
     private string BlowLeadStyle() =>
         $"--blow-lead: {_blowLead.ToString(CultureInfo.InvariantCulture)}ms";
 
-    private string? AnimationClass() =>
-        _activeCue is null
-            ? null
-            : $"cue-{_activeCue.Kind.ToString().ToLowerInvariant()}{ActorCueClass(_activeCue)}";
-
-    private static string ActorCueClass(MatchEventCueView cue) =>
-        cue.ActorIsLocalPlayer switch
-        {
-            true => " cue-actor-local",
-            false => " cue-actor-opponent",
-            null => string.Empty,
-        };
+    private string? AnimationClass() => MatchCueMarking.Table(_activeCue);
 
     private static bool IsCardPresentationCue(MatchAnimationKindView kind) =>
         kind is MatchAnimationKindView.Play or MatchAnimationKindView.Evolve;

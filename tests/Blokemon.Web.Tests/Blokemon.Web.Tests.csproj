@@ -1,6 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
+    <!--
+      The presentation contract is declared one arm per animation kind with no last arm, so an
+      animation added without one is an incomplete switch. That is a warning by default, which a
+      plain build would print and nobody would read; here it is the thing standing between a new
+      cue and a rule written for it that nothing emits, so it fails the build outright.
+    -->
+    <WarningsAsErrors>$(WarningsAsErrors);CS8509</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Blokemon.Web/Blokemon.Web.csproj" />

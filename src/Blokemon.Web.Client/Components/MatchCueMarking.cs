@@ -119,6 +119,24 @@ public static class MatchCueMarking
         return blow is null ? Gone : $"{blow} {Gone}";
     }
 
+    // What the whole table wears while a cue is on screen, and the thing every rule written for
+    // that cue is keyed on. It is composed out of the kind's own name and the half of the table
+    // acting, so no literal for any of these classes exists to be searched for - which is how four
+    // rules came to be written against a cue nothing emitted, or against one player's action
+    // reaching both halves of the table, with every gate green and each one found by eye. It is
+    // composed here, beside the marks it is composed against, so that the pairing can be asked
+    // about rather than read.
+    public static string? Table(MatchEventCueView? cue) =>
+        cue is null ? null : $"cue-{cue.Kind.ToString().ToLowerInvariant()}{Actor(cue)}";
+
+    private static string Actor(MatchEventCueView cue) =>
+        cue.ActorIsLocalPlayer switch
+        {
+            true => " cue-actor-local",
+            false => " cue-actor-opponent",
+            null => string.Empty,
+        };
+
     // How many cards a Deck is shown to be made of while it is being shuffled: half of them part
     // to one side and half to the other, which is the fewest that reads as two piles rather than
     // two cards.
