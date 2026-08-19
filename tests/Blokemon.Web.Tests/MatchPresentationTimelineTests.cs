@@ -275,6 +275,130 @@ public sealed class MatchPresentationTimelineTests
         beats.Select(beat => beat.Overlay.StrikingCardInstanceId).ShouldBe([null, null, null]);
     }
 
+    // ---- The two invariants Alex's eye caught and no gate could -------------------------------
+    //
+    // The engine commits one state per command, so between a card leaving a place and the frame
+    // agreeing that it has, the frame still has it there. Everything the table does in that gap is
+    // the presentation's word against the frame's, and there are exactly two ways to get it wrong:
+    // draw the card twice, or draw it back into a place it has already been seen leaving. These
+    // hold the outcome rather than the means - what a viewer would count on the screen at every
+    // beat - so that changing how the concealment is expressed cannot quietly bring either back.
+
+    // Whether the presentation is holding this card up over the table, travelling or in the middle.
+    private static bool Carried(MatchPresentationBeat beat, string cardInstanceId) =>
+        beat.Cue?.Kind is MatchAnimationKindView.Play or MatchAnimationKindView.Evolve
+        && beat.Cue.SourceCardInstanceId == cardInstanceId;
+
+    // Whether the hand draws this card at this beat, which it does not if it is marked as gone.
+    private static bool HandDraws(MatchPresentationBeat beat, string cardInstanceId) =>
+        beat.Frame.Player.Hand.Any(card => card.Id == cardInstanceId)
+        && !MatchCueMarking
+            .HandCard(cardInstanceId, NoAuras, beat.Cue, beat.Overlay)
+            .Contains(MatchCueMarking.Gone, StringComparison.Ordinal);
+
+    // And whether the field does.
+    private static bool TableDraws(MatchPresentationBeat beat, string cardInstanceId) =>
+        new[] { beat.Frame.Player, beat.Frame.Opponent }.Any(side =>
+            side.Active?.Id == cardInstanceId
+            || side.Bench.Any(card => card.Id == cardInstanceId)
+            || side.InPlayKits.Any(card => card.Id == cardInstanceId)
+        )
+        && MatchCueMarking
+            .TableCard(beat.Overlay, cardInstanceId)
+            ?.Contains(MatchCueMarking.Gone, StringComparison.Ordinal) != true;
+
+    private static int VisibleCopies(MatchPresentationBeat beat, string cardInstanceId) =>
+        (Carried(beat, cardInstanceId) ? 1 : 0)
+        + (HandDraws(beat, cardInstanceId) ? 1 : 0)
+        + (TableDraws(beat, cardInstanceId) ? 1 : 0);
+
+    [Test]
+    [Arguments(MatchAnimationKindView.Play)]
+    [Arguments(MatchAnimationKindView.Evolve)]
+    public void OnlyOneOfACardIsEverOnScreen(MatchAnimationKindView played)
+    {
+        // Playing a card and promoting one are the same journey: the presentation picks the card
+        // up and carries it, while the hand it came out of still holds it until the frame catches
+        // up. Anything the command does in between - reading a card out, tossing a beer mat - used
+        // to hand the copy straight back, and a promotion never concealed it at all.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                HandFrame(held: false),
+                Cue(1, played, source: Held, targets: []),
+                Cue(2, MatchAnimationKindView.Reveal, targets: []),
+                Cue(3, MatchAnimationKindView.Coin, targets: [])
+            ),
+            HandFrame(held: true)
+        );
+
+        // Never two of it.
+        beats.Select(beat => VisibleCopies(beat, Held)).ShouldAllBe(copies => copies <= 1);
+        // It is genuinely on screen while the presentation is carrying it, not merely hidden.
+        VisibleCopies(beats[0], Held).ShouldBe(1);
+        // And the hand it left never draws it again, whatever is on screen afterwards.
+        beats.Select(beat => HandDraws(beat, Held)).ShouldAllBe(drawn => !drawn);
+    }
+
+    [Test]
+    public void ACardKnockedOutIsNotStoodBackUpBeforeTheFrameCatchesUp()
+    {
+        // A knockout is always followed by the Prize cue that pays for it, and the frame does not
+        // change until the whole step is over, so the beat after the fade used to stand the
+        // Blokemon back up in the Oche at full strength.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                KnockedOutFrame(),
+                Cue(1, MatchAnimationKindView.Attack, amount: 90, source: Attacker),
+                Cue(2, MatchAnimationKindView.Damage, amount: 90, source: Attacker),
+                Cue(3, MatchAnimationKindView.Knockout, source: Attacker),
+                Cue(4, MatchAnimationKindView.Prize, targets: []),
+                Cue(5, MatchAnimationKindView.Turn, targets: [])
+            ),
+            Frame(defenderDamage: 0, playerHasTurn: true)
+        );
+
+        beats.Select(beat => VisibleCopies(beat, Defender)).ShouldAllBe(copies => copies <= 1);
+        // It is standing there until it is knocked out, and never again after.
+        TableDraws(beats[0], Defender).ShouldBeTrue();
+        beats.Skip(2).Select(beat => TableDraws(beat, Defender)).ShouldAllBe(drawn => !drawn);
+    }
+
+    private static readonly MatchAuraView NoAuras = new(
+        [],
+        [],
+        false,
+        false,
+        new Dictionary<string, int>(StringComparer.Ordinal)
+    );
+
+    private const string Held = "card-held";
+
+    // The frame a command that knocks a Blokemon out settles on: the Oche it was standing in is
+    // empty, which is exactly why the frames before it must not keep drawing it there.
+    private static MatchFrameView KnockedOutFrame() =>
+        new(
+            Guid.Parse("40000000-0000-0000-0000-000000000003"),
+            1,
+            3,
+            "InProgress",
+            Side("Opponent", false),
+            Side("You", true, active: Instance(Attacker, 0)),
+            false,
+            null
+        );
+
+    private static MatchFrameView HandFrame(bool held) =>
+        new(
+            Guid.Parse("40000000-0000-0000-0000-000000000002"),
+            1,
+            3,
+            "InProgress",
+            Side("Opponent", false, active: Instance(Defender, 0)),
+            Side("You", true, active: Instance(Attacker, 0), hand: held ? [Instance(Held, 0)] : []),
+            false,
+            null
+        );
+
     private static MatchPresentationView Presentation(
         MatchFrameView frame,
         params MatchEventCueView[] cues

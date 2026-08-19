@@ -59,7 +59,7 @@
                             Selected="@(card.Id == SelectedCardInstanceId)"
                             CueSourceCardInstanceId="@CueSourceCardInstanceId"
                             CueTargetCardInstanceIds="CueTargetCardInstanceIds"
-                            Blow="@MatchCueMarking.Blow(Overlay, card.Id)" />
+                            Marking="@MatchCueMarking.TableCard(Overlay, card.Id)" />
                 @if (Counter(card.Id) is { } localCounter)
                 {
                     <span class="aura-counter">@localCounter</span>
@@ -93,7 +93,7 @@
                                 Selected="@(Side.Active.Id == SelectedCardInstanceId)"
                                 CueSourceCardInstanceId="@CueSourceCardInstanceId"
                                 CueTargetCardInstanceIds="CueTargetCardInstanceIds"
-                                Blow="@MatchCueMarking.Blow(Overlay, Side.Active.Id)" />
+                                Marking="@MatchCueMarking.TableCard(Overlay, Side.Active.Id)" />
                     @if (Counter(Side.Active.Id) is { } activeCounter)
                     {
                         <span class="aura-counter">@activeCounter</span>
@@ -118,7 +118,7 @@
                                 Selected="@(card.Id == SelectedCardInstanceId)"
                                 CueSourceCardInstanceId="@CueSourceCardInstanceId"
                                 CueTargetCardInstanceIds="CueTargetCardInstanceIds"
-                                Blow="@MatchCueMarking.Blow(Overlay, card.Id)" />
+                                Marking="@MatchCueMarking.TableCard(Overlay, card.Id)" />
                     @if (Counter(card.Id) is { } benchCounter)
                     {
                         <span class="aura-counter">@benchCounter</span>

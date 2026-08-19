@@ -33,13 +33,29 @@ public sealed record MatchPresentationOverlay(
     // And what it is aimed at, which is whatever the blow actually damages rather than whoever
     // happens to be standing opposite. Known from the declaration, because the whole exchange is
     // worked out before any of it is drawn, so the blow can be aimed before it is thrown.
-    IReadOnlyList<string>? StruckCardInstanceIds = null
+    IReadOnlyList<string>? StruckCardInstanceIds = null,
+    // Every card the presentation has already shown leaving somewhere. A card is carried out of a
+    // hand, or knocked off the table, long before the frame behind it catches up - the engine
+    // commits one state per command - so between the two there is a card that the frame still has
+    // in a place the table has already emptied. It is named here for as long as that lasts, and
+    // the presenters do not draw it there. Without it the concealment belongs to the cue that did
+    // the carrying and evaporates on the next one, leaving a second copy of a card on the table.
+    IReadOnlyList<string>? GoneCardInstanceIds = null
 )
 {
     public static readonly MatchPresentationOverlay Empty = new(
         new Dictionary<string, int>(StringComparer.Ordinal),
         null
     );
+
+    public bool IsGone(string cardInstanceId) =>
+        GoneCardInstanceIds?.Contains(cardInstanceId, StringComparer.Ordinal) == true;
+
+    public MatchPresentationOverlay Gone(IReadOnlyList<string> cardInstanceIds) =>
+        this with
+        {
+            GoneCardInstanceIds = cardInstanceIds,
+        };
 
     public bool IsStruck(string cardInstanceId) =>
         StruckCardInstanceIds?.Contains(cardInstanceId, StringComparer.Ordinal) == true;

@@ -26,17 +26,24 @@ public static class MatchCueMarking
 
     public const string Struck = "is-cue-struck";
 
-    // Everything true of a held card at once: whether it can be chosen, whether it has been, and
-    // whether the cue on screen is about it. A held card is one end of both journeys between the
-    // hand and the table, so the marking is built here rather than in the hand zone, where the
-    // cue half of it was once simply left out and every rule written for it matched nothing.
+    // A card the presentation has already carried out of the place the frame still has it in.
+    // Nothing about a cue can say this, because it stays true after the cue that did it: it is a
+    // fact about the presentation, and it is asked of the presentation.
+    public const string Gone = "is-cue-gone";
+
+    // Everything true of a held card at once: whether it can be chosen, whether it has been,
+    // whether the cue on screen is about it, and whether the presentation has already taken it
+    // out of the hand. A held card is one end of both journeys between the hand and the table, so
+    // the marking is built here rather than in the hand zone, where the cue half of it was once
+    // simply left out and every rule written for it matched nothing.
     public static string HandCard(
         string cardInstanceId,
         MatchAuraView auras,
-        MatchEventCueView? cue
+        MatchEventCueView? cue,
+        MatchPresentationOverlay overlay
     )
     {
-        var classes = new List<string>(4) { "hand-card" };
+        var classes = new List<string>(5) { "hand-card" };
         if (auras.IsSelected(cardInstanceId))
         {
             classes.Add("is-aura is-aura-selected");
@@ -49,6 +56,11 @@ public static class MatchCueMarking
         if (For(cue, cardInstanceId) is { } marking)
         {
             classes.Add(marking);
+        }
+
+        if (overlay.IsGone(cardInstanceId))
+        {
+            classes.Add(Gone);
         }
 
         return string.Join(' ', classes);
@@ -91,6 +103,20 @@ public static class MatchCueMarking
         return striking == cardInstanceId ? Striking
             : overlay.IsStruck(cardInstanceId) ? Struck
             : null;
+    }
+
+    // Everything the presentation says about a card standing on the table: which end of a blow it
+    // is, and whether it is still there at all. Both outlive the cue that made them true, so both
+    // are asked of the presentation rather than of whatever is on screen at this instant.
+    public static string? TableCard(MatchPresentationOverlay overlay, string cardInstanceId)
+    {
+        var blow = Blow(overlay, cardInstanceId);
+        if (!overlay.IsGone(cardInstanceId))
+        {
+            return blow;
+        }
+
+        return blow is null ? Gone : $"{blow} {Gone}";
     }
 
     // How many cards a Deck is shown to be made of while it is being shuffled: half of them part

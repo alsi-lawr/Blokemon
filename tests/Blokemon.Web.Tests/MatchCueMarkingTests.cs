@@ -18,17 +18,32 @@ public sealed class MatchCueMarkingTests
         var drawn = MatchCueMarking.HandCard(
             "drawn",
             Auras("drawn"),
-            Cue(MatchAnimationKindView.Draw, targets: ["drawn"])
+            Cue(MatchAnimationKindView.Draw, targets: ["drawn"]),
+            MatchPresentationOverlay.Empty
         );
         var played = MatchCueMarking.HandCard(
             "played",
             Auras(),
-            Cue(MatchAnimationKindView.Play, source: "played")
+            Cue(MatchAnimationKindView.Play, source: "played"),
+            MatchPresentationOverlay.Empty
         );
 
         drawn.ShouldBe("hand-card is-aura is-cue-target");
         played.ShouldBe("hand-card is-cue-source");
-        MatchCueMarking.HandCard("held", Auras(), null).ShouldBe("hand-card");
+        MatchCueMarking
+            .HandCard("held", Auras(), null, MatchPresentationOverlay.Empty)
+            .ShouldBe("hand-card");
+
+        // And a card the presentation has already carried out of the hand is marked gone from it,
+        // whatever cue happens to be on screen by then.
+        MatchCueMarking
+            .HandCard(
+                "played",
+                Auras(),
+                Cue(MatchAnimationKindView.Reveal),
+                MatchPresentationOverlay.Empty.Gone(["played"])
+            )
+            .ShouldBe("hand-card is-cue-gone");
     }
 
     [Test]

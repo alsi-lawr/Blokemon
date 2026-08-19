@@ -15,7 +15,7 @@
     {
         var card = Hand[handIndex];
         <CardPress CardInstanceId="@card.Id"
-                   Class="@MatchCueMarking.HandCard(card.Id, Auras, Cue)"
+                   Class="@MatchCueMarking.HandCard(card.Id, Auras, Cue, Overlay)"
                    Style="@FanStyle(handIndex, Hand.Length)"
                    AriaLabel="@HandCardLabel(card, Auras)"
                    AriaPressed="@Auras.Pressed(card.Id)"
@@ -49,6 +49,9 @@
 
     [Parameter]
     public MatchEventCueView? Cue { get; set; }
+
+    [Parameter]
+    public MatchPresentationOverlay Overlay { get; set; } = MatchPresentationOverlay.Empty;
 
     [Parameter]
     public EventCallback BackgroundTapped { get; set; }

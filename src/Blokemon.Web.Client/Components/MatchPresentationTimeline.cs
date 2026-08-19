@@ -35,18 +35,26 @@ public static class MatchPresentationTimeline
         foreach (var step in presentation.Steps)
         {
             var overlay = MatchPresentationOverlay.Empty;
+            var gone = new List<string>(2);
             foreach (var cue in step.Events)
             {
                 // A drawn card has to be in the hand before it can be dealt into it, so a draw
                 // takes its step's frame early. The deltas go with the frame they were measured
-                // against.
+                // against - and a frame that has caught up needs nothing hidden from it, because
+                // it no longer has anybody anywhere they have already left.
                 if (cue.Kind == MatchAnimationKindView.Draw)
                 {
                     frame = step.Frame;
                     overlay = MatchPresentationOverlay.Empty;
+                    gone.Clear();
                 }
 
-                overlay = Applied(overlay, cue);
+                // Whatever this cue takes out of a place stays taken out. The cue that carries a
+                // card off is the only one that shows it going, but the frame behind it still has
+                // the card where it was for every cue after that too, so the concealment has to
+                // outlive the cue that started it or a second copy comes back.
+                Departs(cue, gone);
+                overlay = Applied(overlay, cue).Gone(gone.ToArray());
                 overlay = cue.Kind switch
                 {
                     // A declaration throws a blow, and what it is aimed at is whatever it is
@@ -77,6 +85,37 @@ public static class MatchPresentationTimeline
         }
 
         return beats;
+    }
+
+    // The cards this cue takes out of the place the frame still has them in. A card being played
+    // or promoted is carried out of the hand by the presentation itself - it is drawn travelling,
+    // or held up in the middle of the table - and a Blokemon knocked out is shown leaving the
+    // field. Both are cards the table has finished with before the frame agrees, and drawing them
+    // where they were is drawing a second one of them.
+    private static void Departs(MatchEventCueView cue, List<string> gone)
+    {
+        switch (cue.Kind)
+        {
+            case MatchAnimationKindView.Play:
+            case MatchAnimationKindView.Evolve:
+                if (
+                    cue.SourceCardInstanceId is { } played
+                    && !gone.Contains(played, StringComparer.Ordinal)
+                )
+                {
+                    gone.Add(played);
+                }
+                break;
+            case MatchAnimationKindView.Knockout:
+                foreach (var target in cue.TargetCardInstanceIds)
+                {
+                    if (!gone.Contains(target, StringComparer.Ordinal))
+                    {
+                        gone.Add(target);
+                    }
+                }
+                break;
+        }
     }
 
     // What a declared blow goes on to damage, which is what it should be aimed at: an attack that

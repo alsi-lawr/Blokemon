@@ -3161,9 +3161,30 @@ button.deck-stack.is-aura::after {
   spot it ends up standing in, and lands slightly past itself before settling. The place it
   arrives at takes the landing once. A card with nowhere on the table to land keeps the plain
   presentation it has always had, which is what the travelling mark distinguishes.
+
+  A card promoted onto another one is played in exactly the same way and was left out of this,
+  so the copy in the hand was never picked up and simply stood there while the card it is
+  travelled across the table.
 */
-.cue-play .hand-card.is-cue-source .hand-card-visual {
+.cue-play .hand-card.is-cue-source .hand-card-visual,
+.cue-evolve .hand-card.is-cue-source .hand-card-visual {
   animation: hand-play 0.52s linear both;
+}
+
+/*
+  ---- One card, one place --------------------------------------------------------------------
+
+  A card the presentation has carried out of somewhere is not drawn there any more. This is not
+  said by the cue that carried it: a command commits one state at its end, so between the card
+  leaving and the frame agreeing there are as many cues as the command feels like, and a rule
+  belonging to one of them stops applying at the next - which put the card back in the hand it had
+  already left, and stood a knocked-out Blokemon back up in the Oche. The presentation holds the
+  fact instead, for as long as it is true, and the run above is only how the card got to be gone.
+*/
+.battle-card-shell.is-cue-gone,
+.hand-card.is-cue-gone .hand-card-visual {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .card-play-overlay.is-travelling {
@@ -5660,13 +5681,30 @@ button.deck-stack.is-aura::after {
     What the motion was there to say is said by the frame it settles on.
   */
   .card-play-overlay.is-travelling .card-travel,
-  .cue-play .hand-card.is-cue-source .hand-card-visual,
   .cue-draw .hand-card.is-cue-target .hand-card-visual,
   .cue-draw .opponent-hand .oche-card-back.is-drawn,
   .is-cue-landing {
     opacity: 1 !important;
     transform: none !important;
     animation: none !important;
+  }
+
+  /*
+    The card being picked up is the one exception, and it is the whole point: it is on its way out
+    of the hand, so it keeps whatever the rule below says about being gone rather than being put
+    back at full strength. Suppressing a journey must not restore the thing the journey took away
+    - with no motion at all there is even less to explain a second copy of a card than there is
+    with it.
+  */
+  .cue-play .hand-card.is-cue-source .hand-card-visual,
+  .cue-evolve .hand-card.is-cue-source .hand-card-visual {
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .battle-card-shell.is-cue-gone,
+  .hand-card.is-cue-gone .hand-card-visual {
+    opacity: 0 !important;
   }
 
   .draw-cover,
