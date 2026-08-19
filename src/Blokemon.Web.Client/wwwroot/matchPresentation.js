@@ -74,16 +74,17 @@ export function positionDrawCards(table) {
   // The card being dealt is the player's own held card, whose motion is declared on the visual
   // inside its press surface, or - when the opponent is the one drawing - the newest back in
   // their strip. Either way it is that element the suppression, the measurements and the replay
-  // below all address.
+  // below all address. How high each one arcs is a share of how far it has to go, and the two
+  // journeys carry different shares of it.
   const visuals = [];
   for (const card of table.querySelectorAll(".hand-card.is-cue-target")) {
     const visual = card.querySelector(".hand-card-visual");
     if (visual) {
-      visuals.push(visual);
+      visuals.push({ element: visual, arc: 0.25 });
     }
   }
   for (const back of table.querySelectorAll(`${deckZone} .opponent-hand .is-drawn`)) {
-    visuals.push(back);
+    visuals.push({ element: back, arc: 0.2 });
   }
 
   if (!visuals.length) {
@@ -92,22 +93,32 @@ export function positionDrawCards(table) {
 
   // Suppress the stylesheet's own run before it can paint a frame of it.
   deck.style.animation = "none";
-  for (const visual of visuals) {
-    visual.style.animation = "none";
+  for (const { element } of visuals) {
+    element.style.animation = "none";
   }
 
-  // Measure at rest so the offsets carry each card back to the deck it came from.
+  // Measure at rest so the offsets carry each card back to the deck it came from, and so that
+  // the size it leaves the Deck at is the Deck's own size rather than a number written down
+  // somewhere: a card is dealt from a stack it is the same size as, and ends up whatever size
+  // the place receiving it draws cards at.
   const { x: deckX, y: deckY } = centre(deck);
-  for (const visual of visuals) {
-    const at = centre(visual);
-    visual.style.setProperty("--draw-from-x", `${deckX - at.x}px`);
-    visual.style.setProperty("--draw-from-y", `${deckY - at.y}px`);
+  for (const { element, arc } of visuals) {
+    const at = centre(element);
+    const dx = deckX - at.x;
+    const dy = deckY - at.y;
+    element.style.setProperty("--draw-from-x", `${dx}px`);
+    element.style.setProperty("--draw-from-y", `${dy}px`);
+    element.style.setProperty("--draw-lift", `${arc * Math.hypot(dx, dy)}px`);
+    element.style.setProperty(
+      "--draw-from-scale",
+      `${Math.max(0.05, deck.offsetWidth / Math.max(1, element.offsetWidth))}`,
+    );
   }
 
   void table.offsetWidth;
   deck.style.removeProperty("animation");
-  for (const visual of visuals) {
-    visual.style.removeProperty("animation");
+  for (const { element } of visuals) {
+    element.style.removeProperty("animation");
   }
 
   void table.offsetWidth;
@@ -119,8 +130,8 @@ export function positionDrawCards(table) {
     deckAnimation.currentTime = 0;
   }
 
-  for (const visual of visuals) {
-    const animation = visual
+  for (const { element } of visuals) {
+    const animation = element
       .getAnimations()
       .find((candidate) => candidate.animationName.startsWith("draw-arc"));
     if (!animation) {
@@ -132,11 +143,11 @@ export function positionDrawCards(table) {
     // that into the offsets before playing the run once.
     animation.pause();
     animation.currentTime = 0;
-    const start = centre(visual);
-    const fromX = Number.parseFloat(visual.style.getPropertyValue("--draw-from-x"));
-    const fromY = Number.parseFloat(visual.style.getPropertyValue("--draw-from-y"));
-    visual.style.setProperty("--draw-from-x", `${fromX + deckX - start.x}px`);
-    visual.style.setProperty("--draw-from-y", `${fromY + deckY - start.y}px`);
+    const start = centre(element);
+    const fromX = Number.parseFloat(element.style.getPropertyValue("--draw-from-x"));
+    const fromY = Number.parseFloat(element.style.getPropertyValue("--draw-from-y"));
+    element.style.setProperty("--draw-from-x", `${fromX + deckX - start.x}px`);
+    element.style.setProperty("--draw-from-y", `${fromY + deckY - start.y}px`);
     animation.currentTime = 0;
     animation.play();
   }
@@ -206,6 +217,15 @@ export function positionPlayCard(table) {
   traveller.style.setProperty("--play-to-x", `${to.x - rest.x}px`);
   traveller.style.setProperty("--play-to-y", `${to.y - rest.y}px`);
   traveller.style.setProperty("--play-to-scale", `${Math.max(0.05, to.width / rest.rect.width)}`);
+
+  // How high the card is carried over the table is a share of how far it is carried, and how far
+  // it dips as it is picked up is a share of how big it is where it is picked up from: both are
+  // the journey's own proportions rather than a distance in pixels that only suits one screen.
+  traveller.style.setProperty(
+    "--play-lift",
+    `${0.27 * Math.hypot(to.x - from.x, to.y - from.y)}px`,
+  );
+  traveller.style.setProperty("--play-dip", `${0.06 * from.rect.height}px`);
 
   traveller.style.removeProperty("animation");
   void table.offsetWidth;

@@ -7,14 +7,18 @@
             @<text>
                 <div class="deck-card-back">
                     <CardBack />
-                    @* A Deck being shuffled splits into halves that riffle back together over
-                       it. They exist only while it is happening: at rest the stack is one
-                       stack, and it keeps the box they are measured against. *@
+                    @* A Deck being shuffled is drawn as the cards it is made of, seen from
+                       straight above like the rest of the table: they part into two piles and
+                       cross back one at a time. They exist only while it is happening - at rest
+                       the stack is one stack, and it keeps the box they are measured against. *@
                     @if (Riffling)
                     {
                         <span class="shuffle-riffle" aria-hidden="true">
-                            <span class="shuffle-half is-left"><CardBack /></span>
-                            <span class="shuffle-half is-right"><CardBack /></span>
+                            @for (var riffleIndex = 0; riffleIndex < MatchCueMarking.RiffleCards; riffleIndex++)
+                            {
+                                <span class="@MatchCueMarking.RiffleCard(riffleIndex)"
+                                      style="@MatchCueMarking.RiffleStyle(riffleIndex)"><CardBack /></span>
+                            }
                         </span>
                     }
                 </div>
@@ -25,14 +29,15 @@
     @if (DeckDraw)
     {
         <button type="button"
-                class="deck-stack is-aura"
+                class="deck-stack is-aura @(Riffling ? "is-riffling" : null)"
                 aria-label="@($"Draw from the Deck, {Side.DeckCount} cards")"
                 @onclick:stopPropagation="true"
                 @onclick="DeckTapped">@deckStack</button>
     }
     else
     {
-        <div class="deck-stack" aria-label="@($"Deck, {Side.DeckCount} cards")">@deckStack</div>
+        <div class="deck-stack @(Riffling ? "is-riffling" : null)"
+             aria-label="@($"Deck, {Side.DeckCount} cards")">@deckStack</div>
     }
 
     @* The place a Kit in play stands in is part of the table, so it is kept whether or not a

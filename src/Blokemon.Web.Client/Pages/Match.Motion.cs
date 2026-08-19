@@ -106,7 +106,7 @@ public partial class Match
         cue?.Kind switch
         {
             MatchAnimationKindView.Setup => 900,
-            MatchAnimationKindView.Shuffle => 700,
+            MatchAnimationKindView.Shuffle => 1200,
             MatchAnimationKindView.Draw => 900,
             MatchAnimationKindView.Play or MatchAnimationKindView.Evolve => 1000,
             MatchAnimationKindView.Attack => 850,

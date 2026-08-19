@@ -1,3 +1,4 @@
+using System.Globalization;
 using Blokemon.App.Contracts;
 
 namespace Blokemon.Web.Client.Components;
@@ -63,6 +64,22 @@ public static class MatchCueMarking
             _ => null,
         };
     }
+
+    // How many cards a Deck is shown to be made of while it is being shuffled: half of them part
+    // to one side and half to the other, which is the fewest that reads as two piles rather than
+    // two cards.
+    public const int RiffleCards = 12;
+
+    // Which pile a card of a shuffling Deck belongs to. They alternate, so that dealing them in
+    // the order they are written crosses the two sides one card at a time instead of one whole
+    // side and then the other.
+    public static string RiffleCard(int index) =>
+        index % 2 == 0 ? "riffle-card is-left" : "riffle-card is-right";
+
+    // A card's place in the order is what spaces it behind the one before it; the stylesheet owns
+    // how long that spacing is, as it owns every other duration on the table.
+    public static string RiffleStyle(int index) =>
+        $"--riffle-order: {index.ToString(CultureInfo.InvariantCulture)}";
 
     // The Deck deals one card at a time whoever is drawing, so the arriving back is the newest
     // one in the strip; a strip already showing its full width has nowhere to put another and

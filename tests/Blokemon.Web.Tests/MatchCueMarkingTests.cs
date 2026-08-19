@@ -67,6 +67,31 @@ public sealed class MatchCueMarkingTests
     }
 
     [Test]
+    public void AShufflingDeckIsDealtOutAsTwoPilesThatCrossOneCardAtATime()
+    {
+        // The two piles have to be written alternately: dealt as one side and then the other,
+        // the order they are spaced by would cross a whole pile before the first card of the
+        // other one moved, which is the two halves being pulled apart rather than a riffle.
+        var cards = Enumerable
+            .Range(0, MatchCueMarking.RiffleCards)
+            .Select(MatchCueMarking.RiffleCard)
+            .ToArray();
+
+        cards.Count(card => card == "riffle-card is-left").ShouldBe(cards.Length / 2);
+        cards.Count(card => card == "riffle-card is-right").ShouldBe(cards.Length / 2);
+        cards[0].ShouldBe("riffle-card is-left");
+        cards[1].ShouldBe("riffle-card is-right");
+        cards[2].ShouldBe("riffle-card is-left");
+    }
+
+    [Test]
+    public void EachCardOfAShufflingDeckCarriesItsPlaceInTheOrder()
+    {
+        MatchCueMarking.RiffleStyle(0).ShouldBe("--riffle-order: 0");
+        MatchCueMarking.RiffleStyle(11).ShouldBe("--riffle-order: 11");
+    }
+
+    [Test]
     public void OnlyThePlaceExpectingTheCardTakesTheLanding()
     {
         var bench = new MatchLandingSlot(false, MatchLandingKind.Bench, 2);
