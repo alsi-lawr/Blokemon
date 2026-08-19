@@ -3187,6 +3187,19 @@ button.deck-stack.is-aura::after {
   pointer-events: none;
 }
 
+/*
+  Not being drawn has to include not being pressable. A card is pressed by the surface around it
+  rather than by the card itself, so taking the pointer off the card leaves the press where it was
+  - a full-size target holding nothing, which a held press still opens the viewer on, because
+  reading a card is deliberately allowed while the table is busy and this is a card that is not
+  there to be read. The card cannot simply be taken out of the layout instead: it is still
+  finishing the run that shows it leaving, and that has to be visible while it plays.
+*/
+.hand-card.is-cue-gone,
+button:has(> .battle-card-shell.is-cue-gone) {
+  pointer-events: none;
+}
+
 .card-play-overlay.is-travelling {
   animation: play-veil 1s ease-out both;
 }
@@ -4367,7 +4380,18 @@ button.deck-stack.is-aura::after {
   }
 }
 
+/*
+  A run that shows a card leaving has to say it starts visible. The card is already marked as gone
+  by the time this plays - that is what draws it nowhere else - and a keyframe left out is filled
+  in from the card as it stands, so the fade would read its own finished state as its start and
+  spend the whole run at nothing. The fall is left unsaid on purpose, so it begins from wherever
+  the card was actually standing.
+*/
 @keyframes knockout {
+  0% {
+    opacity: 1;
+  }
+
   to {
     opacity: 0;
     transform: translateY(80px) rotate(9deg) scale(0.8);

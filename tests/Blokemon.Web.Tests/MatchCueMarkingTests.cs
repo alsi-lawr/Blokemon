@@ -132,6 +132,34 @@ public sealed class MatchCueMarkingTests
     }
 
     [Test]
+    public void ACardCarriedOffMidBlowIsStillBothOfTheThingsItIs()
+    {
+        // The two facts arrive together far more often than not: a Blokemon is knocked out by the
+        // blow that has just struck it, and for the rest of the step it is a card being fallen out
+        // of the Oche *and* the far end of a swing. Asking for one and getting only the other loses
+        // whichever is dropped - the recoil, or the concealment that stops it standing back up -
+        // and both were being asked for at once here without anything ever checking the pair.
+        var struckAndGone = MatchPresentationOverlay
+            .Empty.Blow("attacker", ["defender"])
+            .Gone(["defender"]);
+
+        MatchCueMarking.TableCard(struckAndGone, "defender").ShouldBe("is-cue-struck is-cue-gone");
+        // The card that swung can be carried off by its own blow too - a fumble that finishes it.
+        MatchCueMarking
+            .TableCard(
+                MatchPresentationOverlay.Empty.Blow("attacker", []).Gone(["attacker"]),
+                "attacker"
+            )
+            .ShouldBe("is-cue-striking is-cue-gone");
+        // And each on its own is only itself.
+        MatchCueMarking.TableCard(struckAndGone, "attacker").ShouldBe("is-cue-striking");
+        MatchCueMarking
+            .TableCard(MatchPresentationOverlay.Empty.Gone(["played"]), "played")
+            .ShouldBe("is-cue-gone");
+        MatchCueMarking.TableCard(struckAndGone, "bystander").ShouldBeNull();
+    }
+
+    [Test]
     public void OnlyThePlaceExpectingTheCardTakesTheLanding()
     {
         var bench = new MatchLandingSlot(false, MatchLandingKind.Bench, 2);

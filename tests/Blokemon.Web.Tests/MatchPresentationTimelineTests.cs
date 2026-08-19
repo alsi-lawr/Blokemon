@@ -363,6 +363,53 @@ public sealed class MatchPresentationTimelineTests
         beats.Skip(2).Select(beat => TableDraws(beat, Defender)).ShouldAllBe(drawn => !drawn);
     }
 
+    [Test]
+    public void OnceTheFrameHasCaughtUpThereIsNothingLeftToHideFromIt()
+    {
+        // The concealment is only ever the presentation disagreeing with the frame, and a draw
+        // settles that argument early: it needs its own frame to have somewhere to deal the card
+        // into, and that frame already knows where everything else went. Carrying the older
+        // disagreement across the swap hides the played card in the place it has just been put -
+        // it is standing on the Bench in this frame, and it is gone from nowhere.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                PlayedAndDrewFrame(),
+                Cue(1, MatchAnimationKindView.Play, source: Held, targets: []),
+                Cue(2, MatchAnimationKindView.Draw, targets: ["card-drawn"]),
+                Cue(3, MatchAnimationKindView.Reveal, targets: [])
+            ),
+            HandFrame(held: true)
+        );
+
+        // Still exactly one of it throughout, and the hand never takes it back.
+        beats.Select(beat => VisibleCopies(beat, Held)).ShouldAllBe(copies => copies <= 1);
+        beats.Select(beat => HandDraws(beat, Held)).ShouldAllBe(drawn => !drawn);
+        // The presentation carries it, and from the swap onwards the table stands it where it
+        // landed rather than leaving the Bench slot empty for the rest of the step.
+        Carried(beats[0], Held).ShouldBeTrue();
+        beats.Skip(1).Select(beat => TableDraws(beat, Held)).ShouldAllBe(drawn => drawn);
+    }
+
+    // What a command that plays a card and then draws one settles on: the played card is standing
+    // on the Bench and the drawn one is in the hand.
+    private static MatchFrameView PlayedAndDrewFrame() =>
+        new(
+            Guid.Parse("40000000-0000-0000-0000-000000000004"),
+            1,
+            3,
+            "InProgress",
+            Side("Opponent", false, active: Instance(Defender, 0)),
+            Side(
+                "You",
+                true,
+                active: Instance(Attacker, 0),
+                bench: [Instance(Held, 0)],
+                hand: [Instance("card-drawn", 0)]
+            ),
+            false,
+            null
+        );
+
     private static readonly MatchAuraView NoAuras = new(
         [],
         [],
