@@ -101,13 +101,23 @@ public static class MatchCueMarking
     // which meant a rule that wanted only the events nobody does had nothing to say so with: it
     // could be written for one half or for the whole table and for nothing else, and the one that
     // needed the third thing was written for the whole table and reached both Decks.
+    //
+    // There is no last arm on purpose. A half added to MatchCueActor without a mark decided for it
+    // does not compile - CS8509 is an error across the repository - so the one thing that cannot
+    // happen is a fourth half quietly inheriting the mark for nobody, and every rule written for
+    // the events nobody performs reaching it. That is the defect above, said again about a case
+    // that does not exist yet. The suppression below is for the other half of the same warning: a
+    // value cast in from outside the names the enum declares, which nothing here can produce -
+    // MatchCueState.Table is the only caller and the actor it carries is one of the three.
+#pragma warning disable CS8524
     private static string ActorClass(MatchCueActor actor) =>
         actor switch
         {
+            MatchCueActor.Unattributed => " cue-actor-none",
             MatchCueActor.Local => " cue-actor-local",
             MatchCueActor.Opponent => " cue-actor-opponent",
-            _ => " cue-actor-none",
         };
+#pragma warning restore CS8524
 
     // How many cards a Deck is shown to be made of while it is being shuffled: half of them part to
     // one side and half to the other, which is the fewest that reads as two piles rather than two
