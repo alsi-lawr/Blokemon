@@ -7,6 +7,11 @@
     table - and hands it back to the card it was opened from. Escape closes it, and so does Enter
     or Space, because a table running full screen never sees Escape at all: the browser takes that
     one to leave full screen before the page is asked.
+
+    Tab is answered by keeping focus rather than by closing, so a card being read cannot leave the
+    player on a control behind a surface they cannot see through. Which keys stop the browser doing
+    its own thing with them is settled next to the focus move, in guardViewer, and is a shorter list
+    than this one: a key this surface answers but the browser has no use for is nothing to take off it.
 *@
 <div class="card-viewer"
      role="dialog"
@@ -16,7 +21,6 @@
      tabindex="-1"
      @ref="_viewer"
      @onkeydown="Key"
-     @onkeydown:preventDefault="true"
      @onpointerup="Closed"
      @onpointercancel="Closed">
     <CardFace Card="Card"

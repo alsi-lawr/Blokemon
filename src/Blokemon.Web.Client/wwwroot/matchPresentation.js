@@ -30,6 +30,21 @@ export function restoreFocus() {
   }
 }
 
+// The two keys the card viewer takes off the browser while it is holding focus, and only those
+// two. Space would scroll the table the viewer is covering, and Tab would carry focus out to a
+// control behind it that nobody can see - both are the viewer's to answer while it is up. Every
+// other key still does whatever it did before: find, print, reload, save, the function keys, and
+// everything an assistive technology claims. Which keys the viewer ACTS on is decided in the
+// component; this decides only which of them the browser must stop acting on as well, because a
+// renderer cannot choose that per keystroke and choosing it once means choosing it for all of them.
+export function guardViewer(element) {
+  element?.addEventListener("keydown", (event) => {
+    if (event.key === " " || event.key === "Tab") {
+      event.preventDefault();
+    }
+  });
+}
+
 // The printed face measures 750 x 1050, so the viewer scale is whichever of the two viewport
 // margins binds first. The card keeps its aspect ratio and clears the margin on both axes.
 const cardWidth = 750;

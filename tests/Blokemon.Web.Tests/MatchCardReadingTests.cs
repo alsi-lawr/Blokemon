@@ -205,6 +205,8 @@ public sealed class MatchCardReadingTests
                     return (TValue)(object)false;
                 case "viewerScale":
                     return (TValue)(object)0.5d;
+                case "guardViewer":
+                    return default!;
             }
 
             // Focus is moved through the browser like anything else about an element, and this is

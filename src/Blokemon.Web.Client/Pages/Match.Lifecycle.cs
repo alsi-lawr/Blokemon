@@ -69,6 +69,13 @@ public partial class Match
         {
             _viewerTakesFocus = false;
             await _viewer.Element.FocusAsync();
+            // Taking focus is what puts the viewer in the way of the keyboard, so it is also what
+            // makes it answerable for the two keys it takes off the browser. A card held up by the
+            // pointer takes no focus and takes nothing.
+            if (_presentationModule is not null)
+            {
+                await _presentationModule.InvokeVoidAsync("guardViewer", _viewer.Element);
+            }
         }
 
         if (_returnFocus is { } card)
