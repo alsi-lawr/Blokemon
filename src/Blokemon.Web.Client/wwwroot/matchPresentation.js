@@ -219,22 +219,30 @@ export function positionPlayCard(table) {
   const to = playLanding(table, landing);
   traveller.style.setProperty("--play-from-x", `${from.x - rest.x}px`);
   traveller.style.setProperty("--play-from-y", `${from.y - rest.y}px`);
-
-  // How big the card is at either end of its journey is told as a share of how big it is where it
-  // rests, and a card that has not been painted yet, or is standing in a layout collapsed to
-  // nothing, measures nothing at all. A share of nothing is no size a stylesheet can read, and a
-  // card handed one crosses the table at whatever size it already had - so the width it is compared
-  // against is held above zero here, as the deal already holds the width of the card it deals. A
-  // hundredth of a pixel is smaller than anything the table draws, so no card anybody can see is
-  // sized any differently for it.
-  const restWidth = Math.max(0.01, rest.rect.width);
-  traveller.style.setProperty(
-    "--play-from-scale",
-    `${Math.max(0.05, from.rect.width / restWidth)}`,
-  );
   traveller.style.setProperty("--play-to-x", `${to.x - rest.x}px`);
   traveller.style.setProperty("--play-to-y", `${to.y - rest.y}px`);
-  traveller.style.setProperty("--play-to-scale", `${Math.max(0.05, to.width / restWidth)}`);
+
+  // How big the card is at each end of its journey is a share of how big it is where it rests, so
+  // a traveller that measures nothing has nothing to be compared against. Then neither share is
+  // written down at all, and that is the point rather than a tidiness: the stylesheet asks for
+  // these as scale(var(--play-from-scale, 1)), and that fallback is only ever reached by a property
+  // nobody set. One set to a value that is not a number is still put in place of the var, and the
+  // whole transform it lands in - the travel and the turn as much as the size - is thrown out with
+  // it. Left unwritten, the card is carried at the size it already is. Whatever an earlier journey
+  // left here goes first, so a card that cannot be measured now is not sized by the last one that
+  // could.
+  traveller.style.removeProperty("--play-from-scale");
+  traveller.style.removeProperty("--play-to-scale");
+  if (rest.rect.width > 0) {
+    traveller.style.setProperty(
+      "--play-from-scale",
+      `${Math.max(0.05, from.rect.width / rest.rect.width)}`,
+    );
+    traveller.style.setProperty(
+      "--play-to-scale",
+      `${Math.max(0.05, to.width / rest.rect.width)}`,
+    );
+  }
 
   // How high the card is carried over the table is a share of how far it is carried, and how far
   // it dips as it is picked up is a share of how big it is where it is picked up from: both are
