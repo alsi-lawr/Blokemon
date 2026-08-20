@@ -12,54 +12,49 @@
     <base href="/" />
     <ResourcePreloader />
     @*
-        The product's styles, one file per concern. THE ORDER IS THE CASCADE: a rule only wins
-        over an earlier one because it is later, so these load in the numbered order and the
-        four media blocks come after every unconditional file. Concatenating them in this order
-        reproduces the stylesheet they were split out of, byte for byte, and the standalone
-        browser host in Blokemon.Web.Client/wwwroot/index.html lists exactly the same order.
+        The product's styles, one file per concern. THIS LIST IS THE CASCADE ORDER, and it is the
+        only place that order is written down: a rule only wins over an earlier one because it is
+        later, so the unconditional files come first and the four media blocks last. Reordering a
+        line here, or inserting one in the wrong place, silently changes what the player sees.
 
-        01 tokens, the reset and the base elements       15 the profile page and the small odds
-        02 the app shell and its navigation              16 which cue drives which run
-        03 panels, buttons, notices and inputs           17 the short runs: pops and the corona
-        04 card faces outside the match                  18 the draw arc
-        05 the Packs shelf                               19 the Deck press, pickup and riffle
-        06 the pack opening ceremony                     20 the played card's journey
-        07 the Starter Decks and their box               21 the blow and what follows it
-        08 the Decks builder                             22 the shared fades and the pack tear
-        09 the match frame and the table                 23 the reveal, the deck box, the showcase
-        10 cards and places on the table                 24 the framework's error bar
-        11 what the table says over itself               25 the two widest breakpoints
-        12 the hand and the aura corona                  26 the phone table
-        13 the desktop action dock                       27 motion suppressed
-        14 the action sheet and the card viewer
+        The filenames deliberately do not encode their position - a file is named for what it
+        holds, not for where it loads - so ALPHABETICAL ORDER IS NOT LOAD ORDER and never will be.
+        reduced-motion.css sorts before responsive-phone.css and has to load after it. Never build
+        this list from a directory glob or a sorted listing; add and move files by hand, here, and
+        make the same edit in the same place in the standalone browser host,
+        Blokemon.Web.Client/wwwroot/index.html.
+
+        Two files hold a little more than their name says: motion-pack.css also carries the fades
+        that everything shares, and motion-deck.css also carries the hand's half of the pickup it
+        has to stay in step with.
     *@
-    <link rel="stylesheet" href="@Assets["css/01-foundation.css"]" />
-    <link rel="stylesheet" href="@Assets["css/02-shell.css"]" />
-    <link rel="stylesheet" href="@Assets["css/03-furniture.css"]" />
-    <link rel="stylesheet" href="@Assets["css/04-card-face.css"]" />
-    <link rel="stylesheet" href="@Assets["css/05-packs.css"]" />
-    <link rel="stylesheet" href="@Assets["css/06-pack-ceremony.css"]" />
-    <link rel="stylesheet" href="@Assets["css/07-starter-decks.css"]" />
-    <link rel="stylesheet" href="@Assets["css/08-deck-builder.css"]" />
-    <link rel="stylesheet" href="@Assets["css/09-table.css"]" />
-    <link rel="stylesheet" href="@Assets["css/10-table-cards.css"]" />
-    <link rel="stylesheet" href="@Assets["css/11-table-overlays.css"]" />
-    <link rel="stylesheet" href="@Assets["css/12-hand.css"]" />
-    <link rel="stylesheet" href="@Assets["css/13-action-dock.css"]" />
-    <link rel="stylesheet" href="@Assets["css/14-action-sheet.css"]" />
-    <link rel="stylesheet" href="@Assets["css/15-profile.css"]" />
-    <link rel="stylesheet" href="@Assets["css/16-cues.css"]" />
-    <link rel="stylesheet" href="@Assets["css/17-runs-pops.css"]" />
-    <link rel="stylesheet" href="@Assets["css/18-runs-draw.css"]" />
-    <link rel="stylesheet" href="@Assets["css/19-runs-deck-hand.css"]" />
-    <link rel="stylesheet" href="@Assets["css/20-runs-play.css"]" />
-    <link rel="stylesheet" href="@Assets["css/21-runs-blow.css"]" />
-    <link rel="stylesheet" href="@Assets["css/22-runs-pack.css"]" />
-    <link rel="stylesheet" href="@Assets["css/23-runs-reveal.css"]" />
-    <link rel="stylesheet" href="@Assets["css/24-error-ui.css"]" />
-    <link rel="stylesheet" href="@Assets["css/25-wide-breakpoints.css"]" />
-    <link rel="stylesheet" href="@Assets["css/26-phone.css"]" />
-    <link rel="stylesheet" href="@Assets["css/27-reduced-motion.css"]" />
+    <link rel="stylesheet" href="@Assets["css/foundation.css"]" />
+    <link rel="stylesheet" href="@Assets["css/app-shell.css"]" />
+    <link rel="stylesheet" href="@Assets["css/shared-furniture.css"]" />
+    <link rel="stylesheet" href="@Assets["css/card-face.css"]" />
+    <link rel="stylesheet" href="@Assets["css/packs-screen.css"]" />
+    <link rel="stylesheet" href="@Assets["css/pack-opening.css"]" />
+    <link rel="stylesheet" href="@Assets["css/starter-decks.css"]" />
+    <link rel="stylesheet" href="@Assets["css/deck-builder.css"]" />
+    <link rel="stylesheet" href="@Assets["css/match-table.css"]" />
+    <link rel="stylesheet" href="@Assets["css/table-cards.css"]" />
+    <link rel="stylesheet" href="@Assets["css/table-overlays.css"]" />
+    <link rel="stylesheet" href="@Assets["css/hand.css"]" />
+    <link rel="stylesheet" href="@Assets["css/action-dock.css"]" />
+    <link rel="stylesheet" href="@Assets["css/action-sheet.css"]" />
+    <link rel="stylesheet" href="@Assets["css/profile.css"]" />
+    <link rel="stylesheet" href="@Assets["css/cue-states.css"]" />
+    <link rel="stylesheet" href="@Assets["css/motion-pops.css"]" />
+    <link rel="stylesheet" href="@Assets["css/motion-draw.css"]" />
+    <link rel="stylesheet" href="@Assets["css/motion-deck.css"]" />
+    <link rel="stylesheet" href="@Assets["css/motion-play.css"]" />
+    <link rel="stylesheet" href="@Assets["css/motion-blow.css"]" />
+    <link rel="stylesheet" href="@Assets["css/motion-pack.css"]" />
+    <link rel="stylesheet" href="@Assets["css/motion-reveal.css"]" />
+    <link rel="stylesheet" href="@Assets["css/error-ui.css"]" />
+    <link rel="stylesheet" href="@Assets["css/responsive-tablet.css"]" />
+    <link rel="stylesheet" href="@Assets["css/responsive-phone.css"]" />
+    <link rel="stylesheet" href="@Assets["css/reduced-motion.css"]" />
     <link rel="stylesheet" href="@Assets["Blokemon.Web.styles.css"]" />
     <style>@((MarkupString)Catalogue.CardStylesheet)</style>
     <ImportMap />

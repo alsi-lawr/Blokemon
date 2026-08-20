@@ -8,38 +8,46 @@
     <base href="/" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <!--
-        The product's styles, one file per concern, copied in from Blokemon.Web/wwwroot/css by
-        the standalone-browser Content include. THE ORDER IS THE CASCADE, and it is exactly the
-        order Blokemon.Web/Components/App.razor lists: the numbered files first, then the four
-        media blocks. A file added on one host has to be added on the other, in the same place.
+        The product's styles, one file per concern, copied in from Blokemon.Web/wwwroot/css by the
+        standalone-browser Content include. THIS LIST IS THE CASCADE ORDER, and together with the
+        identical list in Blokemon.Web/Components/App.razor it is the only place that order is
+        written down: the unconditional files first, then the four media blocks. Reordering a line
+        here silently changes what the player sees.
+
+        The filenames deliberately do not encode their position - a file is named for what it
+        holds, not for where it loads - so ALPHABETICAL ORDER IS NOT LOAD ORDER and never will be.
+        reduced-motion.css sorts before responsive-phone.css and has to load after it. The Content
+        include brings the whole folder across by name, so it does not fix the order either: never
+        build this list from a glob or a sorted listing. A file added on one host has to be added
+        on the other, in the same place.
     -->
-    <link rel="stylesheet" href="css/01-foundation.css" />
-    <link rel="stylesheet" href="css/02-shell.css" />
-    <link rel="stylesheet" href="css/03-furniture.css" />
-    <link rel="stylesheet" href="css/04-card-face.css" />
-    <link rel="stylesheet" href="css/05-packs.css" />
-    <link rel="stylesheet" href="css/06-pack-ceremony.css" />
-    <link rel="stylesheet" href="css/07-starter-decks.css" />
-    <link rel="stylesheet" href="css/08-deck-builder.css" />
-    <link rel="stylesheet" href="css/09-table.css" />
-    <link rel="stylesheet" href="css/10-table-cards.css" />
-    <link rel="stylesheet" href="css/11-table-overlays.css" />
-    <link rel="stylesheet" href="css/12-hand.css" />
-    <link rel="stylesheet" href="css/13-action-dock.css" />
-    <link rel="stylesheet" href="css/14-action-sheet.css" />
-    <link rel="stylesheet" href="css/15-profile.css" />
-    <link rel="stylesheet" href="css/16-cues.css" />
-    <link rel="stylesheet" href="css/17-runs-pops.css" />
-    <link rel="stylesheet" href="css/18-runs-draw.css" />
-    <link rel="stylesheet" href="css/19-runs-deck-hand.css" />
-    <link rel="stylesheet" href="css/20-runs-play.css" />
-    <link rel="stylesheet" href="css/21-runs-blow.css" />
-    <link rel="stylesheet" href="css/22-runs-pack.css" />
-    <link rel="stylesheet" href="css/23-runs-reveal.css" />
-    <link rel="stylesheet" href="css/24-error-ui.css" />
-    <link rel="stylesheet" href="css/25-wide-breakpoints.css" />
-    <link rel="stylesheet" href="css/26-phone.css" />
-    <link rel="stylesheet" href="css/27-reduced-motion.css" />
+    <link rel="stylesheet" href="css/foundation.css" />
+    <link rel="stylesheet" href="css/app-shell.css" />
+    <link rel="stylesheet" href="css/shared-furniture.css" />
+    <link rel="stylesheet" href="css/card-face.css" />
+    <link rel="stylesheet" href="css/packs-screen.css" />
+    <link rel="stylesheet" href="css/pack-opening.css" />
+    <link rel="stylesheet" href="css/starter-decks.css" />
+    <link rel="stylesheet" href="css/deck-builder.css" />
+    <link rel="stylesheet" href="css/match-table.css" />
+    <link rel="stylesheet" href="css/table-cards.css" />
+    <link rel="stylesheet" href="css/table-overlays.css" />
+    <link rel="stylesheet" href="css/hand.css" />
+    <link rel="stylesheet" href="css/action-dock.css" />
+    <link rel="stylesheet" href="css/action-sheet.css" />
+    <link rel="stylesheet" href="css/profile.css" />
+    <link rel="stylesheet" href="css/cue-states.css" />
+    <link rel="stylesheet" href="css/motion-pops.css" />
+    <link rel="stylesheet" href="css/motion-draw.css" />
+    <link rel="stylesheet" href="css/motion-deck.css" />
+    <link rel="stylesheet" href="css/motion-play.css" />
+    <link rel="stylesheet" href="css/motion-blow.css" />
+    <link rel="stylesheet" href="css/motion-pack.css" />
+    <link rel="stylesheet" href="css/motion-reveal.css" />
+    <link rel="stylesheet" href="css/error-ui.css" />
+    <link rel="stylesheet" href="css/responsive-tablet.css" />
+    <link rel="stylesheet" href="css/responsive-phone.css" />
+    <link rel="stylesheet" href="css/reduced-motion.css" />
     <title>Blokemon</title>
 </head>
 <body>
