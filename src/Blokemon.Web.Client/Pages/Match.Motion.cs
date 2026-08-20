@@ -1,6 +1,7 @@
 using System.Globalization;
 using Blokemon.App.Contracts;
 using Blokemon.Web.Client.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Blokemon.Web.Client.Pages;
@@ -16,9 +17,22 @@ namespace Blokemon.Web.Client.Pages;
 // render, and never holds any state of its own.
 public partial class Match
 {
-    private async Task PositionCueMotion(MatchEventCueView? cue)
+    // What the beat being played needs measured, measured. Everything it is decided from is handed
+    // in, because the one thing it must not be decided from is the table: a skipped presentation
+    // stops moving the table underneath its reveals, so a beat that asked the table what it was
+    // carrying would be answered about the beat before it.
+    //
+    // A measurement that fails costs the journey and nothing else. The distance is only how far a
+    // card slides on this screen; without it the card is where the beat leaves it, which is where
+    // it belongs, and the beat, the presentation and the game go on exactly as they would have.
+    public static async Task PositionCueMotion(
+        IJSObjectReference? presentationModule,
+        ElementReference battleScreen,
+        MatchEventCueView? cue,
+        MatchPresentationOverlay overlay
+    )
     {
-        if (cue is null || _presentationModule is null)
+        if (cue is null || presentationModule is null)
         {
             return;
         }
@@ -29,11 +43,20 @@ public partial class Match
             // The blow is measured once, on the cue that throws it. The cue that lands it measures
             // nothing: by then the card is part way across and no longer where it started.
             MatchAnimationKindView.Attack => "positionAttack",
-            _ => _overlay.CarriedCardInstanceId is null ? null : "positionPlayCard",
+            _ => overlay.CarriedCardInstanceId is null ? null : "positionPlayCard",
         };
-        if (measure is not null)
+        if (measure is null)
         {
-            await _presentationModule.InvokeVoidAsync(measure, _battleScreen);
+            return;
+        }
+
+        try
+        {
+            await presentationModule.InvokeVoidAsync(measure, battleScreen);
+        }
+        catch (JSException)
+        {
+            // The card arrives without travelling.
         }
     }
 

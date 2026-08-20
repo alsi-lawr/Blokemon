@@ -49,6 +49,41 @@ internal static class MatchTableFixture
         return beats.Last(beat => beat.Cue?.Kind == kind);
     }
 
+    // One command that carries a card out of the hand and then reveals one, played in that order.
+    //
+    // It is the shape a skipped presentation stops in the middle of: everything decorative is
+    // fast-forwarded and the reveal is played anyway, so the beat on screen is not the last beat the
+    // table was moved to. The two beats are what the timeline makes of it rather than what this
+    // decides - which card is being carried is settled by the two tables the command sits between.
+    public static IReadOnlyList<MatchPresentationBeat> CarriedThenRevealed()
+    {
+        var played = Table(
+            ["hand-b"],
+            ["you-bench", "hand-a"],
+            "you-active",
+            ["cpu-bench"],
+            "cpu-active"
+        );
+        return MatchPresentationTimeline.Beats(
+            new([
+                new(
+                    played,
+                    [
+                        Told(MatchAnimationKindView.Play, "hand-a", []),
+                        Told(MatchAnimationKindView.Reveal, null, [Face]),
+                    ]
+                ),
+            ]),
+            Standing
+        );
+    }
+
+    private static MatchEventCueView Told(
+        MatchAnimationKindView kind,
+        string? source,
+        CardView[] revealed
+    ) => new(1, kind, "It happened.", source, [], 0, null, true, revealed);
+
     // What the presentation says about every card the table draws for a beat, asked of the
     // presentation the same way each of them is drawn: your held cards are asked as held cards,
     // and everything standing on either half of the table is asked as a card on the field.

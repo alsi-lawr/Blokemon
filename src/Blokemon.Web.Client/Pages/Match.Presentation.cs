@@ -175,7 +175,7 @@ public partial class Match
                 _animationStatus = PublicText(beat.Cue.Label);
             }
             await InvokeAsync(StateHasChanged);
-            await PositionCueMotion(beat.Cue);
+            await PositionCueMotion(_presentationModule, _battleScreen, beat.Cue, beat.Overlay);
 
             if (mandatoryReveal)
             {
