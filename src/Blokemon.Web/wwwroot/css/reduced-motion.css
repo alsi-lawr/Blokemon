@@ -20,6 +20,18 @@
     animation: none !important;
   }
 
+  /*
+    A reveal is not decoration: it is cards the rules entitle the player to see, and the match
+    waits on their answer to it. Suppressing motion must never take that away, so here it does not
+    arrive by any run at all - it is simply there, at full strength, from the first frame until it
+    is dismissed. Stated outright rather than left to the shortened duration above, because a
+    surface the player has to find is the last one that may depend on how a run ends.
+  */
+  .card-reveal-overlay {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
   /* The corona neither turns nor breathes: it holds one steady, even rim of light. */
   .is-aura .battle-card-shell::after,
   .is-aura .hand-card-visual::after,
