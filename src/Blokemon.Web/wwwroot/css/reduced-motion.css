@@ -50,6 +50,36 @@
   }
 
   /*
+    The four surfaces the table speaks through: what was played and its name, whose turn it is,
+    what an attack did, and everything else it has to say. Each of them arrives, holds and leaves
+    inside a single run, so the shortening at the top of this file collapses the whole of that into
+    an instant and the fill mode then keeps each of them at the end of it, which is invisible. That
+    is the information being taken away rather than the movement, and it is the opposite of what
+    this file is for.
+
+    So they are stated outright, exactly as the reveal is above: no run at all, at full strength
+    from the first frame, for as long as the beat holding them lasts. The page owns their lifetime
+    and always has - each one goes because the beat after it arrives - so there is nothing here for
+    a closing keyframe to do that the beat ending does not already do better.
+  */
+  .card-play-overlay,
+  .card-play-overlay.is-travelling strong,
+  .turn-change-overlay,
+  .attack-result-overlay {
+    animation: none !important;
+  }
+
+  /*
+    The toast is the one of the four that is not drawn at all until its own run puts it up: it
+    rests at nothing and the run is what makes it visible. Told only to hold still it would hold
+    still at nothing, so it is told it is there as well.
+  */
+  .event-toast.is-visible {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
+  /*
     Nothing travels: a card that would have made a journey is simply where the journey would have
     left it, and the covers and halves that exist only in order to be moved are not shown at all.
     What the motion was there to say is said by the frame it settles on.

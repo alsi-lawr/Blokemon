@@ -161,7 +161,31 @@ public partial class Match
 
     private static double Pace(MatchPresentationBeat beat) => beat.WentBack ? WentBackPace : 1;
 
-    // How long a beat is held: what the cue on it takes, at the pace this beat is played at.
+    // How long a beat is held with nothing playing on it.
+    //
+    // There is no run for the beat to stay as long as here, so the only question left is how long a
+    // surface that is simply there has to be there in order to be read. The moving presentation
+    // answers a version of it already: it holds each of these surfaces at its own full strength for
+    // between about 0.26s - the veil over a card being played - and 0.51s, whose turn it is. A
+    // still surface needs less of that than a moving one, because it is legible from its first
+    // frame rather than once it has finished arriving, so the dwell sits in the middle of that band
+    // and comfortably above the quarter second a short line takes to read. It is short enough that
+    // a long presentation stays shorter than the same one at full length, which is what a player
+    // who asked for less movement should get rather than more waiting.
+    private const int StillBeat = 350;
+
+    // How long a beat is held: what the cue on it takes, at the pace this beat is played at, or a
+    // fixed dwell where there is no motion to take any time at all.
+    //
+    // The pace does not reach the still case, and that is the point of it rather than an oversight.
+    // A beat is played at a share of itself so that the run inside it can be shortened by exactly
+    // the same share and the two stay as long as each other; with the run suppressed rather than
+    // shortened there is nothing left to stay as long as, and a quarter of a floor on legibility is
+    // simply illegible. One number, for every beat, for the same reason: it is a floor, and a floor
+    // is not a thing to take a share of.
+    private int BeatHeldFor(MatchPresentationBeat beat) =>
+        _reducedMotion ? StillBeat : BeatDuration(beat);
+
     private static int BeatDuration(MatchPresentationBeat beat) =>
         (int)(CueDuration(beat) * Pace(beat));
 

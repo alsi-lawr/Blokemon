@@ -8,8 +8,9 @@ namespace Blokemon.Web.Client.Pages;
 //
 // A move is sent, and what comes back is played out beat by beat before the table settles on the
 // new frame. What is on screen in what order is worked out by MatchPresentationTimeline; the loop
-// here holds each beat for as long as the stylesheet takes to play it and owns the two things
-// that can interrupt it - the skip, and the reveal that refuses to be skipped.
+// here holds each beat for as long as the stylesheet takes to play it - or, where there is no
+// motion to play, for long enough to read it - and owns the two things that can interrupt it: the
+// skip, and the reveal that refuses to be skipped.
 public partial class Match
 {
     private Task ChooseAttack(MatchAttackView attack)
@@ -120,11 +121,13 @@ public partial class Match
             TaskCreationOptions.RunContinuationsAsynchronously
         );
         _skipSignal = skipSignal;
-        if (_reducedMotion)
-        {
-            // Reduced motion fast-forwards every decorative cue but still stops on reveals.
-            skipSignal.TrySetResult();
-        }
+
+        // Motion suppressed is not the presentation suppressed. Every beat is played, in order,
+        // whether or not there is a run to play it with: with the runs taken away each one puts its
+        // surface up at full strength and is held still for long enough to be read, which is the
+        // only way a player who has asked for stillness is told whose turn it is, what was played,
+        // and what an attack just did. Taking the movement away may not take the information with
+        // it, so nothing here decides which beats are worth showing.
         _animating = true;
         _presentedFrame = previousFrame ?? presentation.Steps[0].Frame;
         _overlay = MatchPresentationOverlay.Empty;
@@ -175,7 +178,15 @@ public partial class Match
                 _animationStatus = PublicText(beat.Cue.Label);
             }
             await InvokeAsync(StateHasChanged);
-            await PositionCueMotion(_presentationModule, _battleScreen, beat.Cue, beat.Overlay);
+
+            // Nothing is measured for a journey nothing is going to make. Every distance the
+            // browser is asked for here belongs to a run the stylesheet has already taken away
+            // where motion is suppressed, so asking for it costs the beat a round trip and a
+            // layout and changes nothing that is drawn.
+            if (!_reducedMotion)
+            {
+                await PositionCueMotion(_presentationModule, _battleScreen, beat.Cue, beat.Overlay);
+            }
 
             if (mandatoryReveal)
             {
@@ -189,7 +200,7 @@ public partial class Match
             }
             else
             {
-                await WaitForPresentation(BeatDuration(beat), skipSignal.Task);
+                await WaitForPresentation(BeatHeldFor(beat), skipSignal.Task);
             }
         }
 
