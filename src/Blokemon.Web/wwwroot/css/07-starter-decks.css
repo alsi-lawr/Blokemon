@@ -1,0 +1,253 @@
+.deck-opening-assembly {
+  position: relative;
+  z-index: 20;
+  width: var(--deck-box-width);
+  aspect-ratio: 1;
+  animation: ceremony-enter 0.9s var(--ceremony-ease) both;
+}
+
+.deck-opening-box {
+  position: absolute;
+  z-index: 30;
+  inset: 0;
+  filter: drop-shadow(0 26px 24px #000b);
+}
+
+.deck-opening--unboxing .deck-opening-box {
+  pointer-events: none;
+  animation: deck-lid-off 0.85s var(--ceremony-ease) both;
+}
+
+.deck-opening-tray {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  filter: drop-shadow(0 26px 24px #000b);
+}
+
+.deck-opening-tray--front {
+  z-index: 26;
+  filter: none;
+  clip-path: polygon(21.8% 12.6%, 70.5% 18.7%, 78% 15.2%, 78% 100%, 21.8% 100%);
+}
+
+.deck-opening--drawn .deck-opening-tray {
+  animation: fade-out 0.35s ease-in 2.9s both;
+}
+
+.deck-opening-deck {
+  position: absolute;
+  z-index: 23;
+  left: 50%;
+  top: 50%;
+  width: 46%;
+  aspect-ratio: 5 / 7;
+  transform: translate(calc(-50% - var(--deck-box-width) * 0.042), calc(-50% - var(--deck-box-width) * 0.01)) matrix(0.891, 0.11, 0, 0.97, 0, 0);
+}
+
+.deck-opening--drawn .deck-opening-deck {
+  animation:
+    deck-pull 1.3s var(--ceremony-ease) both,
+    fade-out 0.35s ease-in 2.9s both;
+}
+
+.deck-opening-deck-card {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transform-origin: 50% 118%;
+}
+
+.deck-opening--drawn .deck-opening-deck-card {
+  animation: deck-fan 1.65s var(--ceremony-ease) 0.6s both;
+}
+
+.deck-opening-deck-card .oche-card-back {
+  width: 100%;
+  box-shadow: 0 4px 8px #000a;
+}
+
+.opening-summary {
+  width: min(1320px, 94vw);
+  margin: 0 auto;
+  padding: 90px 0 50px;
+}
+
+.opening-summary h1 {
+  margin: 9px 0 25px;
+  font: 900 clamp(44px, 6vw, 80px) / 0.95 "Gillius ADF", serif;
+}
+
+.opening-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 18px;
+  margin: 30px 0;
+}
+
+.opening-summary-grid--deck {
+  --summary-stagger: 12ms;
+}
+
+.opening-summary-card {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  animation: fade-up 0.5s var(--ceremony-ease) both;
+  animation-delay: calc(var(--summary-index) * var(--summary-stagger, 45ms));
+}
+
+.opening-summary-card b {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.starter-shell {
+  max-width: 1280px;
+  margin: auto;
+}
+
+.starter-intro {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) auto;
+  align-items: center;
+  gap: 35px;
+}
+
+.starter-intro p {
+  color: #c8c2ad;
+  font-size: 19px;
+}
+
+.starter-boxes {
+  display: flex;
+  gap: 12px;
+}
+
+.starter-boxes > div {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.starter-boxes .packaging-art {
+  width: 150px;
+  height: 150px;
+}
+
+.starter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 34px;
+}
+
+.starter-option {
+  --accent: var(--green);
+  position: relative;
+  min-width: 0;
+  min-height: 585px;
+  padding: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid color-mix(in srgb, var(--accent), #1b1b14 55%);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 50% 10%, color-mix(in srgb, var(--accent), transparent 75%), transparent 38%),
+    linear-gradient(160deg, #1c2117, #11140e 70%);
+  transition: transform 0.25s, border-color 0.25s;
+}
+
+.starter-option:hover,
+.starter-option:focus-within {
+  border-color: var(--accent);
+  transform: translateY(-5px);
+}
+
+.starter-option.type-curry {
+  --accent: var(--curry);
+}
+
+.starter-option.type-sober {
+  --accent: var(--sober);
+}
+
+.starter-title {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.starter-title h2 {
+  margin: 5px 0 2px;
+}
+
+.type-dot {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--accent), transparent 40%);
+}
+
+.leader-stage {
+  height: 285px;
+  display: grid;
+  place-items: center;
+  margin: 2px 0 12px;
+}
+
+.leader-stage .card-face-host {
+  filter: drop-shadow(0 20px 24px rgb(0 0 0 / 52%));
+  transform: rotate(-2deg);
+}
+
+.starter-option.type-curry .leader-stage .card-face-host {
+  transform: rotate(2deg);
+}
+
+.deck-numbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 4px 0 16px;
+}
+
+.deck-numbers span {
+  padding: 10px;
+  border: 1px solid #3d3e30;
+  border-radius: 9px;
+  background: #0c0e0a;
+}
+
+.deck-numbers b,
+.deck-numbers small {
+  display: block;
+}
+
+.deck-numbers b {
+  font: 700 18px "Jost", sans-serif;
+}
+
+.deck-numbers small {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.starter-option p {
+  color: #c8c2ad;
+}
+
+.starter-option > button {
+  margin-top: auto;
+}
+

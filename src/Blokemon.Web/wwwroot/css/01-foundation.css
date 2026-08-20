@@ -1,0 +1,175 @@
+@font-face {
+  font-family: "Gillius";
+  src: url("/fonts/GilliusADF-Regular.otf");
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Gillius";
+  src: url("/fonts/GilliusADF-Bold.otf");
+  font-style: normal;
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Gillius ADF";
+  src: url("/fonts/GilliusADF-Regular.otf");
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Gillius ADF";
+  src: url("/fonts/GilliusADF-Bold.otf");
+  font-style: normal;
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Jost";
+  src: url("/fonts/Jost-700-Bold.otf");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Jost";
+  src: url("/fonts/Jost-900-Black.otf");
+  font-weight: 900;
+}
+
+:root {
+  color-scheme: dark;
+  --ink: #f8f1db;
+  --muted: #afa994;
+  --line: #494735;
+  --page: #090b08;
+  --panel: #12150f;
+  --panel-raised: #1a1e15;
+  --gold: #f4bd3f;
+  --gold-soft: #f6dda0;
+  --green: #6fa350;
+  --curry: #df6c2d;
+  --sober: #4d9fbe;
+  --danger: #e96752;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: var(--page);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 50% -20%, #2c2a19 0, transparent 38rem),
+    linear-gradient(#0b0d09, #080906);
+  font-family: "Gillius", system-ui, sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.45);
+  opacity: 0.5;
+}
+
+button,
+a,
+input,
+select,
+summary {
+  outline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--gold);
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+code {
+  overflow-wrap: anywhere;
+  color: var(--gold-soft);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Jost", sans-serif;
+  line-height: 1.04;
+}
+
+h1 {
+  margin-bottom: 0;
+  max-width: 900px;
+  font-size: clamp(38px, 5vw, 72px);
+  font-weight: 900;
+  letter-spacing: -0.045em;
+}
+
+h1:focus {
+  outline: none;
+}
+
+h2 {
+  font-size: 28px;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+small,
+.muted {
+  color: var(--muted);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+

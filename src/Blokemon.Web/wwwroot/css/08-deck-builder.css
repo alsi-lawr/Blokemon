@@ -1,0 +1,236 @@
+.deck-top h1 {
+  margin: 4px 0;
+  font-size: 48px;
+}
+
+.deck-name-input {
+  display: block;
+  width: min(620px, 62vw);
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  color: var(--ink);
+  background: transparent;
+  font: 900 48px/1.1 "Jost", sans-serif;
+  letter-spacing: -0.035em;
+}
+
+.deck-name-input:hover,
+.deck-name-input:focus {
+  border-bottom-color: var(--line);
+}
+
+.deck-top-actions,
+.deck-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.deck-tabs {
+  margin: -16px 0 20px;
+  overflow: auto;
+}
+
+.deck-draft-tab {
+  white-space: nowrap;
+}
+
+.deck-switch {
+  margin-bottom: 20px;
+}
+
+.deck-switch .actions {
+  margin-top: 11px;
+}
+
+.deck-builder-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 330px;
+  align-items: start;
+  gap: 18px;
+}
+
+.deck-panel {
+  padding: 17px;
+  border-radius: 16px;
+}
+
+.starter-summary {
+  position: sticky;
+  top: 86px;
+  border-color: #6b823e;
+  background: linear-gradient(145deg, #202b18, #11140f);
+}
+
+.leader-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.leader-row h3,
+.leader-row small {
+  display: block;
+  margin: 3px 0 0;
+}
+
+.progress {
+  height: 6px;
+  margin: 10px 0 16px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: #333426;
+}
+
+.progress i {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+
+.composition {
+  display: grid;
+  gap: 8px;
+}
+
+.composition > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.filters {
+  display: grid;
+  gap: 7px;
+  margin-top: 20px;
+}
+
+.filter {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--muted);
+  background: transparent;
+  text-align: left;
+}
+
+.filter.active,
+.filter:hover {
+  color: var(--ink);
+  background: #2b2d21;
+}
+
+.catalogue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.catalogue-card {
+  position: relative;
+  min-width: 0;
+  padding: 9px;
+  display: grid;
+  justify-items: center;
+  border: 1px solid #3e4032;
+  border-radius: 12px;
+  background: #13160f;
+}
+
+.catalogue-card .count-pill {
+  top: 14px;
+  right: 14px;
+  padding: 4px 7px;
+}
+
+.catalogue-card-name {
+  width: 100%;
+  margin-top: 5px;
+}
+
+.catalogue-card-name b,
+.catalogue-card-name small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stepper {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.stepper button,
+.stepper output {
+  padding: 7px;
+  border: 1px solid #474839;
+  border-radius: 7px;
+  color: var(--ink);
+  background: #21231b;
+  text-align: center;
+}
+
+.stepper output {
+  border-color: transparent;
+  background: #0d0f0b;
+}
+
+.decklist {
+  position: sticky;
+  top: 86px;
+  max-height: calc(100vh - 104px);
+  overflow: auto;
+}
+
+.deck-group {
+  margin-top: 14px;
+}
+
+.deck-group-title {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.deck-line {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 0;
+  border-bottom: 1px solid #2f3026;
+}
+
+.deck-line span {
+  min-width: 0;
+}
+
+.deck-line span b,
+.deck-line span small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.decklist > .button {
+  margin-top: 18px;
+}
+
+.match-start label {
+  display: block;
+  margin: 18px 0 7px;
+  font-weight: 700;
+}
+

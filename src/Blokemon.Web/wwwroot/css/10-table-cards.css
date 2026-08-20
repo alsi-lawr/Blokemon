@@ -1,0 +1,237 @@
+/*
+  The table is 900px tall at its most common desktop size, and it holds two Active cards leaning
+  away from the middle, a ribbon between them and the hand along the bottom. Both sides being
+  the same size, the room for the far one is the room the table has above it: at the full card
+  size that card runs off the top and loses its name, so the Active card is sized to the table
+  instead - the same on both sides, with the corona of each still whole.
+*/
+.battle-screen .card-face--battle {
+  --blokemon-card-scale: 0.215;
+}
+
+/*
+  Cards are press surfaces: a hold must not raise the browser's own text selection or callout,
+  and a drag across a card must still scroll the table rather than being swallowed.
+*/
+.field-card-button,
+.hand-card,
+.tray-card {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  touch-action: pan-x pan-y;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.field-card-button {
+  position: relative;
+  z-index: 1;
+  border-radius: 10px;
+}
+
+/*
+  The aura is the whole interaction model: a card that can be acted on breathes a soft white
+  bloom, and the one the player has already chosen holds a brighter, steady bloom and lifts.
+  Nothing here flashes or steps; the glow swells and settles on an ease-in-out curve.
+*/
+.battlefield.is-choosing .field-card-button:not(.is-aura) {
+  opacity: 0.42;
+  filter: saturate(0.55);
+}
+
+.is-aura {
+  z-index: 20;
+  cursor: pointer;
+}
+
+.field-card-button.is-aura-selected .battle-card-shell {
+  transform: translateY(-6px) scale(1.05);
+}
+
+.aura-counter {
+  position: absolute;
+  z-index: 12;
+  top: -9px;
+  left: -9px;
+  min-width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  padding: 0 5px;
+  border: 2px solid #dff0ff;
+  border-radius: 100px;
+  color: #10130e;
+  background: white;
+  box-shadow: 0 3px 10px #0009;
+  font: 700 12px "Jost", sans-serif;
+}
+
+/* The row never clips: a benched card's corona has to read whole, the same as anywhere else. */
+.bench-row {
+  position: relative;
+  z-index: 4;
+  grid-column: 2;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  max-width: 100%;
+  gap: 8px;
+  padding: 8px;
+  overflow: visible;
+}
+
+.bench-slot {
+  flex: 0 0 98px;
+  width: 98px;
+  height: 137px;
+  border: 1px dashed rgb(156 164 128 / 23%);
+  border-radius: 7px;
+}
+
+/* An empty Bench position only becomes a control while it is a legal destination. */
+button.bench-slot {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #10130e;
+  background: rgb(255 255 255 / 12%);
+  cursor: pointer;
+}
+
+/* An empty position glows the same way a card does: the same rim, the same revolving corona. */
+button.bench-slot.is-aura {
+  position: relative;
+  border: 2px solid rgb(255 255 255 / 88%);
+  box-shadow:
+    0 0 4px rgb(255 255 255 / 55%),
+    0 0 10px rgb(248 252 255 / 28%) inset;
+}
+
+button.bench-slot span {
+  color: white;
+  font: 700 10px "Jost", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.battle-card-shell {
+  position: relative;
+  width: max-content;
+  transition: transform 0.18s, filter 0.18s;
+}
+
+.battle-card-shell.is-selected {
+  filter: drop-shadow(0 0 10px rgb(244 189 63 / 70%));
+  transform: translateY(-3px);
+}
+
+.damage-badge {
+  position: absolute;
+  z-index: 10;
+  top: 13px;
+  right: -16px;
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #f6d9c9;
+  border-radius: 50%;
+  color: white;
+  background: var(--danger);
+  box-shadow: 0 6px 16px #0008;
+  font: 700 16px "Jost", sans-serif;
+}
+
+.hp-badge {
+  position: absolute;
+  z-index: 10;
+  right: 3px;
+  bottom: -8px;
+  padding: 4px 7px;
+  border: 1px solid #696349;
+  border-radius: 100px;
+  color: var(--ink);
+  background: #0b0d09ed;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.is-compact .damage-badge {
+  top: 2px;
+  right: -7px;
+  width: 28px;
+  height: 28px;
+  border-width: 2px;
+  font-size: 9px;
+}
+
+.is-compact .hp-badge {
+  display: none;
+}
+
+.attached-energy {
+  position: absolute;
+  z-index: -1;
+  left: -24px;
+  bottom: 12px;
+  display: flex;
+}
+
+.attached-energy .card-face-host {
+  margin-right: -30px;
+  filter: drop-shadow(0 4px 5px rgb(0 0 0 / 65%));
+}
+
+.is-compact .attached-energy {
+  left: -9px;
+  bottom: 4px;
+}
+
+.is-compact .attached-energy .card-face-host {
+  --blokemon-card-scale: 0.035;
+  margin-right: -20px;
+}
+
+.attached-tools {
+  position: absolute;
+  z-index: 9;
+  right: -22px;
+  bottom: 18px;
+  display: flex;
+}
+
+.attached-tools .card-face-host {
+  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 75%));
+}
+
+.is-compact .attached-tools {
+  right: -12px;
+  bottom: 5px;
+}
+
+.is-compact .attached-tools .card-face-host {
+  --blokemon-card-scale: 0.035;
+}
+
+.condition-row {
+  position: absolute;
+  z-index: 12;
+  top: -7px;
+  left: 50%;
+  display: flex;
+  gap: 3px;
+  transform: translateX(-50%);
+}
+
+.condition-row span {
+  padding: 3px 6px;
+  border: 1px solid #a65f7b;
+  border-radius: 100px;
+  color: #ffd6e5;
+  background: #351a26;
+  font-size: 8px;
+  white-space: nowrap;
+}
+

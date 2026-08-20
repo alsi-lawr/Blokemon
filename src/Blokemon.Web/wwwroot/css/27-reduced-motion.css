@@ -1,0 +1,102 @@
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /*
+    The aura is an affordance, not decoration: with motion suppressed it stops breathing and
+    holds its bloom, so every card that can be acted on still reads as glowing. The viewer and
+    the pop-up simply appear.
+  */
+  .action-sheet,
+  .action-sheet.is-centred,
+  .card-viewer,
+  .card-viewer .card-face-host {
+    animation: none !important;
+  }
+
+  /* The corona neither turns nor breathes: it holds one steady, even rim of light. */
+  .is-aura .battle-card-shell::after,
+  .is-aura .hand-card-visual::after,
+  .is-aura .tray-card-visual::after,
+  button.bench-slot.is-aura::after,
+  button.deck-stack.is-aura::after {
+    background: rgb(255 255 255 / 54%) !important;
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
+  .is-aura.is-aura-selected .battle-card-shell::after,
+  .is-aura.is-aura-selected .hand-card-visual::after,
+  .is-aura.is-aura-selected .tray-card-visual::after {
+    background: rgb(255 255 255 / 78%) !important;
+  }
+
+  /*
+    Nothing travels: a card that would have made a journey is simply where the journey would have
+    left it, and the covers and halves that exist only in order to be moved are not shown at all.
+    What the motion was there to say is said by the frame it settles on.
+  */
+  .card-play-overlay.is-travelling .card-travel,
+  .cue-draw .hand-card.is-cue-target .hand-card-visual,
+  .cue-draw .opponent-hand .oche-card-back.is-drawn,
+  .is-cue-landing {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  /*
+    The card being picked up is the one exception, and it is the whole point: it is on its way out
+    of the hand, so it keeps whatever the rule below says about being gone rather than being put
+    back at full strength. Suppressing a journey must not restore the thing the journey took away
+    - with no motion at all there is even less to explain a second copy of a card than there is
+    with it.
+  */
+  .cue-play .hand-card.is-cue-source .hand-card-visual,
+  .cue-evolve .hand-card.is-cue-source .hand-card-visual {
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .battle-card-shell.is-cue-gone,
+  .hand-card.is-cue-gone .hand-card-visual {
+    opacity: 0 !important;
+  }
+
+  .draw-cover,
+  .shuffle-riffle {
+    display: none !important;
+  }
+
+  /*
+    A blow neither travels nor is travelled into: both cards stand where they stand, and the
+    damage says itself with the number. Only the run is taken away - the card at either end keeps
+    whatever it is holding itself at for being chosen or selected, which the two runs never touch
+    anyway, because both of them start and end where the card already is.
+  */
+  .battle-card-shell.is-cue-striking,
+  .cue-damage .battle-card-shell.is-cue-struck {
+    animation: none !important;
+  }
+
+  /* The cards a shuffle is made of are not shown at all here, so the stack has to be the one
+     back it is drawn as the rest of the time rather than an empty box. */
+  .deck-stack.is-riffling > .deck-card-back > .oche-card-back {
+    opacity: 1 !important;
+  }
+
+  /* Nothing waits for anything else either: the spacing that lets a shuffle finish before the
+     stack is squared, and lets the hand open late, is time spent waiting and nothing else. */
+  .cue-shuffle.cue-actor-local .player-zone .deck-card-back,
+  .cue-shuffle.cue-actor-opponent .opponent-zone .deck-card-back,
+  .cue-draw .hand-card {
+    animation-delay: 0s !important;
+    transition-delay: 0s !important;
+  }
+}

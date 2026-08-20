@@ -1,0 +1,229 @@
+.action-dock {
+  position: absolute;
+  z-index: 35;
+  top: 54px;
+  right: 18px;
+  bottom: 18px;
+  width: 470px;
+  padding: 18px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #484938;
+  border-radius: 17px;
+  background: rgb(13 16 12 / 92%);
+  box-shadow: 0 16px 45px #0009;
+  backdrop-filter: blur(14px);
+  transition: opacity 0.2s ease, transform 0.24s ease;
+}
+
+.action-dock.is-retracted {
+  opacity: 0;
+  transform: translateX(calc(100% + 36px));
+  pointer-events: none;
+}
+
+.dock-toggle {
+  position: absolute;
+  z-index: 45;
+  top: 64px;
+  right: 496px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #5a5739;
+  border-radius: 50%;
+  color: var(--gold-soft);
+  background: rgb(10 12 9 / 92%);
+  box-shadow: 0 8px 24px #0008;
+  transition: right 0.24s ease;
+}
+
+.dock-toggle svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.24s ease;
+}
+
+.dock-open .dock-toggle svg {
+  transform: rotate(180deg);
+}
+
+.dock-retracted .dock-toggle {
+  right: 18px;
+}
+
+.dock-retracted .battlefield {
+  padding-right: 52px;
+}
+
+.dock-retracted .hand-zone {
+  width: min(1120px, calc(100% - 104px));
+}
+
+.selected-card-head {
+  width: 100%;
+  display: block;
+  padding: 0 5px;
+}
+
+.selected-card-head h2 {
+  margin: 3px 0;
+  overflow: hidden;
+  font-size: 20px;
+  text-overflow: ellipsis;
+}
+
+.selected-card-preview {
+  display: grid;
+  place-items: center;
+  min-height: 470px;
+}
+
+.state-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 12px 0;
+}
+
+.state-line span {
+  padding: 5px 8px;
+  border-radius: 13px;
+  background: #25271e;
+  font-size: 11px;
+}
+
+.selected-card-rules {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 14px;
+}
+
+.selected-card-rules h3 {
+  margin: 0;
+  color: var(--muted);
+  font: 700 10px "Jost", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.selected-card-rule {
+  padding: 10px 11px;
+  border: 1px solid #3f4132;
+  border-radius: 10px;
+  background: #171a14;
+}
+
+.selected-card-rule-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.selected-card-rule-head > span:first-child {
+  color: var(--gold-soft);
+  font: 700 9px "Jost", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.selected-card-rule-head b {
+  min-width: 0;
+  font: 700 13px "Jost", sans-serif;
+}
+
+.selected-card-rule-head strong {
+  margin-left: auto;
+  color: var(--gold);
+}
+
+.selected-card-rule p {
+  margin: 7px 0 0;
+  color: #d1cbb9;
+  font-size: 12px;
+  line-height: 1.38;
+}
+
+.attack-list {
+  display: grid;
+  gap: 9px;
+}
+
+.attack-button {
+  padding: 11px;
+  border: 1px solid #595941;
+  border-radius: 11px;
+  background: #1b1e16;
+  text-align: left;
+}
+
+.attack-button.ready {
+  border-color: #b7983d;
+  background: linear-gradient(145deg, #342d16, #1c1e15);
+}
+
+.attack-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attack-title b {
+  min-width: 0;
+  overflow: hidden;
+  font: 700 13px "Jost", sans-serif;
+  text-overflow: ellipsis;
+}
+
+.attack-title strong {
+  margin-left: auto;
+  color: var(--gold);
+}
+
+.attack-button small {
+  display: block;
+  margin-top: 6px;
+}
+
+.energy-cost {
+  display: flex;
+  gap: 2px;
+}
+
+.energy-cost i {
+  width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d3c88f;
+  border-radius: 50%;
+  color: white;
+  background: #65774d;
+  font: normal 8px "Jost", sans-serif;
+}
+
+.dock-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.dock-log {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.dock-log ol {
+  padding-left: 18px;
+}
+

@@ -1,0 +1,140 @@
+.hand-zone {
+  position: absolute;
+  z-index: 25;
+  left: 50%;
+  bottom: 36px;
+  width: min(980px, calc(100% - 520px));
+  height: 340px;
+  display: flex;
+  align-items: end;
+  justify-content: safe center;
+  padding: 120px 54px 12px;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+/*
+  The fan lives on the card's own button, not on an inner visual: the press surface then sits
+  exactly where the card appears, so a tap always reaches the card it looks like it will. The
+  inner visual is left free for the cue animations to drive.
+*/
+.hand-card {
+  position: relative;
+  /* Later in the hand means further forward, so every card keeps a strip of itself showing. */
+  z-index: calc(var(--hand-index, 0) + 1);
+  flex: 0 0 auto;
+  margin: 0 -30px;
+  overflow: visible;
+  pointer-events: auto;
+  transform-origin: 50% 130%;
+  /* The page measures each card's place in the fan; the arc itself is declared here. */
+  transform: rotate(var(--fan-turn, 0deg)) translateY(var(--fan-lift, 0px));
+  /*
+    Held cards make room for an arriving one rather than jumping aside for it, and each takes its
+    own time over it: a hand that moves as one block reads as a list being rewritten, and a hand
+    whose cards settle a moment apart reads as cards.
+  */
+  transition: transform calc(0.2s + var(--hand-index, 0) * 0.014s);
+}
+
+.hand-card-visual {
+  position: relative;
+  width: max-content;
+  height: max-content;
+  display: block;
+  transform-origin: 50% 130%;
+  transition: filter 0.2s;
+}
+
+/* The card being pressed or chosen comes to the front of the whole hand. */
+.hand-card:hover,
+.hand-card:focus-visible,
+.hand-card.is-aura-selected {
+  z-index: 60;
+  transform: translateY(-68px) rotate(0) scale(1.08);
+}
+
+.hand-card:focus-visible {
+  outline: none;
+}
+
+/* Hover keeps its own warm lift, but never paints over a white aura. */
+.hand-card:not(.is-aura):hover .hand-card-visual,
+.hand-card:not(.is-aura):focus-visible .hand-card-visual {
+  filter: drop-shadow(0 0 12px rgb(244 189 63 / 55%));
+}
+
+.hand-card:focus-visible .hand-card-visual {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/*
+  The aura glow lands after the hand's own hover rules so a glowing card in hand keeps its
+  aura while hovered, and after the board rules so both zones read identically.
+
+  It is a corona, not a bloom: a narrow white rim hugging the card's own edge, fading to nothing
+  about a dozen pixels out, with a brighter lobe that revolves slowly around the card while the
+  whole rim breathes. Keeping it that tight is what lets it live in every zone without any
+  boundary cutting across it, and the card itself never moves.
+*/
+.is-aura .battle-card-shell::after,
+.is-aura .hand-card-visual::after,
+.is-aura .tray-card-visual::after,
+button.bench-slot.is-aura::after,
+button.deck-stack.is-aura::after {
+  content: "";
+  position: absolute;
+  /*
+    Declared here as well as registered below, so a browser that cannot register an angle still
+    resolves it and shows the rim: it simply holds still instead of revolving.
+  */
+  --corona-angle: 0deg;
+  /* Behind the card and behind whatever is tucked under it, never over the printed face. */
+  z-index: -2;
+  inset: -8px;
+  border-radius: 14px;
+  /*
+    An even base rim so the card glows all the way round, and two soft lobes over it that are
+    what actually revolves. One blurred layer, one bounded extent: eight pixels of rim, softened
+    by the blur, and the glow has faded out entirely by about fifteen.
+  */
+  background:
+    conic-gradient(
+      from var(--corona-angle),
+      rgb(255 255 255 / 0%) 0deg,
+      rgb(255 255 255 / 88%) 58deg,
+      rgb(255 255 255 / 0%) 132deg,
+      rgb(255 255 255 / 0%) 196deg,
+      rgb(255 255 255 / 68%) 254deg,
+      rgb(255 255 255 / 0%) 328deg
+    ),
+    rgb(255 255 255 / 26%);
+  filter: blur(4px);
+  pointer-events: none;
+  animation:
+    aura-corona 9s linear infinite,
+    aura-breathe 3.2s ease-in-out infinite;
+}
+
+/*
+  The card already chosen holds its corona: brighter, and still turning, but it stops breathing.
+*/
+.is-aura.is-aura-selected .battle-card-shell::after,
+.is-aura.is-aura-selected .hand-card-visual::after,
+.is-aura.is-aura-selected .tray-card-visual::after {
+  background:
+    conic-gradient(
+      from var(--corona-angle),
+      rgb(255 255 255 / 0%) 0deg,
+      rgb(255 255 255 / 100%) 58deg,
+      rgb(255 255 255 / 0%) 132deg,
+      rgb(255 255 255 / 0%) 196deg,
+      rgb(255 255 255 / 88%) 254deg,
+      rgb(255 255 255 / 0%) 328deg
+    ),
+    rgb(255 255 255 / 46%);
+  opacity: 1;
+  animation: aura-corona 9s linear infinite;
+}
+

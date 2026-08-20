@@ -30,7 +30,14 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(StandaloneBrowser)' == 'true'">
-    <Content Include="../Blokemon.Web/wwwroot/app.css" Link="wwwroot/app.css" />
+    <!--
+      The styles are a set of files rather than one, so the whole folder comes across and keeps
+      its own name: index.html lists them in the order they have to load in.
+    -->
+    <Content
+      Include="../Blokemon.Web/wwwroot/css/**"
+      Link="wwwroot/css/%(RecursiveDir)%(Filename)%(Extension)"
+    />
     <Content Include="../Blokemon.Web/wwwroot/favicon.svg" Link="wwwroot/favicon.svg" />
     <Content
       Include="../../content/art/**"

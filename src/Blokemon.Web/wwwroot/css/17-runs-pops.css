@@ -1,0 +1,172 @@
+@keyframes event-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -35%);
+  }
+  20%,
+  85% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -62%);
+  }
+}
+
+@keyframes major-overlay-in {
+  0% {
+    opacity: 0;
+  }
+  16%,
+  78% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes turn-change-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  22%,
+  76% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes attack-result-pop {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  18%,
+  78% {
+    opacity: 1;
+  }
+}
+
+@keyframes chip-rise {
+  0% {
+    transform: translateY(180px) scale(0.72);
+  }
+  42% {
+    transform: translateY(-120px) scale(1.08);
+  }
+  82%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes chip-flip-badge {
+  0% {
+    transform: rotateX(68deg) rotateY(0);
+  }
+  82%,
+  100% {
+    transform: rotateX(0) rotateY(1800deg);
+  }
+}
+
+@keyframes chip-flip-blank {
+  0% {
+    transform: rotateX(68deg) rotateY(0);
+  }
+  82%,
+  100% {
+    transform: rotateX(0) rotateY(1980deg);
+  }
+}
+
+@keyframes chip-result-in {
+  0%,
+  74% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  84%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes source-action {
+  40% {
+    filter: drop-shadow(0 0 16px var(--gold));
+    transform: translateY(-32px) scale(1.06);
+  }
+}
+
+@keyframes target-pulse {
+  45% {
+    filter: drop-shadow(0 0 18px var(--danger));
+    transform: scale(1.05) rotate(-1deg);
+  }
+}
+
+/*
+  The corona turns by its own angle rather than by turning its box, so the glow revolves while
+  the rim it lives in stays exactly where the card is. Registering the angle is what makes it
+  animate as an angle instead of jumping between two strings.
+*/
+@property --corona-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes aura-corona {
+  to {
+    --corona-angle: 360deg;
+  }
+}
+
+/*
+  And it breathes: one continuous ease-in-out swell of the whole rim, no step, no colour change
+  and no hard edge.
+*/
+@keyframes aura-breathe {
+  0%,
+  100% {
+    opacity: 0.52;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-centre-in {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+@keyframes viewer-in {
+  from {
+    opacity: 0;
+    scale: 0.94;
+  }
+}
+
+@keyframes shuffle {
+  35% {
+    transform: translateX(-12px) rotate(-8deg);
+  }
+  70% {
+    transform: translateX(10px) rotate(7deg);
+  }
+}
+

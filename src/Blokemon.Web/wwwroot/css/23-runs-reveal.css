@@ -1,0 +1,187 @@
+@keyframes stack-rise {
+  0% {
+    transform: translate(-50%, calc(-50% + 3vh));
+  }
+
+  62% {
+    transform: translate(-50%, calc(-50% - 18.6vh));
+  }
+
+  100% {
+    transform: var(--stack-risen);
+  }
+}
+
+@keyframes stack-settle {
+  0% {
+    transform: var(--stack-risen);
+  }
+
+  70% {
+    transform: translate(-50%, calc(-50% + 22.4vh)) scale(0.54) rotate(2.4deg);
+  }
+
+  100% {
+    transform: var(--stack-rest);
+  }
+}
+
+@keyframes card-draw-first {
+  0% {
+    transform: translate(0.3vw, -11.5vh) rotate(-1deg) scale(0.62);
+  }
+
+  55% {
+    transform: translate(-0.3vw, 1.2vh) rotate(1.4deg) scale(1.02);
+  }
+
+  78% {
+    transform: translate(0.1vw, -0.4vh) rotate(-0.5deg) scale(0.997);
+  }
+
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes card-draw {
+  0% {
+    transform: translate(1vw, 26vh) rotate(4deg) scale(0.36);
+  }
+
+  55% {
+    transform: translate(-0.6vw, -1.5vh) rotate(-2.5deg) scale(1.03);
+  }
+
+  78% {
+    transform: translate(0.2vw, 0.6vh) rotate(0.8deg) scale(0.995);
+  }
+
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes card-flip {
+  0% {
+    transform: rotateY(0) scale(1);
+  }
+
+  50% {
+    transform: rotateY(96deg) scale(1.07) translateY(-1.2vh);
+  }
+
+  100% {
+    transform: rotateY(180deg) scale(1);
+  }
+}
+
+@keyframes card-leave {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+
+  26% {
+    opacity: 1;
+    transform: translate(3vw, -1.6vh) rotate(3deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-70vw, -7vh) rotate(-18deg) scale(0.85);
+  }
+}
+
+@keyframes face-sheen {
+  from {
+    opacity: 1;
+    background-position: 120% 0;
+  }
+
+  to {
+    opacity: 0;
+    background-position: -60% 0;
+  }
+}
+
+@keyframes deck-lid-off {
+  0% {
+    transform: none;
+  }
+
+  18% {
+    transform: translateY(-1.2vh) rotateZ(0.8deg);
+    animation-timing-function: ease-in-out;
+  }
+
+  32% {
+    transform: translateY(-0.35vh);
+    animation-timing-function: ease-in-out;
+  }
+
+  44% {
+    transform: translateY(-1.6vh) rotateZ(-0.6deg);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.7, 0.6);
+  }
+
+  100% {
+    transform: translateY(-92vh) rotateZ(7deg);
+  }
+}
+
+@keyframes deck-pull {
+  0% {
+    z-index: 23;
+    transform: translate(calc(-50% - var(--deck-box-width) * 0.042), calc(-50% - var(--deck-box-width) * 0.01)) matrix(0.891, 0.11, 0, 0.97, 0, 0);
+  }
+
+  44% {
+    z-index: 23;
+    transform: translate(-50%, calc(-50% - 28vh)) rotate(-1.5deg) scale(0.8);
+    animation-timing-function: ease-in-out;
+  }
+
+  46% {
+    z-index: 27;
+    transform: translate(-50%, calc(-50% - 27.6vh)) rotate(-1.2deg) scale(0.82);
+  }
+
+  85% {
+    z-index: 27;
+    transform: translate(-50%, calc(-50% - 1vh)) scale(1.17);
+  }
+
+  100% {
+    z-index: 27;
+    transform: translate(-50%, calc(-50% - 2vh)) scale(1.15);
+  }
+}
+
+@keyframes deck-fan {
+  0% {
+    transform: none;
+  }
+
+  35% {
+    transform: translateY(calc(var(--deck-depth) * -3px)) rotate(0deg);
+  }
+
+  100% {
+    transform: translateY(calc(var(--deck-depth) * -3px)) rotate(var(--fan-angle));
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes showcase-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.94);
+  }
+}
+

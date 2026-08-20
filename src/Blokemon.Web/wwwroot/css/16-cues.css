@@ -1,0 +1,253 @@
+.is-cue-source {
+  z-index: 9;
+}
+
+.is-cue-source:not(.hand-card),
+.hand-card.is-cue-source .hand-card-visual {
+  animation: source-action 0.7s ease-in-out;
+}
+
+.is-cue-target {
+  z-index: 8;
+}
+
+.is-cue-target:not(.hand-card),
+.hand-card.is-cue-target .hand-card-visual {
+  animation: target-pulse 0.7s ease-in-out;
+}
+
+.cue-setup .deck-card-back {
+  animation: shuffle 0.65s ease-in-out;
+}
+
+/*
+  ---- The table's motion language ------------------------------------------------------------
+
+  Every movement below is one card going from somewhere to somewhere else, and each is declared
+  against the marks the presenters put on the cards a cue is about. Two of them cross the table,
+  and the distance they cross depends on where the two ends happen to be at this size: those two
+  are given their offsets by matchPresentation.js, which measures the page and writes them here
+  as custom properties. Nothing is timed to anything but itself, and every duration is free to
+  change: the page holds each cue for as long as the run below takes, in one place.
+
+  Every journey below is timed linearly. A timing function is applied to each pair of keyframes
+  separately, so a curve laid over a path with waypoints in it eases into and out of every one of
+  them and the card visibly stops at each: the ease belongs in how far apart the waypoints are,
+  not in the curve between them. So the waypoints are placed at eased distances along the path -
+  p = u^2 / (u^2 + (1-u)^2) of the way there at u of the way through - and read at an even rate,
+  which is one continuous ease-in-out over the whole movement with no stop anywhere in it. A pop
+  or a fade is not a journey: it has one thing to say and no path to say it along, so it keeps a
+  curve of its own.
+
+  A Deck being shuffled parts into two piles side by side and the cards cross back one at a time,
+  and the stack squares up with a tap once the last of them has landed.
+*/
+.shuffle-riffle {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+
+/*
+  A card of the stack, seen from directly above the table like everything else on it: a whole
+  card back in the stack's own box. There is no edge-on view of a Deck from up here and nothing
+  thinner than a card, so a card crossing over the far pile says its height the only way this
+  angle can - by growing a little, and by casting further.
+*/
+.riffle-card {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/*
+  How far the piles part is a share of the card's own width, so the split keeps its shape at
+  every size. Each card leaves a little after the one before it and the two sides are offset from
+  each other, so they cross back one at a time rather than as two halves.
+*/
+.cue-shuffle .riffle-card {
+  animation-duration: 0.5s;
+  animation-timing-function: linear;
+  animation-delay: calc(var(--riffle-order, 0) * 0.031s);
+  animation-fill-mode: both;
+}
+
+.cue-shuffle .riffle-card.is-left {
+  animation-name: riffle-left;
+}
+
+.cue-shuffle .riffle-card.is-right {
+  animation-name: riffle-right;
+}
+
+/* While the stack is in pieces the pieces are the stack: the single back underneath them would
+   otherwise show through the gap they open, and the piles have to pass over their neighbours. */
+.deck-stack.is-riffling {
+  z-index: 8;
+}
+
+.deck-stack.is-riffling > .deck-card-back > .oche-card-back {
+  opacity: 0;
+}
+
+/* And the stack is squared up against the table once the last card is home - not while one is
+   still crossing - by the Deck that was shuffled and not by the other one. */
+.cue-shuffle.cue-actor-local .player-zone .deck-card-back,
+.cue-shuffle.cue-actor-opponent .opponent-zone .deck-card-back {
+  animation: deck-square-up 0.3s linear 0.86s;
+}
+
+/*
+  A card is drawn face down: the Deck presses under the pull, the card slips off the top, arcs
+  across the table, turns over at the top of the arc and settles into the hand. The card the
+  opponent draws makes the same journey and never turns over. The rest of the hand moves aside
+  for it, each held card on its own period so the fan opens rather than snapping.
+*/
+.cue-draw .hand-card.is-cue-target {
+  z-index: 30;
+}
+
+.cue-draw .hand-card.is-cue-target .hand-card-visual {
+  animation: draw-arc 0.86s linear;
+}
+
+.cue-draw .opponent-hand .oche-card-back.is-drawn {
+  position: relative;
+  z-index: 4;
+  animation: draw-arc-face-down 0.86s linear;
+}
+
+/* The fan opens over the back half of the journey rather than the whole of it: the card is
+   already coming down out of its arc before the hand moves aside, so the two read as one
+   movement. A card being pressed still answers at once. */
+.cue-draw .hand-card:not(.is-cue-target):not(:hover) {
+  transition-delay: 0.34s;
+}
+
+/* The face is covered until the card is edge on, and gone before there is any of it to see. */
+.draw-cover {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: block;
+  animation: draw-cover-lift 0.86s linear both;
+}
+
+.draw-cover .oche-card-back,
+.riffle-card .oche-card-back {
+  width: 100%;
+  height: 100%;
+}
+
+.cue-draw.cue-actor-local .player-zone .deck-card-back,
+.cue-draw.cue-actor-opponent .opponent-zone .deck-card-back {
+  animation: deck-press 0.86s linear;
+}
+
+/*
+  A card is played to a place, so it goes there: it dips as it is picked up, travels to the exact
+  spot it ends up standing in, and lands slightly past itself before settling. The place it
+  arrives at takes the landing once. A card with nowhere on the table to land keeps the plain
+  presentation it has always had, which is what the travelling mark distinguishes.
+
+  A card promoted onto another one is played in exactly the same way and was left out of this,
+  so the copy in the hand was never picked up and simply stood there while the card it is
+  travelled across the table.
+*/
+.cue-play .hand-card.is-cue-source .hand-card-visual,
+.cue-evolve .hand-card.is-cue-source .hand-card-visual {
+  animation: hand-play 0.52s linear both;
+}
+
+/*
+  ---- One card, one place --------------------------------------------------------------------
+
+  A card the presentation has carried out of somewhere is not drawn there any more. This is not
+  said by the cue that carried it: a command commits one state at its end, so between the card
+  leaving and the frame agreeing there are as many cues as the command feels like, and a rule
+  belonging to one of them stops applying at the next - which put the card back in the hand it had
+  already left, and stood a knocked-out Blokemon back up in the Oche. The presentation holds the
+  fact instead, for as long as it is true, and the run above is only how the card got to be gone.
+*/
+.battle-card-shell.is-cue-gone,
+.hand-card.is-cue-gone .hand-card-visual {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+  Not being drawn has to include not being pressable. A card is pressed by the surface around it
+  rather than by the card itself, so taking the pointer off the card leaves the press where it was
+  - a full-size target holding nothing, which a held press still opens the viewer on, because
+  reading a card is deliberately allowed while the table is busy and this is a card that is not
+  there to be read. The card cannot simply be taken out of the layout instead: it is still
+  finishing the run that shows it leaving, and that has to be visible while it plays.
+*/
+.hand-card.is-cue-gone,
+button:has(> .battle-card-shell.is-cue-gone) {
+  pointer-events: none;
+}
+
+.card-play-overlay.is-travelling {
+  animation: play-veil 1s ease-out both;
+}
+
+.card-travel {
+  display: block;
+}
+
+.card-play-overlay.is-travelling .card-travel {
+  animation: play-travel 1s linear both;
+}
+
+.card-play-overlay.is-travelling strong {
+  animation: play-name-out 1s ease-out both;
+}
+
+.is-cue-landing {
+  animation: slot-land 1s linear both;
+}
+
+/*
+  A blow, which is one movement told over several cues: the card winds up away from what it is
+  about to hit, throws itself across the gap, and is still recovering while the number it caused
+  is turning over. The declaration and the damage are separate cues and the engine can put others
+  between them - a beer mat tossed to find out whether the attack connects at all - so the mark
+  that carries the movement is put on by the presentation rather than by any one of them, and it
+  survives everything in between. The wait, if there is one, is the page's: it knows how long the
+  table will spend on whatever comes between, and holds the wind-up back by exactly that, so the
+  blow lands on the frame the number changes on however much happens first.
+
+  The distances are the gap the page measured and the card's own width; with nothing measured -
+  a swing at nothing, which is what a fumble is - the card turns where it stands. These come
+  after the plain source and target rules on purpose: for the card at either end of a blow, this
+  is what it is doing.
+*/
+.battle-card-shell.is-cue-striking {
+  z-index: 9;
+  animation: attack-lunge 1.4s linear var(--blow-lead, 0ms) both;
+}
+
+/*
+  What it lands on is marked from the declaration, because the blow has to be aimed before it is
+  thrown, but it is only knocked back at the moment the damage is on it.
+*/
+.cue-damage .battle-card-shell.is-cue-struck {
+  z-index: 8;
+  animation: attack-recoil 0.84s linear both;
+}
+
+.cue-damage .is-cue-target .damage-badge,
+.cue-heal .is-cue-target .damage-badge {
+  animation: counter-pop 0.55s ease-out;
+}
+
+.cue-knockout .is-cue-target {
+  animation: knockout 0.85s ease-in both;
+}
+
+.cue-prize .prizes i:first-child {
+  animation: prize-take 0.6s ease-out both;
+}
+

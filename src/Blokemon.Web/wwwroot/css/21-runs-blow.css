@@ -1,0 +1,161 @@
+/*
+  The blow itself. It winds up away from what it is aiming at - which is what makes it read as a
+  blow rather than a slide - throws itself across two thirds of the gap, and rocks itself still
+  again. Contact is at 47% of it, and the page holds the declaration for exactly that long, so
+  the card arrives on the beat the damage lands.
+*/
+@keyframes attack-lunge {
+  0% {
+    transform: translate(0, 0) rotate(0);
+    filter: drop-shadow(0 0 0 rgb(255 255 255 / 0%));
+  }
+
+  18% {
+    transform:
+      translate(
+        calc(var(--blow-x, 0) * var(--blow-width, 0px) * -0.14),
+        calc(var(--blow-y, 0) * var(--blow-width, 0px) * -0.14)
+      )
+      rotate(-1.8deg);
+  }
+
+  29% {
+    transform:
+      translate(
+        calc(var(--blow-x, 0) * var(--blow-width, 0px) * -0.16),
+        calc(var(--blow-y, 0) * var(--blow-width, 0px) * -0.16)
+      )
+      rotate(-2deg);
+  }
+
+  38% {
+    transform:
+      translate(
+        calc(var(--blow-x, 0) * var(--blow-gap, 0px) * 0.2),
+        calc(var(--blow-y, 0) * var(--blow-gap, 0px) * 0.2)
+      )
+      rotate(0.6deg);
+  }
+
+  /* Contact. */
+  47% {
+    transform:
+      translate(
+        calc(var(--blow-x, 0) * var(--blow-gap, 0px) * 0.65),
+        calc(var(--blow-y, 0) * var(--blow-gap, 0px) * 0.65)
+      )
+      rotate(3deg);
+    filter: drop-shadow(0 0 16px var(--gold));
+  }
+
+  59% {
+    transform:
+      translate(
+        calc(var(--blow-x, 0) * var(--blow-gap, 0px) * 0.31),
+        calc(var(--blow-y, 0) * var(--blow-gap, 0px) * 0.31)
+      )
+      rotate(1.2deg);
+  }
+
+  71% {
+    transform:
+      translate(
+        calc(var(--blow-x, 0) * var(--blow-width, 0px) * -0.11),
+        calc(var(--blow-y, 0) * var(--blow-width, 0px) * -0.11)
+      )
+      rotate(-1deg);
+  }
+
+  82% {
+    transform:
+      translate(
+        calc(var(--blow-x, 0) * var(--blow-width, 0px) * 0.05),
+        calc(var(--blow-y, 0) * var(--blow-width, 0px) * 0.05)
+      )
+      rotate(0.4deg);
+    filter: drop-shadow(0 0 0 rgb(255 255 255 / 0%));
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0);
+    filter: drop-shadow(0 0 0 rgb(255 255 255 / 0%));
+  }
+}
+
+/*
+  And what it lands on: pushed the way the blow was travelling, from the moment of contact, over
+  rather more than half the time the blow itself takes. This is what the struck card does instead
+  of the plain pulse every other cue target does, so it keeps the pulse's warning colour.
+*/
+@keyframes attack-recoil {
+  0% {
+    transform: translate(0, 0) rotate(0);
+    filter: drop-shadow(0 0 0 rgb(255 255 255 / 0%));
+  }
+
+  28% {
+    transform:
+      translate(
+        calc(var(--blow-x, 0) * var(--struck-width, 0px) * 0.18),
+        calc(var(--blow-y, 0) * var(--struck-width, 0px) * 0.18)
+      )
+      rotate(2.2deg);
+    filter: drop-shadow(0 0 18px var(--danger));
+  }
+
+  56% {
+    transform:
+      translate(
+        calc(var(--blow-x, 0) * var(--struck-width, 0px) * -0.09),
+        calc(var(--blow-y, 0) * var(--struck-width, 0px) * -0.09)
+      )
+      rotate(-1.2deg);
+  }
+
+  84% {
+    transform:
+      translate(
+        calc(var(--blow-x, 0) * var(--struck-width, 0px) * 0.02),
+        calc(var(--blow-y, 0) * var(--struck-width, 0px) * 0.02)
+      )
+      rotate(0.3deg);
+    filter: drop-shadow(0 0 0 rgb(255 255 255 / 0%));
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0);
+    filter: drop-shadow(0 0 0 rgb(255 255 255 / 0%));
+  }
+}
+
+@keyframes counter-pop {
+  50% {
+    transform: scale(1.35);
+  }
+}
+
+/*
+  A run that shows a card leaving has to say it starts visible. The card is already marked as gone
+  by the time this plays - that is what draws it nowhere else - and a keyframe left out is filled
+  in from the card as it stands, so the fade would read its own finished state as its start and
+  spend the whole run at nothing. The fall is left unsaid on purpose, so it begins from wherever
+  the card was actually standing.
+*/
+@keyframes knockout {
+  0% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(80px) rotate(9deg) scale(0.8);
+  }
+}
+
+@keyframes prize-take {
+  to {
+    opacity: 0;
+    transform: translate(-90px, 80px) rotate(-12deg);
+  }
+}
+

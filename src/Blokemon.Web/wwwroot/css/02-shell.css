@@ -1,0 +1,132 @@
+.app-shell {
+  min-height: 100vh;
+}
+
+.appbar {
+  position: sticky;
+  z-index: 100;
+  top: 0;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 28px;
+  border-bottom: 1px solid #363628;
+  background: rgb(11 13 9 / 92%);
+  backdrop-filter: blur(16px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-decoration: none;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  color: var(--gold);
+  font: 900 20px "Jost", sans-serif;
+  box-shadow: inset 0 0 0 4px #171a12;
+}
+
+.brand strong,
+.brand small {
+  display: block;
+}
+
+.brand strong {
+  font: 700 20px "Jost", sans-serif;
+}
+
+.brand small {
+  font-size: 11px;
+}
+
+.mainnav {
+  display: flex;
+  gap: 4px;
+}
+
+.mainnav a {
+  padding: 10px 11px;
+  border-radius: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.mainnav a:hover,
+.mainnav a.active {
+  color: var(--ink);
+  background: #24251c;
+}
+
+.mainnav a.active {
+  box-shadow: inset 0 -2px var(--gold);
+}
+
+.profile-chip {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.profile-chip strong,
+.profile-chip small {
+  display: block;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #536532;
+  color: white;
+  font-weight: 700;
+}
+
+.app-shell > main {
+  min-width: 0;
+  padding: 42px clamp(24px, 5vw, 76px) 72px;
+}
+
+.app-shell > main:has(.battle-screen) {
+  padding: 0;
+}
+
+.eyebrow {
+  color: var(--gold);
+  font: 700 11px "Jost", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.17em;
+}
+
+.topline,
+.deck-top {
+  display: flex;
+  align-items: end;
+  gap: 24px;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.dev-badge {
+  padding: 8px 12px;
+  border: 1px solid #665c37;
+  border-radius: 100px;
+  color: var(--gold-soft);
+  white-space: nowrap;
+  font-size: 13px;
+}
+

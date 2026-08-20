@@ -1,0 +1,44 @@
+.match-log {
+  margin-top: 20px;
+}
+
+.profile-setup {
+  min-height: calc(100vh - 180px);
+  display: grid;
+  place-items: center;
+}
+
+.setup-card {
+  width: min(620px, 100%);
+  padding: clamp(30px, 6vw, 64px);
+}
+
+.setup-card h1 {
+  font-size: clamp(44px, 8vw, 76px);
+}
+
+.setup-card label {
+  display: block;
+  margin: 28px 0 8px;
+  font-weight: 700;
+}
+
+.setup-card input {
+  width: 100%;
+}
+
+.setup-card button {
+  margin-top: 12px;
+}
+
+.facts > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.facts dd {
+  margin: 0;
+}
+

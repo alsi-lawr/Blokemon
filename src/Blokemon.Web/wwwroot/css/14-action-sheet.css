@@ -1,0 +1,194 @@
+/*
+  One pop-up surface carries every step of the interaction: the destination prompt, the list of
+  available moves, each choice step, and the final confirmation. It sits bottom-right beside the
+  table on a wide screen and becomes a bottom sheet on a phone. A forced decision centres the
+  same surface over a dimmed table.
+*/
+.action-sheet {
+  position: fixed;
+  z-index: 200;
+  right: 18px;
+  bottom: 18px;
+  width: 354px;
+  max-height: min(72dvh, 640px);
+  overflow: auto;
+  padding: 15px 18px 18px;
+  border: 1px solid #75683d;
+  border-radius: 17px;
+  background: #1b1e16;
+  box-shadow: 0 20px 55px #000d;
+  transform-origin: bottom right;
+  animation: action-pop 0.2s ease-out both;
+}
+
+.action-sheet > .eyebrow {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.action-sheet > strong {
+  display: block;
+  font: 700 18px "Jost", sans-serif;
+}
+
+.action-sheet.is-centred {
+  right: auto;
+  bottom: auto;
+  inset: 50% auto auto 50%;
+  width: min(420px, calc(100vw - 32px));
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  border-color: #8d7f4c;
+  box-shadow: 0 24px 80px #000e;
+  animation: sheet-centre-in 0.22s ease-out both;
+}
+
+/*
+  A decision the sheet answers itself dims the table behind it. A decision the player answers by
+  tapping the table must not: the scrim would swallow the auras it is asking them to find.
+*/
+.action-sheet.is-modal {
+  box-shadow: 0 24px 80px #000e, 0 0 0 100vmax rgb(3 4 3 / 62%);
+}
+
+.sheet-detail {
+  margin: 7px 0 0;
+  color: var(--muted);
+}
+
+.sheet-effect {
+  margin: 9px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--gold);
+  color: #d1cbb9;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.sheet-options {
+  display: grid;
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.sheet-option {
+  min-height: 44px;
+  padding: 10px 13px;
+  border: 1px solid #5c5b43;
+  border-radius: 11px;
+  color: var(--ink);
+  background: #23261c;
+  text-align: left;
+  font-weight: 700;
+}
+
+.sheet-option.is-primary,
+.sheet-option.is-picked {
+  border-color: #b7983d;
+  background: linear-gradient(145deg, #3a3117, #1f2216);
+}
+
+.sheet-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 13px;
+}
+
+.sheet-stepper button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #5c5b43;
+  border-radius: 50%;
+  color: var(--ink);
+  background: #23261c;
+  font-size: 20px;
+}
+
+.sheet-stepper b {
+  min-width: 34px;
+  text-align: center;
+  font: 700 20px "Jost", sans-serif;
+}
+
+/*
+  Cards the table cannot show - a Deck search, the Discard pile - glow inside the sheet with the
+  same aura and the same press behaviour they would have on the table.
+*/
+.sheet-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 15px 2px 2px;
+}
+
+.tray-card {
+  position: relative;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tray-card-visual {
+  position: relative;
+  display: block;
+  width: max-content;
+  transition: transform 0.18s, filter 0.18s;
+}
+
+.tray-card.is-aura-selected .tray-card-visual {
+  transform: translateY(-5px) scale(1.04);
+}
+
+.tray-card:focus-visible {
+  outline: none;
+}
+
+.tray-card:focus-visible .tray-card-visual {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.sheet-assignments {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.sheet-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.sheet-buttons button {
+  min-height: 44px;
+}
+
+/*
+  The card viewer: press and hold any card in any zone. The face keeps its printed aspect ratio
+  and fills the viewport minus a 20px margin, whichever axis binds first.
+*/
+.card-viewer {
+  position: fixed;
+  z-index: 400;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(2 3 2 / 86%);
+  backdrop-filter: blur(7px);
+  animation: fade-in 0.16s ease-out both;
+}
+
+.card-viewer .card-face-host {
+  --blokemon-card-scale: var(--viewer-scale, 0.5);
+  filter: drop-shadow(0 26px 60px #000c);
+  animation: viewer-in 0.2s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+

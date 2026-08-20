@@ -1,0 +1,345 @@
+.battle-screen {
+  position: relative;
+  height: calc(100dvh - 68px);
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background:
+    radial-gradient(ellipse at 50% 45%, #24341e 0, #11170e 50%, #090b08 85%),
+    #090b08;
+}
+
+.battle-screen:fullscreen {
+  width: 100vw;
+  height: 100dvh;
+}
+
+.battle-canvas {
+  position: relative;
+  width: 100%;
+  min-width: 1120px;
+  height: max(100%, 820px);
+}
+
+.battle-hud {
+  position: absolute;
+  z-index: 40;
+  inset: 14px 18px auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.round-chip {
+  background: rgb(10 12 9 / 84%);
+  backdrop-filter: blur(12px);
+}
+
+.round-chip {
+  padding: 8px 12px;
+  border: 1px solid #5a5739;
+  border-radius: 18px;
+}
+
+.skip-animation {
+  pointer-events: auto;
+}
+
+/* Only what belongs to no card lives in the HUD: End turn, Resign and the full-screen toggle. */
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  pointer-events: auto;
+}
+
+.hud-button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #5a5739;
+  border-radius: 19px;
+  color: var(--ink);
+  background: rgb(10 12 9 / 88%);
+  backdrop-filter: blur(12px);
+  font: 700 12px "Jost", sans-serif;
+}
+
+.hud-end-turn {
+  border-color: #b7983d;
+  color: #f6e6ae;
+  background: linear-gradient(145deg, rgb(58 49 23 / 94%), rgb(24 27 18 / 94%));
+}
+
+.hud-resign {
+  color: var(--muted);
+}
+
+.fullscreen-toggle {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #5a5739;
+  border-radius: 50%;
+  color: var(--gold-soft);
+  background: rgb(10 12 9 / 84%);
+  backdrop-filter: blur(12px);
+  pointer-events: auto;
+}
+
+.fullscreen-toggle svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fullscreen-exit {
+  display: none;
+}
+
+.battle-screen:fullscreen .fullscreen-enter {
+  display: none;
+}
+
+.battle-screen:fullscreen .fullscreen-exit {
+  display: block;
+}
+
+.battle-error {
+  position: absolute;
+  z-index: 80;
+  top: 60px;
+  left: 20px;
+  width: min(440px, calc(100% - 40px));
+}
+
+/*
+  Both sides get the same share of the table, so the two halves mirror each other exactly: the
+  Active card that leans out of one row towards the edge of the table has the same room to lean
+  into as the other, and neither is cut off by the edge.
+*/
+.battlefield {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr 42px 1fr;
+  gap: 3px;
+  padding: 48px 510px 350px 52px;
+}
+
+/*
+  The two halves are the same table seen from either end: the same four columns in the same
+  places - Deck, the Kit in play, the field, the Prize cards - so every card on one side lines
+  up with its counterpart on the other. The Kit column is always there, empty or not, so a Kit
+  coming into play or leaving it moves nothing else on the table.
+*/
+.side-zone {
+  position: relative;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 112px 112px minmax(0, 1fr) 90px;
+  align-items: center;
+  border-radius: 24px;
+}
+
+.side-zone.has-turn {
+  background: radial-gradient(ellipse, rgb(244 189 63 / 6%), transparent 68%);
+}
+
+.chooser {
+  width: fit-content;
+  margin-top: 4px;
+  padding: 4px 7px;
+  border: 1px solid #6d623c;
+  border-radius: 100px;
+  color: var(--gold-soft);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.deck-stack,
+.prize-rack {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+}
+
+/* Positioned so the corona it can wear has the stack itself to sit around. The phone table
+   places it absolutely instead, which serves the same purpose. */
+.deck-stack {
+  position: relative;
+  grid-column: 1;
+}
+
+/* The Deck only becomes a control while a draw is waiting on it, and looks no different for it:
+   the button carries none of a button's own furniture, so the stack keeps its exact box. */
+button.deck-stack {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.prize-rack {
+  grid-column: 4;
+}
+
+/* Positioned so the halves a shuffle splits it into have the stack's own box to riffle in. */
+.deck-card-back {
+  position: relative;
+  width: 96px;
+  aspect-ratio: 5 / 7;
+  margin-bottom: 8px;
+  filter: drop-shadow(-5px 5px 0 #1f2118) drop-shadow(-5px 5px 0 #353527);
+}
+
+.oche-card-back {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+.deck-stack b,
+.deck-stack small,
+.prize-rack b {
+  position: relative;
+  z-index: 2;
+  color: var(--muted);
+  font: 700 11px "Jost", sans-serif;
+}
+
+.prizes {
+  display: grid;
+  grid-template-columns: repeat(2, 31px);
+  gap: 4px;
+}
+
+.prizes .oche-card-back {
+  width: 31px;
+}
+
+/*
+  A Kit played to the table stays in play as a public card, so it is dealt onto the table itself
+  rather than named in the HUD. Only one is ever on the table at a time, and it belongs to the
+  side that played it, so each side keeps a place for it beside its own Deck: the card sits in
+  the flow of the row rather than over it, which is what keeps it clear of the Active card at
+  every width. The place is kept whether or not a card is standing in it, so the rest of the
+  table never moves. The slot never clips, so the corona reads whole here as everywhere.
+*/
+.local-slot {
+  position: relative;
+  z-index: 6;
+  grid-row: 1;
+  grid-column: 2;
+  display: grid;
+  grid-template-rows: auto 12px;
+  justify-items: center;
+  align-content: center;
+  gap: 3px;
+  overflow: visible;
+}
+
+/* An empty place reads the way an empty Bench position does: an outline, and nothing else. */
+.local-slot-empty {
+  width: 98px;
+  height: 137px;
+  border: 1px dashed rgb(156 164 128 / 23%);
+  border-radius: 7px;
+}
+
+.local-slot-label {
+  color: #687057;
+  font: 700 9px "Jost", sans-serif;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/*
+  The opponent holds their cards at their own end of the table, past the far side of their Bench:
+  the middle of the table is where the two Active cards face each other, so nothing of theirs is
+  laid across it. The fan takes the Bench's own column, so it stays centred over the Bench however
+  the field is divided, and tucks behind the row it is dealt from - the same relationship the
+  phone table gives it in the strip above the Bench.
+*/
+.opponent-hand {
+  position: absolute;
+  z-index: 3;
+  grid-row: 1;
+  grid-column: 2;
+  top: -40px;
+  left: 50%;
+  display: flex;
+  transform: translateX(-50%);
+}
+
+.opponent-hand .oche-card-back {
+  width: 52px;
+  margin-left: -23px;
+  box-shadow: 0 8px 14px #0008;
+  transform: rotate(3deg);
+}
+
+.opponent-hand .oche-card-back:first-child {
+  margin-left: 0;
+}
+
+.field-center {
+  position: relative;
+  grid-column: 3;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.65fr) minmax(420px, 1.35fr);
+  align-items: center;
+  justify-items: center;
+  gap: 20px;
+}
+
+.active-slot {
+  position: relative;
+  height: 100%;
+  min-width: 250px;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #b2c57a22, transparent 65%);
+}
+
+.opponent-zone .active-slot > .field-card-button {
+  position: absolute;
+  bottom: 0;
+}
+
+.player-zone .active-slot > .field-card-button {
+  position: absolute;
+  top: 0;
+}
+
+.active-slot::after {
+  content: "ACTIVE";
+  position: absolute;
+  z-index: 0;
+  bottom: 3px;
+  color: #687057;
+  font: 700 10px "Jost", sans-serif;
+  letter-spacing: 0.15em;
+}
+
+.empty-slot,
+.empty-hand {
+  color: #79806a;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+}
+

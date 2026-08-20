@@ -1,0 +1,269 @@
+/*
+  The arc: the card leaves the Deck small and turned away, rises over the middle of its journey,
+  is edge on at the top of it - which is where the cover comes off and the face arrives - and
+  settles into its place in the fan, rocking once or twice as it lands.
+
+  The ten steps below are evenly spaced in time and unevenly spaced along the path: barely
+  anything in the first of them, a third of the distance over the middle two, and almost nothing
+  in the last. Read at an even rate that is one unbroken ease-in-out, and the follow-through is
+  the tail of it rather than a shove after the card has already arrived.
+*/
+@keyframes draw-arc {
+  0% {
+    transform:
+      translate(var(--draw-from-x, -420px), var(--draw-from-y, -190px))
+      rotate(-20deg)
+      scale(var(--draw-from-scale, 0.62))
+      scaleX(1);
+  }
+
+  10% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.988),
+        calc(var(--draw-from-y, -190px) * 0.988 - var(--draw-lift, 92px) * 0.038)
+      )
+      rotate(-19.76deg)
+      scale(calc(var(--draw-from-scale, 0.62) * 0.988 + 0.012))
+      scaleX(1);
+  }
+
+  20% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.941),
+        calc(var(--draw-from-y, -190px) * 0.941 - var(--draw-lift, 92px) * 0.184)
+      )
+      rotate(-18.82deg)
+      scale(calc(var(--draw-from-scale, 0.62) * 0.941 + 0.059))
+      scaleX(0.93);
+  }
+
+  30% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.845),
+        calc(var(--draw-from-y, -190px) * 0.845 - var(--draw-lift, 92px) * 0.468)
+      )
+      rotate(-16.9deg)
+      scale(calc(var(--draw-from-scale, 0.62) * 0.845 + 0.155))
+      scaleX(0.72);
+  }
+
+  40% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.692),
+        calc(var(--draw-from-y, -190px) * 0.692 - var(--draw-lift, 92px) * 0.824)
+      )
+      rotate(-13.84deg)
+      scale(calc(var(--draw-from-scale, 0.62) * 0.692 + 0.308))
+      scaleX(0.4);
+  }
+
+  /* The top of the arc, where the card is edge on and the cover comes off it. */
+  50% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.5),
+        calc(var(--draw-from-y, -190px) * 0.5 - var(--draw-lift, 92px))
+      )
+      rotate(-10deg)
+      scale(calc(var(--draw-from-scale, 0.62) * 0.5 + 0.5))
+      scaleX(0.03);
+  }
+
+  60% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.308),
+        calc(var(--draw-from-y, -190px) * 0.308 - var(--draw-lift, 92px) * 0.824)
+      )
+      rotate(-6.16deg)
+      scale(calc(var(--draw-from-scale, 0.62) * 0.308 + 0.692))
+      scaleX(0.4);
+  }
+
+  70% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.155),
+        calc(var(--draw-from-y, -190px) * 0.155 - var(--draw-lift, 92px) * 0.468)
+      )
+      rotate(-3.1deg)
+      scale(calc(var(--draw-from-scale, 0.62) * 0.155 + 0.845))
+      scaleX(0.72);
+  }
+
+  80% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.059),
+        calc(var(--draw-from-y, -190px) * 0.059 - var(--draw-lift, 92px) * 0.184)
+      )
+      rotate(-1.18deg)
+      scale(calc(var(--draw-from-scale, 0.62) * 0.059 + 0.941))
+      scaleX(0.93);
+  }
+
+  90% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.012),
+        calc(var(--draw-from-y, -190px) * 0.012 - var(--draw-lift, 92px) * 0.038)
+      )
+      rotate(1.4deg)
+      scale(1.018)
+      scaleX(1);
+  }
+
+  93% {
+    transform: translate(0, 0) rotate(0.6deg) scale(0.998) scaleX(1);
+  }
+
+  96% {
+    transform: translate(0, 0) rotate(-0.2deg) scale(1.004) scaleX(1);
+  }
+
+  98% {
+    transform: translate(0, 0) rotate(0.2deg) scale(0.999) scaleX(1);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0) scale(1) scaleX(1);
+  }
+}
+
+/*
+  The same journey on the same schedule, by a card that never turns over. It ends where a back in
+  the strip rests, which is turned a little, and it leaves the Deck at the Deck's own size: the
+  page measures both, so the card shrinks into the strip rather than growing into it.
+*/
+@keyframes draw-arc-face-down {
+  0% {
+    transform:
+      translate(var(--draw-from-x, -420px), var(--draw-from-y, -190px))
+      rotate(11deg)
+      scale(var(--draw-from-scale, 1.28));
+  }
+
+  10% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.988),
+        calc(var(--draw-from-y, -190px) * 0.988 - var(--draw-lift, 74px) * 0.038)
+      )
+      rotate(10.9deg)
+      scale(calc(var(--draw-from-scale, 1.28) * 0.988 + 0.012));
+  }
+
+  20% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.941),
+        calc(var(--draw-from-y, -190px) * 0.941 - var(--draw-lift, 74px) * 0.184)
+      )
+      rotate(10.53deg)
+      scale(calc(var(--draw-from-scale, 1.28) * 0.941 + 0.059));
+  }
+
+  30% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.845),
+        calc(var(--draw-from-y, -190px) * 0.845 - var(--draw-lift, 74px) * 0.468)
+      )
+      rotate(9.76deg)
+      scale(calc(var(--draw-from-scale, 1.28) * 0.845 + 0.155));
+  }
+
+  40% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.692),
+        calc(var(--draw-from-y, -190px) * 0.692 - var(--draw-lift, 74px) * 0.824)
+      )
+      rotate(8.54deg)
+      scale(calc(var(--draw-from-scale, 1.28) * 0.692 + 0.308));
+  }
+
+  50% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.5),
+        calc(var(--draw-from-y, -190px) * 0.5 - var(--draw-lift, 74px))
+      )
+      rotate(7deg)
+      scale(calc(var(--draw-from-scale, 1.28) * 0.5 + 0.5));
+  }
+
+  60% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.308),
+        calc(var(--draw-from-y, -190px) * 0.308 - var(--draw-lift, 74px) * 0.824)
+      )
+      rotate(5.46deg)
+      scale(calc(var(--draw-from-scale, 1.28) * 0.308 + 0.692));
+  }
+
+  70% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.155),
+        calc(var(--draw-from-y, -190px) * 0.155 - var(--draw-lift, 74px) * 0.468)
+      )
+      rotate(4.24deg)
+      scale(calc(var(--draw-from-scale, 1.28) * 0.155 + 0.845));
+  }
+
+  80% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.059),
+        calc(var(--draw-from-y, -190px) * 0.059 - var(--draw-lift, 74px) * 0.184)
+      )
+      rotate(3.47deg)
+      scale(calc(var(--draw-from-scale, 1.28) * 0.059 + 0.941));
+  }
+
+  90% {
+    transform:
+      translate(
+        calc(var(--draw-from-x, -420px) * 0.012),
+        calc(var(--draw-from-y, -190px) * 0.012 - var(--draw-lift, 74px) * 0.038)
+      )
+      rotate(2.6deg)
+      scale(calc(var(--draw-from-scale, 1.28) * 0.012 + 0.988));
+  }
+
+  93% {
+    transform: translate(0, 0) rotate(3.3deg) scale(0.998);
+  }
+
+  96% {
+    transform: translate(0, 0) rotate(2.9deg) scale(1.004);
+  }
+
+  98% {
+    transform: translate(0, 0) rotate(3.1deg) scale(0.999);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(3deg) scale(1);
+  }
+}
+
+/* Off at the exact moment the card is edge on, so neither side of it is ever seen twice. */
+@keyframes draw-cover-lift {
+  0%,
+  49.9% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+

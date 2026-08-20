@@ -1,0 +1,170 @@
+.card-face-host {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: max-content;
+  height: max-content;
+  line-height: 1;
+  vertical-align: top;
+}
+
+.card-face--tiny {
+  --blokemon-card-scale: 0.055;
+}
+
+.card-face--bench {
+  --blokemon-card-scale: 0.13;
+}
+
+.card-face--hand {
+  --blokemon-card-scale: 0.23;
+}
+
+.card-face--battle {
+  --blokemon-card-scale: 0.26;
+}
+
+.card-face--catalogue {
+  --blokemon-card-scale: 0.21;
+}
+
+.card-face--leader {
+  --blokemon-card-scale: 0.24;
+}
+
+.card-face--preview {
+  --blokemon-card-scale: 0.43;
+}
+
+.card-face--showcase {
+  --blokemon-card-scale: 0.5;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 18px;
+}
+
+.card-tile {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+}
+
+.card-tile > b,
+.card-tile > span:not(.qty) {
+  width: 100%;
+}
+
+.card-tile > b {
+  margin-top: 7px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-tile > span:not(.qty) {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.card-showcase-trigger {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 13px;
+  color: inherit;
+  background: transparent;
+}
+
+.card-showcase-trigger:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 5px;
+}
+
+.card-showcase {
+  max-width: min(94vw, 760px);
+  max-height: calc(100dvh - 36px);
+  padding: 0;
+  overflow: auto;
+  border: 1px solid #655c3e;
+  border-radius: 26px;
+  color: var(--ink);
+  background: radial-gradient(circle at 50% 34%, #28321f, #10130e 68%);
+  box-shadow: 0 34px 100px #000;
+}
+
+.card-showcase[open] {
+  animation: showcase-in 0.4s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.card-showcase::backdrop {
+  background: rgb(2 3 2 / 82%);
+  backdrop-filter: blur(9px);
+}
+
+.card-showcase[open]::backdrop {
+  animation: fade-in 0.4s ease-out both;
+}
+
+.card-showcase__surface {
+  min-width: 560px;
+  padding: 24px 52px 40px;
+}
+
+.card-showcase__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 12px;
+}
+
+.card-showcase__title {
+  margin: 0;
+  font: 800 34px "Gillius ADF", serif;
+}
+
+.card-showcase__close-form {
+  margin-left: auto;
+}
+
+.card-showcase__close {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #4b4c3b;
+  border-radius: 50%;
+  color: var(--ink);
+  background: #292c22;
+  font-size: 25px;
+}
+
+.card-showcase__close:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.card-showcase__card {
+  display: grid;
+  place-items: center;
+}
+
+.qty,
+.count-pill {
+  position: absolute;
+  z-index: 5;
+  border: 1px solid #5a543e;
+  border-radius: 100px;
+  color: var(--ink);
+  background: rgb(9 11 8 / 92%);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.qty {
+  top: 7px;
+  right: 7px;
+  padding: 5px 8px;
+}
+

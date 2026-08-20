@@ -1,0 +1,296 @@
+/*
+  The journey a played card makes: picked up with a dip, carried to the place it ends up in, and
+  set down slightly past itself. Both ends are measured by the page; with nothing measured the
+  card simply lifts where it stands.
+*/
+@keyframes play-travel {
+  /* Picked up: the card dips where it stands and is back where it started before it goes. */
+  0% {
+    transform:
+      translate(var(--play-from-x, 0px), var(--play-from-y, 0px))
+      rotate(0)
+      scale(var(--play-from-scale, 1));
+  }
+
+  3% {
+    transform:
+      translate(
+        var(--play-from-x, 0px),
+        calc(var(--play-from-y, 0px) + var(--play-dip, 12px) * 0.5)
+      )
+      rotate(-0.8deg)
+      scale(calc(var(--play-from-scale, 1) * 0.989));
+  }
+
+  6% {
+    transform:
+      translate(var(--play-from-x, 0px), calc(var(--play-from-y, 0px) + var(--play-dip, 12px)))
+      rotate(-1.6deg)
+      scale(calc(var(--play-from-scale, 1) * 0.978));
+  }
+
+  9% {
+    transform:
+      translate(
+        var(--play-from-x, 0px),
+        calc(var(--play-from-y, 0px) + var(--play-dip, 12px) * 0.5)
+      )
+      rotate(-0.8deg)
+      scale(calc(var(--play-from-scale, 1) * 0.989));
+  }
+
+  /* And then the journey, on the same eased spacing every journey on this table uses. */
+  12% {
+    transform:
+      translate(var(--play-from-x, 0px), var(--play-from-y, 0px))
+      rotate(0)
+      scale(var(--play-from-scale, 1));
+  }
+
+  18.8% {
+    transform:
+      translate(
+        calc(var(--play-from-x, 0px) * 0.988 + var(--play-to-x, 0px) * 0.012),
+        calc(
+          var(--play-from-y, 0px) * 0.988 + var(--play-to-y, 0px) * 0.012 -
+          var(--play-lift, 120px) * 0.038
+        )
+      )
+      rotate(0.09deg)
+      scale(
+        calc((var(--play-from-scale, 1) * 0.988 + var(--play-to-scale, 1) * 0.012) * 1.003)
+      );
+  }
+
+  25.6% {
+    transform:
+      translate(
+        calc(var(--play-from-x, 0px) * 0.941 + var(--play-to-x, 0px) * 0.059),
+        calc(
+          var(--play-from-y, 0px) * 0.941 + var(--play-to-y, 0px) * 0.059 -
+          var(--play-lift, 120px) * 0.184
+        )
+      )
+      rotate(0.44deg)
+      scale(
+        calc((var(--play-from-scale, 1) * 0.941 + var(--play-to-scale, 1) * 0.059) * 1.015)
+      );
+  }
+
+  32.4% {
+    transform:
+      translate(
+        calc(var(--play-from-x, 0px) * 0.845 + var(--play-to-x, 0px) * 0.155),
+        calc(
+          var(--play-from-y, 0px) * 0.845 + var(--play-to-y, 0px) * 0.155 -
+          var(--play-lift, 120px) * 0.468
+        )
+      )
+      rotate(1.12deg)
+      scale(
+        calc((var(--play-from-scale, 1) * 0.845 + var(--play-to-scale, 1) * 0.155) * 1.037)
+      );
+  }
+
+  39.2% {
+    transform:
+      translate(
+        calc(var(--play-from-x, 0px) * 0.692 + var(--play-to-x, 0px) * 0.308),
+        calc(
+          var(--play-from-y, 0px) * 0.692 + var(--play-to-y, 0px) * 0.308 -
+          var(--play-lift, 120px) * 0.824
+        )
+      )
+      rotate(1.98deg)
+      scale(
+        calc((var(--play-from-scale, 1) * 0.692 + var(--play-to-scale, 1) * 0.308) * 1.066)
+      );
+  }
+
+  46% {
+    transform:
+      translate(
+        calc(var(--play-from-x, 0px) * 0.5 + var(--play-to-x, 0px) * 0.5),
+        calc(
+          var(--play-from-y, 0px) * 0.5 + var(--play-to-y, 0px) * 0.5 - var(--play-lift, 120px)
+        )
+      )
+      rotate(2.4deg)
+      scale(calc((var(--play-from-scale, 1) * 0.5 + var(--play-to-scale, 1) * 0.5) * 1.08));
+  }
+
+  52.8% {
+    transform:
+      translate(
+        calc(var(--play-from-x, 0px) * 0.308 + var(--play-to-x, 0px) * 0.692),
+        calc(
+          var(--play-from-y, 0px) * 0.308 + var(--play-to-y, 0px) * 0.692 -
+          var(--play-lift, 120px) * 0.824
+        )
+      )
+      rotate(1.98deg)
+      scale(
+        calc((var(--play-from-scale, 1) * 0.308 + var(--play-to-scale, 1) * 0.692) * 1.066)
+      );
+  }
+
+  59.6% {
+    transform:
+      translate(
+        calc(var(--play-from-x, 0px) * 0.155 + var(--play-to-x, 0px) * 0.845),
+        calc(
+          var(--play-from-y, 0px) * 0.155 + var(--play-to-y, 0px) * 0.845 -
+          var(--play-lift, 120px) * 0.468
+        )
+      )
+      rotate(1.12deg)
+      scale(
+        calc((var(--play-from-scale, 1) * 0.155 + var(--play-to-scale, 1) * 0.845) * 1.037)
+      );
+  }
+
+  66.4% {
+    transform:
+      translate(
+        calc(var(--play-from-x, 0px) * 0.059 + var(--play-to-x, 0px) * 0.941),
+        calc(
+          var(--play-from-y, 0px) * 0.059 + var(--play-to-y, 0px) * 0.941 -
+          var(--play-lift, 120px) * 0.184
+        )
+      )
+      rotate(0.44deg)
+      scale(
+        calc((var(--play-from-scale, 1) * 0.059 + var(--play-to-scale, 1) * 0.941) * 1.015)
+      );
+  }
+
+  73.2% {
+    transform:
+      translate(
+        calc(var(--play-from-x, 0px) * 0.012 + var(--play-to-x, 0px) * 0.988),
+        calc(
+          var(--play-from-y, 0px) * 0.012 + var(--play-to-y, 0px) * 0.988 -
+          var(--play-lift, 120px) * 0.038
+        )
+      )
+      rotate(0.09deg)
+      scale(
+        calc((var(--play-from-scale, 1) * 0.012 + var(--play-to-scale, 1) * 0.988) * 1.003)
+      );
+  }
+
+  /* Standing in the place it was going to, and rocking once as it settles into it. */
+  80% {
+    transform:
+      translate(var(--play-to-x, 0px), var(--play-to-y, 0px))
+      rotate(0)
+      scale(var(--play-to-scale, 1));
+  }
+
+  84% {
+    transform:
+      translate(var(--play-to-x, 0px), var(--play-to-y, 0px))
+      rotate(-0.5deg)
+      scale(calc(var(--play-to-scale, 1) * 0.988));
+  }
+
+  88% {
+    transform:
+      translate(var(--play-to-x, 0px), var(--play-to-y, 0px))
+      rotate(0.5deg)
+      scale(calc(var(--play-to-scale, 1) * 1.006));
+  }
+
+  92% {
+    transform:
+      translate(var(--play-to-x, 0px), var(--play-to-y, 0px))
+      rotate(-0.2deg)
+      scale(calc(var(--play-to-scale, 1) * 0.998));
+  }
+
+  96% {
+    opacity: 1;
+    transform:
+      translate(var(--play-to-x, 0px), var(--play-to-y, 0px))
+      rotate(0)
+      scale(var(--play-to-scale, 1));
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translate(var(--play-to-x, 0px), var(--play-to-y, 0px))
+      rotate(0)
+      scale(var(--play-to-scale, 1));
+  }
+}
+
+/* The table is dimmed only while the card is being picked up; it is clear before it lands. */
+@keyframes play-veil {
+  0% {
+    opacity: 0;
+  }
+
+  14%,
+  40% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes play-name-out {
+  0% {
+    opacity: 0;
+  }
+
+  14%,
+  38% {
+    opacity: 1;
+  }
+
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The place receiving the card takes it, once, as it arrives - and is nearly done with it by
+   the time the card has finished settling. */
+@keyframes slot-land {
+  0%,
+  70% {
+    transform: scale(1);
+  }
+
+  72.5% {
+    transform: scale(1.006);
+  }
+
+  75% {
+    transform: scale(1.03);
+  }
+
+  77.5% {
+    transform: scale(1.054);
+  }
+
+  80% {
+    transform: scale(1.06);
+  }
+
+  86% {
+    transform: scale(1.021);
+  }
+
+  92% {
+    transform: scale(1.006);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
