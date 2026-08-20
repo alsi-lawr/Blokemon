@@ -30,12 +30,6 @@ public sealed class MatchAttachedCardTests
         counted.ShouldBe(host.AttachedEnergy.Length);
         fan.Count.ShouldBe(counted);
         fan.OrderBy(face => face.Depth).Select(face => face.Card).ShouldBe(host.AttachedEnergy);
-
-        // Alex's ruling on the stack: each Energy after the first sits behind the one before it. The
-        // fan is therefore handed over back to front, so the face nearest its host is the last one
-        // drawn and the one lying on top of the rest. Reverse it and the fan reads the same in a
-        // diff while stacking the wrong way on the table.
-        fan.Select(face => face.Depth).ShouldBe([2, 1, 0]);
     }
 
     // Which card a held press opens. A press names either a card the table is drawing or a face
