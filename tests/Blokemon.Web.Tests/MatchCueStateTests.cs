@@ -214,8 +214,8 @@ public sealed class MatchCueStateTests
         kind switch
         {
             MatchAnimationKindView.Setup => new(
-                "The card being put out is the one picked out of the hand.",
-                new() { ["hand-a"] = MatchCueRole.Source },
+                "The Blokemon chosen to open the game is picked out of the hand and carried to the Oche, so it leaves the hand exactly as a card played does. Theirs comes out of a hand nothing on the table draws.",
+                new() { ["hand-a"] = MatchCueRole.Source | MatchCueRole.Gone },
                 new()
             ),
             MatchAnimationKindView.Shuffle => new(

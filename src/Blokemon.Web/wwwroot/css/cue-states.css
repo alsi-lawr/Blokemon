@@ -154,9 +154,13 @@
   A card promoted onto another one is played in exactly the same way and was left out of this,
   so the copy in the hand was never picked up and simply stood there while the card it is
   travelled across the table.
+
+  The Blokemon chosen to open the game is picked up the same way. It is the first card anybody
+  plays, and for want of this it was the only one that never left the hand at all.
 */
 .cue-play .hand-card.is-cue-source .hand-card-visual,
-.cue-evolve .hand-card.is-cue-source .hand-card-visual {
+.cue-evolve .hand-card.is-cue-source .hand-card-visual,
+.cue-setup .hand-card.is-cue-source .hand-card-visual {
   animation: hand-play 0.52s linear both;
 }
 

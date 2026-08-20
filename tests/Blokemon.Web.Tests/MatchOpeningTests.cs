@@ -108,27 +108,150 @@ public sealed class MatchOpeningTests
             .ShouldBeEmpty();
     }
 
+    // The opponent's hand had three presentations in every opening and should have had one: it was
+    // in front of them before anything dealt it, then their own draw dealt it, and when their first
+    // hand went back into the Deck their second draw dealt it again.
+    //
+    // None of that could be seen by asking about the deal alone, which is all the guarantee here
+    // used to do. It is a whole-opening question - how many times a hand is put on the table, and
+    // by which beat - so it is asked of every beat of the opening rather than of the one the answer
+    // was expected to be about.
     [Test]
-    public void TheOpeningDealShowsTheWholeOfTheOpponentsHandArriving()
+    [Arguments("nobody went back")]
+    [Arguments("the player's hand went back")]
+    [Arguments("the opponent's hand went back")]
+    public void TheOpponentsHandIsPutOnTheTableOnceByTheDrawThatKeepsIt(string opening)
     {
-        // The opponent's held cards are drawn as a strip of backs with no identity of their own, so
-        // the only thing that says which of them have just arrived is how many the draw dealt. A
-        // deal that brings a whole hand brings every back in the strip; an ordinary draw still
-        // brings the newest one alone.
-        var opening = Opening();
-        var deal = MatchPresentationTimeline
-            .Beats(opening, MatchOpening.EmptyTable(opening))
-            .Last(beat => beat.Cue?.Kind == MatchAnimationKindView.Draw);
-
-        var arriving = Enumerable
-            .Range(0, OpeningHand.Length)
-            .Select(index => MatchCueState.ArrivingBack(deal.Cue, index, OpeningHand.Length))
+        var presentation = Opening(opening);
+        var beats = MatchPresentationTimeline.Beats(
+            presentation,
+            MatchOpening.EmptyTable(presentation)
+        );
+        var strips = beats.Select(Strip).ToArray();
+        var widened = Enumerable
+            .Range(0, strips.Length)
+            .Where(index => strips[index].Shown > (index == 0 ? 0 : strips[index - 1].Shown))
+            .ToArray();
+        var theirDraws = Enumerable
+            .Range(0, beats.Count)
+            .Where(index =>
+                MatchCueState.ActingOn(
+                    beats[index].Cue,
+                    MatchAnimationKindView.Draw,
+                    opponent: true
+                )
+            )
             .ToArray();
 
-        arriving.ShouldAllBe(role => role == MatchCueRole.Arriving);
+        // Their hand goes onto the table once in the whole opening.
+        var dealt = widened.ShouldHaveSingleItem();
+        // It is a draw of their own that puts it there, and the last of them, so a hand that went
+        // back into the Deck is never in front of them - which is what the player's own deal has
+        // promised since the opening was first dealt onto an empty table.
+        theirDraws.ShouldNotBeEmpty();
+        theirDraws[^1].ShouldBe(dealt);
+        // The whole hand arrives on that beat, and nothing arrives on any other.
+        strips[dealt].Shown.ShouldBe(OpeningHand.Length);
+        strips[dealt].Arriving.ShouldBe(strips[dealt].Shown);
+        strips
+            .Where((_, index) => index != dealt)
+            .Select(strip => strip.Arriving)
+            .ShouldAllBe(arriving => arriving == 0);
+        // And nothing of theirs is in front of them before it.
+        strips.Take(dealt).Select(strip => strip.Shown).ShouldAllBe(shown => shown == 0);
+    }
+
+    // How the opponent's hand is presented on one beat: how wide their strip of backs is drawn, and
+    // how many of those the presentation says have just arrived. It is asked the way the table asks
+    // it - a strip is dealt into only by a draw of the half it belongs to - because a back has no
+    // identity of its own to ask after.
+    private static (int Shown, int Arriving) Strip(MatchPresentationBeat beat)
+    {
+        var shown = beat.Frame.Opponent.HandCount;
+        return (
+            shown,
+            MatchCueState.ActingOn(beat.Cue, MatchAnimationKindView.Draw, opponent: true)
+                ? Enumerable
+                    .Range(0, shown)
+                    .Count(index =>
+                        MatchCueState.ArrivingBack(beat.Cue, index, shown) == MatchCueRole.Arriving
+                    )
+                : 0
+        );
+    }
+
+    // The most consequential tap in the game: the Blokemon chosen to stand in the Oche used to
+    // arrive without being seen to arrive, because the cue that carries it was never one of the
+    // cues a card can travel on. The turn it starts is told inside the same command, so it is also
+    // the one card journey that has somewhere to be for the rest of its own step.
+    [Test]
+    public void TheBlokemonChosenToOpenTravelsToTheOcheAndStandsThereBeforeTheTurnBegins()
+    {
+        var choice = TheChoice();
+        var beats = MatchPresentationTimeline.Beats(choice, BeforeTheChoice());
+        var carried = Enumerable
+            .Range(0, beats.Count)
+            .Single(index =>
+                MatchCueState
+                    .HeldCard(beats[index].Cue, beats[index].Overlay, Chosen)
+                    .HasFlag(MatchCueRole.Source)
+            );
+
+        // It is carried out of the hand towards the place it ends up standing in, and the Oche is
+        // still empty while it is on its way: it is arriving rather than having arrived.
+        beats[carried]
+            .Overlay.LandingFor(opponent: false)
+            .ShouldBe(new MatchLandingSlot(false, MatchLandingKind.Active, 0));
         MatchCueState
-            .ArrivingBack(Cue(MatchAnimationKindView.Draw, local: false, amount: 1), 3, 5)
-            .ShouldBe(MatchCueRole.None);
+            .HeldCard(beats[carried].Cue, beats[carried].Overlay, Chosen)
+            .HasFlag(MatchCueRole.Gone)
+            .ShouldBeTrue();
+        beats[carried].Frame.Player.Active.ShouldBeNull();
+
+        // From the moment it gets there it is standing there, so it is never nowhere.
+        beats
+            .Skip(carried + 1)
+            .Select(beat => beat.Frame.Player.Active?.Id)
+            .ShouldAllBe(standing => standing == Chosen);
+
+        // And the game is still in its opening while the card is travelling: the phase changes
+        // after the motion rather than instead of it.
+        beats
+            .Take(carried + 1)
+            .Select(beat => beat.Frame.Phase)
+            .ShouldAllBe(phase => phase == MatchPhaseView.OpeningPlacement);
+        beats[carried + 1].Frame.Phase.ShouldBe(MatchPhaseView.Playing);
+
+        // Standing it up does not deal the hand the turn behind it draws: that card is still the
+        // draw's own to bring, and reaches the hand on the beat that names it.
+        var drawn = Enumerable
+            .Range(0, beats.Count)
+            .Single(index =>
+                MatchCueState
+                    .HeldCard(beats[index].Cue, beats[index].Overlay, Drawn)
+                    .HasFlag(MatchCueRole.Target)
+            );
+        beats
+            .Take(drawn)
+            .SelectMany(beat => beat.Frame.Player.Hand)
+            .Select(card => card.Id)
+            .ShouldNotContain(Drawn);
+        beats[drawn].Frame.Player.Hand.Select(card => card.Id).ShouldContain(Drawn);
+    }
+
+    [Test]
+    public void TheOpponentsOpeningChoiceIsCarriedToTheirOcheTheSameWay()
+    {
+        // Their Blokemon comes out of a hand nobody can see, which is the only difference: it is
+        // still carried to the place it ends up standing in, from the strip that hand is drawn as.
+        var choice = TheirChoice();
+        var beats = MatchPresentationTimeline.Beats(choice, BeforeTheChoice());
+
+        beats[0]
+            .Overlay.LandingFor(opponent: true)
+            .ShouldBe(new MatchLandingSlot(true, MatchLandingKind.Active, 0));
+        beats[0].Frame.Opponent.Active.ShouldBeNull();
+        beats[^1].Frame.Opponent.Active!.Id.ShouldBe(TheirChosen);
     }
 
     // Every card the table draws while a beat is on screen: whatever either side is holding and
@@ -177,6 +300,14 @@ public sealed class MatchOpeningTests
         "returned-seven",
     ];
 
+    private static MatchPresentationView Opening(string opening) =>
+        opening switch
+        {
+            "the player's hand went back" => Mulliganed(),
+            "the opponent's hand went back" => TheyMulliganed(),
+            _ => Opening(),
+        };
+
     // The battle is announced, both Decks are shuffled, and both players are dealt seven.
     private static MatchPresentationView Opening() =>
         new([
@@ -224,15 +355,99 @@ public sealed class MatchOpeningTests
             ),
         ]);
 
+    // And the same again with the hand that went back being theirs, which is what a quarter of
+    // openings do. Nothing names the cards of either of their hands, so nothing but the order of
+    // their draws distinguishes the one they keep from the one they gave up.
+    private static MatchPresentationView TheyMulliganed() =>
+        new([
+            new(
+                Started(),
+                [
+                    Cue(MatchAnimationKindView.Setup, local: null),
+                    Cue(MatchAnimationKindView.Shuffle, local: true),
+                    Cue(MatchAnimationKindView.Shuffle, local: false),
+                    Cue(
+                        MatchAnimationKindView.Draw,
+                        local: true,
+                        amount: OpeningHand.Length,
+                        targets: OpeningHand
+                    ),
+                    Cue(MatchAnimationKindView.Draw, local: false, amount: OpeningHand.Length),
+                    Cue(MatchAnimationKindView.Shuffle, local: false),
+                    Cue(MatchAnimationKindView.Draw, local: false, amount: OpeningHand.Length),
+                ]
+            ),
+        ]);
+
+    private const string Chosen = "new-one";
+
+    private const string Drawn = "turn-draw";
+
+    private const string TheirChosen = "theirs-oche";
+
+    // The table the opening choice is made on: the hands are dealt, the opponent has already stood
+    // somebody out, and the player has not.
+    private static MatchFrameView BeforeTheChoice() =>
+        new(
+            Guid.Parse("50000000-0000-0000-0000-000000000003"),
+            2,
+            0,
+            MatchPhaseView.OpeningPlacement,
+            Side("The Regular", hand: [], held: OpeningHand.Length),
+            Side("You", hand: OpeningHand),
+            false,
+            null
+        );
+
+    // What choosing an opening Blokemon settles on, and everything the command tells: the Blokemon
+    // stands in the Oche, the turn that choice starts begins, and that turn draws its card.
+    private static MatchPresentationView TheChoice() =>
+        new([
+            new(
+                BeforeTheChoice() with
+                {
+                    Phase = MatchPhaseView.Playing,
+                    Player = Side(
+                        "You",
+                        hand: [.. OpeningHand.Except([Chosen], StringComparer.Ordinal), Drawn],
+                        active: Chosen
+                    ),
+                },
+                [
+                    Cue(MatchAnimationKindView.Setup, local: true, source: Chosen),
+                    Cue(MatchAnimationKindView.Turn, local: true),
+                    Cue(MatchAnimationKindView.Draw, local: true, amount: 1, targets: [Drawn]),
+                ]
+            ),
+        ]);
+
+    // Theirs, which arrives as its own command in the middle of the opening.
+    private static MatchPresentationView TheirChoice() =>
+        new([
+            new(
+                BeforeTheChoice() with
+                {
+                    Opponent = Side(
+                        "The Regular",
+                        hand: [],
+                        held: OpeningHand.Length - 1,
+                        active: TheirChosen
+                    ),
+                },
+                [Cue(MatchAnimationKindView.Setup, local: false, source: TheirChosen)]
+            ),
+        ]);
+
     // What a start settles on: both hands dealt, nothing standing on the table yet, and the Bar
-    // Chits set aside.
+    // Chits set aside. Their hand is a count and no cards, which is the whole of what the table
+    // knows about it and the reason the deal that brings it is so easily lost.
     private static MatchFrameView Started() =>
         new(
             Guid.Parse("50000000-0000-0000-0000-000000000001"),
             1,
             0,
             MatchPhaseView.OpeningPlacement,
-            Side("The Regular", hand: []),
+            Side("The Regular", hand: [], held: OpeningHand.Length),
             Side("You", hand: OpeningHand),
             false,
             null
@@ -263,13 +478,14 @@ public sealed class MatchOpeningTests
         string[] hand,
         string? active = null,
         string[]? bench = null,
-        int prizes = 6
+        int prizes = 6,
+        int? held = null
     ) =>
         new(
             name,
             "Deck",
             53,
-            hand.Length,
+            held ?? hand.Length,
             prizes,
             active is null ? null : Instance(active),
             [.. (bench ?? []).Select(Instance)],
@@ -306,6 +522,7 @@ public sealed class MatchOpeningTests
         MatchAnimationKindView kind,
         bool? local,
         int amount = 0,
-        string[]? targets = null
-    ) => new(1, kind, "cue", null, targets ?? [], amount, null, local, []);
+        string[]? targets = null,
+        string? source = null
+    ) => new(1, kind, "cue", source, targets ?? [], amount, null, local, []);
 }

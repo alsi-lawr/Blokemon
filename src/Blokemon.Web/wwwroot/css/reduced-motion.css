@@ -59,7 +59,8 @@
     with it.
   */
   .cue-play .hand-card.is-cue-source .hand-card-visual,
-  .cue-evolve .hand-card.is-cue-source .hand-card-visual {
+  .cue-evolve .hand-card.is-cue-source .hand-card-visual,
+  .cue-setup .hand-card.is-cue-source .hand-card-visual {
     transform: none !important;
     animation: none !important;
   }

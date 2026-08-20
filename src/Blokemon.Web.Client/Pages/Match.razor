@@ -109,7 +109,7 @@ else
 
         <MatchCueOverlays Cue="_activeCue"
                           PresentationCard="_presentationCard"
-                          ShowPresentationCard="@(_activeCue is not null && IsCardPresentationCue(_activeCue.Kind) && _presentationCard is not null)"
+                          ShowPresentationCard="@(MatchCueState.CarriesACard(_activeCue) && _presentationCard is not null)"
                           CardTravels="CardTravels()"
                           AnimationStatus="@_animationStatus"
                           RevealAcknowledged="AcknowledgeReveal" />

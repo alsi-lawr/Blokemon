@@ -34,9 +34,14 @@ public static class MatchPresentationTimeline
 
         foreach (var step in presentation.Steps)
         {
+            var before = frame;
             var overlay = MatchPresentationOverlay.Empty;
             var gone = new List<string>(2);
             var dealing = Dealing(step);
+            var stripping = Stripping(step);
+            var standing = false;
+            var dealt = false;
+            var stripped = false;
             for (var index = 0; index < step.Events.Length; index++)
             {
                 var cue = step.Events[index];
@@ -47,10 +52,18 @@ public static class MatchPresentationTimeline
                 // it no longer has anybody anywhere they have already left.
                 if (cue.Kind == MatchAnimationKindView.Draw && index >= dealing)
                 {
-                    frame = step.Frame;
+                    standing = true;
+                    dealt = true;
                     overlay = MatchPresentationOverlay.Empty;
                     gone.Clear();
                 }
+
+                if (index == stripping)
+                {
+                    stripped = true;
+                }
+
+                frame = Composed(before, step.Frame, standing, dealt, stripped);
 
                 // Whatever this cue takes out of a place stays taken out. The cue that carries a
                 // card off is the only one that shows it going, but the frame behind it still has
@@ -79,6 +92,20 @@ public static class MatchPresentationTimeline
                     _ => overlay,
                 };
                 beats.Add(new(frame, cue, overlay.LandingOn(Landing(cue, step.Frame))));
+
+                // The choice that opens a game is the one command whose step goes on to tell
+                // something else: the turn that choice starts, and that turn's first draw, are
+                // told inside the same command. So the table stands the chosen Blokemon up the
+                // moment it has been carried there - it is standing in the Oche for the turn that
+                // follows rather than nowhere at all until the draw - and the phase changes with
+                // it, after the motion rather than before it. The hands stay as they were, because
+                // the hand that turn draws is still the draw's own to deal.
+                if (Stands(cue))
+                {
+                    standing = true;
+                    overlay = MatchPresentationOverlay.Empty;
+                    gone.Clear();
+                }
             }
 
             // The table settles on what the command actually did, and the deltas that stood in
@@ -89,6 +116,60 @@ public static class MatchPresentationTimeline
 
         return beats;
     }
+
+    // The table one beat is drawn against, put together out of the table this command was given and
+    // the one it settles on.
+    //
+    // Three things on it catch up at three different moments, because three different cues account
+    // for them: what is standing on the table and what phase it is in, the hand this command deals
+    // to the player, and the strip the opponent's held cards are drawn as. Taking all three at once
+    // is what put a whole hand in front of the opponent on the beat the player was being dealt
+    // theirs - nothing had said it was coming, and their own deal then played over the top of it.
+    private static MatchFrameView Composed(
+        MatchFrameView before,
+        MatchFrameView settled,
+        bool standing,
+        bool dealt,
+        bool stripped
+    )
+    {
+        var table = standing ? settled : before;
+        return table with
+        {
+            Player = Holding(table.Player, dealt ? settled.Player : before.Player),
+            Opponent = Holding(table.Opponent, stripped ? settled.Opponent : before.Opponent),
+        };
+    }
+
+    // A side of the table holding what it has been dealt so far rather than what it ends up
+    // holding, out of the Deck it has that much left in.
+    private static MatchSideView Holding(MatchSideView side, MatchSideView held) =>
+        side with
+        {
+            DeckCount = held.DeckCount,
+            HandCount = held.HandCount,
+            Hand = held.Hand,
+        };
+
+    // Whether this cue is the choice that opens a game, which is the one card journey the table
+    // stands up early for. Every other card played lands when the command settles, one beat later.
+    private static bool Stands(MatchEventCueView cue) =>
+        cue.Kind == MatchAnimationKindView.Setup && cue.SourceCardInstanceId is not null;
+
+    // Which cue of a step deals the opponent the hand they keep, so their strip is empty until it
+    // and full from it.
+    //
+    // Their held cards are drawn as a count of backs with no identity of their own, so nothing a
+    // draw of theirs says names the cards it dealt, and nothing the frame says picks out which of
+    // their draws it is the hand of. The only one it can be shown to be the hand of is their last:
+    // a hand with no Blokemon in it goes back into the Deck and is drawn out of it again, so a
+    // strip filling on any earlier draw fills with cards that went back - and one filling on a
+    // draw of the player's fills with cards no cue of theirs has dealt at all.
+    private static int Stripping(MatchPresentationStepView step) =>
+        Array.FindLastIndex(
+            step.Events,
+            cue => cue.Kind == MatchAnimationKindView.Draw && cue.ActorIsLocalPlayer == false
+        );
 
     // Which cue of a step the frame is the hand of, so that the draws before it leave the table
     // alone.
@@ -102,9 +183,11 @@ public static class MatchPresentationTimeline
     //
     // So the frame belongs to the first draw it can show whole, and to every draw after that one. A
     // step whose draws it can show none of keeps it from the first of them, exactly as every draw
-    // did before: the opponent's cards are nobody's to name, and a card drawn and spent inside the
-    // same command is in neither hand by the end of it, so in both cases there is nothing to wait
-    // for.
+    // did before: a card drawn and spent inside the same command is in neither hand by the end of
+    // it, so there is nothing to wait for.
+    //
+    // This is the player's hand and no more. The opponent's is a count of backs with nothing in it
+    // to be named, so it has a rule of its own above and answers to their own draws.
     private static int Dealing(MatchPresentationStepView step)
     {
         for (var index = 0; index < step.Events.Length; index++)
@@ -134,34 +217,33 @@ public static class MatchPresentationTimeline
     private static bool Held(MatchSideView side, string cardInstanceId) =>
         side.Hand.Any(card => card.Id == cardInstanceId);
 
-    // The cards this cue takes out of the place the frame still has them in. A card being played
-    // or promoted is carried out of the hand by the presentation itself - it is drawn travelling,
-    // or held up in the middle of the table - and a Blokemon knocked out is shown leaving the
-    // field. Both are cards the table has finished with before the frame agrees, and drawing them
-    // where they were is drawing a second one of them.
+    // The cards this cue takes out of the place the frame still has them in. A card carried to a
+    // place on the table is carried out of the hand by the presentation itself - it is drawn
+    // travelling, or held up in the middle of the table - and a Blokemon knocked out is shown
+    // leaving the field. Both are cards the table has finished with before the frame agrees, and
+    // drawing them where they were is drawing a second one of them.
     private static void Departs(MatchEventCueView cue, List<string> gone)
     {
-        switch (cue.Kind)
+        if (MatchCueState.CarriesACard(cue) && cue.SourceCardInstanceId is { } played)
         {
-            case MatchAnimationKindView.Play:
-            case MatchAnimationKindView.Evolve:
-                if (
-                    cue.SourceCardInstanceId is { } played
-                    && !gone.Contains(played, StringComparer.Ordinal)
-                )
-                {
-                    gone.Add(played);
-                }
-                break;
-            case MatchAnimationKindView.Knockout:
-                foreach (var target in cue.TargetCardInstanceIds)
-                {
-                    if (!gone.Contains(target, StringComparer.Ordinal))
-                    {
-                        gone.Add(target);
-                    }
-                }
-                break;
+            Leaves(gone, played);
+            return;
+        }
+
+        if (cue.Kind == MatchAnimationKindView.Knockout)
+        {
+            foreach (var target in cue.TargetCardInstanceIds)
+            {
+                Leaves(gone, target);
+            }
+        }
+    }
+
+    private static void Leaves(List<string> gone, string cardInstanceId)
+    {
+        if (!gone.Contains(cardInstanceId, StringComparer.Ordinal))
+        {
+            gone.Add(cardInstanceId);
         }
     }
 
@@ -227,10 +309,7 @@ public static class MatchPresentationTimeline
     // landing, and its cue keeps the presentation it has always had.
     private static MatchLandingSlot? Landing(MatchEventCueView cue, MatchFrameView frame)
     {
-        if (
-            cue.Kind is not (MatchAnimationKindView.Play or MatchAnimationKindView.Evolve)
-            || cue.SourceCardInstanceId is not { } cardInstanceId
-        )
+        if (!MatchCueState.CarriesACard(cue) || cue.SourceCardInstanceId is not { } cardInstanceId)
         {
             return null;
         }

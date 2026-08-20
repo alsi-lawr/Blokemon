@@ -26,11 +26,10 @@ public partial class Match
         var measure = cue.Kind switch
         {
             MatchAnimationKindView.Draw => "positionDrawCards",
-            MatchAnimationKindView.Play or MatchAnimationKindView.Evolve => "positionPlayCard",
             // The blow is measured once, on the cue that throws it. The cue that lands it measures
             // nothing: by then the card is part way across and no longer where it started.
             MatchAnimationKindView.Attack => "positionAttack",
-            _ => null,
+            _ => MatchCueState.CarriesACard(cue) ? "positionPlayCard" : null,
         };
         if (measure is not null)
         {
@@ -55,9 +54,14 @@ public partial class Match
         }
     }
 
+    // The face of the card the presentation is carrying. It is looked for on the table this beat is
+    // drawn against, then on the one still painted, and last of all on the table the battle has
+    // arrived at: a card taken out of a hand nobody can see - the Blokemon the opponent chooses to
+    // open with - is on none of the tables it has left, and the only one that has it is the one it
+    // is on its way to.
     private CardView? PresentationCard(MatchFrameView frame, MatchEventCueView cue)
     {
-        if (!IsCardPresentationCue(cue.Kind))
+        if (!MatchCueState.CarriesACard(cue))
         {
             return null;
         }
@@ -68,15 +72,13 @@ public partial class Match
             return null;
         }
 
-        return AllVisibleCards(frame).FirstOrDefault(card => card.Id == cardInstanceId)?.Card
-            ?? (
-                _presentedFrame is null
-                    ? null
-                    : AllVisibleCards(_presentedFrame)
-                        .FirstOrDefault(card => card.Id == cardInstanceId)
-                        ?.Card
-            );
+        return Face(frame, cardInstanceId)
+            ?? (_presentedFrame is null ? null : Face(_presentedFrame, cardInstanceId))
+            ?? (_view?.Match is null ? null : Face(_view.Match.Frame, cardInstanceId));
     }
+
+    private static CardView? Face(MatchFrameView frame, string cardInstanceId) =>
+        AllVisibleCards(frame).FirstOrDefault(card => card.Id == cardInstanceId)?.Card;
 
     // A blow is thrown by the cue that declares it and lands on the cue that damages, and the
     // engine is free to put others between the two - tossing a beer mat to find out whether the
@@ -112,14 +114,10 @@ public partial class Match
 
     private string? AnimationClass() => MatchCueMarking.Table(_activeCue);
 
-    private static bool IsCardPresentationCue(MatchAnimationKindView kind) =>
-        kind is MatchAnimationKindView.Play or MatchAnimationKindView.Evolve;
-
     // A card only travels when there is somewhere on the table for it to travel to: one that
     // does its work and is discarded keeps the presentation it has always had.
     private bool CardTravels() =>
-        _activeCue is not null
-        && IsCardPresentationCue(_activeCue.Kind)
+        MatchCueState.CarriesACard(_activeCue)
         && _presentationCard is not null
         && _overlay.Landing is not null;
 

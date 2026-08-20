@@ -125,6 +125,21 @@ public static class MatchCueState
             ? MatchCueRole.Arriving
             : MatchCueRole.None;
 
+    // Whether a cue is carrying a card out of a hand to a place on the table: a Blokemon put down,
+    // a Kit played out, a promotion, and the Blokemon chosen to open the game.
+    //
+    // It is not the kind on its own, because one kind says two things. The battle beginning and the
+    // Blokemon chosen to stand in the Oche are both Setup, and only the second of them is about a
+    // card - so the question is whether the cue names the card it is about, asked here with every
+    // other question about a card the presentation says is moving, rather than answered by a list
+    // of kinds written out separately wherever a journey is drawn.
+    public static bool CarriesACard(MatchEventCueView? cue) =>
+        cue?.SourceCardInstanceId is not null
+        && cue.Kind
+            is MatchAnimationKindView.Play
+                or MatchAnimationKindView.Evolve
+                or MatchAnimationKindView.Setup;
+
     // What the whole table is doing, said as the thing happening and the half of it doing so.
     public static MatchTableCue? Table(MatchEventCueView? cue) =>
         cue is null ? null : new(cue.Kind, Actor(cue));
