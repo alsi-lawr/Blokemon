@@ -85,7 +85,7 @@ public sealed class MatchOpeningTests
         // happens: it is shuffled into the Deck it came from and drawn out of it again, so the same
         // card comes back around often enough to matter. One card in common does not make the deal
         // that lost the other six the deal the table is waiting for.
-        var opening = Mulliganed();
+        var opening = WentBack(1);
         var beats = MatchPresentationTimeline.Beats(opening, MatchOpening.EmptyTable(opening));
         var draws = beats.Where(beat => beat.Cue?.Kind == MatchAnimationKindView.Draw).ToArray();
 
@@ -160,6 +160,96 @@ public sealed class MatchOpeningTests
         // And nothing of theirs is in front of them before it.
         strips.Take(dealt).Select(strip => strip.Shown).ShouldAllBe(shown => shown == 0);
     }
+
+    // 'I just witnessed I think 4 separate shuffles before I drew my first hand.' Four goes at a
+    // hand is three that went back, and every one of them was played at the length of the one that
+    // counted - which is what the opening below reproduces, on the half of the table that went back
+    // and on the half that did not, at once.
+    //
+    // A mulligan is still seen to happen: the goes that went back are played rather than hidden. So
+    // what is asked here is that the presentation can TELL THEM APART - which is all the page needs
+    // in order to play them short, and the only part of this that is a guarantee rather than taste.
+    // Nothing here says how short, and nothing here would change if that were tuned.
+    //
+    // The criterion this replaces asked that the hand finally kept was the one whose cards were
+    // presented. That stayed true the whole time, which is exactly why every gate was green while
+    // the opening was wrong: nothing had ever been asked about the shuffle and the deal belonging
+    // to a go that went back. So this is asked of those beats, of every go, on both halves.
+    [Test]
+    [Arguments(1)]
+    [Arguments(3)]
+    public void EveryGoAtAnOpeningHandThatWentBackIsToldApartFromTheGoThatKeptIt(int wentBack)
+    {
+        var opening = WentBack(wentBack);
+        var beats = MatchPresentationTimeline.Beats(opening, MatchOpening.EmptyTable(opening));
+
+        // Which beat each half of the table is dealt the hand it keeps on, asked the way that half
+        // can be asked it: the player's deal names the cards it brings, and the opponent's has none
+        // to name, so theirs is the beat their strip of backs fills on.
+        var dealt = Enumerable
+            .Range(0, beats.Count)
+            .Single(index => Deals(beats[index], OpeningHand));
+        var filled = Enumerable
+            .Range(0, beats.Count)
+            .Single(index => Strip(beats[index]).Arriving > 0);
+
+        foreach (var opponent in new[] { false, true })
+        {
+            var riffles = Acting(beats, MatchAnimationKindView.Shuffle, opponent);
+            var deals = Acting(beats, MatchAnimationKindView.Draw, opponent);
+
+            // The go that stays is the last of theirs, and it is genuinely the go the hand arrives
+            // on rather than merely the last thing that happened on their half of the table.
+            deals[^1].ShouldBe(opponent ? filled : dealt);
+
+            // It is played whole, and so is the shuffle that dealt it.
+            beats[deals[^1]].WentBack.ShouldBeFalse();
+            beats[riffles[^1]].WentBack.ShouldBeFalse();
+
+            // Every go before it went back, both halves of it - the deal, and the shuffle that
+            // brought the cards back out of the Deck they had just gone into.
+            deals[..^1].ShouldAllBe(index => beats[index].WentBack);
+            riffles[..^1].ShouldAllBe(index => beats[index].WentBack);
+        }
+
+        // The two halves answer only for themselves. The player going back three times running says
+        // nothing about the opponent, who kept the hand they were dealt first time and is owed the
+        // whole of their one go at it.
+        Acting(beats, MatchAnimationKindView.Draw, opponent: false)
+            .Length.ShouldBe(wentBack + 1);
+        Acting(beats, MatchAnimationKindView.Draw, opponent: true).Length.ShouldBe(1);
+
+        // And nothing that is not a go at a hand is one. The battle being announced, and the table
+        // settling once the whole opening has been dealt, are not attempts at anything.
+        beats
+            .Where(beat =>
+                beat.Cue?.Kind
+                    is not (MatchAnimationKindView.Shuffle or MatchAnimationKindView.Draw)
+            )
+            .ShouldAllBe(beat => !beat.WentBack);
+    }
+
+    // Which beats are one half of the table doing one thing: the riffle a go at a hand starts with,
+    // or the deal it ends with.
+    private static int[] Acting(
+        IReadOnlyList<MatchPresentationBeat> beats,
+        MatchAnimationKindView kind,
+        bool opponent
+    ) =>
+        [
+            .. Enumerable
+                .Range(0, beats.Count)
+                .Where(index => MatchCueState.ActingOn(beats[index].Cue, kind, opponent)),
+        ];
+
+    // Whether this beat is the one that deals a named hand, which is the one saying it is dealing
+    // every card of it.
+    private static bool Deals(MatchPresentationBeat beat, string[] hand) =>
+        hand.All(cardInstanceId =>
+            MatchCueState
+                .HeldCard(beat.Cue, beat.Overlay, cardInstanceId)
+                .HasFlag(MatchCueRole.Target)
+        );
 
     // How the opponent's hand is presented on one beat: how wide their strip of backs is drawn, and
     // how many of those the presentation says have just arrived. It is asked the way the table asks
@@ -303,7 +393,7 @@ public sealed class MatchOpeningTests
     private static MatchPresentationView Opening(string opening) =>
         opening switch
         {
-            "the player's hand went back" => Mulliganed(),
+            "the player's hand went back" => WentBack(1),
             "the opponent's hand went back" => TheyMulliganed(),
             _ => Opening(),
         };
@@ -328,32 +418,54 @@ public sealed class MatchOpeningTests
             ),
         ]);
 
-    // The same opening, with a hand that went back into the Deck before the one that stayed.
-    private static MatchPresentationView Mulliganed() =>
-        new([
-            new(
-                Started(),
-                [
-                    Cue(MatchAnimationKindView.Setup, local: null),
-                    Cue(MatchAnimationKindView.Shuffle, local: true),
-                    Cue(MatchAnimationKindView.Shuffle, local: false),
-                    Cue(
-                        MatchAnimationKindView.Draw,
-                        local: true,
-                        amount: Returned.Length,
-                        targets: Returned
-                    ),
-                    Cue(MatchAnimationKindView.Draw, local: false, amount: OpeningHand.Length),
-                    Cue(MatchAnimationKindView.Shuffle, local: true),
-                    Cue(
-                        MatchAnimationKindView.Draw,
-                        local: true,
-                        amount: OpeningHand.Length,
-                        targets: OpeningHand
-                    ),
-                ]
+    // The same opening, with the player's hand going back into the Deck a given number of times
+    // before one of them stays. The opponent keeps the first hand they are dealt throughout, so the
+    // two halves of the table are asked the same question with different answers.
+    //
+    // This is the shape the engine deals in: both Decks are shuffled and both players dealt seven,
+    // and then a hand with no Regular in it goes back, its own Deck is shuffled again and another
+    // seven come out - only that player's, because only that player returned anything.
+    private static MatchPresentationView WentBack(int times)
+    {
+        var events = new List<MatchEventCueView>
+        {
+            Cue(MatchAnimationKindView.Setup, local: null),
+            Cue(MatchAnimationKindView.Shuffle, local: true),
+            Cue(MatchAnimationKindView.Shuffle, local: false),
+            Cue(
+                MatchAnimationKindView.Draw,
+                local: true,
+                amount: Returned.Length,
+                targets: Returned
             ),
-        ]);
+            Cue(MatchAnimationKindView.Draw, local: false, amount: OpeningHand.Length),
+        };
+
+        for (var again = 1; again < times; again++)
+        {
+            events.Add(Cue(MatchAnimationKindView.Shuffle, local: true));
+            events.Add(
+                Cue(
+                    MatchAnimationKindView.Draw,
+                    local: true,
+                    amount: Returned.Length,
+                    targets: Returned
+                )
+            );
+        }
+
+        events.Add(Cue(MatchAnimationKindView.Shuffle, local: true));
+        events.Add(
+            Cue(
+                MatchAnimationKindView.Draw,
+                local: true,
+                amount: OpeningHand.Length,
+                targets: OpeningHand
+            )
+        );
+
+        return new([new(Started(), [.. events])]);
+    }
 
     // And the same again with the hand that went back being theirs, which is what a quarter of
     // openings do. Nothing names the cards of either of their hands, so nothing but the order of

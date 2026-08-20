@@ -49,6 +49,16 @@
   or a fade is not a journey: it has one thing to say and no path to say it along, so it keeps a
   curve of its own.
 
+  An opening deals again when the hand it dealt has no Regular in it, and every go at it is played
+  rather than hidden: a mulligan is a thing that happened and the player is owed the sight of it.
+  What the goes that went back are not owed is the full length of themselves, so the page hands
+  every beat a pace to play at - 1 for anything anybody keeps, and a fraction of it for a go whose
+  hand went back into the Deck. It holds the beat for the same fraction of the same length, so the
+  run and the beat it is played inside stay as long as each other whatever the fraction is: a run
+  shortened on its own would finish early and a beat shortened on its own would cut it off, and
+  neither of those is a quick shuffle. Only the riffle and the deal ask for it, because a go at an
+  opening hand is made of those two and nothing else is ever played at anything but its own length.
+
   A Deck being shuffled parts into two piles side by side and the cards cross back one at a time,
   and the stack squares up with a tap once the last of them has landed.
 */
@@ -77,9 +87,9 @@
   each other, so they cross back one at a time rather than as two halves.
 */
 .cue-shuffle .riffle-card {
-  animation-duration: 0.5s;
+  animation-duration: calc(0.5s * var(--cue-pace, 1));
   animation-timing-function: linear;
-  animation-delay: calc(var(--riffle-order, 0) * 0.031s);
+  animation-delay: calc(var(--riffle-order, 0) * 0.031s * var(--cue-pace, 1));
   animation-fill-mode: both;
 }
 
@@ -105,7 +115,8 @@
    still crossing - by the Deck that was shuffled and not by the other one. */
 .cue-shuffle.cue-actor-local .player-zone .deck-card-back,
 .cue-shuffle.cue-actor-opponent .opponent-zone .deck-card-back {
-  animation: deck-square-up 0.3s linear 0.86s;
+  animation: deck-square-up calc(0.3s * var(--cue-pace, 1)) linear
+    calc(0.86s * var(--cue-pace, 1));
 }
 
 /*
@@ -119,20 +130,20 @@
 }
 
 .cue-draw .hand-card.is-cue-target .hand-card-visual {
-  animation: draw-arc 0.86s linear;
+  animation: draw-arc calc(0.86s * var(--cue-pace, 1)) linear;
 }
 
 .cue-draw .opponent-hand .oche-card-back.is-drawn {
   position: relative;
   z-index: 4;
-  animation: draw-arc-face-down 0.86s linear;
+  animation: draw-arc-face-down calc(0.86s * var(--cue-pace, 1)) linear;
 }
 
 /* The fan opens over the back half of the journey rather than the whole of it: the card is
    already coming down out of its arc before the hand moves aside, so the two read as one
    movement. A card being pressed still answers at once. */
 .cue-draw .hand-card:not(.is-cue-target):not(:hover) {
-  transition-delay: 0.34s;
+  transition-delay: calc(0.34s * var(--cue-pace, 1));
 }
 
 /* The face is covered until the card is edge on, and gone before there is any of it to see. */
@@ -141,7 +152,7 @@
   z-index: 2;
   inset: 0;
   display: block;
-  animation: draw-cover-lift 0.86s linear both;
+  animation: draw-cover-lift calc(0.86s * var(--cue-pace, 1)) linear both;
 }
 
 .draw-cover .oche-card-back,
@@ -152,7 +163,7 @@
 
 .cue-draw.cue-actor-local .player-zone .deck-card-back,
 .cue-draw.cue-actor-opponent .opponent-zone .deck-card-back {
-  animation: deck-press 0.86s linear;
+  animation: deck-press calc(0.86s * var(--cue-pace, 1)) linear;
 }
 
 /*

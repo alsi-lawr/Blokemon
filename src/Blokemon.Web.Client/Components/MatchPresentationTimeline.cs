@@ -2,12 +2,18 @@ using Blokemon.App.Contracts;
 
 namespace Blokemon.Web.Client.Components;
 
-// One moment of a presentation: the frame the table is drawing, the cue on screen over it, and
-// what the cues so far have already made true of that frame.
+// One moment of a presentation: the frame the table is drawing, the cue on screen over it, what the
+// cues so far have already made true of that frame, and whether this is part of a go at an opening
+// hand that went back into the Deck rather than the go that kept its hand.
+//
+// The last of those is not a length and does not decide one. It is the distinction the page needs
+// in order to decide one, and it is made here because here is the only place that knows it: a cue
+// on its own cannot tell a shuffle that is about to be undone from the one that is not.
 public sealed record MatchPresentationBeat(
     MatchFrameView Frame,
     MatchEventCueView? Cue,
-    MatchPresentationOverlay Overlay
+    MatchPresentationOverlay Overlay,
+    bool WentBack
 );
 
 // The order a presentation happens in, worked out before any of it is played.
@@ -39,6 +45,7 @@ public static class MatchPresentationTimeline
             var gone = new List<string>(2);
             var dealing = Dealing(step);
             var stripping = Stripping(step);
+            var returned = Returned(step, dealing, stripping);
             var standing = false;
             var dealt = false;
             var stripped = false;
@@ -91,7 +98,9 @@ public static class MatchPresentationTimeline
                     // half way through it.
                     _ => overlay,
                 };
-                beats.Add(new(frame, cue, overlay.LandingOn(Landing(cue, step.Frame))));
+                beats.Add(
+                    new(frame, cue, overlay.LandingOn(Landing(cue, step.Frame)), returned[index])
+                );
 
                 // The choice that opens a game is the one command whose step goes on to tell
                 // something else: the turn that choice starts, and that turn's first draw, are
@@ -115,7 +124,7 @@ public static class MatchPresentationTimeline
             // The table settles on what the command actually did, and the deltas that stood in
             // for it until now are spent.
             frame = step.Frame;
-            beats.Add(new(frame, null, MatchPresentationOverlay.Empty));
+            beats.Add(new(frame, null, MatchPresentationOverlay.Empty, false));
         }
 
         return beats;
@@ -225,6 +234,47 @@ public static class MatchPresentationTimeline
         }
 
         return 0;
+    }
+
+    // Which cues of a step are a go at an opening hand that went back into the Deck.
+    //
+    // An opening hand has to have a Regular in it, and one that has not goes back: the mitt returns
+    // to the Deck, the Deck is shuffled, and another seven come out, for as long as it takes. Two
+    // openings in five take at least one more go and every one of them genuinely happened, so every
+    // one of them is played. What tells them apart from the go that stays is which draw the frame is
+    // the hand of, which is already worked out for each half of the table separately just above:
+    // every draw of a side before that one is a hand that went back.
+    //
+    // So is the shuffle that dealt it, which is the shuffle nearest before it on the same half of
+    // the table - a mulligan shuffles only the Deck the cards went back into, so a shuffle belongs
+    // to its own side's next draw and to nobody else's. Walking back from the end is what makes that
+    // the one question asked: each side remembers what became of the draw it has just passed.
+    private static bool[] Returned(MatchPresentationStepView step, int dealing, int stripping)
+    {
+        var returned = new bool[step.Events.Length];
+        var again = new bool[2];
+        for (var index = step.Events.Length - 1; index >= 0; index--)
+        {
+            var cue = step.Events[index];
+            if (cue.ActorIsLocalPlayer is not { } acting)
+            {
+                continue;
+            }
+
+            var side = acting ? 0 : 1;
+            if (cue.Kind == MatchAnimationKindView.Draw)
+            {
+                again[side] = index < (acting ? dealing : stripping);
+            }
+            else if (cue.Kind != MatchAnimationKindView.Shuffle)
+            {
+                continue;
+            }
+
+            returned[index] = again[side];
+        }
+
+        return returned;
     }
 
     // Whether this frame is the hand this draw dealt - all of it, rather than some of it. A hand

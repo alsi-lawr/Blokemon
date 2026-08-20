@@ -168,6 +168,7 @@ public partial class Match
             }
 
             _activeCue = beat.Cue;
+            _pace = Pace(beat);
             _presentationCard = beat.Cue is null ? null : PresentationCard(beat.Frame, beat.Cue);
             if (beat.Cue is not null)
             {
@@ -188,7 +189,7 @@ public partial class Match
             }
             else
             {
-                await WaitForPresentation(BeatDuration(beat.Cue), skipSignal.Task);
+                await WaitForPresentation(BeatDuration(beat), skipSignal.Task);
             }
         }
 
@@ -229,6 +230,7 @@ public partial class Match
         _presentationCard = null;
         _overlay = MatchPresentationOverlay.Empty;
         _blowLead = 0;
+        _pace = 1;
         _skipSignal = null;
         _revealSignal = null;
         _animationStatus = "Animation complete.";

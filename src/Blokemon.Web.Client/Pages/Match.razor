@@ -91,7 +91,7 @@ else
        something does. It is rendered rather than measured because the wait has to be true from
        the animation's first frame, and a value written in afterwards would arrive too late. *@
     <section class="battle-screen @AnimationClass() @DockClass() @SheetClass(frame, auras, sheet)"
-             style="@BlowLeadStyle()" aria-label="Blokemon match table" @ref="_battleScreen">
+             style="@MotionStyle()" aria-label="Blokemon match table" @ref="_battleScreen">
       <div class="battle-canvas">
         <MatchHud Frame="frame"
                   Animating="_animating"
@@ -229,6 +229,7 @@ else
     private string? _choiceValidation;
     private string? _animationStatus;
     private int _blowLead;
+    private double _pace = 1;
     private Guid? _commandId;
     private Guid? _selectedDeckId;
     private double _viewerScale = 0.5;

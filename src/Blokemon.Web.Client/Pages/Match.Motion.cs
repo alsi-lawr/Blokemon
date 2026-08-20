@@ -103,14 +103,17 @@ public partial class Match
                 return lead;
             }
 
-            lead += BeatDuration(cue);
+            lead += BeatDuration(beats[index]);
         }
 
         return 0;
     }
 
-    private string BlowLeadStyle() =>
-        $"--blow-lead: {_blowLead.ToString(CultureInfo.InvariantCulture)}ms";
+    // The two things the table is told about the beat it is playing: how long the card throwing a
+    // blow waits before it throws it, and the share of itself this beat's motion is played at.
+    private string MotionStyle() =>
+        $"--blow-lead: {_blowLead.ToString(CultureInfo.InvariantCulture)}ms; "
+        + $"--cue-pace: {_pace.ToString(CultureInfo.InvariantCulture)}";
 
     private string? AnimationClass() => MatchCueMarking.Table(_activeCue);
 
@@ -124,6 +127,29 @@ public partial class Match
     // How long the stylesheet takes to carry a card out of a hand, across the table and into the
     // place it ends up standing in.
     private const int CardJourney = 1000;
+
+    // The share of itself a go at an opening hand is played at when that hand went back into the
+    // Deck.
+    //
+    // A hand with no Regular in it goes back and another is dealt, which two openings in five do at
+    // least once, and a go that went back is the same riffle and the same deal as the go that keeps
+    // its hand. At full length each of them is over two seconds of the same sentence said again
+    // before the player may touch anything, four times over in the opening this was reported from.
+    // At a quarter of itself a go that went back is still unmistakably a Deck being shuffled and a
+    // hand being dealt, which is the whole point of playing it at all: a mulligan happened, and it
+    // is worth seeing rather than worth waiting through.
+    //
+    // The same share is handed to the stylesheet as the pace to play the runs at, so the beat and
+    // the run inside it are shortened by exactly the same amount and stay as long as each other. A
+    // shortened beat over a full-length run would not be a quick shuffle - it would be a shuffle cut
+    // off before it finished, which is a different thing to have seen.
+    private const double WentBackPace = 0.25;
+
+    private static double Pace(MatchPresentationBeat beat) => beat.WentBack ? WentBackPace : 1;
+
+    // How long a beat is held: what the cue on it takes, at the pace this beat is played at.
+    private static int BeatDuration(MatchPresentationBeat beat) =>
+        (int)(CueDuration(beat.Cue) * Pace(beat));
 
     // Each beat is held for as long as the stylesheet takes to play it, so the words and the
     // motion finish together, and the pause after a step lets the table settle before the next
@@ -142,7 +168,7 @@ public partial class Match
     // what it is called. Setup is why: the battle beginning and the Blokemon chosen to stand in the
     // Oche are the same kind and only the second one travels, so held to the length of the first it
     // was cut off short of the Oche and the phase changed over the top of it.
-    private static int BeatDuration(MatchEventCueView? cue) =>
+    private static int CueDuration(MatchEventCueView? cue) =>
         MatchCueState.CarriesACard(cue)
             ? CardJourney
             : cue?.Kind switch
