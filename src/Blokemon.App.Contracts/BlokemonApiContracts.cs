@@ -197,11 +197,25 @@ public sealed record MatchAttackView(
     string? DisabledReason
 );
 
+// Where the match is in its own structure. A glowing card shows what may be touched and cannot
+// show which situation the player is in, so the phase travels as the state it is rather than as a
+// sentence about it, and the surface that names it decides the words.
+public enum MatchPhaseView
+{
+    MulliganBonus,
+    OpeningPlacement,
+    Playing,
+    AwaitingEffectChoice,
+    AwaitingTriggerChoice,
+    AwaitingReplacement,
+    Complete,
+}
+
 public sealed record MatchFrameView(
     Guid Id,
     long Revision,
     int Round,
-    string Status,
+    MatchPhaseView Phase,
     MatchSideView Opponent,
     MatchSideView Player,
     bool IsComplete,

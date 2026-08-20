@@ -231,7 +231,7 @@ public sealed class MatchOpeningTests
             Guid.Parse("50000000-0000-0000-0000-000000000001"),
             1,
             0,
-            "Choose starting Blokemon",
+            MatchPhaseView.OpeningPlacement,
             Side("The Regular", hand: []),
             Side("You", hand: OpeningHand),
             false,
@@ -245,7 +245,7 @@ public sealed class MatchOpeningTests
             Guid.Parse("50000000-0000-0000-0000-000000000002"),
             42,
             9,
-            "Complete",
+            MatchPhaseView.Complete,
             Side("The Regular", hand: [], active: "old-theirs"),
             Side(
                 "You",

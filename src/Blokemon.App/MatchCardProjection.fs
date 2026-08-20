@@ -145,7 +145,10 @@ module internal MatchCardProjection =
         | MatchAction.EndRound -> "End the turn"
         | MatchAction.ChooseReplacement replacement ->
             $"Move {cardName state replacement} from the Bench to Active"
-        | MatchAction.ResolveEffectChoice -> "Make the required choice"
+        // A decision the match poses is not a move anyone chose, so it has no name of its own to
+        // take. It is named by the situation it puts the player in - the same word the band across
+        // the middle of the table uses for it - rather than by telling them to act.
+        | MatchAction.ResolveEffectChoice -> "Choosing"
         | MatchAction.ResolveKnockoutTrigger vim ->
             match vim with
             | ValueSome value -> $"Attach {cardName state value}"
@@ -180,6 +183,9 @@ module internal MatchCardProjection =
                 match command.Action with
                 | MatchAction.PlayKit(kit, ValueSome target) ->
                     $"{actor}: Attached {cardName state kit} to {cardName state target}."
+                // The log says what happened, and what happened was that the decision the match
+                // posed got its answer - the decision itself is machinery with no name to print.
+                | MatchAction.ResolveEffectChoice -> $"{actor} made a choice."
                 | _ -> $"{actor}: {actionLabel state command}."
             | ValueNone -> raise (UnreachableException())
         | MatchEventKind.CardsShuffled -> $"{actor} shuffled the Deck."

@@ -16,7 +16,25 @@
                CardTapped="CardTapped"
                CardViewOpened="CardViewOpened"
                CardViewClosed="CardViewClosed" />
-    <div class="turn-ribbon">@TurnRibbon(Frame)</div>
+    @{
+        var band = MatchBand.For(Frame);
+    }
+    @* Three slots, always in this order, either of the outer two able to be empty: the band holds
+       its place in every phase so that naming one never moves the table. *@
+    <div class="turn-ribbon @(Frame.Player.HasTurn ? null : "is-waiting")">
+        @if (band.Turn is { } turn)
+        {
+            <span class="ribbon-turn">@turn</span>
+        }
+        @if (band.Turn is not null && band.Phase is not null)
+        {
+            <span class="ribbon-sep" aria-hidden="true">·</span>
+        }
+        @if (band.Phase is { } phase)
+        {
+            <span class="ribbon-phase">@phase</span>
+        }
+    </div>
     <MatchSide Side="Frame.Player"
                SelectedCardInstanceId="@SelectedCardInstanceId"
                Cue="Cue"
@@ -67,7 +85,4 @@
 
     [Parameter]
     public EventCallback DeckTapped { get; set; }
-
-    private static string TurnRibbon(MatchFrameView frame) =>
-        frame.Player.HasTurn ? "Your turn" : $"{frame.Opponent.Name}'s turn";
 }

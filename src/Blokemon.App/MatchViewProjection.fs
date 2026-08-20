@@ -235,7 +235,7 @@ module internal MatchViewProjection =
             Guid.Parse state.Id.Value,
             state.Revision.Value,
             state.RoundNumber,
-            phaseLabel state.Phase,
+            phaseView state.Phase,
             side state cpuSide human cpuName (cpuDeckName document.Start.SecondDeck) false,
             side state human human displayName (playerDeckName document.StartCommand.DeckId) true,
             state.Phase = MatchPhase.Complete,

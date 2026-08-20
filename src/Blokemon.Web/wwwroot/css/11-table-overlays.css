@@ -1,3 +1,13 @@
+/*
+  The band across the middle of the table: whose turn it is, then what is being asked. It states
+  where the player is, which the glowing cards cannot show, and it occupies its own row of the
+  battlefield grid rather than floating over either half - so it never covers the Bench it is
+  naming a choice about.
+
+  It must never wrap. A second line would change the band's height and move the table on a phase
+  change, so the row stays on one line and the opponent's name, the one variable-length thing in
+  it, ellipsises instead.
+*/
 .turn-ribbon {
   position: relative;
   z-index: 30;
@@ -13,6 +23,13 @@
   font: 700 12px "Jost", sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  white-space: nowrap;
+  /*
+    Without this the band's own content is the floor on how narrow the table's middle row may be,
+    so a long name widens the whole table rather than being clipped, and the row moves. With it
+    the band is bounded by the table and the ellipsis below does the work instead.
+  */
+  min-width: 0;
 }
 
 .turn-ribbon::before,
@@ -21,6 +38,26 @@
   width: 80px;
   height: 1px;
   background: #77714c;
+}
+
+.ribbon-turn {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ribbon-sep {
+  color: #77714c;
+}
+
+/* What is being asked is the brighter of the two, because it is the half that changes. */
+.ribbon-phase {
+  color: #fff4c9;
+}
+
+/* While the match is waiting on the other half of the table, this half's name reads quieter. */
+.turn-ribbon.is-waiting .ribbon-turn {
+  color: #a49d7a;
 }
 
 .event-toast {

@@ -75,15 +75,14 @@ public partial class Match
                 false,
                 _menu
             ),
-            Stage.Choice when CurrentRequirement() is { } requirement => new(
-                MatchSheetMode.Choice,
-                PublicText(requirement.Label),
-                PublicText(_pending!.Label),
+            Stage.Choice when CurrentRequirement() is { } requirement => MatchSheetView.ChoiceStep(
+                frame,
+                _pending!,
+                requirement,
+                _forcedKinds.Contains(_pending!.Kind),
                 ChoiceProgress(requirement),
                 EffectDescription(_pending),
-                StepBackLabel(),
-                _forcedKinds.Contains(_pending!.Kind),
-                []
+                StepBackLabel()
             ),
             // A decision the match posed and then refused holds here, because the table has
             // nowhere to show it.

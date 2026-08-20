@@ -1,5 +1,6 @@
 using System.Globalization;
 using Blokemon.App.Contracts;
+using Blokemon.Web.Client.Components;
 using Microsoft.JSInterop;
 
 namespace Blokemon.Web.Client.Pages;
@@ -86,12 +87,7 @@ public partial class Match
         AllVisibleCards(frame).FirstOrDefault(card => card.Id == _selectedCardInstanceId);
 
     private static IEnumerable<MatchCardInstanceView> AllVisibleCards(MatchFrameView frame) =>
-        VisibleCards(frame.Player).Concat(VisibleCards(frame.Opponent));
-
-    private static IEnumerable<MatchCardInstanceView> VisibleCards(MatchSideView side) =>
-        (side.Active is { } active ? new[] { active }.Concat(side.Bench) : side.Bench)
-            .Concat(side.Hand)
-            .Concat(side.InPlayKits);
+        MatchTable.Shown(frame);
 
     private MatchFrameView DisplayFrame() => _presentedFrame ?? _view!.Match!.Frame;
 }

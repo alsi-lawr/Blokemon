@@ -4,15 +4,19 @@ using Shouldly;
 
 namespace Blokemon.Web.Tests;
 
-// A decision the match poses - a pending effect choice - carries the engine's own name for
-// itself: Blokemon.App prints "Make the required choice" for MatchAction.ResolveEffectChoice
-// (MatchCardProjection.actionLabel). That name is machinery, not something a player can act on,
-// so no surface may print it. The decision is normally taken the moment it is offered and the
-// player only ever sees the question inside it; the one surface that could have printed the name
-// is what is left when the answer comes back refused, which is what these pin.
+// A decision the match poses - a pending effect choice - carries the engine's own name for itself
+// (MatchCardProjection.actionLabel). That name is machinery, not something a player can act on, so
+// no surface may print it.
+//
+// Two surfaces can reach it. The decision is taken the moment it is offered, so what the player
+// normally sees is the step of the question inside it, whose eyebrow names the move being answered
+// - and a posed decision is a move nobody chose, so there is no move there to name. The other is
+// what is left when the answer comes back refused and the decision has nowhere on the table to
+// hold. Both are pinned here, and each is pinned against an arbitrary label rather than against
+// any one sentence, so renaming the decision cannot open a route back to the surface.
 public sealed class MatchPosedDecisionCopyTests
 {
-    private const string EngineLabel = "Make the required choice";
+    private const string EngineLabel = "ENGINE MACHINERY";
 
     private const string Question = "Choose 2 cards";
 
@@ -28,7 +32,7 @@ public sealed class MatchPosedDecisionCopyTests
         // Structural rather than a match on one string: whatever the engine calls a decision,
         // the heading comes from the question it carries.
         MatchText
-            .PosedHeading(PosedDecision("ENGINE MACHINERY", "Use this effect?"))
+            .PosedHeading(PosedDecision("SOMETHING ELSE ENTIRELY", "Use this effect?"))
             .ShouldBe("Use this effect?");
 
         // A decision carrying no question at all falls back to minimal status, never the label.
@@ -54,7 +58,7 @@ public sealed class MatchPosedDecisionCopyTests
     [Test]
     public void PosedRetry_PrintsNothingTheEngineNamedTheDecision()
     {
-        foreach (var label in new[] { EngineLabel, "ENGINE MACHINERY", "Resolve effect choice" })
+        foreach (var label in new[] { EngineLabel, "Resolve effect choice", "Choosing" })
         {
             var sheet = MatchSheetView.PosedRetry(PosedDecision(label, Question));
 
@@ -79,6 +83,54 @@ public sealed class MatchPosedDecisionCopyTests
                 );
         }
     }
+
+    [Test]
+    public void ChoiceStep_NamesTheMoveItAnswersAndNamesNoMoveForADecisionNobodyChose()
+    {
+        // The step is placed by the move it is answering - "Choose 2 cards" under "Play Talent
+        // Scout" - and that is worth keeping. A decision the match posed is a move nobody chose,
+        // so there is nothing to place it against and the engine's word for it is not a
+        // substitute: whatever the decision is called, the step says nothing there.
+        var chosen = new MatchActionView(
+            "command-1",
+            MatchActionKindView.PlayTrainer,
+            "Play a Kit",
+            true,
+            null,
+            null,
+            null,
+            [Requirement(Question)],
+            null
+        );
+
+        Step(chosen).Eyebrow.ShouldBe("Play a Kit");
+        Step(PosedDecision(EngineLabel, Question)).Eyebrow.ShouldBeNull();
+        Step(PosedDecision("Resolve effect choice", Question)).Eyebrow.ShouldBeNull();
+    }
+
+    private static MatchSheetView Step(MatchActionView action) =>
+        MatchSheetView.ChoiceStep(
+            Table,
+            action,
+            action.ChoiceRequirements[0],
+            posed: action.Kind == MatchActionKindView.ResolveChoice,
+            null,
+            null,
+            null
+        );
+
+    // A table with nothing on it: what the step says about itself does not depend on where the
+    // cards it asks for happen to be.
+    private static readonly MatchFrameView Table = new(
+        Guid.Parse("70000000-0000-0000-0000-000000000001"),
+        1,
+        1,
+        MatchPhaseView.AwaitingEffectChoice,
+        new("The Regular", "Deck", 20, 0, 6, null, [], [], [], false),
+        new("You", "Deck", 20, 0, 6, null, [], [], [], true),
+        false,
+        null
+    );
 
     private static MatchActionView PosedDecision(string label, params string[] questions) =>
         new(

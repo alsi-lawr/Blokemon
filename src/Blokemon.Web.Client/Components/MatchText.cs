@@ -16,6 +16,13 @@ public static class MatchText
             ? PublicText(action.ChoiceRequirements[0].Label)
             : "Required";
 
+    // A step of a question is answering some move, and naming that move is what places the step:
+    // "Choose 2 cards" under "Play Talent Scout". A decision the match posed was chosen by nobody,
+    // so there is no move to name - and the band across the middle of the table has already said
+    // the player is in a choice, which is all its own name could honestly have carried.
+    public static string? MoveBeingAnswered(MatchActionView action) =>
+        action.Kind == MatchActionKindView.ResolveChoice ? null : PublicText(action.Label);
+
     public static string PublicZone(string zone) =>
         zone switch
         {

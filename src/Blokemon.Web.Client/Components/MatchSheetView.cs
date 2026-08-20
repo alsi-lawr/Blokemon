@@ -24,6 +24,34 @@ public sealed record MatchSheetView(
     MatchActionView[] Options
 )
 {
+    // One step of a question, on the surface it is asked on.
+    //
+    // A step is centred over the table only when it answers itself: a decision the match posed
+    // whose candidates are cards the table cannot show, so the sheet holds them, or one answered
+    // by its own buttons. A step asked OF the table must keep out of the middle, because the cards
+    // it is asking for are underneath - a player told to choose a target would be choosing from
+    // behind the words. It goes beside the table instead, where every other step of every
+    // player-driven move already goes.
+    public static MatchSheetView ChoiceStep(
+        MatchFrameView frame,
+        MatchActionView pending,
+        MatchChoiceRequirementView requirement,
+        bool posed,
+        string? progress,
+        string? effect,
+        string? stepBackLabel
+    ) =>
+        new(
+            MatchSheetMode.Choice,
+            MatchText.PublicText(requirement.Label),
+            MatchText.MoveBeingAnswered(pending),
+            progress,
+            effect,
+            stepBackLabel,
+            posed && !MatchTable.AsksTheTable(frame, requirement),
+            []
+        );
+
     // What a decision the match posed holds on when the answer it sent came back refused. There
     // is nothing on the table to try again with, so it asks the question the decision carries and
     // offers the one press that sends the answer again: no list of options, no way to dismiss

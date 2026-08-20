@@ -21,15 +21,18 @@ module internal MatchLabels =
 
         result.ToString()
 
-    let phaseLabel (phase: MatchPhase) =
+    /// Which phase the match is in, carried as the state itself. The words for it belong to the
+    /// surface that names it, because what the table says depends on whose turn it is as well as
+    /// on the phase, and neither fact means anything to the player without the other.
+    let phaseView (phase: MatchPhase) =
         match phase with
-        | MatchPhase.MulliganBonus -> "Extra draw"
-        | MatchPhase.OpeningPlacement -> "Choose starting Blokemon"
-        | MatchPhase.Playing -> "Battle"
-        | MatchPhase.AwaitingEffectChoice -> "Choose an effect"
-        | MatchPhase.AwaitingTriggerChoice -> "Make a required choice"
-        | MatchPhase.AwaitingReplacement -> "Choose replacement"
-        | MatchPhase.Complete -> "Complete"
+        | MatchPhase.MulliganBonus -> MatchPhaseView.MulliganBonus
+        | MatchPhase.OpeningPlacement -> MatchPhaseView.OpeningPlacement
+        | MatchPhase.Playing -> MatchPhaseView.Playing
+        | MatchPhase.AwaitingEffectChoice -> MatchPhaseView.AwaitingEffectChoice
+        | MatchPhase.AwaitingTriggerChoice -> MatchPhaseView.AwaitingTriggerChoice
+        | MatchPhase.AwaitingReplacement -> MatchPhaseView.AwaitingReplacement
+        | MatchPhase.Complete -> MatchPhaseView.Complete
         | _ -> raise (UnreachableException())
 
     let cardChoiceLabel (minimum: int) (maximum: int) =
