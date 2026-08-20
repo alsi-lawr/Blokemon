@@ -62,6 +62,19 @@ function centre(element) {
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, rect };
 }
 
+// A card can have several things running on it at once, and one the player is hovering or has left
+// focus on carries a fade of its own alongside whatever the deal started. Only the runs a
+// stylesheet gave a name are being looked for here, so the rest are passed over rather than asked a
+// question they have no answer to.
+function namedAnimation(element, matches) {
+  return element
+    .getAnimations()
+    .find(
+      (animation) =>
+        typeof animation.animationName === "string" && matches(animation.animationName),
+    );
+}
+
 export function positionDrawCards(table) {
   const deckZone = table?.classList.contains("cue-actor-opponent")
     ? ".opponent-zone"
@@ -122,18 +135,14 @@ export function positionDrawCards(table) {
   }
 
   void table.offsetWidth;
-  const deckAnimation = deck
-    .getAnimations()
-    .find((animation) => animation.animationName === "deck-press");
+  const deckAnimation = namedAnimation(deck, (name) => name === "deck-press");
   deckAnimation?.pause();
   if (deckAnimation) {
     deckAnimation.currentTime = 0;
   }
 
   for (const { element } of visuals) {
-    const animation = element
-      .getAnimations()
-      .find((candidate) => candidate.animationName.startsWith("draw-arc"));
+    const animation = namedAnimation(element, (name) => name.startsWith("draw-arc"));
     if (!animation) {
       continue;
     }
