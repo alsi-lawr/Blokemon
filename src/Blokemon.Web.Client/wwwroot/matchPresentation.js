@@ -219,13 +219,22 @@ export function positionPlayCard(table) {
   const to = playLanding(table, landing);
   traveller.style.setProperty("--play-from-x", `${from.x - rest.x}px`);
   traveller.style.setProperty("--play-from-y", `${from.y - rest.y}px`);
+
+  // How big the card is at either end of its journey is told as a share of how big it is where it
+  // rests, and a card that has not been painted yet, or is standing in a layout collapsed to
+  // nothing, measures nothing at all. A share of nothing is no size a stylesheet can read, and a
+  // card handed one crosses the table at whatever size it already had - so the width it is compared
+  // against is held above zero here, as the deal already holds the width of the card it deals. A
+  // hundredth of a pixel is smaller than anything the table draws, so no card anybody can see is
+  // sized any differently for it.
+  const restWidth = Math.max(0.01, rest.rect.width);
   traveller.style.setProperty(
     "--play-from-scale",
-    `${Math.max(0.05, from.rect.width / rest.rect.width)}`,
+    `${Math.max(0.05, from.rect.width / restWidth)}`,
   );
   traveller.style.setProperty("--play-to-x", `${to.x - rest.x}px`);
   traveller.style.setProperty("--play-to-y", `${to.y - rest.y}px`);
-  traveller.style.setProperty("--play-to-scale", `${Math.max(0.05, to.width / rest.rect.width)}`);
+  traveller.style.setProperty("--play-to-scale", `${Math.max(0.05, to.width / restWidth)}`);
 
   // How high the card is carried over the table is a share of how far it is carried, and how far
   // it dips as it is picked up is a share of how big it is where it is picked up from: both are
