@@ -97,12 +97,16 @@ public static class MatchCueMarking
             ? $"cue-{table.Kind.ToString().ToLowerInvariant()}{ActorClass(table.Actor)}"
             : null;
 
+    // All three halves a cue can belong to, including neither. Nobody acting was left unmarked,
+    // which meant a rule that wanted only the events nobody does had nothing to say so with: it
+    // could be written for one half or for the whole table and for nothing else, and the one that
+    // needed the third thing was written for the whole table and reached both Decks.
     private static string ActorClass(MatchCueActor actor) =>
         actor switch
         {
             MatchCueActor.Local => " cue-actor-local",
             MatchCueActor.Opponent => " cue-actor-opponent",
-            _ => string.Empty,
+            _ => " cue-actor-none",
         };
 
     // How many cards a Deck is shown to be made of while it is being shuffled: half of them part to

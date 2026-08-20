@@ -121,6 +121,10 @@ public partial class Match
         && _presentationCard is not null
         && _overlay.Landing is not null;
 
+    // How long the stylesheet takes to carry a card out of a hand, across the table and into the
+    // place it ends up standing in.
+    private const int CardJourney = 1000;
+
     // Each beat is held for as long as the stylesheet takes to play it, so the words and the
     // motion finish together, and the pause after a step lets the table settle before the next
     // command speaks. Changing one of these without the keyframe it belongs to desynchronises
@@ -132,20 +136,28 @@ public partial class Match
     // is held for exactly the part of the lunge before contact: the card arrives as the number
     // turns over. What is left of the lunge, and the recoil that starts at contact, both have to
     // finish inside the beat that follows, so that one is the longer of the two.
+    //
+    // A card carried out of a hand makes one journey of one length whichever kind of cue is
+    // carrying it, so how long that beat is held is asked of what the cue is doing rather than of
+    // what it is called. Setup is why: the battle beginning and the Blokemon chosen to stand in the
+    // Oche are the same kind and only the second one travels, so held to the length of the first it
+    // was cut off short of the Oche and the phase changed over the top of it.
     private static int BeatDuration(MatchEventCueView? cue) =>
-        cue?.Kind switch
-        {
-            MatchAnimationKindView.Setup => 900,
-            MatchAnimationKindView.Shuffle => 1200,
-            MatchAnimationKindView.Draw => 900,
-            MatchAnimationKindView.Play or MatchAnimationKindView.Evolve => 1000,
-            MatchAnimationKindView.Attack => 658,
-            MatchAnimationKindView.Damage => 840,
-            MatchAnimationKindView.Knockout => 900,
-            MatchAnimationKindView.Turn => 950,
-            MatchAnimationKindView.Coin => 1400,
-            MatchAnimationKindView.Victory => 1100,
-            null => 140,
-            _ => 520,
-        };
+        MatchCueState.CarriesACard(cue)
+            ? CardJourney
+            : cue?.Kind switch
+            {
+                MatchAnimationKindView.Setup => 900,
+                MatchAnimationKindView.Shuffle => 1200,
+                MatchAnimationKindView.Draw => 900,
+                MatchAnimationKindView.Play or MatchAnimationKindView.Evolve => CardJourney,
+                MatchAnimationKindView.Attack => 658,
+                MatchAnimationKindView.Damage => 840,
+                MatchAnimationKindView.Knockout => 900,
+                MatchAnimationKindView.Turn => 950,
+                MatchAnimationKindView.Coin => 1400,
+                MatchAnimationKindView.Victory => 1100,
+                null => 140,
+                _ => 520,
+            };
 }

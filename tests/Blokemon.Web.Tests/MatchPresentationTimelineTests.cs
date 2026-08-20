@@ -286,8 +286,7 @@ public sealed class MatchPresentationTimelineTests
 
     // Whether the presentation is holding this card up over the table, travelling or in the middle.
     private static bool Carried(MatchPresentationBeat beat, string cardInstanceId) =>
-        beat.Cue?.Kind is MatchAnimationKindView.Play or MatchAnimationKindView.Evolve
-        && beat.Cue.SourceCardInstanceId == cardInstanceId;
+        MatchCueState.CarriesACard(beat.Cue) && beat.Cue?.SourceCardInstanceId == cardInstanceId;
 
     // Whether the hand draws this card at this beat, which it does not once the presentation says
     // the hand has lost it.
@@ -316,12 +315,15 @@ public sealed class MatchPresentationTimelineTests
     [Test]
     [Arguments(MatchAnimationKindView.Play)]
     [Arguments(MatchAnimationKindView.Evolve)]
+    [Arguments(MatchAnimationKindView.Setup)]
     public void OnlyOneOfACardIsEverOnScreen(MatchAnimationKindView played)
     {
-        // Playing a card and promoting one are the same journey: the presentation picks the card
-        // up and carries it, while the hand it came out of still holds it until the frame catches
-        // up. Anything the command does in between - reading a card out, tossing a beer mat - used
-        // to hand the copy straight back, and a promotion never concealed it at all.
+        // Playing a card, promoting one and choosing who opens the game are the same journey: the
+        // presentation picks the card up and carries it, while the hand it came out of still holds
+        // it until the frame catches up. Anything the command does in between - reading a card out,
+        // tossing a beer mat - used to hand the copy straight back, a promotion never concealed it
+        // at all, and the opening choice handed it back the moment it stood the card up in the
+        // Oche, so the one card of the opening was held and standing at once.
         var beats = MatchPresentationTimeline.Beats(
             Presentation(
                 HandFrame(held: false),

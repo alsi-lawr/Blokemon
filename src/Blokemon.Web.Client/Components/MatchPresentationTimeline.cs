@@ -98,11 +98,15 @@ public static class MatchPresentationTimeline
                 // told inside the same command. So the table stands the chosen Blokemon up the
                 // moment it has been carried there - it is standing in the Oche for the turn that
                 // follows rather than nowhere at all until the draw - and the phase changes with
-                // it, after the motion rather than before it. The hands stay as they were, because
-                // the hand that turn draws is still the draw's own to deal.
+                // it, after the motion rather than before it. The hand that turn draws is still the
+                // draw's own to deal, so the hand otherwise stays as it was - less the card that
+                // has just been carried out of it, which is standing in the Oche now and cannot
+                // also still be held. Nothing conceals it any more: the concealment ends when the
+                // table catches up, and the table has, so the hand it left has to have lost it.
                 if (Stands(cue))
                 {
                     standing = true;
+                    before = Handed(before, cue);
                     overlay = MatchPresentationOverlay.Empty;
                     gone.Clear();
                 }
@@ -155,6 +159,25 @@ public static class MatchPresentationTimeline
     // stands up early for. Every other card played lands when the command settles, one beat later.
     private static bool Stands(MatchEventCueView cue) =>
         cue.Kind == MatchAnimationKindView.Setup && cue.SourceCardInstanceId is not null;
+
+    // The hand a card has just been carried out of, one card lighter. Only the half that made the
+    // choice loses anything: theirs is a count of backs with nothing in it to name, so it is one
+    // narrower rather than one card shorter, which is the same thing said the only way their strip
+    // can say it.
+    private static MatchFrameView Handed(MatchFrameView frame, MatchEventCueView cue) =>
+        cue.ActorIsLocalPlayer switch
+        {
+            true => frame with { Player = Less(frame.Player, cue.SourceCardInstanceId) },
+            false => frame with { Opponent = Less(frame.Opponent, cue.SourceCardInstanceId) },
+            _ => frame,
+        };
+
+    private static MatchSideView Less(MatchSideView side, string? cardInstanceId) =>
+        side with
+        {
+            HandCount = Math.Max(0, side.HandCount - 1),
+            Hand = [.. side.Hand.Where(card => card.Id != cardInstanceId)],
+        };
 
     // Which cue of a step deals the opponent the hand they keep, so their strip is empty until it
     // and full from it.

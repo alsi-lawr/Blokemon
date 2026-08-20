@@ -16,7 +16,17 @@
   animation: target-pulse 0.7s ease-in-out;
 }
 
-.cue-setup .deck-card-back {
+/*
+  The battle beginning stirs both Decks. Setup says two things, though - the battle beginning, and
+  a player choosing who stands in the Oche - and only the first of them is about the Decks at all:
+  the second carries a card out of a hand, which is the journey at the foot of this file. Written
+  on the kind alone this took both meanings, so both Decks riffled while the chosen Blokemon was
+  still crossing the table, with nothing being shuffled and nobody having asked for it.
+
+  So it is keyed on the half acting, like every other Deck rule here. Nobody deals the battle
+  beginning and a player does choose, which is the difference the two meanings have always had.
+*/
+.cue-setup.cue-actor-none .deck-card-back {
   animation: shuffle 0.65s ease-in-out;
 }
 
