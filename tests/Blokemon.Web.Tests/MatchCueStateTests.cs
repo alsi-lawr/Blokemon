@@ -206,7 +206,7 @@ public sealed class MatchCueStateTests
     // backs - so a cue of theirs about one names a card nothing on the table is.
     //
     // There is no last arm on purpose. A member added to MatchAnimationKindView without a
-    // presentation declared for it does not compile - CS8509 is an error in this project - so the
+    // presentation declared for it does not compile - CS8509 is an error repository-wide - so the
     // one thing that cannot happen is a new animation quietly getting no contract at all. That is
     // the whole difference between this and a list somebody has to remember to extend.
 #pragma warning disable CS8524

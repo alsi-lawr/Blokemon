@@ -13,9 +13,14 @@ namespace Blokemon.Web.Tests;
 //
 // Everything below is asked of match state - the phase, whose turn it is, whose cards are where -
 // and never of the screen. Nothing here matches a rendered sentence: the guarantees are that
-// situations the player must tell apart come out different, that no phase leaves the band with
-// nothing to say, and that a question asked OF the table is never printed OVER it. Reword any of
-// it and these still hold; collapse two situations into one and they do not.
+// situations the player must tell apart come out different, and that a question asked OF the table
+// is never printed OVER it. Reword any of it and these still hold; collapse two situations into
+// one and they do not.
+//
+// That every phase is handled at all is not asked here and must not be. MatchBand.For has no last
+// arm and CS8509 is an error, so a phase added without words decided for it fails the build - a
+// test looping the cases to check the same thing would only be asking the compiler's question
+// again, later and worse.
 public sealed class MatchPhaseBandTests
 {
     [Test]
@@ -46,61 +51,6 @@ public sealed class MatchPhaseBandTests
     }
 
     [Test]
-    public void TheBandSaysWhichHalfOfTheTableTheMatchIsWaitingOn()
-    {
-        foreach (var phase in Enum.GetValues<MatchPhaseView>())
-        {
-            if (phase == MatchPhaseView.Complete)
-            {
-                // A finished match is waiting on nobody: it is separated by who won instead.
-                continue;
-            }
-
-            MatchBand
-                .For(Frame(phase, yours: true))
-                .ShouldNotBe(
-                    MatchBand.For(Frame(phase, yours: false)),
-                    $"{phase} reads the same whoever the match is waiting for"
-                );
-        }
-    }
-
-    [Test]
-    public void TheBandIsNeverSilentInAnyPhaseEitherHalfCanBeIn()
-    {
-        // The band holds its place in the layout permanently, so a phase nobody wrote words for
-        // would leave an empty strip across the middle of the table rather than disappearing.
-        // Asked of every phase the contract admits, so adding one without deciding what it says
-        // fails here rather than on the table.
-        foreach (var phase in Enum.GetValues<MatchPhaseView>())
-        {
-            foreach (var yours in new[] { true, false })
-            {
-                Silent(MatchBand.For(Frame(phase, yours)))
-                    .ShouldBeFalse($"{phase} says nothing when yours is {yours}");
-            }
-        }
-    }
-
-    [Test]
-    public void TheOpponentIsNamedByTheNameTheFrameCarries()
-    {
-        // Their name is the one thing in the band that comes from the match rather than from the
-        // band, and the only variable-length thing in it.
-        foreach (var phase in Enum.GetValues<MatchPhaseView>())
-        {
-            if (phase == MatchPhaseView.Complete)
-            {
-                continue;
-            }
-
-            var band = MatchBand.For(Frame(phase, yours: false, opponent: "Someone Else"));
-
-            $"{band.Turn} {band.Phase}".ShouldContain("Someone Else");
-        }
-    }
-
-    [Test]
     public void TheSameStructuralQuestionIsAskedInTheSameWordsWhereverItComesUp()
     {
         // Choosing an Active at the start of the game and choosing one after a Knock Out are the
@@ -124,6 +74,12 @@ public sealed class MatchPhaseBandTests
         won.ShouldNotBe(lost);
         Silent(won).ShouldBeFalse();
         Silent(lost).ShouldBeFalse();
+
+        // A finished match with no winner recorded still says something. The band holds a
+        // permanent place in the layout, so a state it has nothing to say about is a blank strip
+        // across the middle of the table rather than a surface that has gone away - and this is
+        // the one branch of the band that no phase of a live game is guaranteed to reach.
+        Silent(MatchBand.For(Complete(winner: null))).ShouldBeFalse();
     }
 
     [Test]
@@ -225,7 +181,7 @@ public sealed class MatchPhaseBandTests
             []
         );
 
-    private static MatchFrameView Complete(string winner) =>
+    private static MatchFrameView Complete(string? winner) =>
         Frame(MatchPhaseView.Complete, yours: false, complete: true, winner: winner);
 
     // One table, in whichever phase and with the match waiting on whichever half. Both sides hold

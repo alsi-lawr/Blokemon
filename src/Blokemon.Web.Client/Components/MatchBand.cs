@@ -28,6 +28,13 @@ public sealed record MatchBand(string? Turn, string? Phase)
     // distinction that changes nothing either player can do.
     private const string Choosing = "Choosing";
 
+    // There is no last arm on purpose. A phase added to MatchPhaseView without words decided for
+    // it does not compile - CS8509 is an error across the repository - so the one thing that
+    // cannot happen is a new phase quietly leaving the middle of the table blank. A last arm would
+    // swallow exactly that and turn it into something only a running game could tell you about.
+    // The suppression below is for the other half of the same warning: a value cast in from
+    // outside the names the enum declares, which nothing here can produce.
+#pragma warning disable CS8524
     public static MatchBand For(MatchFrameView frame)
     {
         var yours = frame.Player.HasTurn;
@@ -47,9 +54,9 @@ public sealed record MatchBand(string? Turn, string? Phase)
             ),
             // The band states the outcome rather than falling silent or holding a stale turn.
             MatchPhaseView.Complete => new(Outcome(frame), null),
-            _ => throw new ArgumentOutOfRangeException(nameof(frame), frame.Phase, null),
         };
     }
+#pragma warning restore CS8524
 
     private static string Outcome(MatchFrameView frame) =>
         frame.Winner is not { } winner ? "Battle over"

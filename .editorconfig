@@ -19,6 +19,12 @@ dotnet_diagnostic.IDE0055.severity = none
 dotnet_diagnostic.CA1711.severity = none
 dotnet_diagnostic.CA1716.severity = none
 
+# A switch over a closed set of cases is a decision about every one of them. Leaving one out is
+# a case nobody decided what to do about, and a last arm that swallows it turns that into a
+# runtime surprise - so the compiler is the thing that catches it, everywhere, rather than a test
+# looping the cases to ask whether anyone remembered.
+dotnet_diagnostic.CS8509.severity = error
+
 [*.{fs,fsi,fsx}]
 indent_size = 4
 tab_width = 4
