@@ -142,11 +142,11 @@
   transform: translateY(-5px) scale(1.04);
 }
 
-.tray-card:focus-visible {
+.tray-card .card-press-surface:focus-visible {
   outline: none;
 }
 
-.tray-card:focus-visible .tray-card-visual {
+.tray-card:has(.card-press-surface:focus-visible) .tray-card-visual {
   outline: 3px solid var(--gold);
   outline-offset: 3px;
 }

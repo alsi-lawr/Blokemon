@@ -3,30 +3,63 @@
     drives the aura interaction; a press held past the threshold is a view and opens the card
     viewer until the pointer is released. Pointer events carry both touch and mouse, and a press
     that moves far enough to be a scroll or a drag is neither a tap nor a view.
+
+    Reading a card cannot be a press of the same surface as well. Enter and Space on a button are
+    the tap - the browser's own activation - so the keyboard has no second press to give, and a
+    card attached to this one is drawn inside this surface and can never be reached on its own.
+    So every card this surface can read gets a control of its own alongside it: the card itself
+    first, then each distinct card hanging off it. The controls are laid out with the card and
+    show themselves the moment it is engaged, by hover or by focus, so reaching a card is what
+    turns up the way to read it.
 *@
-<button type="button"
-        class="@Class"
-        style="@Style"
-        aria-label="@AriaLabel"
-        aria-pressed="@AriaPressed"
-        @onclick="Tap"
-        @onclick:stopPropagation="true"
-        @onpointerdown="PressDown"
-        @onpointermove="PressMove"
-        @onpointerup="PressUp"
-        @onpointercancel="PressCancel"
-        @oncontextmenu:preventDefault="true"
-        @oncontextmenu:stopPropagation="true">
-    @ChildContent
-</button>
+<span class="@Class card-press" style="@Style">
+    <button type="button"
+            class="card-press-surface"
+            aria-label="@AriaLabel"
+            aria-pressed="@AriaPressed"
+            @ref="_press"
+            @onclick="Tap"
+            @onclick:stopPropagation="true"
+            @onpointerdown="PressDown"
+            @onpointermove="PressMove"
+            @onpointerup="PressUp"
+            @onpointercancel="PressCancel"
+            @oncontextmenu:preventDefault="true"
+            @oncontextmenu:stopPropagation="true">
+        @ChildContent
+    </button>
+    <span class="card-reading">
+        @foreach (var readable in Readable())
+        {
+            <button type="button"
+                    class="card-read"
+                    aria-label="@($"Read {readable.Name}")"
+                    @onclick="() => Read(readable.Key)"
+                    @onclick:stopPropagation="true"
+                    @oncontextmenu:preventDefault="true"
+                    @oncontextmenu:stopPropagation="true">
+                <span class="card-read-glyph" aria-hidden="true"></span>@readable.Name
+            </button>
+        }
+    </span>
+</span>
 
 @code {
     private readonly CardHold _hold = new();
+    private ElementReference _press;
     private bool _suppressTap;
     private bool _parametersChanged;
 
     [Parameter, EditorRequired]
     public required string CardInstanceId { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string CardName { get; set; }
+
+    // The cards hanging off this one, which are drawn inside this surface and so have no control
+    // of their own until this one lends them each a reading control.
+    [Parameter]
+    public IReadOnlyList<MatchAttachedCardView> Attached { get; set; } = [];
 
     [Parameter]
     public string? Class { get; set; }
@@ -50,7 +83,14 @@
     public EventCallback ViewClosed { get; set; }
 
     [Parameter]
+    public EventCallback<CardReadRequest> ReadRequested { get; set; }
+
+    [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    // The element the card is pressed by, which is where focus belongs whenever the table takes it
+    // back from something that borrowed it.
+    public ElementReference PressSurface => _press;
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -67,6 +107,25 @@
         _parametersChanged = false;
         return changed;
     }
+
+    // Everything readable from this surface: the card itself, then the cards attached to it. Two
+    // copies of one card are one thing to read, so a Blokemon carrying four of the same Energy
+    // offers that Energy once rather than four times.
+    private IEnumerable<(string Key, string Name)> Readable()
+    {
+        yield return (CardInstanceId, CardName);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var attached in Attached)
+        {
+            if (seen.Add(attached.Card.Id))
+            {
+                yield return (attached.ViewKey, attached.Card.Name);
+            }
+        }
+    }
+
+    private Task Read(string cardInstanceId) =>
+        ReadRequested.InvokeAsync(new(cardInstanceId, _press));
 
     private async Task Tap()
     {

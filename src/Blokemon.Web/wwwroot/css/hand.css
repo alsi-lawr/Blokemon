@@ -46,25 +46,28 @@
   transition: filter 0.2s;
 }
 
-/* The card being pressed or chosen comes to the front of the whole hand. */
+/*
+  The card being pressed or chosen comes to the front of the whole hand, and stays there while the
+  keyboard is anywhere on it - on the card itself or on one of the controls that read it.
+*/
 .hand-card:hover,
-.hand-card:focus-visible,
+.hand-card:has(:focus-visible),
 .hand-card.is-aura-selected {
   z-index: 60;
   transform: translateY(-68px) rotate(0) scale(1.08);
 }
 
-.hand-card:focus-visible {
+.hand-card .card-press-surface:focus-visible {
   outline: none;
 }
 
 /* Hover keeps its own warm lift, but never paints over a white aura. */
 .hand-card:not(.is-aura):hover .hand-card-visual,
-.hand-card:not(.is-aura):focus-visible .hand-card-visual {
+.hand-card:not(.is-aura):has(:focus-visible) .hand-card-visual {
   filter: drop-shadow(0 0 12px rgb(244 189 63 / 55%));
 }
 
-.hand-card:focus-visible .hand-card-visual {
+.hand-card:has(.card-press-surface:focus-visible) .hand-card-visual {
   outline: 3px solid var(--gold);
   outline-offset: 3px;
 }

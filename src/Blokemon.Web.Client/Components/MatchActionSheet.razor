@@ -88,12 +88,14 @@
                                 @foreach (var card in tray)
                                 {
                                     <CardPress CardInstanceId="@card.Id"
+                                               CardName="@card.Card.Name"
                                                Class="@TrayCardClass(card.Id, Auras)"
                                                AriaLabel="@TrayCardLabel(PlayerName, card)"
                                                AriaPressed="@Auras.Pressed(card.Id)"
                                                Tapped="CardTapped"
                                                ViewOpened="CardViewOpened"
-                                               ViewClosed="CardViewClosed">
+                                               ViewClosed="CardViewClosed"
+                                               ReadRequested="CardReadRequested">
                                         <span class="tray-card-visual">
                                             <CardFace Card="card.Card" Size="CardFaceSize.Hand" ShowTitle="false" />
                                         </span>
@@ -212,6 +214,9 @@
     public EventCallback CardViewClosed { get; set; }
 
     [Parameter]
+    public EventCallback<CardReadRequest> CardReadRequested { get; set; }
+
+    [Parameter]
     public EventCallback SteppedBack { get; set; }
 
     [Parameter]
@@ -229,6 +234,6 @@
     // the tray says whose zone a candidate came out of rather than assuming it is yours.
     private static string TrayCardLabel(string playerName, MatchCardInstanceView card) =>
         card.OwnerName == playerName
-            ? $"Choose {card.Card.Name} from your {PublicZone(card.Zone)}. Press and hold to view the card."
-            : $"Choose {card.Card.Name} from {card.OwnerName}'s {PublicZone(card.Zone)}. Press and hold to view the card.";
+            ? $"Choose {card.Card.Name} from your {PublicZone(card.Zone)}"
+            : $"Choose {card.Card.Name} from {card.OwnerName}'s {PublicZone(card.Zone)}";
 }

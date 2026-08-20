@@ -38,6 +38,12 @@ public static class MatchAttachedCards
     // the pill and the faces in the fan are two readings of one fact rather than two facts.
     public static int EnergyCount(MatchCardInstanceView host) => host.AttachedEnergy.Length;
 
+    // Both fans as one list, which is what a host offers to be read: the faces are drawn in two
+    // places on the card, but every one of them is a card hanging off this one and the player
+    // reaching for them is reaching for the same thing either time.
+    public static IReadOnlyList<MatchAttachedCardView> All(MatchCardInstanceView host) =>
+        [.. Energy(host), .. Tools(host)];
+
     // The card a name belongs to, or nothing when the name is not one of this host's own.
     public static CardView? Find(MatchCardInstanceView host, string viewKey) =>
         Found(host, MatchAttachedCardKind.Energy, host.AttachedEnergy, viewKey)

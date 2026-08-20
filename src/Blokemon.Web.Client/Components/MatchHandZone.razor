@@ -15,13 +15,15 @@
     {
         var card = Hand[handIndex];
         <CardPress CardInstanceId="@card.Id"
+                   CardName="@card.Card.Name"
                    Class="@MatchCueMarking.HandCard(card.Id, Auras, Cue, Overlay)"
                    Style="@FanStyle(handIndex, Hand.Length)"
                    AriaLabel="@HandCardLabel(card, Auras)"
                    AriaPressed="@Auras.Pressed(card.Id)"
                    Tapped="CardTapped"
                    ViewOpened="CardViewOpened"
-                   ViewClosed="CardViewClosed">
+                   ViewClosed="CardViewClosed"
+                   ReadRequested="CardReadRequested">
             <span class="hand-card-visual">
                 <CardFace Card="card.Card" Size="CardFaceSize.Hand" ShowTitle="false" />
                 @* A card is pulled from the Deck face down and only turns over on the way in, so
@@ -65,6 +67,9 @@
     [Parameter]
     public EventCallback CardViewClosed { get; set; }
 
+    [Parameter]
+    public EventCallback<CardReadRequest> CardReadRequested { get; set; }
+
     private bool IsBeingDealt(string cardInstanceId) =>
         Cue?.Kind == MatchAnimationKindView.Draw
         && Cue.TargetCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal);
@@ -88,6 +93,6 @@
 
     private static string HandCardLabel(MatchCardInstanceView card, MatchAuraView auras) =>
         auras.IsAura(card.Id) || auras.IsSelected(card.Id)
-            ? $"Choose {card.Card.Name} in your hand. Press and hold to view the card."
-            : $"{card.Card.Name} in your hand. Press and hold to view the card.";
+            ? $"Choose {card.Card.Name} in your hand"
+            : $"{card.Card.Name} in your hand";
 }

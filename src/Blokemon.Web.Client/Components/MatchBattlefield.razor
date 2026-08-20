@@ -15,7 +15,8 @@
                AuraCounters="Auras.Counters"
                CardTapped="CardTapped"
                CardViewOpened="CardViewOpened"
-               CardViewClosed="CardViewClosed" />
+               CardViewClosed="CardViewClosed"
+               CardReadRequested="CardReadRequested" />
     @{
         var band = MatchBand.For(Frame);
     }
@@ -48,6 +49,7 @@
                CardTapped="CardTapped"
                CardViewOpened="CardViewOpened"
                CardViewClosed="CardViewClosed"
+               CardReadRequested="CardReadRequested"
                BenchTapped="BenchTapped"
                DeckTapped="DeckTapped" />
 </div>
@@ -79,6 +81,9 @@
 
     [Parameter]
     public EventCallback CardViewClosed { get; set; }
+
+    [Parameter]
+    public EventCallback<CardReadRequest> CardReadRequested { get; set; }
 
     [Parameter]
     public EventCallback BenchTapped { get; set; }

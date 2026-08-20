@@ -123,6 +123,7 @@ else
                           CardTapped="TapCard"
                           CardViewOpened="OpenViewer"
                           CardViewClosed="CloseViewer"
+                          CardReadRequested="ReadCard"
                           BenchTapped="TapBench"
                           DeckTapped="TapDeck" />
 
@@ -133,7 +134,8 @@ else
                        BackgroundTapped="TapBackground"
                        CardTapped="TapCard"
                        CardViewOpened="OpenViewer"
-                       CardViewClosed="CloseViewer" />
+                       CardViewClosed="CloseViewer"
+                       CardReadRequested="ReadCard" />
 
         <MatchActionDock Selected="selected"
                          Damage="@(selected is null ? null : _overlay.Damage(selected))"
@@ -187,6 +189,7 @@ else
                                   CardTapped="TapCard"
                                   CardViewOpened="OpenViewer"
                                   CardViewClosed="CloseViewer"
+                                  CardReadRequested="ReadCard"
                                   SteppedBack="StepBack"
                                   ChoiceAdvanced="AdvanceChoice"
                                   Confirmed="CommitPending" />
@@ -195,7 +198,7 @@ else
 
         @if (_viewerCard is not null)
         {
-            <MatchCardViewer Card="_viewerCard" Style="@ViewerStyle()" Closed="CloseViewer" />
+            <MatchCardViewer @ref="_viewer" Card="_viewerCard" Style="@ViewerStyle()" Closed="CloseViewer" />
         }
       </div>
     </section>
@@ -210,6 +213,13 @@ else
     // they draw; nothing writes to the page behind the renderer's back.
     private MatchPresentationOverlay _overlay = MatchPresentationOverlay.Empty;
     private CardView? _viewerCard;
+    private MatchCardViewer? _viewer;
+    // A card held up by the pointer is put down again by the same press, so it never takes focus
+    // and has nothing to hand back. A card opened from a reading control does: it takes focus once
+    // it is on screen, and the card that asked for it is owed that focus back when it goes.
+    private ElementReference? _viewerReturn;
+    private ElementReference? _returnFocus;
+    private bool _viewerTakesFocus;
     private MatchActionView? _pending;
     private MatchActionView[] _directActions = [];
     private MatchActionView[] _menu = [];

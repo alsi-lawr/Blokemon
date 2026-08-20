@@ -677,7 +677,7 @@
   }
 
   .hand-card:hover,
-  .hand-card:focus-visible,
+  .hand-card:has(:focus-visible),
   .hand-card.is-aura-selected {
     transform: translateY(-14px) scale(1.04);
   }

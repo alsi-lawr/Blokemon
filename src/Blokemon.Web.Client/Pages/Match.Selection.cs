@@ -25,6 +25,27 @@ public partial class Match
         StateHasChanged();
     }
 
+    // A card asked for by a reading control rather than held up by the pointer. It stays up until
+    // it is put down, so it takes focus off the table for as long as it is there and the card that
+    // asked for it is owed that focus back.
+    private async Task ReadCard(CardReadRequest request)
+    {
+        // Both are set before the viewer goes up rather than after, because the render that puts it
+        // up is also the one that can hand it focus, and a page that only decided afterwards would
+        // be waiting on a second render to catch up with the first.
+        _viewerTakesFocus = true;
+        _viewerReturn = request.Card;
+        await OpenViewer(request.CardInstanceId);
+        if (_viewerCard is not null)
+        {
+            return;
+        }
+
+        // Nothing to read, so nothing has borrowed focus and nothing is owed it back.
+        _viewerTakesFocus = false;
+        _viewerReturn = null;
+    }
+
     private void CloseViewer()
     {
         if (_viewerCard is null)
@@ -33,6 +54,9 @@ public partial class Match
         }
 
         _viewerCard = null;
+        _viewerTakesFocus = false;
+        _returnFocus = _viewerReturn;
+        _viewerReturn = null;
         StateHasChanged();
     }
 

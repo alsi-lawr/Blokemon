@@ -15,7 +15,8 @@
 */
 .field-card-button,
 .hand-card,
-.tray-card {
+.tray-card,
+.card-press-surface {
   padding: 0;
   border: 0;
   color: inherit;
@@ -29,6 +30,96 @@
   position: relative;
   z-index: 1;
   border-radius: 10px;
+}
+
+/*
+  Every card carries the way to read it. The press surface is one control and cannot be a second
+  one, so the cards this surface can read - itself, and each card hanging off it - each get a
+  control of their own laid against the card's near edge. They are out of the way until the card
+  is engaged, so the table at rest looks exactly as it always has and a player who has reached a
+  card, by pointer or by keyboard, is shown what they can read from it.
+*/
+.card-press {
+  position: relative;
+}
+
+/* The press surface keeps the card's own box, so nothing about the card's place has moved. */
+.card-press-surface {
+  display: block;
+  border-radius: inherit;
+}
+
+/* An engaged card comes forward, so its reading controls are not painted over by its neighbours. */
+.card-press:hover,
+.card-press:focus-within {
+  z-index: 90;
+}
+
+.card-reading {
+  position: absolute;
+  z-index: 90;
+  top: calc(100% + 4px);
+  left: 50%;
+  display: none;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  /*
+    The row is measured by what it holds rather than by the card it hangs under, which is narrower
+    than the names on it: left to the card's own width every control would be folded onto a line of
+    its own. It gives way at the width of a full-size card and wraps from there.
+  */
+  width: max-content;
+  max-width: 240px;
+  transform: translateX(-50%);
+}
+
+.card-press:hover > .card-reading,
+.card-press:focus-within > .card-reading {
+  display: flex;
+}
+
+.card-read {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 22px;
+  padding: 3px 8px 3px 6px;
+  border: 1px solid #6f7a55;
+  border-radius: 100px;
+  color: #f2f5e6;
+  background: #10130ef2;
+  box-shadow: 0 4px 12px #000a;
+  cursor: pointer;
+  white-space: nowrap;
+  font: 700 10px "Jost", sans-serif;
+}
+
+.card-read:hover {
+  border-color: var(--gold);
+}
+
+/* A lens, drawn rather than written, so the control shows what it does without saying it. */
+.card-read-glyph {
+  position: relative;
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid currentcolor;
+  border-radius: 50%;
+}
+
+.card-read-glyph::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 4px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentcolor;
+  transform: rotate(45deg);
+  transform-origin: left center;
 }
 
 /*

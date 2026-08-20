@@ -1,5 +1,6 @@
 using Blokemon.App.Contracts;
 using Blokemon.Web.Client.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Blokemon.Web.Client.Pages;
@@ -26,6 +27,7 @@ public partial class Match
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await MoveViewerFocus();
         if (firstRender)
         {
             _presentationModule = await Js.InvokeAsync<IJSObjectReference>(
@@ -56,6 +58,24 @@ public partial class Match
         }
 
         await _presentationModule.InvokeVoidAsync("focusSurface", _sheet);
+    }
+
+    // A card being read holds focus for as long as it is up, and the card it was opened from takes
+    // it back when it goes. Both moves wait for the browser to have the element in hand, which is
+    // why neither happens where the viewer is opened or closed.
+    private async Task MoveViewerFocus()
+    {
+        if (_viewerTakesFocus && _viewer is not null)
+        {
+            _viewerTakesFocus = false;
+            await _viewer.Element.FocusAsync();
+        }
+
+        if (_returnFocus is { } card)
+        {
+            _returnFocus = null;
+            await card.FocusAsync();
+        }
     }
 
     private DeckView[] ReadyDecks() =>

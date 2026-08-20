@@ -1,12 +1,22 @@
 @*
     A card held down is read full size, at whatever scale the viewport allows, and released the
     moment the pointer is. The scale is measured in the browser and handed in.
+
+    A card opened from a reading control is not being held, so it stays until it is put down: it
+    takes focus, keeps it while it is up - nothing behind it can be reached while it covers the
+    table - and hands it back to the card it was opened from. Escape closes it, and so does Enter
+    or Space, because a table running full screen never sees Escape at all: the browser takes that
+    one to leave full screen before the page is asked.
 *@
 <div class="card-viewer"
      role="dialog"
      aria-modal="true"
      aria-label="@($"{Card.Name}, full size")"
      style="@Style"
+     tabindex="-1"
+     @ref="_viewer"
+     @onkeydown="Key"
+     @onkeydown:preventDefault="true"
      @onpointerup="Closed"
      @onpointercancel="Closed">
     <CardFace Card="Card"
@@ -16,6 +26,8 @@
 </div>
 
 @code {
+    private ElementReference _viewer;
+
     [Parameter, EditorRequired]
     public required CardView Card { get; set; }
 
@@ -24,4 +36,10 @@
 
     [Parameter]
     public EventCallback Closed { get; set; }
+
+    // The surface itself, so the page can hand it focus once the browser has it.
+    public ElementReference Element => _viewer;
+
+    private Task Key(KeyboardEventArgs eventArgs) =>
+        eventArgs.Key is "Escape" or "Enter" or " " ? Closed.InvokeAsync() : Task.CompletedTask;
 }

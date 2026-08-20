@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.JSInterop;
 
 namespace Blokemon.Web.Tests;
 
@@ -37,7 +40,17 @@ internal sealed class ComponentHarness : Renderer
     private readonly List<Exception> _failures = [];
 
     private ComponentHarness(IServiceProvider services, Cast cast)
-        : base(services, NullLoggerFactory.Instance, cast) => _cast = cast;
+        : base(services, NullLoggerFactory.Instance, cast)
+    {
+        _cast = cast;
+        // What a component captures with @ref is an element the browser is holding, and asking
+        // anything of one - focus above all - goes back out through the same browser. There is no
+        // browser here, so the references are pointed at the one the test is standing in for, and
+        // what a page asks of an element arrives there like any other call.
+        ElementReferenceContext = new WebElementReferenceContext(
+            services.GetRequiredService<IJSRuntime>()
+        );
+    }
 
     public static ComponentHarness For(IServiceProvider services) => new(services, new Cast());
 
@@ -56,6 +69,10 @@ internal sealed class ComponentHarness : Renderer
 
     public bool IsShowing<T>()
         where T : IComponent => _cast.Instances.OfType<T>().Any();
+
+    // Every one of them, for the surfaces a page draws once per card rather than once per page.
+    public IEnumerable<T> AllShowing<T>()
+        where T : IComponent => _cast.Instances.OfType<T>();
 
     // Puts the component up and waits for it to have finished arriving: its asynchronous
     // initialisation, and everything that initialisation started.

@@ -210,7 +210,7 @@
   finishing the run that shows it leaving, and that has to be visible while it plays.
 */
 .hand-card.is-cue-gone,
-button:has(> .battle-card-shell.is-cue-gone) {
+.card-press:has(.battle-card-shell.is-cue-gone) {
   pointer-events: none;
 }
 

@@ -46,12 +46,15 @@
         @foreach (var card in Side.InPlayKits)
         {
             <CardPress CardInstanceId="@card.Id"
+                       CardName="@card.Card.Name"
+                       Attached="@MatchAttachedCards.All(card)"
                        Class="@CardClass(card.Id)"
                        AriaLabel="@CardLabel(card, "in play on the table")"
                        AriaPressed="@CardPressed(card.Id)"
                        Tapped="CardTapped"
                        ViewOpened="CardViewOpened"
-                       ViewClosed="CardViewClosed">
+                       ViewClosed="CardViewClosed"
+                       ReadRequested="CardReadRequested">
                 <BattleCard Instance="card"
                             Damage="@Overlay.Damage(card)"
                             Compact="true"
@@ -82,12 +85,15 @@
             else
             {
                 <CardPress CardInstanceId="@Side.Active.Id"
+                           CardName="@Side.Active.Card.Name"
+                           Attached="@MatchAttachedCards.All(Side.Active)"
                            Class="@CardClass(Side.Active.Id)"
                            AriaLabel="@CardLabel(Side.Active, "Active Blokemon")"
                            AriaPressed="@CardPressed(Side.Active.Id)"
                            Tapped="CardTapped"
                            ViewOpened="CardViewOpened"
-                           ViewClosed="CardViewClosed">
+                           ViewClosed="CardViewClosed"
+                           ReadRequested="CardReadRequested">
                     <BattleCard Instance="Side.Active"
                                 Damage="@Overlay.Damage(Side.Active)"
                                 Selected="@(Side.Active.Id == SelectedCardInstanceId)"
@@ -106,12 +112,15 @@
             {
                 var card = Side.Bench[benchIndex];
                 <CardPress CardInstanceId="@card.Id"
+                           CardName="@card.Card.Name"
+                           Attached="@MatchAttachedCards.All(card)"
                            Class="@($"{CardClass(card.Id)} {Landing(MatchLandingKind.Bench, benchIndex)}")"
                            AriaLabel="@CardLabel(card, "Benched Blokemon")"
                            AriaPressed="@CardPressed(card.Id)"
                            Tapped="CardTapped"
                            ViewOpened="CardViewOpened"
-                           ViewClosed="CardViewClosed">
+                           ViewClosed="CardViewClosed"
+                           ReadRequested="CardReadRequested">
                     <BattleCard Instance="card"
                                 Damage="@Overlay.Damage(card)"
                                 Compact="true"
@@ -219,6 +228,9 @@
     public EventCallback CardViewClosed { get; set; }
 
     [Parameter]
+    public EventCallback<CardReadRequest> CardReadRequested { get; set; }
+
+    [Parameter]
     public EventCallback BenchTapped { get; set; }
 
     [Parameter]
@@ -259,10 +271,13 @@
         return string.Join(' ', classes);
     }
 
+    // What the card is, where it is standing and what it is carrying. How to read it is not said
+    // here: the card carries a control for that, and a name that recites a gesture tells a player
+    // using a keyboard to do something they cannot do.
     private string CardLabel(MatchCardInstanceView card, string position) =>
         IsAura(card.Id) || IsAuraSelected(card.Id)
-            ? $"Choose {card.Card.Name}, {position}{Carrying(card)}. Press and hold to view the card."
-            : $"{card.Card.Name}, {position}{Carrying(card)}. Press and hold to view the card.";
+            ? $"Choose {card.Card.Name}, {position}{Carrying(card)}"
+            : $"{card.Card.Name}, {position}{Carrying(card)}";
 
     // What is hanging off the card, read out as part of the card itself. The faces in its fans are
     // drawn inside the surface the card is pressed by, so they have no name of their own to be read
