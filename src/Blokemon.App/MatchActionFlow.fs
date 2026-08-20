@@ -143,6 +143,17 @@ module internal MatchActionFlow =
                                                 failed
                                                     "match.action_illegal"
                                                     "You cannot use that move now."
+                                        // A move the actor cannot pay for is offered so the table
+                                        // can show it and say what it needs. It is not a move that
+                                        // can be submitted, and refusing it here is what makes the
+                                        // disabled control a rule rather than a courtesy.
+                                        | action when
+                                            action.Affordability <> ActionAffordability.Payable
+                                            ->
+                                            return
+                                                failed
+                                                    "match.action_unaffordable"
+                                                    "You cannot pay for that move yet."
                                         | action ->
 
                                             let materialized =

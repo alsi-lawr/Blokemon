@@ -193,6 +193,30 @@
   margin-top: 6px;
 }
 
+.unavailable-action-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.unavailable-action {
+  padding: 11px;
+  border: 1px dashed #595941;
+  border-radius: 11px;
+  background: #16180f;
+  text-align: left;
+}
+
+.unavailable-action b {
+  display: block;
+  font: 700 13px "Jost", sans-serif;
+}
+
+.unavailable-action small {
+  display: block;
+  margin-top: 6px;
+}
+
 .energy-cost {
   display: flex;
   gap: 2px;

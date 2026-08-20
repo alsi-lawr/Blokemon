@@ -139,6 +139,7 @@ else
                          Damage="@(selected is null ? null : _overlay.Damage(selected))"
                          ActiveCardInstanceId="@frame.Player.Active?.Id"
                          Attacks="match.Attacks"
+                         UnavailableActions="@(selected is null ? [] : UnavailableCardActions(selected.Id, match))"
                          RecentEvents="match.RecentEvents"
                          DockOpen="_dockOpen"
                          Busy="Busy()"

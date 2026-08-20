@@ -208,8 +208,23 @@ public partial class Match
             ? IsVisible(target)
             : action.Kind == MatchActionKindView.PlayBlokemon && _benchDestination;
 
+    // A move the engine offers without the means to pay for it is shown rather than played: it
+    // never glows, is never an origin, and is never what a tap settles on. The dock says what it
+    // needs instead.
     private static bool IsCardAction(MatchActionView action) =>
-        action.SourceCardInstanceId is not null && _cardKinds.Contains(action.Kind);
+        action.SourceCardInstanceId is not null
+        && action.DisabledReason is null
+        && _cardKinds.Contains(action.Kind);
+
+    private static MatchActionView[] UnavailableCardActions(
+        string cardInstanceId,
+        MatchView match
+    ) =>
+        [
+            .. match.LegalActions.Where(action =>
+                action.DisabledReason is not null && action.SourceCardInstanceId == cardInstanceId
+            ),
+        ];
 
     private bool IsVisible(string? cardInstanceId) =>
         cardInstanceId is not null

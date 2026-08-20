@@ -81,6 +81,25 @@
             </div>
         }
 
+        @* A move this card offers that cannot be paid for yet is still the player's to know
+           about, so it is shown here saying what it is waiting on: a cost the table never
+           mentions reads as a broken game rather than an unmet one. *@
+        @if (UnavailableActions.Length > 0)
+        {
+            <div class="unavailable-action-list">
+                @foreach (var action in UnavailableActions)
+                {
+                    <button type="button"
+                            class="unavailable-action"
+                            disabled
+                            aria-describedby="@($"action-{action.Id}-reason")">
+                        <b>@PublicText(action.Label)</b>
+                        <small id="@($"action-{action.Id}-reason")">@PublicText(action.DisabledReason!)</small>
+                    </button>
+                }
+            </div>
+        }
+
         @if (CanPlaySelected)
         {
             <div class="dock-actions">
@@ -113,6 +132,9 @@
 
     [Parameter]
     public MatchAttackView[] Attacks { get; set; } = [];
+
+    [Parameter]
+    public MatchActionView[] UnavailableActions { get; set; } = [];
 
     [Parameter]
     public string[] RecentEvents { get; set; } = [];

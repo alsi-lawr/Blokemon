@@ -163,7 +163,8 @@ public sealed record MatchActionView(
     string? SourceCardInstanceId,
     string? TargetCardInstanceId,
     string? EffectId,
-    MatchChoiceRequirementView[] ChoiceRequirements
+    MatchChoiceRequirementView[] ChoiceRequirements,
+    string? DisabledReason
 );
 
 public enum MatchActionKindView

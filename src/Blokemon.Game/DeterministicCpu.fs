@@ -29,11 +29,14 @@ type DeterministicCpu() =
               LegalActionKind.EndRound, 14 ]
 
     member _.Choose(engine: MatchEngine, state: MatchState, actor: PlayerId) =
-        // Resignation is voluntary and never automated, so the policy sees exactly the action
-        // set it saw before resignation existed.
+        // Resignation is voluntary and never automated, and an action the actor cannot pay for is
+        // offered to the interface rather than to a policy, so the set seen here is exactly the
+        // set of moves that would actually be accepted.
         let selected =
             engine.GetLegalActions(state, actor)
-            |> Seq.filter (fun action -> action.Kind <> LegalActionKind.Resign)
+            |> Seq.filter (fun action ->
+                action.Kind <> LegalActionKind.Resign
+                && action.Affordability = ActionAffordability.Payable)
             |> Seq.sortWith (fun left right ->
                 let byPriority = compare priority[left.Kind] priority[right.Kind]
 

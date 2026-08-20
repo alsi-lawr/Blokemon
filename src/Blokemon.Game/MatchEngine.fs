@@ -262,6 +262,14 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
                 |> Seq.filter (fun action ->
                     match this.Apply(state, action.Command) with
                     | CommandOutcome.Applied _ -> true
-                    | CommandOutcome.Rejected _ -> false)
+                    // An action the player cannot pay for is kept so the interface can show it
+                    // unavailable and say what it needs. It survives only while the cost it
+                    // declares is the single thing standing in its way: every other objection
+                    // still removes it, and the action itself is not submittable.
+                    | CommandOutcome.Rejected(_, rejection) ->
+                        match action.Affordability with
+                        | ActionAffordability.ShortOfTaxiFare _ ->
+                            rejection.Code = CommandRejectionCode.InvalidTaxiFare
+                        | ActionAffordability.Payable -> false)
                 |> order
             )

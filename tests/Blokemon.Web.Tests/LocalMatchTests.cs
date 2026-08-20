@@ -550,6 +550,36 @@ public sealed class LocalMatchTests
         after.ShouldBe(original);
     }
 
+    // The reported defect: a retreat nobody can pay for used to be filtered out of the legal set
+    // altogether, so the affordance did not grey out - it ceased to exist, and the player was
+    // given no way to learn why. An Active that has just come down has nothing attached to pay a
+    // fare with, which is the same position from the first turn of any battle.
+    [Test]
+    public async Task UnaffordableRetreat_ReachesTheClientDisabledAndCannotBeSubmitted()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = await ReadyFixture.CreateOpeningChoice(database);
+        var started = Value(
+            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
+        );
+        var opening = await AdvanceToOpeningChoice(fixture.Application, started);
+        var playing = await ChooseOpeningWithBench(fixture.Application, opening.Match!);
+        var retreat = playing.Match!.LegalActions.First(static action =>
+            action.Kind == MatchActionKindView.Retreat
+        );
+        var original = await fixture.Store.Read("match");
+
+        var refused = await fixture.Application.ApplyMatchAction(
+            playing.Match.Frame.Id,
+            RequestFor(playing.Match, retreat, Guid.NewGuid())
+        );
+        var after = await fixture.Store.Read("match");
+
+        retreat.DisabledReason.ShouldNotBeNullOrWhiteSpace();
+        Error(refused).Code.ShouldBe("match.action_unaffordable");
+        after.ShouldBe(original);
+    }
+
     [Test]
     public async Task OpeningChoiceFailures_AreTypedAndMutateNothing()
     {
@@ -1255,6 +1285,38 @@ public sealed class LocalMatchTests
         }
 
         throw new InvalidOperationException("The match never offered a move with no choices.");
+    }
+
+    // The opening taken with somebody put on the Bench beside the Active, which is what makes a
+    // retreat a move the match would offer at all.
+    private static async Task<ApplicationView> ChooseOpeningWithBench(
+        LocalApplicationService application,
+        MatchView opening
+    )
+    {
+        var action = OpeningAction(opening);
+        var request = RequestFor(opening, action, Guid.NewGuid());
+        var oche = action.Id["opening:".Length..];
+        var boothRequirement = action.ChoiceRequirements.Single(static requirement =>
+            requirement.Id == "opening:booth"
+        );
+        var booth = boothRequirement.EligibleCards.First(card => card.Id != oche);
+        var selection = SelectionFor(boothRequirement) with { CardInstanceIds = [booth.Id] };
+
+        return Value(
+            await application.ApplyMatchAction(
+                opening.Frame.Id,
+                request with
+                {
+                    Choices =
+                    [
+                        .. request.Choices.Select(choice =>
+                            choice.Id == boothRequirement.Id ? selection : choice
+                        ),
+                    ],
+                }
+            )
+        );
     }
 
     private static async Task<ApplicationView> AdvanceToOpeningChoice(

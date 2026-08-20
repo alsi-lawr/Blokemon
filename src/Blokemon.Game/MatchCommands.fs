@@ -48,11 +48,21 @@ type ChoiceRequirement =
       RequireDifferentMechanicalTypes: bool
       EligibleCardTypes: ImmutableArray<CardMechanicalTypes> }
 
+/// Whether a proposed action can be paid for as the table stands. An action the player cannot
+/// afford is still proposed, so the interface can show it and say what it needs rather than
+/// letting the affordance cease to exist; the fare a taxi asks for is the only cost that works
+/// this way today.
+[<RequireQualifiedAccess>]
+type ActionAffordability =
+    | Payable
+    | ShortOfTaxiFare of fare: int
+
 type LegalAction =
     { Kind: LegalActionKind
       Command: MatchCommand
       ChoiceRequirements: ImmutableArray<ChoiceRequirement>
-      StableKey: string }
+      StableKey: string
+      Affordability: ActionAffordability }
 
 [<RequireQualifiedAccess>]
 module ChoiceRequirement =

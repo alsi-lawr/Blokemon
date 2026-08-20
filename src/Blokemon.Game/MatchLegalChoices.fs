@@ -154,7 +154,8 @@ module internal MatchLegalChoices =
             { command state actor key action with
                 Choices = choices }
           ChoiceRequirements = requirements
-          StableKey = stableKey }
+          StableKey = stableKey
+          Affordability = ActionAffordability.Payable }
 
     let simple
         (kind: LegalActionKind)

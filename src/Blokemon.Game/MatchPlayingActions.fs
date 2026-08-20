@@ -209,22 +209,38 @@ module internal MatchPlayingActions =
         | ValueSome oche ->
             let fare = effectiveTaxiFare catalog (MatchBuilder(state, catalog)) oche
 
-            let vim =
+            let attached =
                 oche.Attachments
                 |> Seq.map state.Card
                 |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
+                |> Seq.toArray
+
+            // The payload is still built by truncating what is attached, so a taxi already stored
+            // in a saved document rebuilds to exactly the command it was recorded as. Truncating
+            // to a fare the attachments cannot cover takes all of them either way: what changes
+            // here is that the shortfall is now declared rather than proposed as though it were
+            // payable.
+            let vim =
+                attached
                 |> Seq.truncate fare
                 |> Seq.map (fun card -> card.Id)
                 |> ImmutableArray.CreateRange
 
+            let affordability =
+                if attached.Length >= fare then
+                    ActionAffordability.Payable
+                else
+                    ActionAffordability.ShortOfTaxiFare fare
+
             state.CardsIn(actor, CardZone.Booth)
             |> Seq.map (fun booth ->
-                simple
-                    LegalActionKind.Taxi
-                    state
-                    actor
-                    $"taxi:{booth.Id.Value}"
-                    (MatchAction.Taxi(booth.Id, vim)))
+                { simple
+                      LegalActionKind.Taxi
+                      state
+                      actor
+                      $"taxi:{booth.Id.Value}"
+                      (MatchAction.Taxi(booth.Id, vim)) with
+                    Affordability = affordability })
 
     let private localActions
         (catalog: AuthorityCatalog)

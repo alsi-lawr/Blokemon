@@ -118,7 +118,8 @@ module internal MatchViewProjection =
             subject.Effect,
             action.ChoiceRequirements
             |> Seq.map (requirementView state human displayName)
-            |> Seq.toArray
+            |> Seq.toArray,
+            actionDisabledReason action
         )
 
     let attacks
@@ -203,10 +204,13 @@ module internal MatchViewProjection =
             state.CardsIn(player, CardZone.Local)
             |> Seq.map (fun card -> cardInstance state human name card.Id)
             |> Seq.toArray,
-            // Resignation is always available, so it cannot decide whose turn it is.
+            // Resignation is always available, so it cannot decide whose turn it is; neither can a
+            // move the player has no way to pay for.
             engine
                 .GetLegalActions(state, player)
-                .Any(fun action -> action.Kind <> LegalActionKind.Resign)
+                .Any(fun action ->
+                    action.Kind <> LegalActionKind.Resign
+                    && action.Affordability = ActionAffordability.Payable)
         )
 
     let frame

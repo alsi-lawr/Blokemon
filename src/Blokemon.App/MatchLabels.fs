@@ -173,6 +173,14 @@ module internal MatchLabels =
         else
             "Attach the required Energy or satisfy the attack's requirements."
 
+    /// Why a move the table still offers cannot be taken. The engine keeps an action nobody can
+    /// pay for in the legal set precisely so the cost can be said out loud rather than the move
+    /// disappearing without explanation.
+    let actionDisabledReason (action: LegalAction) : string | null =
+        match action.Affordability with
+        | ActionAffordability.Payable -> null
+        | ActionAffordability.ShortOfTaxiFare fare -> $"Needs {fare} Vim attached to retreat."
+
     let resolvedAttackDamage (attack: MatchEvent) (stepEvents: MatchEvent seq) =
         stepEvents
         |> Seq.filter (fun matchEvent ->

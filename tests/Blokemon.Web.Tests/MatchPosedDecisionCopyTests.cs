@@ -89,7 +89,8 @@ public sealed class MatchPosedDecisionCopyTests
             null,
             null,
             null,
-            [.. questions.Select(Requirement)]
+            [.. questions.Select(Requirement)],
+            null
         );
 
     private static MatchChoiceRequirementView Requirement(string label) =>
