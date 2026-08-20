@@ -169,7 +169,7 @@ public partial class Match
 
             _activeCue = beat.Cue;
             _pace = Pace(beat);
-            _presentationCard = beat.Cue is null ? null : PresentationCard(beat.Frame, beat.Cue);
+            _presentationCard = PresentationCard(beat.Frame, beat.Overlay);
             if (beat.Cue is not null)
             {
                 _animationStatus = PublicText(beat.Cue.Label);

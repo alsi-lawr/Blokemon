@@ -40,7 +40,13 @@ public sealed record MatchPresentationOverlay(
     // in a place the table has already emptied. It is named here for as long as that lasts, and
     // the presenters do not draw it there. Without it the concealment belongs to the cue that did
     // the carrying and evaporates on the next one, leaving a second copy of a card on the table.
-    IReadOnlyList<string>? GoneCardInstanceIds = null
+    IReadOnlyList<string>? GoneCardInstanceIds = null,
+    // The card the presentation has picked up, if it has picked one up. No cue can say: playing a
+    // card out of the hand and using the ability printed on a card already standing on the table
+    // are one kind between them, and both name the card they are about. Which of them actually
+    // moves anything is settled against the two tables the command sits between, and the answer is
+    // carried here for everything that draws a card being carried.
+    string? CarriedCardInstanceId = null
 )
 {
     public static readonly MatchPresentationOverlay Empty = new(
@@ -95,9 +101,13 @@ public sealed record MatchPresentationOverlay(
             StruckCardInstanceIds = striking is null ? null : struck,
         };
 
-    public MatchPresentationOverlay LandingOn(MatchLandingSlot? landing) =>
+    // The card this beat has picked up and the place it is being carried to. They are set together
+    // because they are the same fact told twice: nothing is aimed anywhere unless something is
+    // being carried, and a card that goes nowhere is not picked up in the first place.
+    public MatchPresentationOverlay Carrying(string? cardInstanceId, MatchLandingSlot? landing) =>
         this with
         {
+            CarriedCardInstanceId = cardInstanceId,
             Landing = landing,
         };
 

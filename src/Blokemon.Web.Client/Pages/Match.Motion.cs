@@ -29,7 +29,7 @@ public partial class Match
             // The blow is measured once, on the cue that throws it. The cue that lands it measures
             // nothing: by then the card is part way across and no longer where it started.
             MatchAnimationKindView.Attack => "positionAttack",
-            _ => MatchCueState.CarriesACard(cue) ? "positionPlayCard" : null,
+            _ => _overlay.CarriedCardInstanceId is null ? null : "positionPlayCard",
         };
         if (measure is not null)
         {
@@ -54,20 +54,14 @@ public partial class Match
         }
     }
 
-    // The face of the card the presentation is carrying. It is looked for on the table this beat is
-    // drawn against, then on the one still painted, and last of all on the table the battle has
+    // The face of the card the presentation has picked up. It is looked for on the table this beat
+    // is drawn against, then on the one still painted, and last of all on the table the battle has
     // arrived at: a card taken out of a hand nobody can see - the Blokemon the opponent chooses to
     // open with - is on none of the tables it has left, and the only one that has it is the one it
     // is on its way to.
-    private CardView? PresentationCard(MatchFrameView frame, MatchEventCueView cue)
+    private CardView? PresentationCard(MatchFrameView frame, MatchPresentationOverlay overlay)
     {
-        if (!MatchCueState.CarriesACard(cue))
-        {
-            return null;
-        }
-
-        var cardInstanceId = cue.SourceCardInstanceId ?? cue.TargetCardInstanceIds.FirstOrDefault();
-        if (cardInstanceId is null)
+        if (overlay.CarriedCardInstanceId is not { } cardInstanceId)
         {
             return null;
         }
@@ -119,10 +113,7 @@ public partial class Match
 
     // A card only travels when there is somewhere on the table for it to travel to: one that
     // does its work and is discarded keeps the presentation it has always had.
-    private bool CardTravels() =>
-        MatchCueState.CarriesACard(_activeCue)
-        && _presentationCard is not null
-        && _overlay.Landing is not null;
+    private bool CardTravels() => _presentationCard is not null && _overlay.Landing is not null;
 
     // How long the stylesheet takes to carry a card out of a hand, across the table and into the
     // place it ends up standing in.
@@ -149,7 +140,7 @@ public partial class Match
 
     // How long a beat is held: what the cue on it takes, at the pace this beat is played at.
     private static int BeatDuration(MatchPresentationBeat beat) =>
-        (int)(CueDuration(beat.Cue) * Pace(beat));
+        (int)(CueDuration(beat) * Pace(beat));
 
     // Each beat is held for as long as the stylesheet takes to play it, so the words and the
     // motion finish together, and the pause after a step lets the table settle before the next
@@ -163,15 +154,15 @@ public partial class Match
     // turns over. What is left of the lunge, and the recoil that starts at contact, both have to
     // finish inside the beat that follows, so that one is the longer of the two.
     //
-    // A card carried out of a hand makes one journey of one length whichever kind of cue is
-    // carrying it, so how long that beat is held is asked of what the cue is doing rather than of
-    // what it is called. Setup is why: the battle beginning and the Blokemon chosen to stand in the
-    // Oche are the same kind and only the second one travels, so held to the length of the first it
-    // was cut off short of the Oche and the phase changed over the top of it.
-    private static int CueDuration(MatchEventCueView? cue) =>
-        MatchCueState.CarriesACard(cue)
+    // A card the presentation has picked up makes one journey of one length whichever kind of cue
+    // picked it up, so how long that beat is held is asked of what the beat is doing rather than of
+    // what its cue is called. Setup is why: the battle beginning and the Blokemon chosen to stand
+    // in the Oche are the same kind and only the second one travels, so held to the length of the
+    // first it was cut off short of the Oche and the phase changed over the top of it.
+    private static int CueDuration(MatchPresentationBeat beat) =>
+        beat.Overlay.CarriedCardInstanceId is not null
             ? CardJourney
-            : cue?.Kind switch
+            : beat.Cue?.Kind switch
             {
                 MatchAnimationKindView.Setup => 900,
                 MatchAnimationKindView.Shuffle => 1200,

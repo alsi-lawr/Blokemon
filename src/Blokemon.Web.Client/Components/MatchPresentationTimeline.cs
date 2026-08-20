@@ -40,7 +40,11 @@ public static class MatchPresentationTimeline
 
         foreach (var step in presentation.Steps)
         {
-            var before = frame;
+            // The table this command was given, kept apart from the running one: whether a card
+            // went anywhere is a question about the two ends of the command, and the running table
+            // has already had cards stood up on it by the cues in between.
+            var given = frame;
+            var before = given;
             var overlay = MatchPresentationOverlay.Empty;
             var gone = new List<string>(2);
             var dealing = Dealing(step);
@@ -76,7 +80,8 @@ public static class MatchPresentationTimeline
                 // card off is the only one that shows it going, but the frame behind it still has
                 // the card where it was for every cue after that too, so the concealment has to
                 // outlive the cue that started it or a second copy comes back.
-                Departs(cue, gone);
+                var carried = Carrying(cue, given, step.Frame);
+                Departs(cue, carried, gone);
                 overlay = Applied(overlay, cue).Gone(gone.ToArray());
                 overlay = cue.Kind switch
                 {
@@ -99,7 +104,12 @@ public static class MatchPresentationTimeline
                     _ => overlay,
                 };
                 beats.Add(
-                    new(frame, cue, overlay.LandingOn(Landing(cue, step.Frame)), returned[index])
+                    new(
+                        frame,
+                        cue,
+                        overlay.Carrying(carried, Landing(carried, step.Frame)),
+                        returned[index]
+                    )
                 );
 
                 // The choice that opens a game is the one command whose step goes on to tell
@@ -290,16 +300,47 @@ public static class MatchPresentationTimeline
     private static bool Held(MatchSideView side, string cardInstanceId) =>
         side.Hand.Any(card => card.Id == cardInstanceId);
 
-    // The cards this cue takes out of the place the frame still has them in. A card carried to a
-    // place on the table is carried out of the hand by the presentation itself - it is drawn
-    // travelling, or held up in the middle of the table - and a Blokemon knocked out is shown
-    // leaving the field. Both are cards the table has finished with before the frame agrees, and
-    // drawing them where they were is drawing a second one of them.
-    private static void Departs(MatchEventCueView cue, List<string> gone)
+    // The card a cue picks up, if it picks one up.
+    //
+    // The cue cannot say on its own. A card played out of the hand and a card whose printed ability
+    // is being used are announced the same way and both name the card they are about, because both
+    // are one thing a player does with one card - and only the first of them goes anywhere. A
+    // Local stays in the pub slot and goes on offering its trade; a Blokemon uses its party trick
+    // from the Oche it is already standing in. Told as a card being played, all of them were
+    // carried out of the place they were standing in and hidden there for the rest of the command,
+    // so the card whose whole point is that it stays vanished the moment it was used.
+    //
+    // So the two tables the command sits between are asked instead, and they answer by
+    // construction: a card standing in the same place before the command and after it has been
+    // nowhere, whatever the cue is called. A card that is not on the table to begin with is always
+    // picked up - it comes out of a hand, and out of the opponent's there is nothing in to name -
+    // and where it is going is a separate question the landing answers.
+    private static string? Carrying(
+        MatchEventCueView cue,
+        MatchFrameView given,
+        MatchFrameView settled
+    )
     {
-        if (MatchCueState.CarriesACard(cue) && cue.SourceCardInstanceId is { } played)
+        if (!MatchCueState.CarriesACard(cue) || cue.SourceCardInstanceId is not { } source)
         {
-            Leaves(gone, played);
+            return null;
+        }
+
+        var stood = Placed(given, source);
+        return stood is not null && stood == Placed(settled, source) ? null : source;
+    }
+
+    // The cards this cue takes out of the place the frame still has them in. A card the
+    // presentation has picked up is carried out of where it was by the presentation itself - it is
+    // drawn travelling, or held up in the middle of the table - and a Blokemon knocked out is shown
+    // leaving the field. Both are cards the table has finished with before the frame agrees, and
+    // drawing them where they were is drawing a second one of them. A card nothing picked up has
+    // left nowhere and is concealed nowhere.
+    private static void Departs(MatchEventCueView cue, string? carried, List<string> gone)
+    {
+        if (carried is not null)
+        {
+            Leaves(gone, carried);
             return;
         }
 
@@ -377,21 +418,20 @@ public static class MatchPresentationTimeline
             _ => overlay,
         };
 
-    // Where the card a cue is about is standing once the command has been applied. A card that
-    // ends up anywhere but the table - a Kit that does its work and is discarded - has no
-    // landing, and its cue keeps the presentation it has always had.
-    private static MatchLandingSlot? Landing(MatchEventCueView cue, MatchFrameView frame)
-    {
-        if (!MatchCueState.CarriesACard(cue) || cue.SourceCardInstanceId is not { } cardInstanceId)
-        {
-            return null;
-        }
+    // Where the card the presentation has picked up is standing once the command has been applied.
+    // A card that ends up anywhere but the table - a Kit that does its work and is discarded - has
+    // no landing, and its cue keeps the presentation it has always had.
+    private static MatchLandingSlot? Landing(string? carried, MatchFrameView frame) =>
+        carried is null ? null : Placed(frame, carried);
 
-        return LandingOn(frame.Player, cardInstanceId, opponent: false)
-            ?? LandingOn(frame.Opponent, cardInstanceId, opponent: true);
-    }
+    // Where on the table a card is standing, if it is standing on it at all. A hand is not a place
+    // on the table: a card being held is somewhere the table cannot point at, and the opponent's
+    // hand has nothing in it to point at either.
+    private static MatchLandingSlot? Placed(MatchFrameView frame, string cardInstanceId) =>
+        Placed(frame.Player, cardInstanceId, opponent: false)
+        ?? Placed(frame.Opponent, cardInstanceId, opponent: true);
 
-    private static MatchLandingSlot? LandingOn(
+    private static MatchLandingSlot? Placed(
         MatchSideView side,
         string cardInstanceId,
         bool opponent

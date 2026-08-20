@@ -286,7 +286,7 @@ public sealed class MatchPresentationTimelineTests
 
     // Whether the presentation is holding this card up over the table, travelling or in the middle.
     private static bool Carried(MatchPresentationBeat beat, string cardInstanceId) =>
-        MatchCueState.CarriesACard(beat.Cue) && beat.Cue?.SourceCardInstanceId == cardInstanceId;
+        beat.Overlay.CarriedCardInstanceId == cardInstanceId;
 
     // Whether the hand draws this card at this beat, which it does not once the presentation says
     // the hand has lost it.
@@ -393,6 +393,120 @@ public sealed class MatchPresentationTimelineTests
         beats.Skip(1).Select(beat => TableDraws(beat, Held)).ShouldAllBe(drawn => drawn);
     }
 
+    // ---- And the third: a card that acts without going anywhere -------------------------------
+    //
+    // An activated ability is announced with the same cue as a card being played, because both are
+    // one command a player takes with one card. Only one of them moves anything. The Ring Road is
+    // played to the pub slot and then goes on standing in it, offering its trade to both players
+    // every round; a Blokemon uses its party trick from the Oche or the Booth it is already in. Told
+    // as a card being played, all of them were carried out of the place they were standing in and
+    // hidden there for the rest of the command - so the card whose whole point is that it stays
+    // vanished at the moment it was used.
+    //
+    // What tells the two apart is not the cue, which cannot say, but the table: a card standing in
+    // the same place before the command and after it has not been anywhere.
+
+    private const string Standing = "card-standing";
+
+    [Test]
+    [Arguments("the pub slot")]
+    [Arguments("the Oche")]
+    [Arguments("the Booth")]
+    public void ACardAnAbilityDoesNotMoveIsOnTheTableForTheWholeCommand(string place)
+    {
+        // The concealment outlives the cue that started it by design, so the question is asked of
+        // every beat rather than of the one the ability is announced on: at the end of the command
+        // the frame has caught up and the card is present again whatever the presentation did.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                AbilityTable(place, defenderDamage: 20),
+                Cue(1, MatchAnimationKindView.Play, source: Standing, targets: []),
+                Cue(2, MatchAnimationKindView.Damage, amount: 20, source: Standing)
+            ),
+            AbilityTable(place, defenderDamage: 0)
+        );
+
+        // It is on the table at every beat of the command, and there is only ever the one of it:
+        // nothing is holding a second copy up over the table while the first stands where it is.
+        beats.Select(beat => TableDraws(beat, Standing)).ShouldAllBe(drawn => drawn);
+        beats.Select(beat => VisibleCopies(beat, Standing)).ShouldAllBe(copies => copies == 1);
+        // Nowhere is expecting it, because it is not going anywhere: a landing on the place it is
+        // already standing in is a journey from there to there.
+        beats.Select(beat => beat.Overlay.Landing).ShouldAllBe(landing => landing == null);
+        // And it is still the card that acted, which is what the ability has to be legible as.
+        MatchCueState
+            .FieldCard(beats[0].Cue, beats[0].Overlay, Standing)
+            .HasFlag(MatchCueRole.Source)
+            .ShouldBeTrue();
+    }
+
+    [Test]
+    public void ACardCarriedFromOnePlaceOnTheTableToAnotherStillLeavesTheOneItCameFrom()
+    {
+        // The other side of the same question, and the one a table-to-table journey turns on: a
+        // Blokemon taxied in from the Booth is standing on the table before the command and on the
+        // table after it, and it has still crossed between the two. It is carried, hidden in the
+        // Booth slot it left, and aimed at the Oche.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                TaxiedFrame(),
+                Cue(1, MatchAnimationKindView.Play, source: Standing, targets: [])
+            ),
+            BeforeTheTaxiFrame()
+        );
+
+        MatchCueState
+            .FieldCard(beats[0].Cue, beats[0].Overlay, Standing)
+            .HasFlag(MatchCueRole.Gone)
+            .ShouldBeTrue();
+        beats[0].Overlay.Landing.ShouldBe(new MatchLandingSlot(false, MatchLandingKind.Active, 0));
+    }
+
+    // The table an ability is used from - the same table it is used on, because using it moves
+    // nothing of the player's. Only the card it is aimed at across the way changes.
+    private static MatchFrameView AbilityTable(string place, int defenderDamage) =>
+        new(
+            Guid.Parse("40000000-0000-0000-0000-000000000005"),
+            1,
+            3,
+            MatchPhaseView.Playing,
+            Side("Opponent", false, active: Instance(Defender, defenderDamage)),
+            place switch
+            {
+                "the pub slot" => Side(
+                    "You",
+                    true,
+                    active: Instance(Attacker, 0),
+                    inPlayKits: [Instance(Standing, 0)]
+                ),
+                "the Oche" => Side("You", true, active: Instance(Standing, 0)),
+                _ => Side(
+                    "You",
+                    true,
+                    active: Instance(Attacker, 0),
+                    bench: [Instance("card-benched", 0), Instance(Standing, 0)]
+                ),
+            },
+            false,
+            null
+        );
+
+    // The Blokemon called in from the Booth, before and after: it swaps with the one that was in
+    // the Oche, so both are on the table at both ends and both have moved.
+    private static MatchFrameView BeforeTheTaxiFrame() =>
+        AbilityTable("the Booth", defenderDamage: 0);
+
+    private static MatchFrameView TaxiedFrame() =>
+        BeforeTheTaxiFrame() with
+        {
+            Player = Side(
+                "You",
+                true,
+                active: Instance(Standing, 0),
+                bench: [Instance("card-benched", 0), Instance(Attacker, 0)]
+            ),
+        };
+
     // What a command that plays a card and then draws one settles on: the played card is standing
     // on the Bench and the drawn one is in the hand.
     private static MatchFrameView PlayedAndDrewFrame() =>
@@ -471,8 +585,21 @@ public sealed class MatchPresentationTimelineTests
         bool hasTurn,
         MatchCardInstanceView? active = null,
         MatchCardInstanceView[]? bench = null,
-        MatchCardInstanceView[]? hand = null
-    ) => new(name, "Deck", 40, hand?.Length ?? 0, 6, active, bench ?? [], hand ?? [], [], hasTurn);
+        MatchCardInstanceView[]? hand = null,
+        MatchCardInstanceView[]? inPlayKits = null
+    ) =>
+        new(
+            name,
+            "Deck",
+            40,
+            hand?.Length ?? 0,
+            6,
+            active,
+            bench ?? [],
+            hand ?? [],
+            inPlayKits ?? [],
+            hasTurn
+        );
 
     private static MatchCardInstanceView Instance(string id, int damage) =>
         new(id, Card(id), "You", "Field", damage, 90, [], [], [], []);
