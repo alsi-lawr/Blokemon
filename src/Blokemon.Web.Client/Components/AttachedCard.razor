@@ -1,0 +1,70 @@
+@*
+    A card attached to a card in play, read the same way every other card on the table is read: a
+    press held past the threshold opens the full card viewer on that card and puts it back down on
+    release.
+
+    It cannot be a press surface of its own. An attachment is drawn inside the surface its host is
+    pressed by, and a control inside a control is markup no browser handles predictably, so the
+    press is taken off the pointer here and stopped before it reaches the host. What is left for
+    the host is every press that did not land on one of its attachments, which is the whole of the
+    host's own card: both fans hang outside it.
+*@
+<span class="attached-card"
+      style="--fan-depth: @Attachment.Depth"
+      @onpointerdown="Down"
+      @onpointerdown:stopPropagation="true"
+      @onpointermove="Move"
+      @onpointerup="Up"
+      @onpointercancel="Cancel"
+      @onclick:stopPropagation="true"
+      @oncontextmenu:preventDefault="true"
+      @oncontextmenu:stopPropagation="true">
+    <CardFace Card="Attachment.Card" Size="CardFaceSize.Tiny" ShowTitle="true" />
+</span>
+
+@code {
+    private readonly CardHold _hold = new();
+    private bool _parametersChanged;
+
+    [Parameter, EditorRequired]
+    public required MatchAttachedCardView Attachment { get; set; }
+
+    [Parameter]
+    public EventCallback<string> ViewOpened { get; set; }
+
+    [Parameter]
+    public EventCallback ViewClosed { get; set; }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        _parametersChanged = true;
+        return base.SetParametersAsync(parameters);
+    }
+
+    // Press bookkeeping never changes what this face looks like, so only the parent's parameters
+    // can make it render. Pointer moves would otherwise redraw a card face for every frame of a
+    // scroll across the table.
+    protected override bool ShouldRender()
+    {
+        var changed = _parametersChanged;
+        _parametersChanged = false;
+        return changed;
+    }
+
+    private void Down(PointerEventArgs eventArgs) =>
+        _hold.Down(eventArgs, () => ViewOpened.InvokeAsync(Attachment.ViewKey));
+
+    private void Move(PointerEventArgs eventArgs) => _ = _hold.Travelled(eventArgs);
+
+    private Task Up() => Release();
+
+    private Task Cancel() => Release();
+
+    private async Task Release()
+    {
+        if (_hold.Release())
+        {
+            await ViewClosed.InvokeAsync();
+        }
+    }
+}

@@ -57,7 +57,9 @@
                             Compact="true"
                             ShowVitals="false"
                             Selected="@(card.Id == SelectedCardInstanceId)"
-                            Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)" />
+                            Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)"
+                            ViewOpened="CardViewOpened"
+                            ViewClosed="CardViewClosed" />
                 @if (Counter(card.Id) is { } localCounter)
                 {
                     <span class="aura-counter">@localCounter</span>
@@ -89,7 +91,9 @@
                     <BattleCard Instance="Side.Active"
                                 Damage="@Overlay.Damage(Side.Active)"
                                 Selected="@(Side.Active.Id == SelectedCardInstanceId)"
-                                Role="@MatchCueState.FieldCard(Cue, Overlay, Side.Active.Id)" />
+                                Role="@MatchCueState.FieldCard(Cue, Overlay, Side.Active.Id)"
+                                ViewOpened="CardViewOpened"
+                                ViewClosed="CardViewClosed" />
                     @if (Counter(Side.Active.Id) is { } activeCounter)
                     {
                         <span class="aura-counter">@activeCounter</span>
@@ -112,7 +116,9 @@
                                 Damage="@Overlay.Damage(card)"
                                 Compact="true"
                                 Selected="@(card.Id == SelectedCardInstanceId)"
-                                Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)" />
+                                Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)"
+                                ViewOpened="CardViewOpened"
+                                ViewClosed="CardViewClosed" />
                     @if (Counter(card.Id) is { } benchCounter)
                     {
                         <span class="aura-counter">@benchCounter</span>
@@ -255,8 +261,23 @@
 
     private string CardLabel(MatchCardInstanceView card, string position) =>
         IsAura(card.Id) || IsAuraSelected(card.Id)
-            ? $"Choose {card.Card.Name}, {position}. Press and hold to view the card."
-            : $"{card.Card.Name}, {position}. Press and hold to view the card.";
+            ? $"Choose {card.Card.Name}, {position}{Carrying(card)}. Press and hold to view the card."
+            : $"{card.Card.Name}, {position}{Carrying(card)}. Press and hold to view the card.";
+
+    // What is hanging off the card, read out as part of the card itself. The faces in its fans are
+    // drawn inside the surface the card is pressed by, so they have no name of their own to be read
+    // out and the card carries theirs.
+    private static string Carrying(MatchCardInstanceView card)
+    {
+        var carried = new List<string>(1 + card.AttachedTools.Length);
+        if (card.AttachedEnergy.Length > 0)
+        {
+            carried.Add($"{card.AttachedEnergy.Length} Energy");
+        }
+
+        carried.AddRange(card.AttachedTools.Select(static tool => tool.Name));
+        return carried.Count == 0 ? string.Empty : $", carrying {string.Join(", ", carried)}";
+    }
 
     private string? CardPressed(string cardInstanceId) =>
         IsAuraSelected(cardInstanceId) ? "true"

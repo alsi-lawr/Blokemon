@@ -536,6 +536,52 @@
     font-size: 8px;
   }
 
+  .energy-badge {
+    left: -3px;
+    font-size: 8px;
+  }
+
+  /*
+    A benched card is 50px across here, so its Energy pill is the smallest thing on the table that
+    still has to be readable: it keeps the pill it is given everywhere else and gives up the room
+    around the number rather than the number.
+  */
+  .is-compact .energy-badge {
+    left: -4px;
+    bottom: -5px;
+    padding: 1px 4px;
+    font-size: 7px;
+  }
+
+  /*
+    The cards are roughly half the size they are on a desktop table, so the fan hanging off them is
+    too: the same fan, stepped by the same fraction of a face, drawn against a smaller card.
+  */
+  .attached-energy {
+    --energy-fan-step: 12px;
+    --energy-fan-tuck: 12px;
+    bottom: 10px;
+  }
+
+  .attached-energy .card-face-host {
+    --blokemon-card-scale: 0.04;
+  }
+
+  /*
+    A benched card is 50px across here and its neighbour is 2px away, so the fan is drawn as small
+    as it can be and still be counted. This is the one place the pill is doing most of the work:
+    the fan says an attacker is carrying something and roughly how much, and the pill says exactly.
+  */
+  .is-compact .attached-energy {
+    --energy-fan-step: 6px;
+    --energy-fan-tuck: 5px;
+    bottom: 6px;
+  }
+
+  .is-compact .attached-energy .card-face-host {
+    --blokemon-card-scale: 0.026;
+  }
+
   .turn-ribbon {
     min-height: 28px;
     padding: 0 6px;

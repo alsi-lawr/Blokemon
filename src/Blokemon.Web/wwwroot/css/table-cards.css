@@ -144,10 +144,10 @@ button.bench-slot span {
   font: 700 16px "Jost", sans-serif;
 }
 
-.hp-badge {
+.hp-badge,
+.energy-badge {
   position: absolute;
   z-index: 10;
-  right: 3px;
   bottom: -8px;
   padding: 4px 7px;
   border: 1px solid #696349;
@@ -156,6 +156,20 @@ button.bench-slot span {
   background: #0b0d09ed;
   font-size: 10px;
   white-space: nowrap;
+}
+
+.hp-badge {
+  right: 3px;
+}
+
+/*
+  How much Energy is on a Blokemon decides which of its attacks can be paid for, so it is read as
+  often as its staying power is and it gets the same pill at the other end of the same edge. The
+  fan says which Energy; the pill says how much, which is the question actually being asked when a
+  player looks at an attacker and works out what it can afford.
+*/
+.energy-badge {
+  left: 3px;
 }
 
 .is-compact .damage-badge {
@@ -171,27 +185,73 @@ button.bench-slot span {
   display: none;
 }
 
-.attached-energy {
-  position: absolute;
-  z-index: -1;
-  left: -24px;
-  bottom: 12px;
-  display: flex;
+/*
+  A benched card drops its staying power pill because the damage counter beside it already says
+  what has happened to it. The Energy count has nowhere else on a benched card to be read, and the
+  fan is at its smallest exactly here, so this pill stays and shrinks rather than inheriting the
+  decision made about the other one.
+*/
+.is-compact .energy-badge {
+  left: 0;
+  bottom: -6px;
+  padding: 2px 5px;
+  font-size: 8px;
 }
 
-.attached-energy .card-face-host {
-  margin-right: -30px;
+/*
+  Attached cards are pressed off the pointer rather than by a control of their own - the surface
+  their host is pressed by is already around them - so the browser's own callout and text selection
+  have to be kept off them the same way they are kept off the card itself.
+*/
+.attached-card {
+  flex: 0 0 auto;
+  touch-action: pan-x pan-y;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/*
+  The Energy fan grows away from the card it belongs to rather than underneath it, and each face
+  after the first sits one step further out and one step further back. Both halves of that matter:
+  a fan that grows under its host is painted over by it, and a fan stepped by a whole face shows
+  nothing but its front card - which is how a fully charged Blokemon came to look exactly like a
+  half charged one. The step is a fraction of a face, so every card in the fan shows an edge.
+
+  The fan is tucked a little way under the near edge of its host rather than starting beyond it, so
+  it reads as hanging off that card rather than lying beside it, and so the table gives up as
+  little room to it as the reading allows. It is tucked over the host and not under it - being
+  under it is the defect - which is also why the counter pill sits inside the edge above the tuck
+  rather than beyond it.
+*/
+.attached-energy {
+  --energy-fan-step: 16px;
+  --energy-fan-tuck: 18px;
+  position: absolute;
+  z-index: 8;
+  right: calc(100% - var(--energy-fan-tuck));
+  bottom: 16px;
+  height: 0;
+}
+
+/*
+  Drawn back to front, so the face nearest the host is the last one painted and lies over the fan
+  behind it. Depth is how far into the fan the face sits and the table sets it on the face itself.
+*/
+.attached-energy .attached-card {
+  position: absolute;
+  right: calc(var(--fan-depth, 0) * var(--energy-fan-step));
+  bottom: 0;
   filter: drop-shadow(0 4px 5px rgb(0 0 0 / 65%));
 }
 
 .is-compact .attached-energy {
-  left: -9px;
-  bottom: 4px;
+  --energy-fan-step: 9px;
+  --energy-fan-tuck: 6px;
+  bottom: 11px;
 }
 
 .is-compact .attached-energy .card-face-host {
   --blokemon-card-scale: 0.035;
-  margin-right: -20px;
 }
 
 .attached-tools {

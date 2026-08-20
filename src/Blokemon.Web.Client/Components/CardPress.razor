@@ -21,16 +21,7 @@
 </button>
 
 @code {
-    // Long enough that a deliberate hold is unambiguous, short enough to feel immediate.
-    private const int _holdMilliseconds = 480;
-
-    // A press that travels further than this is a scroll or a drag, not a tap or a hold.
-    private const double _travelTolerance = 12;
-
-    private CancellationTokenSource? _hold;
-    private double _startX;
-    private double _startY;
-    private bool _viewing;
+    private readonly CardHold _hold = new();
     private bool _suppressTap;
     private bool _parametersChanged;
 
@@ -90,57 +81,27 @@
 
     private void PressDown(PointerEventArgs eventArgs)
     {
-        // A new press always starts clean: neither the suppression nor a view whose release
-        // landed on the viewer rather than this button survives it.
+        // A new press always starts clean, so a suppression left over from the press before it
+        // cannot swallow this one's tap.
         _suppressTap = false;
-        _viewing = false;
-        _startX = eventArgs.ClientX;
-        _startY = eventArgs.ClientY;
-        StopHold();
-        var hold = new CancellationTokenSource();
-        _hold = hold;
-        _ = Hold(hold);
-    }
-
-    private async Task Hold(CancellationTokenSource hold)
-    {
-        try
-        {
-            await Task.Delay(_holdMilliseconds, hold.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            return;
-        }
-
-        if (!ReferenceEquals(_hold, hold))
-        {
-            return;
-        }
-
-        _viewing = true;
-        _suppressTap = true;
-        await ViewOpened.InvokeAsync(CardInstanceId);
+        _hold.Down(
+            eventArgs,
+            () =>
+            {
+                // The press became a view, so the release that ends it is not also a tap.
+                _suppressTap = true;
+                return ViewOpened.InvokeAsync(CardInstanceId);
+            }
+        );
     }
 
     private void PressMove(PointerEventArgs eventArgs)
     {
-        if (_hold is null || _viewing)
+        if (_hold.Travelled(eventArgs))
         {
-            return;
+            // The press became a scroll or a drag: no view, and no tap on release either.
+            _suppressTap = true;
         }
-
-        var travelled =
-            Math.Abs(eventArgs.ClientX - _startX) > _travelTolerance
-            || Math.Abs(eventArgs.ClientY - _startY) > _travelTolerance;
-        if (!travelled)
-        {
-            return;
-        }
-
-        // The press became a scroll or a drag: no view, and no tap on release either.
-        _suppressTap = true;
-        StopHold();
     }
 
     private Task PressUp() => Release();
@@ -149,26 +110,9 @@
 
     private async Task Release()
     {
-        StopHold();
-        if (!_viewing)
+        if (_hold.Release())
         {
-            return;
+            await ViewClosed.InvokeAsync();
         }
-
-        _viewing = false;
-        await ViewClosed.InvokeAsync();
-    }
-
-    private void StopHold()
-    {
-        var hold = _hold;
-        _hold = null;
-        if (hold is null)
-        {
-            return;
-        }
-
-        hold.Cancel();
-        hold.Dispose();
     }
 }

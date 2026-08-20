@@ -6,23 +6,27 @@
     {
         <span class="damage-badge" aria-label="@Shown damage">@Shown</span>
     }
-    @if (Instance.AttachedEnergy.Length > 0)
+    @if (_energy.Count > 0)
     {
-        <div class="attached-energy" aria-label="@($"{Instance.AttachedEnergy.Length} attached Energy")">
-            @foreach (var energy in Instance.AttachedEnergy)
+        <span class="attached-energy">
+            @foreach (var attached in _energy)
             {
-                <CardFace Card="energy" Size="CardFaceSize.Tiny" ShowTitle="true" />
+                <AttachedCard Attachment="attached"
+                              ViewOpened="ViewOpened"
+                              ViewClosed="ViewClosed" />
             }
-        </div>
+        </span>
     }
-    @if (Instance.AttachedTools.Length > 0)
+    @if (_tools.Count > 0)
     {
-        <div class="attached-tools" aria-label="@($"{Instance.AttachedTools.Length} attached Tool")">
-            @foreach (var tool in Instance.AttachedTools)
+        <span class="attached-tools">
+            @foreach (var attached in _tools)
             {
-                <CardFace Card="tool" Size="CardFaceSize.Tiny" ShowTitle="true" />
+                <AttachedCard Attachment="attached"
+                              ViewOpened="ViewOpened"
+                              ViewClosed="ViewClosed" />
             }
-        </div>
+        </span>
     }
     @if (Instance.Conditions.Length > 0)
     {
@@ -33,13 +37,20 @@
             }
         </div>
     }
+    @* The two things a Blokemon in play is read for, one at each end of its bottom edge. The
+       Energy count is there whatever the number is: a card carrying nothing says so, and the pill
+       keeps its place rather than appearing the moment something is attached. *@
     @if (ShowVitals)
     {
+        <span class="energy-badge">@MatchAttachedCards.EnergyCount(Instance) Energy</span>
         <span class="hp-badge">@(Math.Max(0, Instance.HitPoints - Shown)) / @Instance.HitPoints HP</span>
     }
 </div>
 
 @code {
+    private IReadOnlyList<MatchAttachedCardView> _energy = [];
+    private IReadOnlyList<MatchAttachedCardView> _tools = [];
+
     [Parameter, EditorRequired]
     public required MatchCardInstanceView Instance { get; set; }
 
@@ -52,7 +63,8 @@
     [Parameter]
     public bool Compact { get; set; }
 
-    // A Kit in play has no staying power to spend, so it carries no HP line.
+    // A Kit in play has no staying power to spend and nothing attached to it, so it carries
+    // neither pill.
     [Parameter]
     public bool ShowVitals { get; set; } = true;
 
@@ -65,5 +77,20 @@
     [Parameter]
     public MatchCueRole Role { get; set; }
 
+    // A press held on one of the attached faces opens the viewer on that card. It travels the same
+    // way a press on the host does, because the card viewer is the page's and one card is being
+    // asked for either way.
+    [Parameter]
+    public EventCallback<string> ViewOpened { get; set; }
+
+    [Parameter]
+    public EventCallback ViewClosed { get; set; }
+
     private int Shown => Damage ?? Instance.Damage;
+
+    protected override void OnParametersSet()
+    {
+        _energy = MatchAttachedCards.Energy(Instance);
+        _tools = MatchAttachedCards.Tools(Instance);
+    }
 }

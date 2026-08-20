@@ -9,9 +9,9 @@ namespace Blokemon.Web.Client.Pages;
 // held press opens. None of it decides a move; all of it decides what is on screen.
 public partial class Match
 {
-    private async Task OpenViewer(string cardInstanceId)
+    private async Task OpenViewer(string pressed)
     {
-        var card = LookupCard(cardInstanceId);
+        var card = LookupCard(pressed);
         if (card is null)
         {
             return;
@@ -36,21 +36,21 @@ public partial class Match
         StateHasChanged();
     }
 
-    private CardView? LookupCard(string cardInstanceId)
+    // What a press names: a card the table is drawing, one of the cards attached to it, or - for a
+    // press on a card a question is offering that the table itself is not showing - a card the
+    // pending question is holding out.
+    private CardView? LookupCard(string pressed)
     {
-        if (
-            AllVisibleCards(DisplayFrame()).FirstOrDefault(card => card.Id == cardInstanceId) is
-            { } visible
-        )
+        if (MatchTable.Pressed(AllVisibleCards(DisplayFrame()), pressed) is { } shown)
         {
-            return visible.Card;
+            return shown;
         }
 
         return _pending
             ?.ChoiceRequirements.SelectMany(requirement =>
                 requirement.EligibleCards.Concat(requirement.EligibleTargets)
             )
-            .FirstOrDefault(card => card.Id == cardInstanceId)
+            .FirstOrDefault(card => card.Id == pressed)
             ?.Card;
     }
 
