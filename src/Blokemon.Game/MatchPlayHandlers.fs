@@ -72,10 +72,13 @@ module internal MatchPlayHandlers =
                             Attachments = ImmutableArray<_>.Empty
                             RoughStates = ImmutableArray<_>.Empty }
 
+                    // A promotion takes the place of what it promoted from rather than arriving
+                    // anywhere: it is the same pile of cards, taller. Standing it at the end of the
+                    // Booth would move a Bloke the player never picked up.
                     builder.SetCard
                         { promotion with
                             Zone = zone
-                            StackPosition = -1
+                            StackPosition = target.StackPosition
                             Damage = target.Damage
                             Attachments = target.Attachments
                             UnderlyingCards =

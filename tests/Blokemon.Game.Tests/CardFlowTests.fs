@@ -7,6 +7,86 @@ open TUnit.Core
 
 type CardFlowTests() =
 
+    // A Booth is in the order its Blokes were put down, and the identities here are chosen to sort
+    // the other way: a Booth that answers by identity answers in the order the Deck was written,
+    // because a card's identity is its position in the deck list it was built from.
+    [<Test>]
+    member _.``a booth should stand its blokes in the order they were played``() =
+        let engine = MatchScenario.Engine()
+        let state = MatchScenario.BattleState "BLK-001" "BLK-003" [] 907UL
+
+        let held =
+            [ "zz-bloke"; "aa-bloke"; "mm-bloke" ]
+            |> List.map (fun id ->
+                MatchScenario.PlainCard id "BLK-004" MatchScenario.FirstPlayer CardZone.Mitt -1)
+
+        let mutable state = MatchScenario.WithCards state held
+
+        for card in held do
+            state <-
+                MatchScenario.Applied(
+                    engine.Apply(
+                        state,
+                        MatchScenario.Command
+                            state
+                            $"play:{card.Id.Value}"
+                            MatchScenario.FirstPlayer
+                            ImmutableArray<_>.Empty
+                            (MatchAction.PlayBloke card.Id)
+                    )
+                )
+
+        state.CardsIn(MatchScenario.FirstPlayer, CardZone.Booth)
+        |> Seq.map (fun card -> card.Id.Value)
+        |> Seq.toList
+        |> should equal [ "zz-bloke"; "aa-bloke"; "mm-bloke" ]
+
+    // Promoting is not putting a Bloke down. It is the same pile of cards grown taller, so it
+    // happens where the pile already stood and the Blokes either side of it do not move.
+    [<Test>]
+    member _.``a promotion should take the place of the bloke it promoted``() =
+        let engine = MatchScenario.Engine()
+
+        let standing =
+            [ "yy-standing", 0; "bb-standing", 1; "nn-standing", 2 ]
+            |> List.map (fun (id, position) ->
+                MatchScenario.PlainCard
+                    id
+                    "BLK-004"
+                    MatchScenario.FirstPlayer
+                    CardZone.Booth
+                    position)
+
+        let promotion =
+            MatchScenario.PlainCard
+                "pp-promotion"
+                "BLK-005"
+                MatchScenario.FirstPlayer
+                CardZone.Mitt
+                -1
+
+        let state =
+            MatchScenario.WithCards
+                (MatchScenario.BattleState "BLK-001" "BLK-003" [] 907UL)
+                (promotion :: standing)
+
+        let action =
+            engine.GetLegalActions(state, MatchScenario.FirstPlayer)
+            |> Seq.filter (fun candidate ->
+                candidate.Kind = LegalActionKind.Promote
+                && (match candidate.Command.Action with
+                    | MatchAction.Promote(promoted, target) ->
+                        promoted = promotion.Id && target = CardInstanceId "bb-standing"
+                    | _ -> false))
+            |> Seq.exactlyOne
+
+        let applied = MatchScenario.Applied(engine.Apply(state, action.Command))
+
+        applied.CardsIn(MatchScenario.FirstPlayer, CardZone.Booth)
+        |> Seq.map (fun card -> card.Id.Value)
+        |> Seq.toList
+        |> should equal [ "yy-standing"; "pp-promotion"; "nn-standing" ]
+
     [<Test>]
     member _.``a stack search should offer only regular blokes and move the chosen card to the booth``
         ()

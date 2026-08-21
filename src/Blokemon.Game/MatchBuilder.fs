@@ -123,11 +123,22 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
     member this.MoveCard(id: CardInstanceId, zone: CardZone, attachedTo: CardInstanceId voption) =
         let card = this.Card id
 
+        // A card arriving on the Booth stands at the end of it, because a Booth is in the order its
+        // cards were put down and nothing else. Left at -1 they all tie, and the tiebreak is the
+        // card's identity - which is its position in the Deck it was built from, so a Booth read
+        // itself out in the order the deck list was written rather than the order it was played.
+        //
+        // Every other zone keeps -1. The Deck and the Bar Chits number themselves where they are
+        // dealt, and nowhere else has an order worth reading.
         this.SetCard
             { card with
                 Zone = zone
                 IsFaceDown = zone = CardZone.BarChit
-                StackPosition = -1
+                StackPosition =
+                    if zone = CardZone.Booth then
+                        this.Beneath(card.Owner, CardZone.Booth)
+                    else
+                        -1
                 AttachedTo = attachedTo }
 
         events.Add(
@@ -202,8 +213,11 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
     //
     // Folding from zero is also what answers an empty Deck, which is reachable: a player may hold
     // their whole Deck, and asking an empty Deck for its last position has no answer to give.
-    member this.BeneathStack(player: PlayerId) =
-        this.CardsIn(player, CardZone.Stack)
+    member this.BeneathStack(player: PlayerId) = this.Beneath(player, CardZone.Stack)
+
+    // The same question asked of any zone that keeps an order: one past the last card in it.
+    member private this.Beneath(player: PlayerId, zone: CardZone) =
+        this.CardsIn(player, zone)
         |> Seq.fold (fun beneath card -> max beneath (card.StackPosition + 1)) 0
 
     member this.ReturnMittToStack(player: PlayerId) =

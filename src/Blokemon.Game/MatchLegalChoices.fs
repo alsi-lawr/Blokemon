@@ -90,7 +90,7 @@ module internal MatchLegalChoices =
                 elif card.Id = promotion.Id then
                     { card with
                         Zone = target.Zone
-                        StackPosition = -1
+                        StackPosition = target.StackPosition
                         Damage = target.Damage
                         Attachments = target.Attachments
                         UnderlyingCards =
