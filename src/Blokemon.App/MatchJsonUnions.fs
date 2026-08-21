@@ -151,6 +151,9 @@ type internal MatchActionJsonConverter() =
         | "chooseOpening" ->
             let payload = UnionPayload.expect 2 payload
             MatchAction.ChooseOpening(card "oche" payload, cards "booth" payload)
+        | "chooseBonusPlacement" ->
+            let payload = UnionPayload.expect 1 payload
+            MatchAction.ChooseBonusPlacement(cards "bonusBooth" payload)
         | "attachVim" ->
             let payload = UnionPayload.expect 2 payload
             MatchAction.AttachVim(card "vim" payload, card "bloke" payload)
@@ -223,6 +226,9 @@ type internal MatchActionJsonConverter() =
             case "chooseOpening"
             write "oche" oche
             write "booth" booth
+        | MatchAction.ChooseBonusPlacement bonusBooth ->
+            case "chooseBonusPlacement"
+            write "bonusBooth" bonusBooth
         | MatchAction.AttachVim(vim, bloke) ->
             case "attachVim"
             write "vim" vim

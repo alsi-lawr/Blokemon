@@ -14,19 +14,20 @@ type DeterministicCpu() =
         dict
             [ LegalActionKind.ChooseMulliganBonus, 0
               LegalActionKind.ChooseOpening, 1
-              LegalActionKind.ChooseReplacement, 2
-              LegalActionKind.ResolveEffectChoice, 3
-              LegalActionKind.ResolveKnockoutTrigger, 4
-              LegalActionKind.ResolveBarChitTrigger, 5
-              LegalActionKind.PlayBloke, 6
-              LegalActionKind.Promote, 7
-              LegalActionKind.AttachVim, 8
-              LegalActionKind.PlayKit, 9
-              LegalActionKind.UsePartyTrick, 10
-              LegalActionKind.Attack, 11
-              LegalActionKind.Taxi, 12
-              LegalActionKind.ChuckFossil, 13
-              LegalActionKind.EndRound, 14 ]
+              LegalActionKind.ChooseBonusPlacement, 2
+              LegalActionKind.ChooseReplacement, 3
+              LegalActionKind.ResolveEffectChoice, 4
+              LegalActionKind.ResolveKnockoutTrigger, 5
+              LegalActionKind.ResolveBarChitTrigger, 6
+              LegalActionKind.PlayBloke, 7
+              LegalActionKind.Promote, 8
+              LegalActionKind.AttachVim, 9
+              LegalActionKind.PlayKit, 10
+              LegalActionKind.UsePartyTrick, 11
+              LegalActionKind.Attack, 12
+              LegalActionKind.Taxi, 13
+              LegalActionKind.ChuckFossil, 14
+              LegalActionKind.EndRound, 15 ]
 
     member _.Choose(engine: MatchEngine, state: MatchState, actor: PlayerId) =
         // Resignation is voluntary and never automated, and an action the actor cannot pay for is

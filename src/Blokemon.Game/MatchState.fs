@@ -90,6 +90,8 @@ type PlayerState =
       MulliganCount: int
       MulliganBonusAllowance: int
       MulliganBonusChosen: bool
+      BonusDrawn: ImmutableArray<CardInstanceId>
+      BonusPlacementChosen: bool
       OpeningChosen: bool
       RoundsStarted: int }
 

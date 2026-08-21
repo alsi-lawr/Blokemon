@@ -89,6 +89,7 @@ module internal MatchIdentity =
             match value.Action with
             | MatchAction.ChooseOpening(oche, booth) ->
                 hasValue oche.Value && Seq.forall cardIdHasValue booth
+            | MatchAction.ChooseBonusPlacement bonusBooth -> Seq.forall cardIdHasValue bonusBooth
             | MatchAction.AttachVim(vim, bloke) -> hasValue vim.Value && hasValue bloke.Value
             | MatchAction.PlayBloke bloke -> hasValue bloke.Value
             | MatchAction.Promote(promotion, promoted) ->

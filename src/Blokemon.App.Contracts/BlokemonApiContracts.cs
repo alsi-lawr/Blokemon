@@ -177,6 +177,7 @@ public enum MatchActionKindView
 {
     ChooseMulliganBonus,
     ChooseOpening,
+    ChooseBonusPlacement,
     ChooseReplacement,
     AttachEnergy,
     PlayBlokemon,
@@ -215,6 +216,7 @@ public enum MatchPhaseView
     AwaitingTriggerChoice,
     AwaitingReplacement,
     Complete,
+    BonusPlacement,
 }
 
 public sealed record MatchFrameView(

@@ -253,10 +253,13 @@ public sealed class LocalMatchTests
         var opening = await AdvanceToOpeningChoice(fixture.Application, started);
         var openingMatch = opening.Match!;
         var openingAction = OpeningAction(openingMatch);
-        var playing = Value(
-            await fixture.Application.ApplyMatchAction(
-                openingMatch.Frame.Id,
-                RequestFor(openingMatch, openingAction, Guid.NewGuid())
+        var playing = await AdvanceThroughSetup(
+            fixture.Application,
+            Value(
+                await fixture.Application.ApplyMatchAction(
+                    openingMatch.Frame.Id,
+                    RequestFor(openingMatch, openingAction, Guid.NewGuid())
+                )
             )
         );
         var playingMatch = playing.Match!;
@@ -1373,7 +1376,7 @@ public sealed class LocalMatchTests
         var booth = boothRequirement.EligibleCards.First(card => card.Id != oche);
         var selection = SelectionFor(boothRequirement) with { CardInstanceIds = [booth.Id] };
 
-        return Value(
+        var placed = Value(
             await application.ApplyMatchAction(
                 opening.Frame.Id,
                 request with
@@ -1387,6 +1390,34 @@ public sealed class LocalMatchTests
                 }
             )
         );
+
+        return await AdvanceThroughSetup(application, placed);
+    }
+
+    // Setup no longer ends when the Active is standing: the mulligan bonus is drawn after it, and
+    // a Basic that came with the bonus may then go to the Bench.
+    private static async Task<ApplicationView> AdvanceThroughSetup(
+        LocalApplicationService application,
+        ApplicationView current
+    )
+    {
+        for (var count = 0; count < 8; count++)
+        {
+            var match = current.Match!;
+            if (match.Frame.Phase == MatchPhaseView.Playing || match.LegalActions.Length == 0)
+            {
+                return current;
+            }
+
+            current = Value(
+                await application.ApplyMatchAction(
+                    match.Frame.Id,
+                    RequestFor(match, match.LegalActions[0], Guid.NewGuid())
+                )
+            );
+        }
+
+        return current;
     }
 
     private static async Task<ApplicationView> AdvanceToOpeningChoice(
@@ -1629,6 +1660,17 @@ public sealed class LocalMatchTests
                 openingRequest
             )
         );
+        for (var count = 0; count < 8 && opened.Frame.Phase != MatchPhaseView.Playing; count++)
+        {
+            opened = Match(
+                await fixture.Service.Apply(
+                    fixture.Profile,
+                    "Local Player",
+                    opened.Frame.Id,
+                    RequestFor(opened, opened.LegalActions[0], Guid.NewGuid())
+                )
+            );
+        }
         var attach = opened.LegalActions.First(action =>
             action.Id.StartsWith("attach:", StringComparison.Ordinal)
             && action.Id.EndsWith($":{ocheId}", StringComparison.Ordinal)

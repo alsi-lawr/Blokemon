@@ -78,10 +78,12 @@ type OpeningTests() =
 
         ExtraDrawsOffered afterOne |> should equal 2
 
-        // Taking the last of it closes the draw and the setup moves on.
+        // Taking the last of it closes the draw. The bonus is now the last step of the setup
+        // rather than the first, and this table draws Vim, so there is nothing to bench and
+        // closing it begins the game.
         let afterBoth = TakeExtraDraw afterOne 1
         MittSize afterBoth |> should equal 2
-        afterBoth.Phase |> should equal MatchPhase.OpeningPlacement
+        afterBoth.Phase |> should equal MatchPhase.Playing
         ExtraDrawsOffered afterBoth |> should equal 0
 
     [<Test>]
@@ -90,7 +92,7 @@ type OpeningTests() =
         let declined = TakeExtraDraw (ExtraDrawTable()) 0
 
         MittSize declined |> should equal 0
-        declined.Phase |> should equal MatchPhase.OpeningPlacement
+        declined.Phase |> should equal MatchPhase.Playing
         ExtraDrawsOffered declined |> should equal 0
 
     [<Test>]
@@ -98,7 +100,7 @@ type OpeningTests() =
         let taken = TakeExtraDraw (ExtraDrawTable()) 2
 
         MittSize taken |> should equal 2
-        taken.Phase |> should equal MatchPhase.OpeningPlacement
+        taken.Phase |> should equal MatchPhase.Playing
         ExtraDrawsOffered taken |> should equal 0
 
     [<Test>]
@@ -178,3 +180,140 @@ type OpeningTests() =
             |> Array.distinct
             |> Array.length
             |> should equal 6
+
+type StaggeredOpeningTests() =
+
+    /// A table stopped on the opening placement, where the second player started over once and
+    /// the first did not.
+    let StaggeredTable () =
+        let state = MatchScenario.BattleState "BLK-001" "BLK-003" [] 7UL
+
+        let mitt =
+            [ MatchScenario.PlainCard
+                  "opening-first"
+                  "BLK-001"
+                  MatchScenario.FirstPlayer
+                  CardZone.Mitt
+                  0
+              MatchScenario.PlainCard
+                  "opening-second"
+                  "BLK-001"
+                  MatchScenario.SecondPlayer
+                  CardZone.Mitt
+                  1 ]
+
+        { MatchScenario.WithCards state mitt with
+            Phase = MatchPhase.OpeningPlacement
+            Players =
+                ImmutableArray.CreateRange(
+                    state.Players
+                    |> Seq.map (fun player ->
+                        { player with
+                            OpeningChosen = false
+                            MulliganCount = if player.Id = MatchScenario.SecondPlayer then 1 else 0 })
+                ) }
+
+    /// A table stopped on the placement that follows the extra draw, holding one Regular Bloke
+    /// the draw put in the Mitt.
+    let BonusPlacementTable () =
+        let state = MatchScenario.BattleState "BLK-001" "BLK-003" [] 11UL
+
+        let bonus =
+            MatchScenario.PlainCard
+                "bonus-bloke"
+                "BLK-001"
+                MatchScenario.FirstPlayer
+                CardZone.Mitt
+                0
+
+        { MatchScenario.WithCards state [ bonus ] with
+            Phase = MatchPhase.BonusPlacement
+            Players =
+                ImmutableArray.CreateRange(
+                    state.Players
+                    |> Seq.map (fun player ->
+                        if player.Id = MatchScenario.FirstPlayer then
+                            { player with
+                                BonusDrawn = ImmutableArray.Create(CardInstanceId "bonus-bloke")
+                                BonusPlacementChosen = false }
+                        else
+                            player)
+                ) }
+
+    let OpeningsOffered (engine: MatchEngine) state player =
+        engine.GetLegalActions(state, player)
+        |> Seq.filter (fun action -> action.Kind = LegalActionKind.ChooseOpening)
+        |> Seq.length
+
+    [<Test>]
+    member _.``a player who started over should set up only once the other has finished``() =
+        // The one who did not start over commits first, and the one who did waits - which is what
+        // keeps the extra draw from being seen before either Oche is decided.
+        let engine = MatchScenario.Engine()
+        let table = StaggeredTable()
+
+        OpeningsOffered engine table MatchScenario.FirstPlayer
+        |> should be (greaterThan 0)
+
+        OpeningsOffered engine table MatchScenario.SecondPlayer |> should equal 0
+
+        let placed =
+            MatchScenario.Applied(
+                engine.Apply(
+                    table,
+                    MatchScenario.Command
+                        table
+                        "opening:first"
+                        MatchScenario.FirstPlayer
+                        ImmutableArray<_>.Empty
+                        (MatchAction.ChooseOpening(
+                            CardInstanceId "opening-first",
+                            ImmutableArray<_>.Empty
+                        ))
+                )
+            )
+
+        OpeningsOffered engine placed MatchScenario.SecondPlayer
+        |> should be (greaterThan 0)
+
+    [<Test>]
+    member _.``a Bloke drawn with the extra should reach the Booth and leave the Oche standing``() =
+        // The bonus is compensation, not a second opening: what it draws may be benched and may
+        // never displace the Blokemon already standing.
+        let engine = MatchScenario.Engine()
+        let table = BonusPlacementTable()
+
+        let ocheBefore =
+            table.CardsIn(MatchScenario.FirstPlayer, CardZone.Oche)
+            |> Seq.map _.Id
+            |> Seq.toArray
+
+        // Resignation is always on offer and is not part of the question being asked here.
+        engine.GetLegalActions(table, MatchScenario.FirstPlayer)
+        |> Seq.map _.Kind
+        |> Seq.filter (fun kind -> kind <> LegalActionKind.Resign)
+        |> Seq.distinct
+        |> Seq.toArray
+        |> should equal [| LegalActionKind.ChooseBonusPlacement |]
+
+        let placed =
+            MatchScenario.Applied(
+                engine.Apply(
+                    table,
+                    MatchScenario.Command
+                        table
+                        "bonus:booth"
+                        MatchScenario.FirstPlayer
+                        ImmutableArray<_>.Empty
+                        (MatchAction.ChooseBonusPlacement(
+                            ImmutableArray.Create(CardInstanceId "bonus-bloke")
+                        ))
+                )
+            )
+
+        (placed.Card(CardInstanceId "bonus-bloke")).Zone |> should equal CardZone.Booth
+
+        placed.CardsIn(MatchScenario.FirstPlayer, CardZone.Oche)
+        |> Seq.map _.Id
+        |> Seq.toArray
+        |> should equal ocheBefore

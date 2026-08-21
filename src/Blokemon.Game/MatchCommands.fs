@@ -9,6 +9,7 @@ open Blokemon.Core.SetDesign
 type MatchAction =
     | ChooseMulliganBonus of cardsToDraw: int
     | ChooseOpening of oche: CardInstanceId * booth: ImmutableArray<CardInstanceId>
+    | ChooseBonusPlacement of bonusBooth: ImmutableArray<CardInstanceId>
     | AttachVim of vim: CardInstanceId * vimTarget: CardInstanceId
     | PlayBloke of bloke: CardInstanceId
     | Promote of promotion: CardInstanceId * promoted: CardInstanceId

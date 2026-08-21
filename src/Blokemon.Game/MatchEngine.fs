@@ -91,15 +91,10 @@ module internal MatchSetup =
                     MulliganBonusAllowance = allowance
                     MulliganBonusChosen = allowance = 0 }
 
-        builder.Phase <-
-            if
-                players
-                |> Array.exists (fun player ->
-                    (builder.Player player.Id).MulliganBonusAllowance > 0)
-            then
-                MatchPhase.MulliganBonus
-            else
-                MatchPhase.OpeningPlacement
+        // The bonus is compensation drawn against an Active that is already standing, so it comes
+        // after the placement rather than before it. Drawn first, it was seen before the single
+        // most consequential choice of the opening.
+        builder.Phase <- MatchPhase.OpeningPlacement
 
 /// The one place a match state is ever advanced: a validated start request produces the first
 /// state, and each command produces exactly one successor from exactly one predecessor.
@@ -151,6 +146,8 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
                               MulliganCount = 0
                               MulliganBonusAllowance = 0
                               MulliganBonusChosen = false
+                              BonusDrawn = ImmutableArray<_>.Empty
+                              BonusPlacementChosen = true
                               OpeningChosen = false
                               RoundsStarted = 0 })
                     )
@@ -194,7 +191,9 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
             let result =
                 match command.Action with
                 | MatchAction.ChooseMulliganBonus cardsToDraw ->
-                    chooseMulliganBonus builder command.Actor cardsToDraw
+                    chooseMulliganBonus catalog builder command.Actor cardsToDraw
+                | MatchAction.ChooseBonusPlacement bonusBooth ->
+                    chooseBonusPlacement catalog builder command.Actor bonusBooth
                 | MatchAction.ChooseOpening(oche, booth) ->
                     chooseOpening catalog builder command.Actor oche booth
                 | MatchAction.AttachVim(vim, target) ->

@@ -33,6 +33,7 @@ module internal MatchLabels =
         | MatchPhase.AwaitingTriggerChoice -> MatchPhaseView.AwaitingTriggerChoice
         | MatchPhase.AwaitingReplacement -> MatchPhaseView.AwaitingReplacement
         | MatchPhase.Complete -> MatchPhaseView.Complete
+        | MatchPhase.BonusPlacement -> MatchPhaseView.BonusPlacement
         | _ -> raise (UnreachableException())
 
     let cardChoiceLabel (minimum: int) (maximum: int) =
@@ -74,6 +75,7 @@ module internal MatchLabels =
         match kind with
         | LegalActionKind.ChooseMulliganBonus -> MatchActionKindView.ChooseMulliganBonus
         | LegalActionKind.ChooseOpening -> MatchActionKindView.ChooseOpening
+        | LegalActionKind.ChooseBonusPlacement -> MatchActionKindView.ChooseBonusPlacement
         | LegalActionKind.ChooseReplacement -> MatchActionKindView.ChooseReplacement
         | LegalActionKind.AttachVim -> MatchActionKindView.AttachEnergy
         | LegalActionKind.PlayBloke -> MatchActionKindView.PlayBlokemon

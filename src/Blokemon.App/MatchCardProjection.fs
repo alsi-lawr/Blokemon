@@ -117,6 +117,7 @@ module internal MatchCardProjection =
                 null
                 null
         | MatchAction.ChooseMulliganBonus _
+        | MatchAction.ChooseBonusPlacement _
         | MatchAction.EndRound
         | MatchAction.ResolveEffectChoice
         | MatchAction.ResolveBarChitTrigger _
@@ -132,6 +133,11 @@ module internal MatchCardProjection =
             else
                 $"""Draw {cardsToDraw} extra {if cardsToDraw = 1 then "card" else "cards"}"""
         | MatchAction.ChooseOpening(oche, _) -> $"Make {cardName state oche} your Active Blokemon"
+        | MatchAction.ChooseBonusPlacement bonusBooth ->
+            if bonusBooth.IsEmpty then
+                "Bench none of them"
+            else
+                $"""Bench {bonusBooth.Length} of them"""
         | MatchAction.AttachVim(vim, bloke) ->
             $"Attach {cardName state vim} to {cardName state bloke}"
         | MatchAction.PlayBloke bloke -> $"Play {cardName state bloke} to the Bench"

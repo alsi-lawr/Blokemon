@@ -9,7 +9,29 @@ open Blokemon.Game.MatchRounds
 /// The commands that only move a card or close a round: no effect program runs behind any of them.
 module internal MatchBasicHandlers =
 
-    let chooseMulliganBonus (builder: MatchBuilder) (actor: PlayerId) (cardsToDraw: int) =
+    let private beginRound (catalog: AuthorityCatalog) (builder: MatchBuilder) =
+        startRound catalog builder builder.OpeningPlayer
+
+    let private settleAfterBonus (catalog: AuthorityCatalog) (builder: MatchBuilder) =
+        let state = builder.Snapshot()
+
+        let benchable =
+            builder.Players
+            |> Seq.toArray
+            |> Array.exists (fun current ->
+                (MatchRules.bonusBenchable catalog state current.Id).Length > 0)
+
+        if benchable then
+            builder.Phase <- MatchPhase.BonusPlacement
+        else
+            beginRound catalog builder
+
+    let chooseMulliganBonus
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (actor: PlayerId)
+        (cardsToDraw: int)
+        =
         if builder.Phase <> MatchPhase.MulliganBonus then
             HandlerResult.reject CommandRejectionCode.WrongPhase
         else
@@ -23,24 +45,73 @@ module internal MatchBasicHandlers =
             then
                 HandlerResult.reject CommandRejectionCode.RuleLimitReached
             else
-                builder.Draw(actor, cardsToDraw, DrawReason.MulliganBonus) |> ignore
+                let drawn = builder.Draw(actor, cardsToDraw, DrawReason.MulliganBonus)
 
                 // The bonus can be taken a card at a time: what is left of the allowance stays
                 // on offer, and the choice only closes when the player takes none of it or has
                 // taken all of it. Taking the whole allowance in one command, or declining it
                 // outright, closes it exactly as it always did.
                 let remaining = player.MulliganBonusAllowance - cardsToDraw
+                let closed = cardsToDraw = 0 || remaining = 0
 
                 builder.SetPlayer
                     { player with
                         MulliganBonusAllowance = remaining
-                        MulliganBonusChosen = cardsToDraw = 0 || remaining = 0 }
+                        MulliganBonusChosen = closed
+                        BonusDrawn = player.BonusDrawn.AddRange drawn
+                        BonusPlacementChosen = false }
 
                 if
                     builder.Players
                     |> Seq.forall (fun current -> (builder.Player current.Id).MulliganBonusChosen)
                 then
-                    builder.Phase <- MatchPhase.OpeningPlacement
+                    settleAfterBonus catalog builder
+
+                HandlerResult.accepted
+
+    let chooseBonusPlacement
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (actor: PlayerId)
+        (bonusBooth: ImmutableArray<CardInstanceId>)
+        =
+        if builder.Phase <> MatchPhase.BonusPlacement then
+            HandlerResult.reject CommandRejectionCode.WrongPhase
+        else
+            let player = builder.Player actor
+            let benchable = MatchRules.bonusBenchable catalog (builder.Snapshot()) actor
+
+            let room =
+                catalog.Manifest.BaseRules.Opening.BoothLimit
+                - (builder.CardsIn(actor, CardZone.Booth) |> Seq.length)
+
+            let illegal =
+                player.BonusPlacementChosen
+                || bonusBooth.Length > room
+                || (bonusBooth |> Seq.distinct |> Seq.length) <> bonusBooth.Length
+                || bonusBooth
+                   |> Seq.exists (fun card ->
+                       benchable |> Array.exists (fun candidate -> candidate.Id = card) |> not)
+
+            if illegal then
+                HandlerResult.reject CommandRejectionCode.IllegalOpening
+            else
+                for card in bonusBooth do
+                    builder.MoveCard(card, CardZone.Booth)
+
+                    builder.SetCard
+                        { builder.Card card with
+                            EnteredAtOwnerRound = (builder.Player actor).RoundsStarted }
+
+                builder.SetPlayer
+                    { builder.Player actor with
+                        BonusPlacementChosen = true }
+
+                if
+                    builder.Players
+                    |> Seq.forall (fun current -> (builder.Player current.Id).BonusPlacementChosen)
+                then
+                    beginRound catalog builder
 
                 HandlerResult.accepted
 
@@ -52,6 +123,8 @@ module internal MatchBasicHandlers =
         (boothChoice: ImmutableArray<CardInstanceId>)
         =
         if builder.Phase <> MatchPhase.OpeningPlacement then
+            HandlerResult.reject CommandRejectionCode.WrongPhase
+        elif not (MatchRules.mayPlaceOpening (builder.Snapshot()) actor) then
             HandlerResult.reject CommandRejectionCode.WrongPhase
         else
             let player = builder.Player actor
@@ -98,13 +171,23 @@ module internal MatchBasicHandlers =
                     builder.Players
                     |> Seq.forall (fun current -> (builder.Player current.Id).OpeningChosen)
                 then
+                    // Bar Chits belong to each player's own setup and are set aside as it
+                    // finishes, so the bonus that follows is drawn from what is left rather than
+                    // from the pile the Bar Chits still have to come off.
                     for current in builder.Players |> Seq.toArray do
                         builder.SetAsideBarChits(
                             current.Id,
                             catalog.Manifest.BaseRules.Opening.BarChitCount
                         )
 
-                    startRound catalog builder builder.OpeningPlayer
+                    if
+                        builder.Players
+                        |> Seq.exists (fun current ->
+                            (builder.Player current.Id).MulliganBonusAllowance > 0)
+                    then
+                        builder.Phase <- MatchPhase.MulliganBonus
+                    else
+                        beginRound catalog builder
 
                 HandlerResult.accepted
 

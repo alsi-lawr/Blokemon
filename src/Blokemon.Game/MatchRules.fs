@@ -37,6 +37,37 @@ module internal MatchRules =
     let isInPlay (card: CardState) =
         card.Zone = CardZone.Oche || card.Zone = CardZone.Booth
 
+    /// A player who started over waits for the one who did not to finish setting up. Fewest
+    /// mulligans places first, and an equal count leaves both free to place in either order.
+    let mayPlaceOpening (state: MatchState) (actor: PlayerId) =
+        let fewest = state.Players |> Seq.map _.MulliganCount |> Seq.min
+
+        (state.Player actor).MulliganCount = fewest
+        || state.Players
+           |> Seq.filter (fun player -> player.MulliganCount = fewest)
+           |> Seq.forall _.OpeningChosen
+
+    let bonusBenchable (catalog: AuthorityCatalog) (state: MatchState) (actor: PlayerId) =
+        let player = state.Player actor
+
+        if player.BonusPlacementChosen then
+            Array.empty
+        else
+            let room =
+                catalog.Manifest.BaseRules.Opening.BoothLimit
+                - (state.CardsIn(actor, CardZone.Booth) |> Seq.length)
+
+            if room <= 0 then
+                Array.empty
+            else
+                player.BonusDrawn
+                |> Seq.map state.Card
+                |> Seq.filter (fun card ->
+                    card.Zone = CardZone.Mitt
+                    && card.Kind = CardKind.Bloke
+                    && catalog.IsRegular card.MechanicalId)
+                |> Seq.toArray
+
     let rec containsOpcode (program: BlokemonEffectInstruction array) (opcode: BlokemonOpcode) =
         program
         |> Array.exists (fun instruction ->

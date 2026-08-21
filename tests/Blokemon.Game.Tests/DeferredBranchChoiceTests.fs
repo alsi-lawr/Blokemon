@@ -67,6 +67,38 @@ type DeferredBranchChoiceTests() =
             | CommandOutcome.Rejected(_, rejection) ->
                 failwith $"The command was rejected with {rejection.Code}."
 
+        let attacker =
+            state.CardsIn(MatchScenario.FirstPlayer, CardZone.Mitt)
+            |> Seq.filter (fun card -> card.MechanicalId.Value = "BLK-052")
+            |> Seq.exactlyOne
+
+        let defenders =
+            state.CardsIn(MatchScenario.SecondPlayer, CardZone.Mitt)
+            |> Seq.filter (fun card -> card.MechanicalId.Value = "BLK-001")
+            |> Seq.truncate 2
+            |> Seq.toArray
+
+        let openingFor player =
+            if player = MatchScenario.FirstPlayer then
+                MatchAction.ChooseOpening(attacker.Id, ImmutableArray<_>.Empty)
+            else
+                MatchAction.ChooseOpening(defenders[0].Id, ImmutableArray.Create defenders[1].Id)
+
+        // Whoever did not start over sets up first, so the order follows the deal rather than
+        // being fixed here. The extra draw comes after both are standing.
+        for player in
+            [ MatchScenario.FirstPlayer; MatchScenario.SecondPlayer ]
+            |> List.sortBy (fun player -> (state.Player player).MulliganCount) do
+            apply (
+                MatchScenario.Command
+                    state
+                    $"opening:{player.Value}"
+                    player
+                    ImmutableArray<_>.Empty
+                    (openingFor player)
+            )
+            |> ignore
+
         for player in [ MatchScenario.FirstPlayer; MatchScenario.SecondPlayer ] do
             let playerState = state.Player player
 
@@ -80,37 +112,6 @@ type DeferredBranchChoiceTests() =
                         (MatchAction.ChooseMulliganBonus 0)
                 )
                 |> ignore
-
-        let attacker =
-            state.CardsIn(MatchScenario.FirstPlayer, CardZone.Mitt)
-            |> Seq.filter (fun card -> card.MechanicalId.Value = "BLK-052")
-            |> Seq.exactlyOne
-
-        let defenders =
-            state.CardsIn(MatchScenario.SecondPlayer, CardZone.Mitt)
-            |> Seq.filter (fun card -> card.MechanicalId.Value = "BLK-001")
-            |> Seq.truncate 2
-            |> Seq.toArray
-
-        apply (
-            MatchScenario.Command
-                state
-                "opening:first"
-                MatchScenario.FirstPlayer
-                ImmutableArray<_>.Empty
-                (MatchAction.ChooseOpening(attacker.Id, ImmutableArray<_>.Empty))
-        )
-        |> ignore
-
-        apply (
-            MatchScenario.Command
-                state
-                "opening:second"
-                MatchScenario.SecondPlayer
-                ImmutableArray<_>.Empty
-                (MatchAction.ChooseOpening(defenders[0].Id, ImmutableArray.Create defenders[1].Id))
-        )
-        |> ignore
 
         apply (
             MatchScenario.Command

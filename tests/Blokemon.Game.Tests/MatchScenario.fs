@@ -195,6 +195,8 @@ module MatchScenario =
                   MulliganCount = 0
                   MulliganBonusAllowance = 0
                   MulliganBonusChosen = true
+                  BonusDrawn = ImmutableArray<_>.Empty
+                  BonusPlacementChosen = true
                   OpeningChosen = true
                   RoundsStarted = 2 },
                 { Id = SecondPlayer
@@ -202,6 +204,8 @@ module MatchScenario =
                   MulliganCount = 0
                   MulliganBonusAllowance = 0
                   MulliganBonusChosen = true
+                  BonusDrawn = ImmutableArray<_>.Empty
+                  BonusPlacementChosen = true
                   OpeningChosen = true
                   RoundsStarted = 2 }
             )

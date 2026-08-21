@@ -46,6 +46,9 @@ public sealed record MatchBand(string? Turn, string? Phase)
                 ? new(null, ChooseYourActive)
                 : new(them, Choosing),
             MatchPhaseView.MulliganBonus => new(yours ? null : them, "Extra draw"),
+            MatchPhaseView.BonusPlacement => yours
+                ? new(null, "Bench the extras")
+                : new(them, Choosing),
             // Nothing to add: with no phase to name, the affordances are the whole of it.
             MatchPhaseView.Playing => new(yours ? "Your turn" : $"{them}'s turn", null),
             MatchPhaseView.AwaitingEffectChoice or MatchPhaseView.AwaitingTriggerChoice => new(

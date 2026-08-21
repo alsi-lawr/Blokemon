@@ -29,8 +29,45 @@ module internal MatchLegalActions =
                         StableKey = $"bonus:%03d{count}" }
             }
 
+    let bonusPlacementActions (catalog: AuthorityCatalog) (state: MatchState) (actor: PlayerId) =
+        let benchable = MatchRules.bonusBenchable catalog state actor
+
+        if (state.Player actor).BonusPlacementChosen then
+            Seq.empty
+        else
+            let room =
+                catalog.Manifest.BaseRules.Opening.BoothLimit
+                - (state.CardsIn(actor, CardZone.Booth) |> Seq.length)
+
+            let requirement =
+                ChoiceRequirement.create
+                    (EffectChoiceId "bonus:booth")
+                    ChoiceRequirementKind.Cards
+                    actor
+                    0
+                    (min room benchable.Length)
+                    (ImmutableArray.CreateRange(benchable |> Seq.map _.Id))
+                    ImmutableArray<_>.Empty
+                    ImmutableArray<_>.Empty
+                    ValueNone
+
+            Seq.singleton (
+                legal
+                    LegalActionKind.ChooseBonusPlacement
+                    state
+                    actor
+                    $"bonusbooth:{actor.Value}"
+                    "bonusbooth"
+                    (ImmutableArray.Create requirement)
+                    ImmutableArray<_>.Empty
+                    (MatchAction.ChooseBonusPlacement ImmutableArray<_>.Empty)
+            )
+
     let openingActions (catalog: AuthorityCatalog) (state: MatchState) (actor: PlayerId) =
-        if (state.Player actor).OpeningChosen then
+        if
+            (state.Player actor).OpeningChosen
+            || not (MatchRules.mayPlaceOpening state actor)
+        then
             Seq.empty
         else
             let regulars =
@@ -160,6 +197,7 @@ module internal MatchLegalActions =
         match state.Phase with
         | MatchPhase.MulliganBonus -> mulliganBonusActions state actor
         | MatchPhase.OpeningPlacement -> openingActions catalog state actor
+        | MatchPhase.BonusPlacement -> bonusPlacementActions catalog state actor
         | MatchPhase.Playing -> playingActions catalog interpreter state actor
         | MatchPhase.AwaitingEffectChoice -> effectChoiceActions state actor
         | MatchPhase.AwaitingTriggerChoice -> triggerChoiceActions state actor

@@ -138,6 +138,8 @@ public partial class Match
         forced[0].Kind switch
         {
             MatchActionKindView.ChooseOpening => "Choose your Active Blokemon.",
+            MatchActionKindView.ChooseBonusPlacement =>
+                "Put any Basic Blokemon you just drew on your Bench.",
             MatchActionKindView.ChooseReplacement => "Choose a new Active Blokemon.",
             MatchActionKindView.ResolveKnockout => "Resolve the Knock Out.",
             MatchActionKindView.TakePrize => "Take your Prize card.",
@@ -228,6 +230,7 @@ public partial class Match
             MatchActionKindView.EndTurn => "End turn",
             MatchActionKindView.Resign => "Resign",
             MatchActionKindView.ChooseOpening => "Start battle",
+            MatchActionKindView.ChooseBonusPlacement => "Done",
             MatchActionKindView.ChooseReplacement => "Choose",
             MatchActionKindView.ResolveChoice
             or MatchActionKindView.ResolveKnockout

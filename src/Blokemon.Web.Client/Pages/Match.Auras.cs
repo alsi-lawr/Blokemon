@@ -15,6 +15,7 @@ public partial class Match
     [
         MatchActionKindView.ChooseMulliganBonus,
         MatchActionKindView.ChooseOpening,
+        MatchActionKindView.ChooseBonusPlacement,
         MatchActionKindView.ChooseReplacement,
         MatchActionKindView.ResolveKnockout,
         MatchActionKindView.TakePrize,

@@ -23,6 +23,7 @@ type MatchPhase =
     | AwaitingTriggerChoice = 4
     | AwaitingReplacement = 5
     | Complete = 6
+    | BonusPlacement = 7
 
 type DamageKind =
     | Attack = 0
@@ -152,3 +153,4 @@ type LegalActionKind =
     | ResolveKnockoutTrigger = 13
     | ResolveBarChitTrigger = 14
     | Resign = 15
+    | ChooseBonusPlacement = 16
