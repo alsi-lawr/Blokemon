@@ -1,0 +1,37 @@
+@* The panel beside the shelf: what is about to be opened, whether openings are watched at all, and
+   the press that opens one. The checkbox here is a lasting preference and says nothing about any
+   pack already being opened - the way past one of those is the button on the ceremony itself. *@
+
+<div class="pack-order">
+    <span class="eyebrow">@Finish · The Oche</span>
+    <h2>Open 11 cards.</h2>
+    <p>Select a wrapper. The pack saves before the animation starts.</p>
+    <label class="animation-choice">
+        <input type="checkbox" checked="@SkipsOpenings" @onchange="Choose" />
+        <span>Skip opening animation</span>
+    </label>
+    <button class="primary" @onclick="Opened" disabled="@Unavailable">@Label</button>
+</div>
+
+@code {
+    [Parameter]
+    public string Finish { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool SkipsOpenings { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> SkipsOpeningsChanged { get; set; }
+
+    [Parameter]
+    public bool Unavailable { get; set; }
+
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback Opened { get; set; }
+
+    private Task Choose(ChangeEventArgs eventArgs) =>
+        SkipsOpeningsChanged.InvokeAsync(Convert.ToBoolean(eventArgs.Value));
+}

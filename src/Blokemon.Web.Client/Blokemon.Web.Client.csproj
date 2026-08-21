@@ -27,6 +27,14 @@
     <ProjectReference Include="../Blokemon.App/Blokemon.App.fsproj" />
     <ProjectReference Include="../Blokemon.App.Client/Blokemon.App.Client.csproj" />
     <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
+    <!--
+      A page is put up and driven by the renderer harness in the Web suite, which reaches the
+      presenters it wants to press through the framework rather than through markup. What a page
+      does across renders is only reachable from there, so the few members a test starts a page
+      from are internal to this assembly and visible to that suite, as Blokemon.Web and
+      Blokemon.App already are.
+    -->
+    <InternalsVisibleTo Include="Blokemon.Web.Tests" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(StandaloneBrowser)' == 'true'">

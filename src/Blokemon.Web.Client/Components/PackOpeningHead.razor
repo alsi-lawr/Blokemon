@@ -1,0 +1,18 @@
+@* The bar across the top of an opening pack: which pack it is, and the way out of watching it.
+
+   The way out is a button because it does one thing once. It used to be a checkbox sharing its
+   flag with the preference on the shelf behind, so a player getting past one slow opening also
+   turned the ceremony off for every pack they would ever open, and nothing said so. *@
+
+<header class="opening-ceremony-head">
+    <span class="eyebrow">@Caption</span>
+    <button type="button" class="secondary" @onclick="Skipped">Skip animation</button>
+</header>
+
+@code {
+    [Parameter]
+    public string Caption { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback Skipped { get; set; }
+}

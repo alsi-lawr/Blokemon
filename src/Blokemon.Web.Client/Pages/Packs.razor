@@ -44,16 +44,11 @@ else
             <PackagingArt Markup="@_view.PackPresentation.Kraft.BoosterSvgMarkup" Label="The Oche kraft booster" />
             <span>Kraft</span>
         </button>
-        <div class="pack-order">
-            <span class="eyebrow">@FinishName() · The Oche</span>
-            <h2>Open 11 cards.</h2>
-            <p>Select a wrapper. The pack saves before the animation starts.</p>
-            <label class="animation-choice">
-                <input type="checkbox" checked="@_skipAnimations" @onchange="SkipAnimationsChanged" />
-                <span>Skip opening animation</span>
-            </label>
-            <button class="primary" @onclick="Open" disabled="@(_opening || _stage != PackOpeningStage.Closed || AllowanceExhausted())">@PackButton()</button>
-        </div>
+        <PackOrder Finish="@FinishName()"
+                   @bind-SkipsOpenings="_skipAnimations"
+                   Unavailable="@(_opening || _stage != PackOpeningStage.Closed || AllowanceExhausted())"
+                   Label="@PackButton()"
+                   Opened="Open" />
     </section>
 
     @if (_view.LastPack is not null)
@@ -73,13 +68,7 @@ else
 @if (_stage != PackOpeningStage.Closed && _openingReceipt is not null && _view is not null)
 {
     <section class="opening-ceremony pack-opening--@StageClass()" aria-label="Opening The Oche booster pack">
-        <header class="opening-ceremony-head">
-            <span class="eyebrow">The Oche · Pack @_openingReceipt.Sequence</span>
-            <label class="animation-choice">
-                <input type="checkbox" checked="@_skipAnimations" @onchange="SkipAnimationsChanged" />
-                <span>Skip animation</span>
-            </label>
-        </header>
+        <PackOpeningHead Caption="@($"The Oche · Pack {_openingReceipt.Sequence}")" Skipped="SkipOpening" />
 
         @if (_stage == PackOpeningStage.Summary)
         {
@@ -221,6 +210,12 @@ else
         }
     }
 
+    // Whether the pack is being opened in front of the player rather than simply counted up. Every
+    // stage before the summary is one they are watching; the summary is where a skipped opening and
+    // a watched one both end.
+    internal bool PlayingTheOpening =>
+        _stage is PackOpeningStage.Sealed or PackOpeningStage.Tearing or PackOpeningStage.Reveal;
+
     private async Task Open()
     {
         _opening = true;
@@ -261,7 +256,7 @@ else
         var sequence = _sequence;
         _stage = PackOpeningStage.Tearing;
         await Task.Delay(TearMilliseconds);
-        if (sequence != _sequence || _skipAnimations)
+        if (sequence != _sequence)
         {
             return;
         }
@@ -317,19 +312,18 @@ else
         _focusRevealCard = true;
     }
 
-    private void SkipAnimationsChanged(ChangeEventArgs eventArgs)
+    // Getting past the opening in front of you, and nothing else. The checkbox on the shelf behind
+    // this decides whether future packs animate at all; pressing this says nothing about them, so a
+    // player who wants out of one slow opening does not silently turn the ceremony off for good.
+    private void SkipOpening()
     {
-        _skipAnimations = Convert.ToBoolean(eventArgs.Value);
-        if (_skipAnimations && _stage != PackOpeningStage.Closed)
-        {
-            _sequence++;
-            _stage = PackOpeningStage.Summary;
-            _cardFaceUp = false;
-            _cardLeaving = false;
-        }
+        _sequence++;
+        _stage = PackOpeningStage.Summary;
+        _cardFaceUp = false;
+        _cardLeaving = false;
     }
 
-    private void CloseOpening()
+    internal void CloseOpening()
     {
         _sequence++;
         _stage = PackOpeningStage.Closed;
