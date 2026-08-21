@@ -38,7 +38,7 @@ public static class MatchPresentationTimeline
         var beats = new List<MatchPresentationBeat>();
         var frame = previousFrame ?? presentation.Steps[0].Frame;
 
-        foreach (var step in presentation.Steps)
+        foreach (var step in presentation.Steps.Select(Resolved))
         {
             // The table this command was given, kept apart from the running one: whether a card
             // went anywhere is a question about the two ends of the command, and the running table
@@ -138,6 +138,43 @@ public static class MatchPresentationTimeline
         }
 
         return beats;
+    }
+
+    // A step with its attack announced once the tosses that decide it have landed.
+    //
+    // An attack that tosses for its damage is declared, tosses, and then has done however much it
+    // has done - and the engine says so in that order. The announcement carries the damage, so told
+    // in the order it arrives it says how much damage the attack did before the first beer mat is
+    // in the air, and the tosses that follow are a formality about a number already on screen.
+    // Nothing is invented and nothing is dropped: the declaration is held back past its own tosses
+    // and lands where the answer does, which is also where the blow lands.
+    private static MatchPresentationStepView Resolved(MatchPresentationStepView step) =>
+        step with
+        {
+            Events = Announced(step.Events),
+        };
+
+    private static MatchEventCueView[] Announced(MatchEventCueView[] cues)
+    {
+        var order = new List<MatchEventCueView>(cues.Length);
+        for (var index = 0; index < cues.Length; index++)
+        {
+            if (cues[index].Kind != MatchAnimationKindView.Attack)
+            {
+                order.Add(cues[index]);
+                continue;
+            }
+
+            var declaration = cues[index];
+            while (index + 1 < cues.Length && cues[index + 1].Kind == MatchAnimationKindView.Coin)
+            {
+                order.Add(cues[++index]);
+            }
+
+            order.Add(declaration);
+        }
+
+        return [.. order];
     }
 
     // The table one beat is drawn against, put together out of the table this command was given and

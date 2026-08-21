@@ -182,16 +182,16 @@ public sealed class MatchPresentationTimelineTests
     [Test]
     public void ABlowSurvivesWhateverTheEngineDoesBetweenDeclaringItAndLandingIt()
     {
-        // An attack that has to toss a beer mat to find out whether it connects puts a Coin cue
-        // between the declaration and the damage - always, because the toss happens inside the
-        // program and every bit of damage is placed at the end of it. If that clears the mark the
-        // movement is taken off the card half way through, which reads as a glitch rather than as
-        // a blow, and nothing is left to be knocked back either.
+        // An attack whose program does something else on its way to the damage - leaving the
+        // defender in a rough state before it hits them - puts that cue between the declaration
+        // and the damage. If it clears the mark the movement is taken off the card half way
+        // through, which reads as a glitch rather than as a blow, and nothing is left to be
+        // knocked back either.
         var beats = MatchPresentationTimeline.Beats(
             Presentation(
                 Frame(defenderDamage: 30, playerHasTurn: false),
                 Cue(1, MatchAnimationKindView.Attack, amount: 30, source: Attacker),
-                Cue(2, MatchAnimationKindView.Coin, targets: []),
+                Cue(2, MatchAnimationKindView.Condition),
                 Cue(3, MatchAnimationKindView.Damage, amount: 30, source: Attacker),
                 Cue(4, MatchAnimationKindView.Turn)
             ),
@@ -204,6 +204,35 @@ public sealed class MatchPresentationTimelineTests
         beats
             .Select(beat => beat.Overlay.IsStruck(Defender))
             .ShouldBe([true, true, true, true, false]);
+    }
+
+    [Test]
+    public void AnAttackIsAnnouncedAfterTheTossesThatDecideWhatItDid()
+    {
+        // The announcement carries how much damage the attack did, and an attack that tosses for
+        // its damage does not know that until the tosses have landed. The engine declares first
+        // and tosses after, so played in the order it arrives the table said "100 DAMAGE" and only
+        // then began flipping beer mats to find out whether that was true.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                Frame(defenderDamage: 30, playerHasTurn: false),
+                Cue(1, MatchAnimationKindView.Attack, amount: 30, source: Attacker),
+                Cue(2, MatchAnimationKindView.Coin, targets: []),
+                Cue(3, MatchAnimationKindView.Coin, targets: []),
+                Cue(4, MatchAnimationKindView.Damage, amount: 30, source: Attacker)
+            ),
+            Frame(defenderDamage: 0, playerHasTurn: true)
+        );
+
+        beats
+            .Select(beat => beat.Cue?.Kind)
+            .ShouldBe([
+                MatchAnimationKindView.Coin,
+                MatchAnimationKindView.Coin,
+                MatchAnimationKindView.Attack,
+                MatchAnimationKindView.Damage,
+                null,
+            ]);
     }
 
     [Test]

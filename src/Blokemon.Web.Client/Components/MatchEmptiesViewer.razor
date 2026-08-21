@@ -5,7 +5,9 @@
     dismissed.
 
     The cards are shown newest first, because a pile is read from the top down and the top of this
-    one is the last thing put on it.
+    one is the last thing put on it. Nothing in a tray can be acted on, so a press on one of these
+    cards means the only thing it could mean: it holds the card up full size, the same as reading a
+    card anywhere else on the table, and the tray is still open underneath when it is put down.
 *@
 <div class="empties-viewer"
      role="dialog"
@@ -27,11 +29,12 @@
                 <CardPress CardInstanceId="@card.Id"
                            CardName="@card.Card.Name"
                            Class="empties-viewer-card"
-                           AriaLabel="@($"{card.Card.Name}, chucked")"
+                           AriaLabel="@($"Read {card.Card.Name}, chucked")"
+                           TapReads="true"
                            ViewOpened="CardViewOpened"
                            ViewClosed="CardViewClosed"
                            ReadRequested="CardReadRequested">
-                    <CardFace Card="card.Card" Size="CardFaceSize.Bench" ShowTitle="false" />
+                    <CardFace Card="card.Card" Size="CardFaceSize.Hand" ShowTitle="false" />
                 </CardPress>
             }
         </div>

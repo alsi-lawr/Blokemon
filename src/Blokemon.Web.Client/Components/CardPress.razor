@@ -76,6 +76,12 @@
     [Parameter]
     public EventCallback<string> Tapped { get; set; }
 
+    // Set where a card cannot be acted on at all - an Empties Tray opened to be read through -
+    // so the only thing a press there could mean is the thing it does mean. The surface reads
+    // itself, and lends a control only to the cards hanging off it that it draws inside itself.
+    [Parameter]
+    public bool TapReads { get; set; }
+
     [Parameter]
     public EventCallback<string> ViewOpened { get; set; }
 
@@ -113,7 +119,11 @@
     // offers that Energy once rather than four times.
     private IEnumerable<(string Key, string Name)> Readable()
     {
-        yield return (CardInstanceId, CardName);
+        if (!TapReads)
+        {
+            yield return (CardInstanceId, CardName);
+        }
+
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var attached in Attached)
         {
@@ -132,6 +142,12 @@
         if (_suppressTap)
         {
             _suppressTap = false;
+            return;
+        }
+
+        if (TapReads)
+        {
+            await Read(CardInstanceId);
             return;
         }
 

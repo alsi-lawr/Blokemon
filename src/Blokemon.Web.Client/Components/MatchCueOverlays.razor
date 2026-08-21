@@ -23,7 +23,11 @@ else if (Cue?.Kind == MatchAnimationKindView.Turn)
 }
 else if (Cue?.Kind == MatchAnimationKindView.Coin)
 {
-    <div class="coin-toss-overlay" role="status" aria-live="polite">
+    @* Each toss is its own toss, so each one gets its own surface. Two of them landing the same
+       way say exactly the same thing in exactly the same markup, and a surface the renderer is
+       free to keep is one the browser never starts the run on again: four blanks in a row played
+       as one blank held for four times as long. *@
+    <div class="coin-toss-overlay" role="status" aria-live="polite" @key="Cue.Sequence">
         <BlokemonChip BadgeSide="@(Cue.BadgeSide == true)" />
     </div>
 }
@@ -59,7 +63,9 @@ else if (Cue?.Kind == MatchAnimationKindView.Shuffle)
 }
 else if (Cue is not null)
 {
-    <div class="event-toast is-visible" role="status" aria-live="polite">@PublicText(Cue.Label)</div>
+    @* Keyed for the same reason the tosses are: two events that say the same words are still two
+       events, and the second has to be seen arriving. *@
+    <div class="event-toast is-visible" role="status" aria-live="polite" @key="Cue.Sequence">@PublicText(Cue.Label)</div>
 }
 else
 {
