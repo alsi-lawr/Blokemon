@@ -51,8 +51,21 @@ module internal MatchCueProjection =
             // asked for it, and those keep the authorisation they have always had: what a card is
             // allowed to show is the card's business, and widening every reveal at once turns an
             // effect that looks at cards into a window onto the opponent's hand.
+            // A reveal the rules require, rather than one a card performs. It is shown to the
+            // player it is not the hand of - which is the whole purpose of the rule, and also the
+            // only safe way to show it. A hand that has gone back is read against the state the
+            // command settles in, and by then it is not only back in the Deck: the Bar Chits have
+            // been set aside off the top of that same Deck, so some of those very cards are now
+            // the player's own face-down Bar Chits. Handing them their own mulligan back told them
+            // what they had been dealt as Bar Chits, which is the one thing the opening keeps from
+            // them. They watched the hand go; they are owed the other player's, not their own.
+            let rulesReveal =
+                matchEvent.Kind = MatchEventKind.CardsRevealed
+                && matchEvent.Effect.IsNone
+                && matchEvent.Actor <> ValueSome human
+
             let visibleTargets =
-                if matchEvent.Kind = MatchEventKind.CardsRevealed && matchEvent.Effect.IsNone then
+                if rulesReveal then
                     matchEvent.TargetCards |> Seq.toArray
                 else
                     matchEvent.TargetCards |> Seq.filter (canReveal state human) |> Seq.toArray
@@ -61,7 +74,10 @@ module internal MatchCueProjection =
             // (face-down Prize Cards, deck cards). Cards the viewer already sees - their own
             // hand, anything in a public zone - need no reveal overlay.
             let revealed: CardView array =
-                if matchEvent.Kind = MatchEventKind.CardsRevealed then
+                if
+                    matchEvent.Kind = MatchEventKind.CardsRevealed
+                    && (rulesReveal || matchEvent.Effect.IsSome)
+                then
                     visibleTargets
                     |> Array.filter (fun card ->
                         match (state.Card card).Zone with
