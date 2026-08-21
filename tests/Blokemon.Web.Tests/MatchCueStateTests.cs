@@ -169,6 +169,44 @@ public sealed class MatchCueStateTests
         piles.Take(3).ShouldBe([MatchRifflePile.Left, MatchRifflePile.Right, MatchRifflePile.Left]);
     }
 
+    // Everything above asks the presentation what it says. This asks whether what it says reaches
+    // the page at all, which is a different question and the one nothing was asking: the marking
+    // was wired to the presentation by a single call in each place, and cutting that call left the
+    // whole suite green while the hand quietly stopped wearing any mark - the shape of two of the
+    // four defects named at the top of this file.
+    //
+    // So it compares rather than pins. What a surface wears with a cue on it must differ from what
+    // it wears with none, and nothing here says what either one equals: no class is named, no
+    // string is compared against, and renaming every class in the stylesheet changes nothing. An
+    // edit that makes it name a class or compare against a literal turns it into the thing this
+    // suite exists not to be.
+    [Test]
+    public void WhatASurfaceWearsRespondsToWhatThePresentationSaysAboutIt()
+    {
+        var played = MatchTableFixture.Beat(MatchAnimationKindView.Play, local: true);
+
+        // A held card the cue is acting from, against the same card with nothing said about it.
+        MatchCueMarking
+            .HandCard("hand-a", NoAuras, played.Cue, played.Overlay)
+            .ShouldNotBe(MatchCueMarking.HandCard("hand-a", NoAuras, null, played.Overlay));
+
+        // The place expecting the card, against the same place expecting nothing.
+        MatchCueMarking
+            .LandingClass(played.Overlay.LandingFor(opponent: false), MatchLandingKind.Bench, 1)
+            .ShouldNotBe(MatchCueMarking.LandingClass(null, MatchLandingKind.Bench, 1));
+
+        // And the table itself, which wears the cue that is playing over it.
+        MatchCueMarking.Table(played.Cue).ShouldNotBe(MatchCueMarking.Table(null));
+    }
+
+    private static readonly MatchAuraView NoAuras = new(
+        [],
+        [],
+        false,
+        false,
+        new Dictionary<string, int>()
+    );
+
     private static void Differences(
         MatchAnimationKindView kind,
         bool local,

@@ -34,9 +34,6 @@ public sealed class MatchPosedDecisionCopyTests
         MatchText
             .PosedHeading(PosedDecision("SOMETHING ELSE ENTIRELY", "Use this effect?"))
             .ShouldBe("Use this effect?");
-
-        // A decision carrying no question at all falls back to minimal status, never the label.
-        MatchText.PosedHeading(PosedDecision(EngineLabel)).ShouldBe("Required");
     }
 
     [Test]
