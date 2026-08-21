@@ -416,6 +416,76 @@ public sealed class LocalMatchTests
         );
     }
 
+    // A mulligan is the rules' own reveal: the hand goes back, and it is shown before it goes.
+    //
+    // BOTH hands. A player has already seen their own seven, so the rulebook never troubles to
+    // compel that half of the disclosure, and reading its silence as permission left the local
+    // player watching their own Deck reshuffle with nothing on screen to account for it. The cue
+    // carried no faces, so the overlay had nothing to draw and the beat was not even mandatory.
+    [Test]
+    public async Task AMulliganedHandIsShownWholeToWhoeverThrewItAway()
+    {
+        await using var database = await TestDatabase.Create();
+        var catalogue = BlokemonCatalogueBuilder.Load(
+            Path.Combine(AppContext.BaseDirectory, "content")
+        );
+        var fixture = ReadyFixture.FromExisting(database, catalogue);
+        Value(await fixture.Application.CreateProfile(new(_profileCommand, "Local Player")));
+        var deckCommand = Guid.Parse("20000000-0000-0000-0000-000000000009");
+        // One Basic in sixty, so an opening hand nearly always has to go back.
+        Value(
+            await fixture.Application.SaveDeck(
+                new(
+                    deckCommand,
+                    null,
+                    null,
+                    "Mulligan deck",
+                    [new("BLK-001", 1), new("KIT-007", 4), new("VIM-DODGY", 55)]
+                )
+            )
+        );
+
+        var reveals = new List<MatchEventCueView>();
+        for (var attempt = 1; attempt <= 6; attempt++)
+        {
+            var started = Value<MatchMutationView>(
+                await fixture.Application.StartMatch(
+                    new(Guid.Parse($"50000000-0000-0000-0000-00000000000{attempt}"), deckCommand)
+                )
+            );
+            reveals.AddRange(
+                started
+                    .Presentation!.Steps.SelectMany(static step => step.Events)
+                    .Where(static cue => cue.Kind == MatchAnimationKindView.Reveal)
+            );
+
+            // Cleared before the next deal: a battle still in progress refuses another start.
+            var opening = started.Application.Match!;
+            Value(
+                await fixture.Application.ApplyMatchAction(
+                    opening.Frame.Id,
+                    RequestFor(
+                        opening,
+                        opening.LegalActions.Single(static action =>
+                            action.Kind == MatchActionKindView.Resign
+                        ),
+                        Guid.NewGuid()
+                    )
+                )
+            );
+        }
+
+        // The player's own mulligan reaches them, which is the half that was filtered away.
+        reveals.ShouldContain(static cue => cue.ActorIsLocalPlayer == true);
+        // And every card a reveal names is a card it shows. A returned hand is nowhere by the time
+        // this is read, so anything that asks where its cards are now loses the ones the reshuffle
+        // dealt straight back out - which was most mulligans, by about one card each.
+        reveals.ShouldAllBe(cue =>
+            cue.TargetCardInstanceIds.Length > 0
+            && cue.RevealedCards.Length == cue.TargetCardInstanceIds.Length
+        );
+    }
+
     [Test]
     public async Task DuplicateStart_IsIdempotentButConflictingPayloadFails()
     {

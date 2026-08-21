@@ -44,7 +44,10 @@ else if (Cue?.Kind == MatchAnimationKindView.Reveal && Cue.RevealedCards.Length 
     @* The whole surface acknowledges: the button must never be the only way out of a reveal. *@
     <div class="card-reveal-overlay" role="dialog" aria-modal="true" aria-label="Revealed cards"
          @onclick="RevealAcknowledged">
-        <span class="eyebrow">@(Cue.ActorIsLocalPlayer == true ? "Your Prize Cards" : "Revealed cards")</span>
+        <span class="eyebrow">Revealed cards</span>
+        @* Which reveal this is, from the tier that knows. The actor alone cannot tell a mulligan
+           from a look at your own Prize Cards, and guessing here labelled one the other. *@
+        <p class="reveal-note">@PublicText(Cue.Label)</p>
         <div class="revealed-cards">
             @foreach (var card in Cue.RevealedCards)
             {

@@ -191,6 +191,11 @@ module internal MatchCardProjection =
         | MatchEventKind.CardsShuffled -> $"{actor} shuffled the Deck."
         | MatchEventKind.CardsDrawn ->
             $"""{actor} drew {matchEvent.Amount} {if matchEvent.Amount = 1 then "card" else "cards"}."""
+        // The rules' own reveal rather than a card's, which today means exactly one thing: the
+        // player held no Basic and is starting the hand over. Seven faces and a shuffle cannot say
+        // that by themselves, and a mulligan nobody can account for reads as the game stuttering.
+        | MatchEventKind.CardsRevealed when matchEvent.Effect.IsNone ->
+            $"{actor} had no Basic Blokemon, and shuffled this hand back."
         | MatchEventKind.CardsRevealed when
             matchEvent.TargetCards.Length > 0
             && matchEvent.TargetCards

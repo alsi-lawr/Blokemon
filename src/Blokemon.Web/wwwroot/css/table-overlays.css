@@ -163,6 +163,21 @@
   }
 }
 
+/* Kept narrow so it breaks above the cards rather than running the width of the table. */
+.card-reveal-overlay .reveal-note {
+  max-width: min(88vw, 460px);
+  margin: -8px 0 0;
+  color: var(--muted);
+  font: 700 13px "Jost", sans-serif;
+  text-align: center;
+  text-shadow: 0 4px 16px #000;
+
+  @media (max-width: 720px) {
+    margin-top: -4px;
+    font-size: 11px;
+  }
+}
+
 .card-reveal-overlay .revealed-cards {
   display: flex;
   flex-wrap: wrap;
