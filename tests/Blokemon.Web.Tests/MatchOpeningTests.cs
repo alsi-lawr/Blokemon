@@ -631,6 +631,66 @@ public sealed class MatchOpeningTests
             []
         );
 
+    // The extra draw is the one command that deals twice: it ends the setup and starts the turn
+    // that follows, so the bonus card and that turn's first card are drawn inside it. Nothing may
+    // put the second of them in the hand before the draw that brings it - shown early, the turn's
+    // own draw then takes it back out of the hand to deal it again, and a card the player is
+    // already holding is seen to vanish and be drawn out of the Deck.
+    [Test]
+    public void ATurnsFirstCardIsNotHeldBeforeTheDrawThatDealsIt()
+    {
+        var beats = MatchPresentationTimeline.Beats(ExtraDrawThenTurn(), BeforeExtraDraw());
+
+        var bonus = beats.First(beat =>
+            beat.Cue?.TargetCardInstanceIds.Contains(BonusCard) == true
+        );
+        var turn = beats.First(beat => beat.Cue?.TargetCardInstanceIds.Contains(TurnCard) == true);
+
+        // The bonus card arrives on its own draw and the turn's card is nowhere yet.
+        Presented(bonus).ShouldContain(BonusCard);
+        Presented(bonus).ShouldNotContain(TurnCard);
+        // And the turn's card arrives on the draw that deals it, with the bonus card still held.
+        Presented(turn).ShouldContain(TurnCard);
+        Presented(turn).ShouldContain(BonusCard);
+    }
+
+    private const string BonusCard = "bonus-card";
+    private const string TurnCard = "turn-card";
+
+    // The table the extra draw is played against: both players standing, neither card drawn.
+    private static MatchFrameView BeforeExtraDraw() =>
+        new(
+            Guid.Parse("50000000-0000-0000-0000-000000000003"),
+            2,
+            0,
+            MatchPhaseView.MulliganBonus,
+            Side("The Regular", hand: [], held: 7, active: "theirs"),
+            Side("You", hand: [], active: "yours"),
+            false,
+            null
+        );
+
+    // One command, two draws, and the table it settles on holds both cards.
+    private static MatchPresentationView ExtraDrawThenTurn() =>
+        new([
+            new(
+                new(
+                    Guid.Parse("50000000-0000-0000-0000-000000000003"),
+                    3,
+                    1,
+                    MatchPhaseView.Playing,
+                    Side("The Regular", hand: [], held: 7, active: "theirs"),
+                    Side("You", hand: [BonusCard, TurnCard], active: "yours"),
+                    false,
+                    null
+                ),
+                [
+                    Cue(MatchAnimationKindView.Draw, local: true, amount: 1, targets: [BonusCard]),
+                    Cue(MatchAnimationKindView.Draw, local: true, amount: 1, targets: [TurnCard]),
+                ]
+            ),
+        ]);
+
     private static MatchEventCueView Cue(
         MatchAnimationKindView kind,
         bool? local,

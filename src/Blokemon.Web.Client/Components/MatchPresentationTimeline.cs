@@ -74,7 +74,14 @@ public static class MatchPresentationTimeline
                     stripped = true;
                 }
 
-                frame = Composed(before, step.Frame, standing, dealt, stripped);
+                frame = Composed(
+                    before,
+                    step.Frame,
+                    standing,
+                    dealt,
+                    stripped,
+                    Undealt(step, index)
+                );
 
                 // Whatever this cue takes out of a place stays taken out. The cue that carries a
                 // card off is the only one that shows it going, but the frame behind it still has
@@ -190,15 +197,67 @@ public static class MatchPresentationTimeline
         MatchFrameView settled,
         bool standing,
         bool dealt,
-        bool stripped
+        bool stripped,
+        string[] undealt
     )
     {
         var table = standing ? settled : before;
+        var held = Without(settled, undealt);
         return table with
         {
-            Player = Holding(table.Player, dealt ? settled.Player : before.Player),
-            Opponent = Holding(table.Opponent, stripped ? settled.Opponent : before.Opponent),
+            Player = Holding(table.Player, dealt ? held.Player : before.Player),
+            Opponent = Holding(table.Opponent, stripped ? held.Opponent : before.Opponent),
         };
+    }
+
+    // The settled hand less the cards a later draw of the same step has still to deal, so no beat
+    // shows a card before the draw that brings it. A step that draws once has nothing to withhold
+    // and is untouched; a step that draws twice was showing the second draw's card from the first
+    // draw onwards, and the second draw then took it out of the hand to deal it again.
+    private static MatchFrameView Without(MatchFrameView frame, string[] undealt) =>
+        undealt.Length == 0
+            ? frame
+            : frame with
+            {
+                Player = Withheld(frame.Player, undealt),
+                Opponent = Withheld(frame.Opponent, undealt),
+            };
+
+    // Only what this side is actually holding comes off it, so a draw of the other player's leaves
+    // this one alone. A withheld card has not left the Deck yet either.
+    private static MatchSideView Withheld(MatchSideView side, string[] undealt)
+    {
+        var kept = side.Hand.Where(card => !undealt.Contains(card.Id)).ToArray();
+        var removed = side.Hand.Length - kept.Length;
+        return removed == 0
+            ? side
+            : side with
+            {
+                DeckCount = side.DeckCount + removed,
+                HandCount = Math.Max(0, side.HandCount - removed),
+                Hand = kept,
+            };
+    }
+
+    // The cards a draw later in this step has still to deal.
+    //
+    // The extra draw is the step that needs it: it ends the setup and starts the turn that follows,
+    // so the command deals the bonus card AND that turn's first card, and only draws counted here
+    // are ones the frame keeps - an opening's returned hands are dealt by draws the settled frame
+    // never had and must not be withheld from it.
+    private static string[] Undealt(MatchPresentationStepView step, int index)
+    {
+        var pending = new List<string>(2);
+        for (var later = index + 1; later < step.Events.Length; later++)
+        {
+            var cue = step.Events[later];
+            if (cue.Kind == MatchAnimationKindView.Draw && Dealt(step.Frame, cue))
+            {
+                pending.AddRange(cue.TargetCardInstanceIds);
+            }
+        }
+
+        return [.. pending];
     }
 
     // A side of the table holding what it has been dealt so far rather than what it ends up
