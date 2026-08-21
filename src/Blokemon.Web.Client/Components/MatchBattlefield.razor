@@ -16,7 +16,8 @@
                CardTapped="CardTapped"
                CardViewOpened="CardViewOpened"
                CardViewClosed="CardViewClosed"
-               CardReadRequested="CardReadRequested" />
+               CardReadRequested="CardReadRequested"
+               EmptiesOpened="EmptiesOpened" />
     @{
         var band = MatchBand.For(Frame);
     }
@@ -50,6 +51,7 @@
                CardViewOpened="CardViewOpened"
                CardViewClosed="CardViewClosed"
                CardReadRequested="CardReadRequested"
+               EmptiesOpened="EmptiesOpened"
                BenchTapped="BenchTapped"
                DeckTapped="DeckTapped" />
 </div>
@@ -84,6 +86,10 @@
 
     [Parameter]
     public EventCallback<CardReadRequest> CardReadRequested { get; set; }
+
+    // Which Empties Tray the player has asked to look through, said as whose it is.
+    [Parameter]
+    public EventCallback<bool> EmptiesOpened { get; set; }
 
     [Parameter]
     public EventCallback BenchTapped { get; set; }

@@ -44,26 +44,28 @@
        either player, and it decides real things - what is left in the Deck, and whether a card
        that fetches out of the tray has anything to fetch. It is face up, because a tray of
        empties is what it looks like, and it keeps its place whether or not anything is in it. *@
-    <div class="empties-tray @(Side.EmptiesTray.Length == 0 ? "is-empty" : null)"
-         aria-label="@TrayLabel()">
-        @if (Chucked() is { } top)
-        {
-            <CardPress CardInstanceId="@top.Id"
-                       CardName="@top.Card.Name"
-                       Class="tray-top"
-                       AriaLabel="@TrayLabel()"
-                       ViewOpened="CardViewOpened"
-                       ViewClosed="CardViewClosed"
-                       ReadRequested="CardReadRequested">
-                <CardFace Card="top.Card" Size="CardFaceSize.Bench" ShowTitle="false" />
-            </CardPress>
-        }
-        else
-        {
+    @if (Side.EmptiesTray.Length == 0)
+    {
+        <div class="empties-tray is-empty" aria-label="@TrayLabel()">
             <div class="tray-top is-nothing" aria-hidden="true"></div>
-        }
-        <b>Chucked @Side.EmptiesTray.Length</b>
-    </div>
+            <b>Chucked 0</b>
+        </div>
+    }
+    else
+    {
+        @* A tray with anything in it is a control: either player may look through either tray at
+           any time, so the pile opens to be read rather than only showing what is on top of it. *@
+        <button type="button"
+                class="empties-tray"
+                aria-label="@TrayLabel()"
+                @onclick:stopPropagation="true"
+                @onclick="() => EmptiesOpened.InvokeAsync(Opponent)">
+            <span class="tray-top">
+                <CardFace Card="Chucked()!.Card" Size="CardFaceSize.Bench" ShowTitle="false" />
+            </span>
+            <b>Chucked @Side.EmptiesTray.Length</b>
+        </button>
+    }
 
     @* The place a Kit in play stands in is part of the table, so it is kept whether or not a
        card is standing in it: nothing else moves when one is played or leaves. *@
@@ -256,6 +258,9 @@
     public EventCallback<CardReadRequest> CardReadRequested { get; set; }
 
     [Parameter]
+    public EventCallback<bool> EmptiesOpened { get; set; }
+
+    [Parameter]
     public EventCallback BenchTapped { get; set; }
 
     [Parameter]
@@ -306,7 +311,7 @@
     // nothing in it is a fact about the game too.
     private string TrayLabel() =>
         Chucked() is { } top
-            ? $"{Whose()} Empties Tray, {Side.EmptiesTray.Length} chucked, {top.Card.Name} on top"
+            ? $"Look through {Whose()} Empties Tray, {Side.EmptiesTray.Length} chucked, {top.Card.Name} on top"
             : $"{Whose()} Empties Tray, nothing chucked";
 
     private string Whose() => Opponent ? "Opponent's" : "Your";

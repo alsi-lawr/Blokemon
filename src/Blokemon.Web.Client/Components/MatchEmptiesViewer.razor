@@ -1,0 +1,70 @@
+@*
+    Everything one side has chucked, laid out to be read. The Empties Tray is a public pile and
+    either player may look through either one whenever they like, so this asks nothing of the game
+    and blocks nothing: it is a way of reading what is already on the table, and it goes when it is
+    dismissed.
+
+    The cards are shown newest first, because a pile is read from the top down and the top of this
+    one is the last thing put on it.
+*@
+<div class="empties-viewer"
+     role="dialog"
+     aria-modal="true"
+     aria-label="@($"{Whose} Empties Tray, {Cards.Length} chucked")"
+     tabindex="-1"
+     @ref="_panel"
+     @onkeydown="Key"
+     @onclick="Closed">
+    <div class="empties-viewer-panel" @onclick:stopPropagation="true">
+        <header>
+            <strong>@Whose Empties Tray</strong>
+            <span>@Cards.Length chucked</span>
+            <button type="button" class="empties-viewer-close" @onclick="Closed">Done</button>
+        </header>
+        <div class="empties-viewer-cards">
+            @foreach (var card in Cards.Reverse())
+            {
+                <CardPress CardInstanceId="@card.Id"
+                           CardName="@card.Card.Name"
+                           Class="empties-viewer-card"
+                           AriaLabel="@($"{card.Card.Name}, chucked")"
+                           ViewOpened="CardViewOpened"
+                           ViewClosed="CardViewClosed"
+                           ReadRequested="CardReadRequested">
+                    <CardFace Card="card.Card" Size="CardFaceSize.Bench" ShowTitle="false" />
+                </CardPress>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private ElementReference _panel;
+
+    // Whose tray this is, said the way the table says it: "Your" or "Opponent's".
+    [Parameter, EditorRequired]
+    public required string Whose { get; set; }
+
+    [Parameter, EditorRequired]
+    public required MatchCardInstanceView[] Cards { get; set; }
+
+    [Parameter]
+    public EventCallback Closed { get; set; }
+
+    [Parameter]
+    public EventCallback<string> CardViewOpened { get; set; }
+
+    [Parameter]
+    public EventCallback CardViewClosed { get; set; }
+
+    [Parameter]
+    public EventCallback<CardReadRequest> CardReadRequested { get; set; }
+
+    // The surface itself, so the page can hand it focus once the browser has it.
+    public ElementReference Element => _panel;
+
+    // Escape puts it down, as it does everywhere. Enter and Space are left alone here, unlike the
+    // card viewer: this surface holds controls of its own that answer to both.
+    private Task Key(KeyboardEventArgs eventArgs) =>
+        eventArgs.Key == "Escape" ? Closed.InvokeAsync() : Task.CompletedTask;
+}

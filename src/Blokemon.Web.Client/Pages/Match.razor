@@ -125,7 +125,8 @@ else
                           CardViewClosed="CloseViewer"
                           CardReadRequested="ReadCard"
                           BenchTapped="TapBench"
-                          DeckTapped="TapDeck" />
+                          DeckTapped="TapDeck"
+                          EmptiesOpened="OpenEmpties" />
 
         <MatchHandZone Hand="frame.Player.Hand"
                        Auras="auras"
@@ -196,6 +197,18 @@ else
             </div>
         }
 
+        @if (_emptiesOpponent is { } emptiesOpponent)
+        {
+            var empties = emptiesOpponent ? frame.Opponent : frame.Player;
+            <MatchEmptiesViewer @ref="_empties"
+                                Whose="@(emptiesOpponent ? "Opponent's" : "Your")"
+                                Cards="empties.EmptiesTray"
+                                Closed="CloseEmpties"
+                                CardViewOpened="OpenViewer"
+                                CardViewClosed="CloseViewer"
+                                CardReadRequested="ReadCard" />
+        }
+
         @if (_viewerCard is not null)
         {
             <MatchCardViewer @ref="_viewer" Card="_viewerCard" Style="@ViewerStyle()" Closed="CloseViewer" />
@@ -214,6 +227,10 @@ else
     private MatchPresentationOverlay _overlay = MatchPresentationOverlay.Empty;
     private CardView? _viewerCard;
     private MatchCardViewer? _viewer;
+    // Which Empties Tray is open, said as whose it is. Nothing about the game turns on it: a tray
+    // is public and looking through one is not a move, so this is a reading state and nothing more.
+    private bool? _emptiesOpponent;
+    private MatchEmptiesViewer? _empties;
     // A card held up by the pointer is put down again by the same press, so it never takes focus
     // and has nothing to hand back. A card opened from a reading control does: it takes focus once
     // it is on screen, and the card that asked for it is owed that focus back when it goes.
@@ -251,7 +268,7 @@ else
     private bool _autoStarted;
     private bool _reducedMotion;
     private string? _sheetKey;
-    private string? _focusedSheetKey;
+    private string? _focusedSurfaceKey;
     private bool _dockOpen;
 
     // Every surface the table can show is one of these, and the stage decides all three of the

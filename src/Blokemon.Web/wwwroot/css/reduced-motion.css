@@ -16,7 +16,9 @@
   .action-sheet,
   .action-sheet.is-centred,
   .card-viewer,
-  .card-viewer .card-face-host {
+  .card-viewer .card-face-host,
+  .empties-viewer,
+  .empties-viewer-panel {
     animation: none !important;
   }
 

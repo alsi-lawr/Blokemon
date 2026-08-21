@@ -334,7 +334,9 @@ button.bench-slot span {
      Declared here because the tuck is measured against it and the scale lives on the child. */
   --energy-fan-card: calc(750px * 0.055);
   --energy-fan-spread: 16px;
-  --energy-fan-reach: calc(var(--energy-fan-spread) * 6);
+  /* Three steps, so the fan is at its widest at four faces and everything after that closes the
+     spacing up rather than reaching further across the table. */
+  --energy-fan-reach: calc(var(--energy-fan-spread) * 3);
   --energy-fan-step: min(
     var(--energy-fan-spread),
     var(--energy-fan-reach) / max(1, var(--energy-fan-count, 1) - 1)

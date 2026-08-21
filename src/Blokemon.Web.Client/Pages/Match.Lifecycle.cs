@@ -44,20 +44,26 @@ public partial class Match
 
         // Whichever surface is showing owns focus, and closing the last one hands focus back to
         // the card or button that opened it. Keying on the surface itself covers the forced
-        // decisions that open themselves as well as the flows the player starts.
-        if (_sheetKey == _focusedSheetKey)
+        // decisions that open themselves as well as the flows the player starts. An opened Empties
+        // Tray covers the table the same way a forced decision does, so while it is up it is the
+        // surface, and the sheet underneath takes focus back when the tray is put down.
+        var surfaceKey = _emptiesOpponent is { } opponent ? $"empties:{opponent}" : _sheetKey;
+        if (surfaceKey == _focusedSurfaceKey)
         {
             return;
         }
 
-        _focusedSheetKey = _sheetKey;
-        if (_sheetKey is null)
+        _focusedSurfaceKey = surfaceKey;
+        if (surfaceKey is null)
         {
             await _presentationModule.InvokeVoidAsync("restoreFocus");
             return;
         }
 
-        await _presentationModule.InvokeVoidAsync("focusSurface", _sheet);
+        await _presentationModule.InvokeVoidAsync(
+            "focusSurface",
+            _emptiesOpponent is null ? _sheet : _empties!.Element
+        );
     }
 
     // A card being read holds focus for as long as it is up, and the card it was opened from takes

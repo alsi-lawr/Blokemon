@@ -199,12 +199,28 @@ button.deck-stack {
   place and its box from the first turn, so the table does not shift the moment something is
   chucked, and an empty tray says it is empty rather than being absent.
 */
+/* A tray with anything in it is the control that opens it, so it carries the reset every other
+   card surface on the table carries and keeps exactly the box it had while it was a plain pile. */
 .empties-tray {
   position: relative;
   grid-column: 2;
   display: grid;
   justify-items: center;
   gap: 5px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+}
+
+button.empties-tray {
+  cursor: pointer;
+}
+
+button.empties-tray:hover .card-face-host,
+button.empties-tray:focus-visible .card-face-host {
+  filter: drop-shadow(-4px 4px 0 #1f2118) drop-shadow(-4px 4px 0 #353527)
+    drop-shadow(0 0 9px rgb(244 189 63 / 55%));
 }
 
 .empties-tray b {
@@ -216,6 +232,12 @@ button.deck-stack {
 
 .empties-tray.is-empty b {
   color: #687057;
+}
+
+/* The face on top of the pile, which is a picture of the pile rather than a card of its own: the
+   whole tray is read by opening it, so nothing inside here answers a press separately. */
+.tray-top {
+  display: block;
 }
 
 /* The same outline an empty Bench place and an empty Kit slot wear, at the tray's own size. */

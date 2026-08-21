@@ -46,6 +46,13 @@ public partial class Match
         _viewerReturn = null;
     }
 
+    // Looking through an Empties Tray is not a move: the pile is public, either player may read
+    // either one whenever they like, and nothing about the game changes while it is open. So this
+    // is the whole of it - which tray is being read, and that it has been put down again.
+    private void OpenEmpties(bool opponent) => _emptiesOpponent = opponent;
+
+    private void CloseEmpties() => _emptiesOpponent = null;
+
     private void CloseViewer()
     {
         if (_viewerCard is null)
