@@ -312,11 +312,14 @@ button.deck-stack {
   the field is divided, and tucks behind the row it is dealt from - the same relationship the
   phone table gives it in the strip above the Bench.
 */
+/* The Bench's own column, which is the second of the field's two - not the table's. The tray
+   column added to the side zone does not reach in here, and counting it in did: the fan went to a
+   third column the field has never had, and an implicit track carried it off the table. */
 .opponent-hand {
   position: absolute;
   z-index: 3;
   grid-row: 1;
-  grid-column: 3;
+  grid-column: 2;
   top: -40px;
   left: 50%;
   display: flex;

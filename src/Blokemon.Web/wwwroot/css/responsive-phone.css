@@ -698,9 +698,9 @@
     --blokemon-card-scale: 0.12;
   }
 
-  .hand-card:hover,
-  .hand-card:has(:focus-visible),
-  .hand-card.is-aura-selected {
+  .hand-card:hover .card-press-surface,
+  .hand-card:has(:focus-visible) .card-press-surface,
+  .hand-card.is-aura-selected .card-press-surface {
     transform: translateY(-14px) scale(1.04);
   }
 

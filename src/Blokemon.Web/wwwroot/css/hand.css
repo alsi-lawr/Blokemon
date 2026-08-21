@@ -14,9 +14,11 @@
 }
 
 /*
-  The fan lives on the card's own button, not on an inner visual: the press surface then sits
-  exactly where the card appears, so a tap always reaches the card it looks like it will. The
-  inner visual is left free for the cue animations to drive.
+  The place a held card occupies in the hand, which is where it was dealt and where it stays. It
+  is what answers the pointer, and it never moves: a card that rose on being hovered would climb
+  out from under the pointer that raised it, lose the hover, drop, and take it again - a card that
+  flickers rather than one that lifts. So a card is hovered from the position it holds in the fan
+  whatever the card itself is doing, and it can be reached there for as long as it is held.
 */
 .hand-card {
   position: relative;
@@ -26,6 +28,15 @@
   margin: 0 -30px;
   overflow: visible;
   pointer-events: auto;
+}
+
+/*
+  The fan and the lift are carried by the card's own press surface, not by an inner visual: the
+  surface a press lands on sits exactly where the card appears, so a tap always reaches the card
+  it looks like it will, and the inner visual is left free for the cue animations to drive.
+*/
+.hand-card .card-press-surface {
+  display: block;
   transform-origin: 50% 130%;
   /* The page measures each card's place in the fan; the arc itself is declared here. */
   transform: rotate(var(--fan-turn, 0deg)) translateY(var(--fan-lift, 0px));
@@ -54,6 +65,11 @@
 .hand-card:has(:focus-visible),
 .hand-card.is-aura-selected {
   z-index: 60;
+}
+
+.hand-card:hover .card-press-surface,
+.hand-card:has(:focus-visible) .card-press-surface,
+.hand-card.is-aura-selected .card-press-surface {
   transform: translateY(-68px) rotate(0) scale(1.08);
 }
 
