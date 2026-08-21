@@ -204,6 +204,9 @@ module internal MatchViewProjection =
             state.CardsIn(player, CardZone.Local)
             |> Seq.map (fun card -> cardInstance state human name card.Id)
             |> Seq.toArray,
+            state.CardsIn(player, CardZone.EmptiesTray)
+            |> Seq.map (fun card -> cardInstance state human name card.Id)
+            |> Seq.toArray,
             // Resignation is always available, so it cannot decide whose turn it is; neither can a
             // move the player has no way to pay for.
             engine

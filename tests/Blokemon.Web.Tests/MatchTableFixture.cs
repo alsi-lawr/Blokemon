@@ -261,6 +261,7 @@ internal static class MatchTableFixture
                 [.. theirBench.Select(Instance)],
                 [],
                 [],
+                [],
                 false
             ),
             new(
@@ -272,6 +273,7 @@ internal static class MatchTableFixture
                 Instance(active),
                 [.. bench.Select(Instance)],
                 [.. hand.Select(Instance)],
+                [],
                 [],
                 true
             ),

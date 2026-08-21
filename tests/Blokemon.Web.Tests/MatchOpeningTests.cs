@@ -603,6 +603,7 @@ public sealed class MatchOpeningTests
             [.. (bench ?? []).Select(Instance)],
             [.. hand.Select(Instance)],
             [],
+            [],
             false
         );
 

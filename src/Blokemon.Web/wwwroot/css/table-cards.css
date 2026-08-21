@@ -330,13 +330,24 @@ button.bench-slot span {
   smaller fan a Booth card carries needs only to say the spacing and the rest follows.
 */
 .attached-energy {
+  /* The printed face is 750 wide, so a face in this fan is that times the scale it is drawn at.
+     Declared here because the tuck is measured against it and the scale lives on the child. */
+  --energy-fan-card: calc(750px * 0.055);
   --energy-fan-spread: 16px;
   --energy-fan-reach: calc(var(--energy-fan-spread) * 6);
   --energy-fan-step: min(
     var(--energy-fan-spread),
     var(--energy-fan-reach) / max(1, var(--energy-fan-count, 1) - 1)
   );
-  --energy-fan-tuck: 18px;
+  /*
+    How far the first face clears its host, and it is one step like every other gap in the fan.
+    The card in front of the first Vim is the Blokemon itself, so the amount of that Vim showing
+    is decided the same way the rest are: the face is tucked under by all of itself bar a step.
+    Stated as a fixed depth it was not - the first showed the whole of itself less the tuck, which
+    on a Booth card is about twice what the faces behind it show, and the fan read as one card
+    standing off on its own with a stack behind it.
+  */
+  --energy-fan-tuck: calc(var(--energy-fan-card) - var(--energy-fan-step));
   position: absolute;
   z-index: -1;
   right: calc(100% - var(--energy-fan-tuck));
@@ -356,8 +367,8 @@ button.bench-slot span {
 }
 
 .is-compact .attached-energy {
+  --energy-fan-card: calc(750px * 0.035);
   --energy-fan-spread: 9px;
-  --energy-fan-tuck: 6px;
   bottom: 11px;
 }
 

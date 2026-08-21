@@ -216,6 +216,7 @@ public sealed class MatchPhaseBandTests
             [Instance($"{name}-bench")],
             [Instance($"{name}-held")],
             [],
+            [],
             hasTurn
         );
 

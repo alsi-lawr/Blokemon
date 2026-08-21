@@ -598,6 +598,7 @@ public sealed class MatchPresentationTimelineTests
             bench ?? [],
             hand ?? [],
             inPlayKits ?? [],
+            [],
             hasTurn
         );
 

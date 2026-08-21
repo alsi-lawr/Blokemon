@@ -173,6 +173,7 @@ public sealed class MatchReducedMotionTests
             [],
             [],
             [],
+            [],
             hasTurn
         );
 

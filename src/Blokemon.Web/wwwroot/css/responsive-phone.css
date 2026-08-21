@@ -343,23 +343,45 @@
   }
 
   .deck-stack,
+  .empties-tray,
   .prize-rack {
     position: absolute;
     z-index: 2;
   }
 
   .opponent-zone .deck-stack,
+  .opponent-zone .empties-tray,
   .opponent-zone .prize-rack {
     bottom: 2px;
   }
 
   .player-zone .deck-stack,
+  .player-zone .empties-tray,
   .player-zone .prize-rack {
     top: 2px;
   }
 
   .deck-stack {
     left: 0;
+  }
+
+  /*
+    There is no room beside the Deck at this width, and there is room on the other side of the
+    Active card: the tray takes it, inside the Prize cards, so the Bench keeps the whole middle
+    and nothing on the phone table is given up for a pile that is only read now and then.
+  */
+  .empties-tray {
+    grid-column: 1;
+    right: 52px;
+  }
+
+  .empties-tray .card-face-host {
+    --blokemon-card-scale: 0.056;
+  }
+
+  .tray-top.is-nothing {
+    width: 42px;
+    height: 59px;
   }
 
   .prize-rack {

@@ -134,16 +134,17 @@
 }
 
 /*
-  The two halves are the same table seen from either end: the same four columns in the same
-  places - Deck, the Kit in play, the field, the Prize cards - so every card on one side lines
-  up with its counterpart on the other. The Kit column is always there, empty or not, so a Kit
-  coming into play or leaving it moves nothing else on the table.
+  The two halves are the same table seen from either end: the same five columns in the same
+  places - Deck, the Empties Tray, the Kit in play, the field, the Prize cards - so every card on
+  one side lines up with its counterpart on the other. The Kit column and the tray are always
+  there, empty or not, so nothing else on the table moves when a Kit comes into play or the first
+  card is chucked.
 */
 .side-zone {
   position: relative;
   min-height: 0;
   display: grid;
-  grid-template-columns: 112px 112px minmax(0, 1fr) 90px;
+  grid-template-columns: 112px 147px 112px minmax(0, 1fr) 90px;
   align-items: center;
   border-radius: 24px;
 }
@@ -189,7 +190,48 @@ button.deck-stack {
 }
 
 .prize-rack {
-  grid-column: 4;
+  grid-column: 5;
+}
+
+/*
+  The Empties Tray sits next to the Deck it is fed from, and shows the last card chucked face up
+  the way a real one does - a pile you can read the top of without picking it up. It keeps its
+  place and its box from the first turn, so the table does not shift the moment something is
+  chucked, and an empty tray says it is empty rather than being absent.
+*/
+.empties-tray {
+  position: relative;
+  grid-column: 2;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+}
+
+.empties-tray b {
+  position: relative;
+  z-index: 2;
+  color: var(--muted);
+  font: 700 11px "Jost", sans-serif;
+}
+
+.empties-tray.is-empty b {
+  color: #687057;
+}
+
+/* The same outline an empty Bench place and an empty Kit slot wear, at the tray's own size. */
+.tray-top.is-nothing {
+  width: 78px;
+  height: 109px;
+  border: 1px dashed rgb(156 164 128 / 23%);
+  border-radius: 7px;
+}
+
+/* Sized here rather than taken from the Bench, so the face and the outline an empty tray wears
+   are the same box and nothing moves when the first card is chucked. */
+.empties-tray .card-face-host {
+  --blokemon-card-scale: 0.104;
+
+  filter: drop-shadow(-4px 4px 0 #1f2118) drop-shadow(-4px 4px 0 #353527);
 }
 
 /* Positioned so the halves a shuffle splits it into have the stack's own box to riffle in. */
@@ -239,7 +281,7 @@ button.deck-stack {
   position: relative;
   z-index: 6;
   grid-row: 1;
-  grid-column: 2;
+  grid-column: 3;
   display: grid;
   grid-template-rows: auto 12px;
   justify-items: center;
@@ -274,7 +316,7 @@ button.deck-stack {
   position: absolute;
   z-index: 3;
   grid-row: 1;
-  grid-column: 2;
+  grid-column: 3;
   top: -40px;
   left: 50%;
   display: flex;
@@ -294,7 +336,7 @@ button.deck-stack {
 
 .field-center {
   position: relative;
-  grid-column: 3;
+  grid-column: 4;
   height: 100%;
   min-height: 0;
   display: grid;

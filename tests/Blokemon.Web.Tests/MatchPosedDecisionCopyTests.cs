@@ -126,8 +126,8 @@ public sealed class MatchPosedDecisionCopyTests
         1,
         1,
         MatchPhaseView.AwaitingEffectChoice,
-        new("The Regular", "Deck", 20, 0, 6, null, [], [], [], false),
-        new("You", "Deck", 20, 0, 6, null, [], [], [], true),
+        new("The Regular", "Deck", 20, 0, 6, null, [], [], [], [], false),
+        new("You", "Deck", 20, 0, 6, null, [], [], [], [], true),
         false,
         null
     );

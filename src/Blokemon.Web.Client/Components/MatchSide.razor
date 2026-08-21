@@ -40,6 +40,31 @@
              aria-label="@($"Deck, {Side.DeckCount} cards")">@deckStack</div>
     }
 
+    @* The Empties Tray, which is a public pile: what has been chucked is there to be read by
+       either player, and it decides real things - what is left in the Deck, and whether a card
+       that fetches out of the tray has anything to fetch. It is face up, because a tray of
+       empties is what it looks like, and it keeps its place whether or not anything is in it. *@
+    <div class="empties-tray @(Side.EmptiesTray.Length == 0 ? "is-empty" : null)"
+         aria-label="@TrayLabel()">
+        @if (Chucked() is { } top)
+        {
+            <CardPress CardInstanceId="@top.Id"
+                       CardName="@top.Card.Name"
+                       Class="tray-top"
+                       AriaLabel="@TrayLabel()"
+                       ViewOpened="CardViewOpened"
+                       ViewClosed="CardViewClosed"
+                       ReadRequested="CardReadRequested">
+                <CardFace Card="top.Card" Size="CardFaceSize.Bench" ShowTitle="false" />
+            </CardPress>
+        }
+        else
+        {
+            <div class="tray-top is-nothing" aria-hidden="true"></div>
+        }
+        <b>Chucked @Side.EmptiesTray.Length</b>
+    </div>
+
     @* The place a Kit in play stands in is part of the table, so it is kept whether or not a
        card is standing in it: nothing else moves when one is played or leaves. *@
     <div class="local-slot @Landing(MatchLandingKind.InPlay)">
@@ -270,6 +295,21 @@
         }
         return string.Join(' ', classes);
     }
+
+    // The card lying face up on the tray, which is the one chucked most recently: a pile is read
+    // from the top, and the top of this one is the last thing put on it.
+    private MatchCardInstanceView? Chucked() =>
+        Side.EmptiesTray.Length == 0 ? null : Side.EmptiesTray[^1];
+
+    // How much has been chucked and what is showing, which is the whole of what a tray says from
+    // across the table. An empty one says so rather than going unmentioned, because a tray with
+    // nothing in it is a fact about the game too.
+    private string TrayLabel() =>
+        Chucked() is { } top
+            ? $"{Whose()} Empties Tray, {Side.EmptiesTray.Length} chucked, {top.Card.Name} on top"
+            : $"{Whose()} Empties Tray, nothing chucked";
+
+    private string Whose() => Opponent ? "Opponent's" : "Your";
 
     // What the card is, where it is standing and what it is carrying. How to read it is not said
     // here: the card carries a control for that, and a name that recites a gesture tells a player

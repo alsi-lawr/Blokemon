@@ -104,6 +104,12 @@ public sealed record MatchSideView(
     // other card on the board. The zone is a single match-wide slot, so at most one side
     // carries one at a time.
     MatchCardInstanceView[] InPlayKits,
+    // Everything this side has chucked, oldest first. The Empties Tray is a public zone - either
+    // player may read either tray, and what is in one decides real choices, from what is left to
+    // draw to whether a card that fetches from it has anything to fetch. The engine has always
+    // had the zone and moved cards into it; it was simply never handed to the table, so a whole
+    // public pile existed that no player could see.
+    MatchCardInstanceView[] EmptiesTray,
     bool HasTurn
 );
 

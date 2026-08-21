@@ -99,6 +99,7 @@ public sealed class MatchCardReadingTests
             [],
             [],
             [],
+            [],
             hasTurn
         );
 
