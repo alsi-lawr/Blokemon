@@ -8,7 +8,10 @@
     }
     @if (_energy.Count > 0)
     {
-        <span class="attached-energy">
+        @* How many faces the fan is holding, so it can work out how far apart to lay them: the
+           stylesheet owns the spacing and the furthest it may reach, and this is the one thing it
+           cannot see for itself. *@
+        <span class="attached-energy" style="--energy-fan-count: @_energy.Count">
             @foreach (var attached in _energy)
             {
                 <AttachedCard Attachment="attached"

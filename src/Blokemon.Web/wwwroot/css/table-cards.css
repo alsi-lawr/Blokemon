@@ -317,13 +317,25 @@ button.bench-slot span {
 
   The fan is tucked a little way under the near edge of its host rather than starting beyond it, so
   it reads as hanging off that card rather than lying beside it, and so the table gives up as
-  little room to it as the reading allows. Under is what tucked means: the cards are held by the
-  Blokemon, so they pass behind it and what the tuck hides is hidden by the card carrying them. A
-  fan laid over the top covers the face of the very card it is attached to, which is the one thing
-  on the table that must never be obscured by its own Vim.
+  little room to it as the reading allows. Under is literal: the Vim is held by the Blokemon, so it
+  passes behind the Blokemon, and the part the tuck covers is covered by the card carrying it.
+
+  The fan reaches out only so far. Vim keeps going on and the table does not grow to suit it, so
+  once the fan is as wide as it may be the faces close up on each other instead of carrying on
+  across the board - the reach is fixed and the spacing gives. Every face still shows an edge,
+  which is the whole point of stepping them: a fan stepped by a whole face shows nothing but its
+  front card, and a fully charged Blokemon looked exactly like a half charged one.
+
+  Both distances are stated once, as one spacing and how many of them the fan may be wide, so the
+  smaller fan a Booth card carries needs only to say the spacing and the rest follows.
 */
 .attached-energy {
-  --energy-fan-step: 16px;
+  --energy-fan-spread: 16px;
+  --energy-fan-reach: calc(var(--energy-fan-spread) * 6);
+  --energy-fan-step: min(
+    var(--energy-fan-spread),
+    var(--energy-fan-reach) / max(1, var(--energy-fan-count, 1) - 1)
+  );
   --energy-fan-tuck: 18px;
   position: absolute;
   z-index: -1;
@@ -344,7 +356,7 @@ button.bench-slot span {
 }
 
 .is-compact .attached-energy {
-  --energy-fan-step: 9px;
+  --energy-fan-spread: 9px;
   --energy-fan-tuck: 6px;
   bottom: 11px;
 }
