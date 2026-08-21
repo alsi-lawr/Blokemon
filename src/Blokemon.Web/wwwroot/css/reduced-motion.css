@@ -55,8 +55,11 @@
     animation: none !important;
   }
 
-  /* This one rests at nothing until its run puts it up, so it must also be told it is there. */
-  .event-toast.is-visible {
+  /* This one rests at nothing until its run puts it up, so it must also be told it is there. The
+     shuffle's words rest there always, because with the riffle playing the table has already said
+     it; with the riffle suppressed below they are the only thing left that can. */
+  .event-toast.is-visible,
+  .shuffle-toast {
     opacity: 1 !important;
     animation: none !important;
   }

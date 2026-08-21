@@ -60,9 +60,10 @@ else if (Cue?.Kind == MatchAnimationKindView.Reveal && Cue.RevealedCards.Length 
 else if (Cue?.Kind == MatchAnimationKindView.Shuffle)
 {
     @* A Deck being shuffled is shown being shuffled: the stack splits and riffles back together
-       on the table itself, and nothing is written over it. The words stay for anyone reading the
-       table rather than watching it. *@
-    <div class="visually-hidden" role="status" aria-live="polite">@PublicText(Cue.Label)</div>
+       on the table itself, so these words rest unseen and only the table speaks. Where the riffle
+       is not drawn there is no table left to speak, and the same words are brought up to full
+       strength in its place - one surface saying it two ways, rather than two events. *@
+    <div class="event-toast shuffle-toast" role="status" aria-live="polite">@PublicText(Cue.Label)</div>
 }
 else if (Cue is not null)
 {
