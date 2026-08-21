@@ -45,13 +45,20 @@
         }
     }
 
+    // Both places a game can be saved are named, and nothing chosen yet is named as nothing rather
+    // than swept up with them: a third place would otherwise appear on the shell as a standing
+    // invitation to choose one, to a player who already had. The suppression is for the other half
+    // of the same warning: a value cast in from outside the names the enum declares, which the
+    // application does not hand back.
+#pragma warning disable CS8524
     private string ModeName() =>
         _mode?.Selected switch
         {
             PlayMode.BrowserLocal => "Browser game",
             PlayMode.ServerBacked => "Server game",
-            _ => "Choose your game",
+            null => "Choose your game",
         };
+#pragma warning restore CS8524
 
     private string ModeLocation() => _mode?.StorageLocation ?? "No player loaded";
 }

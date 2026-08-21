@@ -9,6 +9,19 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!--
+      A switch over a closed set of cases is a decision about every one of them. Leaving one out is
+      a case nobody decided what to do about, and a last arm that swallows it turns that into a
+      runtime surprise - so the compiler is the thing that catches it, everywhere, rather than a
+      test looping the cases to ask whether anyone remembered.
+
+      This lived in .editorconfig under [*.cs], where "everywhere" was not true: Razor writes its
+      C# into files that glob matches none of, so every switch in a .razor file - a third of the
+      client - was left on a warning the build ignored. Escalating it here reaches the whole
+      compilation whatever the source was written in, which is the only form of this rule that
+      says what it means.
+    -->
+    <WarningsAsErrors>$(WarningsAsErrors);CS8509</WarningsAsErrors>
     <!-- The game ships in English, so publishes carry no translated resource assemblies. -->
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
