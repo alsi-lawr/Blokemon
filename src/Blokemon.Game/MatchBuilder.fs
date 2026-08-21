@@ -182,6 +182,20 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
     member this.Shuffle(player: PlayerId) =
         this.Shuffle(player, ImmutableArray<_>.Empty)
 
+    // Where a card put UNDER the Deck belongs: one past the last card still in it.
+    //
+    // That is not the number of cards in it, and the two only agree for a Deck nobody has drawn
+    // from. Drawing takes cards off the front, so a Deck of sixty dealt seven has fifty-three cards
+    // left occupying positions seven to fifty-nine - and its count, fifty-three, is a position six
+    // cards are still sitting on. Written there a card interleaves with the bottom of the Deck
+    // instead of going beneath it, and is drawn before cards it was put underneath.
+    //
+    // Folding from zero is also what answers an empty Deck, which is reachable: a player may hold
+    // their whole Deck, and asking an empty Deck for its last position has no answer to give.
+    member this.BeneathStack(player: PlayerId) =
+        this.CardsIn(player, CardZone.Stack)
+        |> Seq.fold (fun beneath card -> max beneath (card.StackPosition + 1)) 0
+
     member this.ReturnMittToStack(player: PlayerId) =
         let mutable nextPosition = this.CardsIn(player, CardZone.Stack) |> Seq.length
 

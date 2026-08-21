@@ -98,13 +98,11 @@ module internal EffectCardMoves =
                             destination = BlokemonEffectDestination.BottomOfOwnStack
                             || destination = BlokemonEffectDestination.BottomOfOtherStack
                         then
-                            let bottom =
-                                (runtime.Builder.CardsIn(card.Owner, CardZone.Stack) |> Seq.length)
-                                - 1
-
+                            // Asked one at a time, so several cards sent down together go under the
+                            // Deck in the order they were chosen rather than all onto one position.
                             runtime.Builder.SetCard
                                 { runtime.Builder.Card card.Id with
-                                    StackPosition = bottom }
+                                    StackPosition = runtime.Builder.BeneathStack card.Owner }
 
         moved
 
