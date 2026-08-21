@@ -10,9 +10,15 @@ open TUnit.Core
 [<AutoOpen>]
 module private DeferredBranchChoiceFixtures =
 
+    // The seed has three jobs and they are written down here so the next person to re-base it does
+    // not have to find them by bisection: the attacker must be dealt exactly one BLK-052, the
+    // defender at least two BLK-001 so that one stands in the Oche and one on the Booth, and the
+    // beer mat must land badge-side so the branch parks instead of resolving on the spot. It was
+    // re-based from 1 when the shuffle stopped taking its input in the order it was handed, which
+    // changed the deal every seed produces.
     let coinSwitchRequest () =
         { MatchId = MatchId "coin-branch-e2e"
-          Seed = MatchSeed 1UL
+          Seed = MatchSeed 32UL
           FirstDeck =
             FrozenDeckSnapshot.Create(
                 MatchScenario.FirstPlayer,

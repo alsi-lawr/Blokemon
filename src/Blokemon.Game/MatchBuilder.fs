@@ -160,10 +160,20 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
 
         ImmutableArray.CreateRange drawn
 
+    // A shuffle answers to the cards in the Deck and to the random stream, and to nothing else.
+    //
+    // It used to answer to their POSITIONS as well. The cards were taken in the order CardsIn gives
+    // them, which is by position, and a Fisher-Yates walk over a differently ordered input deals a
+    // different Deck out of the same random draws. That made where a card had been sitting before a
+    // shuffle decide what the shuffle produced - so correcting any position written before one, even
+    // a position nothing reads and the shuffle is about to overwrite, silently changed the deal for
+    // every seed. Ordering the input by identity instead settles that: a Deck holding the same cards
+    // shuffles the same way whatever order it was holding them in.
     member this.Shuffle(player: PlayerId, excludedCards: ImmutableArray<CardInstanceId>) =
         let stack =
             this.CardsIn(player, CardZone.Stack)
             |> Seq.filter (fun card -> not (Seq.contains card.Id excludedCards))
+            |> Seq.sortBy (fun card -> card.Id)
             |> Seq.toArray
 
         for index in stack.Length - 1 .. -1 .. 1 do
@@ -197,7 +207,7 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
         |> Seq.fold (fun beneath card -> max beneath (card.StackPosition + 1)) 0
 
     member this.ReturnMittToStack(player: PlayerId) =
-        let mutable nextPosition = this.CardsIn(player, CardZone.Stack) |> Seq.length
+        let mutable nextPosition = this.BeneathStack player
 
         for card in this.CardsIn(player, CardZone.Mitt) |> Seq.toArray do
             this.SetCard
@@ -246,7 +256,7 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
         taken
 
     member this.ResetBarChits(player: PlayerId, count: int) =
-        let mutable nextPosition = this.CardsIn(player, CardZone.Stack) |> Seq.length
+        let mutable nextPosition = this.BeneathStack player
 
         for card in this.CardsIn(player, CardZone.BarChit) |> Seq.toArray do
             this.MoveCard(card.Id, CardZone.Stack)
