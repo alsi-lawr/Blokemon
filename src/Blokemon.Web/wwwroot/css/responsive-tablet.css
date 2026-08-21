@@ -14,12 +14,8 @@
     padding-right: 448px;
   }
 
-  /*
-    The table keeps less room outside the Deck at this width than the two piles need, so the
-    stack opens into the table rather than across its edge. How far apart the piles stand is
-    unchanged - the same share of a card - so the shuffle keeps its shape; only where it opens
-    from moves.
-  */
+  /* Less room outside the Deck than the piles need, so the stack opens inward. The gap between
+     the piles is unchanged, so the shuffle keeps its shape. */
   .shuffle-riffle {
     --riffle-split-left: 24%;
     --riffle-split-right: 94%;

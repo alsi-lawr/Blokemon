@@ -14,6 +14,11 @@
   background: transparent;
   font: 900 48px/1.1 "Jost", sans-serif;
   letter-spacing: -0.035em;
+
+  @media (max-width: 720px) {
+    width: 100%;
+    font-size: 36px;
+  }
 }
 
 .deck-name-input:hover,
@@ -25,6 +30,13 @@
 .deck-tabs {
   display: flex;
   gap: 8px;
+}
+
+/* Only the actions row goes full width; the tabs row keeps its content width and scrolls. */
+@media (max-width: 720px) {
+  .deck-top-actions {
+    width: 100%;
+  }
 }
 
 .deck-tabs {
@@ -49,6 +61,10 @@
   grid-template-columns: 260px minmax(0, 1fr) 330px;
   align-items: start;
   gap: 18px;
+
+  @media (max-width: 720px) {
+    display: block;
+  }
 }
 
 .deck-panel {
@@ -105,6 +121,11 @@
   display: grid;
   gap: 7px;
   margin-top: 20px;
+
+  @media (max-width: 720px) {
+    display: flex;
+    overflow: auto;
+  }
 }
 
 .filter {
@@ -116,6 +137,11 @@
   color: var(--muted);
   background: transparent;
   text-align: left;
+
+  @media (max-width: 720px) {
+    flex: 0 0 auto;
+    gap: 8px;
+  }
 }
 
 .filter.active,
@@ -128,6 +154,10 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 12px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  }
 }
 
 .catalogue-card {
@@ -188,6 +218,10 @@
   top: 86px;
   max-height: calc(100vh - 104px);
   overflow: auto;
+
+  @media (max-width: 720px) {
+    margin-top: 13px;
+  }
 }
 
 .deck-group {

@@ -24,6 +24,11 @@
   justify-content: space-between;
   padding: 20px clamp(18px, 4vw, 64px);
   background: linear-gradient(#090b08, transparent);
+
+  @media (max-width: 720px) {
+    padding: 14px;
+    font-size: 11px;
+  }
 }
 
 .opening-ceremony-head .animation-choice {
@@ -222,6 +227,10 @@
   cursor: pointer;
   perspective: 1500px;
   animation: card-draw 0.75s var(--ceremony-ease) both;
+
+  @media (max-width: 720px) {
+    --reveal-card-scale: 0.3733333;
+  }
 }
 
 .pack-reveal-card--first {

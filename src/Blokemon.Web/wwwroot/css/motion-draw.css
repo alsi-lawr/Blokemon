@@ -1,13 +1,5 @@
-/*
-  The arc: the card leaves the Deck small and turned away, rises over the middle of its journey,
-  is edge on at the top of it - which is where the cover comes off and the face arrives - and
-  settles into its place in the fan, rocking once or twice as it lands.
-
-  The ten steps below are evenly spaced in time and unevenly spaced along the path: barely
-  anything in the first of them, a third of the distance over the middle two, and almost nothing
-  in the last. Read at an even rate that is one unbroken ease-in-out, and the follow-through is
-  the tail of it rather than a shove after the card has already arrived.
-*/
+/* Edge on at the top of the arc, which is where the cover comes off. The ten steps are even in
+   TIME and uneven along the path - read linearly that is one unbroken ease-in-out. */
 @keyframes draw-arc {
   0% {
     transform:
@@ -134,11 +126,7 @@
   }
 }
 
-/*
-  The same journey on the same schedule, by a card that never turns over. It ends where a back in
-  the strip rests, which is turned a little, and it leaves the Deck at the Deck's own size: the
-  page measures both, so the card shrinks into the strip rather than growing into it.
-*/
+/* Same journey, never turning over. Both ends are measured, so it shrinks into the strip. */
 @keyframes draw-arc-face-down {
   0% {
     transform:

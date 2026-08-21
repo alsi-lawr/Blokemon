@@ -84,6 +84,10 @@
   overflow: hidden;
   display: flex;
   align-items: end;
+
+  @media (max-width: 720px) {
+    min-height: 360px;
+  }
 }
 
 .hero::after {
@@ -110,11 +114,19 @@
 
 .metrics {
   grid-template-columns: repeat(3, 1fr);
+
+  @media (max-width: 720px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .metric {
   padding: 18px;
   border-left: 1px solid var(--line);
+
+  @media (max-width: 720px) {
+    padding: 14px 9px;
+  }
 }
 
 .metric:first-child {
@@ -124,6 +136,10 @@
 .metric b {
   display: block;
   font: 900 34px "Jost", sans-serif;
+
+  @media (max-width: 720px) {
+    font-size: 26px;
+  }
 }
 
 .metric span {

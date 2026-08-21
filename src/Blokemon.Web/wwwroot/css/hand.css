@@ -11,15 +11,37 @@
   padding: 120px 54px 12px;
   transform: translateX(-50%);
   pointer-events: auto;
+
+  @media (max-width: 720px) {
+    --hand-cards: max(1, var(--hand-count, 1));
+    --hand-card-width: 90px;
+    --hand-gap: 6px;
+    --hand-pitch: calc(var(--hand-card-width) + var(--hand-gap));
+    --hand-overlap: clamp(
+    0px,
+    calc(
+    (var(--hand-cards) * var(--hand-pitch) - var(--hand-gap) - 100%) /
+    max(1, var(--hand-cards) - 1)
+    ),
+    calc(var(--hand-pitch) - 12px)
+    );
+    right: 0;
+    bottom: 8px;
+    left: 0;
+    width: 100%;
+    height: 154px;
+    justify-content: safe center;
+    gap: var(--hand-gap);
+    /* The side padding is wider than the corona reaches, so the end cards glow whole. */
+    padding: 22px 20px 6px;
+    overflow: visible;
+    transform: none;
+    background: linear-gradient(transparent, #090b08 42%);
+  }
 }
 
-/*
-  The place a held card occupies in the hand, which is where it was dealt and where it stays. It
-  is what answers the pointer, and it never moves: a card that rose on being hovered would climb
-  out from under the pointer that raised it, lose the hover, drop, and take it again - a card that
-  flickers rather than one that lifts. So a card is hovered from the position it holds in the fan
-  whatever the card itself is doing, and it can be reached there for as long as it is held.
-*/
+/* This box answers the pointer and NEVER moves. A card that rose on hover would climb out from
+   under the pointer, lose it, drop, and take it again - flicker rather than lift. */
 .hand-card {
   position: relative;
   /* Later in the hand means further forward, so every card keeps a strip of itself showing. */
@@ -28,23 +50,26 @@
   margin: 0 -30px;
   overflow: visible;
   pointer-events: auto;
+
+  /* The fan is flat on a phone, so the room made for an arriving card is made along the row. */
+  @media (max-width: 720px) {
+    margin: 0 calc(-1 * var(--hand-overlap)) 0 0;
+    touch-action: pan-x pan-y;
+    transform: none;
+    transition:
+    transform calc(0.2s + var(--hand-index, 0) * 0.014s),
+    margin-right calc(0.24s + var(--hand-index, 0) * 0.014s);
+  }
 }
 
-/*
-  The fan and the lift are carried by the card's own press surface, not by an inner visual: the
-  surface a press lands on sits exactly where the card appears, so a tap always reaches the card
-  it looks like it will, and the inner visual is left free for the cue animations to drive.
-*/
+/* Carried by the press surface so a tap always reaches the card it looks like it will; the
+   inner visual is left free for the cue animations. */
 .hand-card .card-press-surface {
   display: block;
   transform-origin: 50% 130%;
   /* The page measures each card's place in the fan; the arc itself is declared here. */
   transform: rotate(var(--fan-turn, 0deg)) translateY(var(--fan-lift, 0px));
-  /*
-    Held cards make room for an arriving one rather than jumping aside for it, and each takes its
-    own time over it: a hand that moves as one block reads as a list being rewritten, and a hand
-    whose cards settle a moment apart reads as cards.
-  */
+  /* Per-card periods: a hand that moves as one block reads as a list being rewritten. */
   transition: transform calc(0.2s + var(--hand-index, 0) * 0.014s);
 }
 
@@ -57,10 +82,7 @@
   transition: filter 0.2s;
 }
 
-/*
-  The card being pressed or chosen comes to the front of the whole hand, and stays there while the
-  keyboard is anywhere on it - on the card itself or on one of the controls that read it.
-*/
+/* Forward while engaged, including while the keyboard is on one of its reading controls. */
 .hand-card:hover,
 .hand-card:has(:focus-visible),
 .hand-card.is-aura-selected {
@@ -71,6 +93,10 @@
 .hand-card:has(:focus-visible) .card-press-surface,
 .hand-card.is-aura-selected .card-press-surface {
   transform: translateY(-68px) rotate(0) scale(1.08);
+
+  @media (max-width: 720px) {
+    transform: translateY(-14px) scale(1.04);
+  }
 }
 
 .hand-card .card-press-surface:focus-visible {
@@ -89,13 +115,11 @@
 }
 
 /*
-  The aura glow lands after the hand's own hover rules so a glowing card in hand keeps its
-  aura while hovered, and after the board rules so both zones read identically.
+  ORDER MATTERS: after the hand's hover rules so a glowing card keeps its aura while hovered, and
+  after the board rules so both zones read identically.
 
-  It is a corona, not a bloom: a narrow white rim hugging the card's own edge, fading to nothing
-  about a dozen pixels out, with a brighter lobe that revolves slowly around the card while the
-  whole rim breathes. Keeping it that tight is what lets it live in every zone without any
-  boundary cutting across it, and the card itself never moves.
+  A corona, not a bloom - a narrow rim faded out by about fifteen pixels, with a revolving lobe.
+  Staying that tight is what lets it live in every zone with no boundary cutting across it.
 */
 .is-aura .battle-card-shell::after,
 .is-aura .hand-card-visual::after,
@@ -104,20 +128,13 @@ button.bench-slot.is-aura::after,
 button.deck-stack.is-aura::after {
   content: "";
   position: absolute;
-  /*
-    Declared here as well as registered below, so a browser that cannot register an angle still
-    resolves it and shows the rim: it simply holds still instead of revolving.
-  */
+  /* Also declared here so a browser that cannot register an angle still shows the rim. */
   --corona-angle: 0deg;
   /* Behind the card and behind whatever is tucked under it, never over the printed face. */
   z-index: -2;
   inset: -8px;
   border-radius: 14px;
-  /*
-    An even base rim so the card glows all the way round, and two soft lobes over it that are
-    what actually revolves. One blurred layer, one bounded extent: eight pixels of rim, softened
-    by the blur, and the glow has faded out entirely by about fifteen.
-  */
+  /* An even base rim plus two revolving lobes; one blurred layer, gone by about fifteen px. */
   background:
     conic-gradient(
       from var(--corona-angle),

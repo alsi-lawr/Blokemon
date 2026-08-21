@@ -8,11 +8,7 @@
     transition-duration: 0.01ms !important;
   }
 
-  /*
-    The aura is an affordance, not decoration: with motion suppressed it stops breathing and
-    holds its bloom, so every card that can be acted on still reads as glowing. The viewer and
-    the pop-up simply appear.
-  */
+  /* The aura is an affordance, not decoration: it stops breathing but keeps its bloom. */
   .action-sheet,
   .action-sheet.is-centred,
   .card-viewer,
@@ -22,13 +18,8 @@
     animation: none !important;
   }
 
-  /*
-    A reveal is not decoration: it is cards the rules entitle the player to see, and the match
-    waits on their answer to it. Suppressing motion must never take that away, so here it does not
-    arrive by any run at all - it is simply there, at full strength, from the first frame until it
-    is dismissed. Stated outright rather than left to the shortened duration above, because a
-    surface the player has to find is the last one that may depend on how a run ends.
-  */
+  /* The match WAITS on this one, so it may not depend on how a run ends: stated outright at
+     full strength rather than left to the shortened duration above. */
   .card-reveal-overlay {
     opacity: 1 !important;
     animation: none !important;
@@ -52,17 +43,10 @@
   }
 
   /*
-    The four surfaces the table speaks through: what was played and its name, whose turn it is,
-    what an attack did, and everything else it has to say. Each of them arrives, holds and leaves
-    inside a single run, so the shortening at the top of this file collapses the whole of that into
-    an instant and the fill mode then keeps each of them at the end of it, which is invisible. That
-    is the information being taken away rather than the movement, and it is the opposite of what
-    this file is for.
-
-    So they are stated outright, exactly as the reveal is above: no run at all, at full strength
-    from the first frame, for as long as the beat holding them lasts. The page owns their lifetime
-    and always has - each one goes because the beat after it arrives - so there is nothing here for
-    a closing keyframe to do that the beat ending does not already do better.
+    The four surfaces the table speaks through. Each arrives, holds and leaves inside one run, so
+    the shortening above collapses that to an instant and the fill mode leaves them at the end -
+    invisible. That takes the information, not the movement. So: no run, full strength, and the
+    beat ending is what removes them.
   */
   .card-play-overlay,
   .card-play-overlay.is-travelling strong,
@@ -71,21 +55,13 @@
     animation: none !important;
   }
 
-  /*
-    The toast is the one of the four that is not drawn at all until its own run puts it up: it
-    rests at nothing and the run is what makes it visible. Told only to hold still it would hold
-    still at nothing, so it is told it is there as well.
-  */
+  /* This one rests at nothing until its run puts it up, so it must also be told it is there. */
   .event-toast.is-visible {
     opacity: 1 !important;
     animation: none !important;
   }
 
-  /*
-    Nothing travels: a card that would have made a journey is simply where the journey would have
-    left it, and the covers and halves that exist only in order to be moved are not shown at all.
-    What the motion was there to say is said by the frame it settles on.
-  */
+  /* Nothing travels; the pieces that exist only to be moved are not drawn at all. */
   .card-play-overlay.is-travelling .card-travel,
   .cue-draw .hand-card.is-cue-target .hand-card-visual,
   .cue-draw .opponent-hand .oche-card-back.is-drawn,
@@ -95,13 +71,8 @@
     animation: none !important;
   }
 
-  /*
-    The card being picked up is the one exception, and it is the whole point: it is on its way out
-    of the hand, so it keeps whatever the rule below says about being gone rather than being put
-    back at full strength. Suppressing a journey must not restore the thing the journey took away
-    - with no motion at all there is even less to explain a second copy of a card than there is
-    with it.
-  */
+  /* The one exception: a card on its way out stays gone. Suppressing a journey must not restore
+     what the journey took away, or the card appears twice. */
   .cue-play .hand-card.is-cue-source .hand-card-visual,
   .cue-evolve .hand-card.is-cue-source .hand-card-visual,
   .cue-setup .hand-card.is-cue-source .hand-card-visual {
@@ -119,12 +90,8 @@
     display: none !important;
   }
 
-  /*
-    A blow neither travels nor is travelled into: both cards stand where they stand, and the
-    damage says itself with the number. Only the run is taken away - the card at either end keeps
-    whatever it is holding itself at for being chosen or selected, which the two runs never touch
-    anyway, because both of them start and end where the card already is.
-  */
+  /* Both cards stand still; the number says the damage. Only the run goes - selection and aura
+     holds are untouched, since both runs start and end where the card already is. */
   .battle-card-shell.is-cue-striking,
   .cue-damage .battle-card-shell.is-cue-struck {
     animation: none !important;

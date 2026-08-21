@@ -7,6 +7,11 @@
   background:
     radial-gradient(ellipse at 50% 45%, #24341e 0, #11170e 50%, #090b08 85%),
     #090b08;
+
+  @media (max-width: 720px) {
+    height: calc(100dvh - 124px);
+    min-height: 0;
+  }
 }
 
 .battle-screen:fullscreen {
@@ -19,6 +24,12 @@
   width: 100%;
   min-width: 1120px;
   height: max(100%, 820px);
+
+  /* Exactly screen height - nothing here may grow the canvas and start a scroll. */
+  @media (max-width: 720px) {
+    min-width: 0;
+    height: 100%;
+  }
 }
 
 .battle-hud {
@@ -29,6 +40,12 @@
   align-items: center;
   gap: 8px;
   pointer-events: none;
+
+  /* Squeezed to one shallow row so the opponent's held cards have their strip beneath it. */
+  @media (max-width: 720px) {
+    inset: 6px 8px auto;
+    gap: 6px;
+  }
 }
 
 .round-chip {
@@ -40,10 +57,26 @@
   padding: 8px 12px;
   border: 1px solid #5a5739;
   border-radius: 18px;
+
+  /* One row, everything inside the width, so the opponent's Bench keeps the rest. */
+  @media (max-width: 720px) {
+    flex: 0 1 auto;
+    min-width: 0;
+    padding: 5px 8px;
+    overflow: hidden;
+    font-size: 10px;
+    white-space: nowrap;
+  }
 }
 
 .skip-animation {
   pointer-events: auto;
+
+  @media (max-width: 720px) {
+    margin-left: 0;
+    padding: 7px 9px;
+    font-size: 10px;
+  }
 }
 
 /* Only what belongs to no card lives in the HUD: End turn, Resign and the full-screen toggle. */
@@ -53,6 +86,11 @@
   gap: 6px;
   margin-left: auto;
   pointer-events: auto;
+
+  @media (max-width: 720px) {
+    min-width: 0;
+    gap: 4px;
+  }
 }
 
 .hud-button {
@@ -64,6 +102,11 @@
   background: rgb(10 12 9 / 88%);
   backdrop-filter: blur(12px);
   font: 700 12px "Jost", sans-serif;
+
+  @media (max-width: 720px) {
+    min-height: 30px;
+    padding: 0 9px;
+  }
 }
 
 .hud-end-turn {
@@ -88,6 +131,14 @@
   background: rgb(10 12 9 / 84%);
   backdrop-filter: blur(12px);
   pointer-events: auto;
+
+    /* The round button carries an icon, not a label, so it keeps no side padding to push it off
+     centre: the narrower phone padding above is for the buttons that carry words. */
+  @media (max-width: 720px) {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+  }
 }
 
 .fullscreen-toggle svg {
@@ -120,26 +171,23 @@
   width: min(440px, calc(100% - 40px));
 }
 
-/*
-  Both sides get the same share of the table, so the two halves mirror each other exactly: the
-  Active card that leans out of one row towards the edge of the table has the same room to lean
-  into as the other, and neither is cut off by the edge.
-*/
+/* Equal shares, so the two halves mirror and neither leaning Active is cut off. */
 .battlefield {
   height: 100%;
   display: grid;
   grid-template-rows: 1fr 42px 1fr;
   gap: 3px;
   padding: 48px 510px 350px 52px;
+
+  @media (max-width: 720px) {
+    --fan-strip: 40px;
+    grid-template-rows: 1fr 28px 1fr;
+    padding: calc(38px + var(--fan-strip)) 5px 162px;
+  }
 }
 
-/*
-  The two halves are the same table seen from either end: the same five columns in the same
-  places - Deck, the Empties Tray, the Kit in play, the field, the Prize cards - so every card on
-  one side lines up with its counterpart on the other. The Kit column and the tray are always
-  there, empty or not, so nothing else on the table moves when a Kit comes into play or the first
-  card is chucked.
-*/
+/* Five columns, same order on both halves: Deck, Empties Tray, Kit in play, field, Prizes.
+   Every column is always present, empty or not, so nothing shifts when one fills. */
 .side-zone {
   position: relative;
   min-height: 0;
@@ -147,6 +195,11 @@
   grid-template-columns: 112px 147px 112px minmax(0, 1fr) 90px;
   align-items: center;
   border-radius: 24px;
+
+  /* The Bench needs the full width, so Deck and Prizes leave the flow and sit outboard. */
+  @media (max-width: 720px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .side-zone.has-turn {
@@ -177,6 +230,10 @@
 .deck-stack {
   position: relative;
   grid-column: 1;
+
+  @media (max-width: 720px) {
+    left: 0;
+  }
 }
 
 /* The Deck only becomes a control while a draw is waiting on it, and looks no different for it:
@@ -191,14 +248,18 @@ button.deck-stack {
 
 .prize-rack {
   grid-column: 5;
+
+  @media (max-width: 720px) {
+    right: 0;
+  }
+
+  @media (max-width: 720px) {
+    grid-column: 1;
+  }
 }
 
-/*
-  The Empties Tray sits next to the Deck it is fed from, and shows the last card chucked face up
-  the way a real one does - a pile you can read the top of without picking it up. It keeps its
-  place and its box from the first turn, so the table does not shift the moment something is
-  chucked, and an empty tray says it is empty rather than being absent.
-*/
+/* Next to the Deck it is fed from, face up, keeping its box from the first turn so the table
+   does not shift when the first card is chucked. */
 /* A tray with anything in it is the control that opens it, so it carries the reset every other
    card surface on the table carries and keeps exactly the box it had while it was a plain pile. */
 .empties-tray {
@@ -211,6 +272,12 @@ button.deck-stack {
   border: 0;
   color: inherit;
   background: transparent;
+
+  /* No room beside the Deck at this width; it goes outboard, inside the Prizes. */
+  @media (max-width: 720px) {
+    grid-column: 1;
+    right: 52px;
+  }
 }
 
 button.empties-tray {
@@ -246,6 +313,11 @@ button.empties-tray:focus-visible .card-face-host {
   height: 109px;
   border: 1px dashed rgb(156 164 128 / 23%);
   border-radius: 7px;
+
+  @media (max-width: 720px) {
+    width: 42px;
+    height: 59px;
+  }
 }
 
 /* Sized here rather than taken from the Bench, so the face and the outline an empty tray wears
@@ -254,6 +326,10 @@ button.empties-tray:focus-visible .card-face-host {
   --blokemon-card-scale: 0.104;
 
   filter: drop-shadow(-4px 4px 0 #1f2118) drop-shadow(-4px 4px 0 #353527);
+
+  @media (max-width: 720px) {
+    --blokemon-card-scale: 0.056;
+  }
 }
 
 /* Positioned so the halves a shuffle splits it into have the stack's own box to riffle in. */
@@ -263,6 +339,10 @@ button.empties-tray:focus-visible .card-face-host {
   aspect-ratio: 5 / 7;
   margin-bottom: 8px;
   filter: drop-shadow(-5px 5px 0 #1f2118) drop-shadow(-5px 5px 0 #353527);
+
+  @media (max-width: 720px) {
+    width: 58px;
+  }
 }
 
 .oche-card-back {
@@ -279,26 +359,33 @@ button.empties-tray:focus-visible .card-face-host {
   z-index: 2;
   color: var(--muted);
   font: 700 11px "Jost", sans-serif;
+
+  @media (max-width: 720px) {
+    font-size: 8px;
+  }
 }
 
 .prizes {
   display: grid;
   grid-template-columns: repeat(2, 31px);
   gap: 4px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: repeat(2, 21px);
+    gap: 2px;
+  }
 }
 
 .prizes .oche-card-back {
   width: 31px;
+
+  @media (max-width: 720px) {
+    width: 21px;
+  }
 }
 
-/*
-  A Kit played to the table stays in play as a public card, so it is dealt onto the table itself
-  rather than named in the HUD. Only one is ever on the table at a time, and it belongs to the
-  side that played it, so each side keeps a place for it beside its own Deck: the card sits in
-  the flow of the row rather than over it, which is what keeps it clear of the Active card at
-  every width. The place is kept whether or not a card is standing in it, so the rest of the
-  table never moves. The slot never clips, so the corona reads whole here as everywhere.
-*/
+/* In the flow of the row rather than over it, which is what keeps it clear of the Active at
+   every width. The place is kept whether or not a card stands in it, and never clips. */
 .local-slot {
   position: relative;
   z-index: 6;
@@ -310,6 +397,13 @@ button.empties-tray:focus-visible .card-face-host {
   align-content: center;
   gap: 3px;
   overflow: visible;
+
+  @media (max-width: 720px) {
+    position: absolute;
+    z-index: 6;
+    grid-column: 1;
+    left: 58px;
+  }
 }
 
 /* An empty place reads the way an empty Bench position does: an outline, and nothing else. */
@@ -318,6 +412,10 @@ button.empties-tray:focus-visible .card-face-host {
   height: 137px;
   border: 1px dashed rgb(156 164 128 / 23%);
   border-radius: 7px;
+
+  @media (max-width: 720px) {
+    display: none;
+  }
 }
 
 .local-slot-label {
@@ -327,13 +425,6 @@ button.empties-tray:focus-visible .card-face-host {
   text-transform: uppercase;
 }
 
-/*
-  The opponent holds their cards at their own end of the table, past the far side of their Bench:
-  the middle of the table is where the two Active cards face each other, so nothing of theirs is
-  laid across it. The fan takes the Bench's own column, so it stays centred over the Bench however
-  the field is divided, and tucks behind the row it is dealt from - the same relationship the
-  phone table gives it in the strip above the Bench.
-*/
 /* The Bench's own column, which is the second of the field's two - not the table's. The tray
    column added to the side zone does not reach in here, and counting it in did: the fan went to a
    third column the field has never had, and an implicit track carried it off the table. */
@@ -346,6 +437,13 @@ button.empties-tray:focus-visible .card-face-host {
   left: 50%;
   display: flex;
   transform: translateX(-50%);
+
+  /* Compressed rather than dropped: how much they hold is always readable. */
+  @media (max-width: 720px) {
+    /* One column here, so the fan is placed against the half itself and centred on its Bench. */
+    grid-column: 1;
+    top: calc(-1 * var(--fan-strip));
+  }
 }
 
 .opponent-hand .oche-card-back {
@@ -353,6 +451,13 @@ button.empties-tray:focus-visible .card-face-host {
   margin-left: -23px;
   box-shadow: 0 8px 14px #0008;
   transform: rotate(3deg);
+
+  @media (max-width: 720px) {
+    width: 26px;
+    margin-left: -17px;
+    border-radius: 4px;
+    box-shadow: 0 3px 6px #0009;
+  }
 }
 
 .opponent-hand .oche-card-back:first-child {
@@ -369,6 +474,15 @@ button.empties-tray:focus-visible .card-face-host {
   align-items: center;
   justify-items: center;
   gap: 20px;
+
+  /* One column, two rows, Bench outboard of Active on both sides. */
+  @media (max-width: 720px) {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-content: center;
+    gap: 2px;
+  }
 }
 
 .active-slot {
@@ -380,6 +494,15 @@ button.empties-tray:focus-visible .card-face-host {
   place-items: center;
   border-radius: 50%;
   background: radial-gradient(ellipse, #b2c57a22, transparent 65%);
+
+  /* The Active card sits in the flow of its own row here, so the row keeps its height. */
+  @media (max-width: 720px) {
+    grid-column: 1;
+    height: auto;
+    min-width: 124px;
+    min-height: 148px;
+    padding-bottom: 13px;
+  }
 }
 
 .opponent-zone .active-slot > .field-card-button {

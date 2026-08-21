@@ -12,21 +12,12 @@
     <base href="/" />
     <ResourcePreloader />
     @*
-        The product's styles, one file per concern. THIS LIST IS THE CASCADE ORDER, and it is the
-        only place that order is written down: a rule only wins over an earlier one because it is
-        later, so the unconditional files come first and the four media blocks last. Reordering a
-        line here, or inserting one in the wrong place, silently changes what the player sees.
+        THIS LIST IS THE CASCADE ORDER and the only place it is written down. A file is named for
+        what it holds, not for where it loads, so ALPHABETICAL ORDER IS NOT LOAD ORDER - never
+        build this list from a glob. Mirror every change in Blokemon.Web.Client/wwwroot/index.html.
 
-        The filenames deliberately do not encode their position - a file is named for what it
-        holds, not for where it loads - so ALPHABETICAL ORDER IS NOT LOAD ORDER and never will be.
-        reduced-motion.css sorts before responsive-phone.css and has to load after it. Never build
-        this list from a directory glob or a sorted listing; add and move files by hand, here, and
-        make the same edit in the same place in the standalone browser host,
-        Blokemon.Web.Client/wwwroot/index.html.
-
-        Two files hold a little more than their name says: motion-pack.css also carries the fades
-        that everything shares, and motion-deck.css also carries the hand's half of the pickup it
-        has to stay in step with.
+        Breakpoint overrides live beside the rules they override, nested in the same file. Only
+        rules with no base rule to sit beside are left in responsive-phone.css.
     *@
     <link rel="stylesheet" href="@Assets["css/foundation.css"]" />
     <link rel="stylesheet" href="@Assets["css/app-shell.css"]" />

@@ -1,12 +1,7 @@
 /*
-  The band across the middle of the table: whose turn it is, then what is being asked. It states
-  where the player is, which the glowing cards cannot show, and it occupies its own row of the
-  battlefield grid rather than floating over either half - so it never covers the Bench it is
-  naming a choice about.
-
-  It must never wrap. A second line would change the band's height and move the table on a phase
-  change, so the row stays on one line and the opponent's name, the one variable-length thing in
-  it, ellipsises instead.
+  Its own grid row rather than floating over either half, so it never covers the Bench it is
+  naming a choice about. It MUST NEVER WRAP: a second line changes the band's height and moves
+  the table on a phase change, so the opponent's name ellipsises instead.
 */
 .turn-ribbon {
   position: relative;
@@ -24,12 +19,16 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   white-space: nowrap;
-  /*
-    Without this the band's own content is the floor on how narrow the table's middle row may be,
-    so a long name widens the whole table rather than being clipped, and the row moves. With it
-    the band is bounded by the table and the ellipsis below does the work instead.
-  */
+  /* Without this the band's content is the floor on the row's width, so a long name widens the
+     whole table instead of being clipped. */
   min-width: 0;
+
+  @media (max-width: 720px) {
+    min-height: 28px;
+    padding: 0 6px;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+  }
 }
 
 .turn-ribbon::before,
@@ -38,6 +37,10 @@
   width: 80px;
   height: 1px;
   background: #77714c;
+
+  @media (max-width: 720px) {
+    width: 24px;
+  }
 }
 
 .ribbon-turn {
@@ -76,6 +79,13 @@
   pointer-events: none;
   transform: translate(-50%, -50%);
   text-align: center;
+
+  @media (max-width: 720px) {
+    top: 40%;
+    max-width: 92vw;
+    padding: 8px 11px;
+    font-size: 11px;
+  }
 }
 
 .event-toast.is-visible {
@@ -99,14 +109,8 @@
   gap: 18px;
   background: radial-gradient(circle, rgb(15 20 12 / 82%), rgb(7 9 6 / 42%) 46%, transparent 72%);
   /*
-    It only arrives, exactly as the reveal below does. It used to fade out at the end of its own
-    run as well, and a card being carried is drawn on this layer, so the card faded with it: the
-    run began closing at 40% of a journey the card was still making, reached nothing as the card
-    reached its slot, and the table filled the slot a moment later out of the frame. A card on its
-    way to the Booth vanishing before it got there was this, and nothing else.
-
-    Nothing has to close it. The beat holding it ends and the layer goes with it, which is true of
-    every surface the table speaks through.
+    ARRIVES ONLY - no exit, no fill mode. A card being carried is drawn on this layer, so a
+    closing keyframe here fades the card mid-journey. The beat ending is what removes it.
   */
   animation: major-overlay-arrive 0.2s ease-out;
 }
@@ -114,19 +118,22 @@
 .card-play-overlay .card-face--showcase {
   --blokemon-card-scale: 0.5;
   filter: drop-shadow(0 30px 44px #000d);
+
+  @media (max-width: 720px) {
+    --blokemon-card-scale: 0.36;
+  }
 }
 
 .card-play-overlay strong {
   font: 900 32px "Gillius ADF", serif;
+
+  @media (max-width: 720px) {
+    font-size: 24px;
+  }
 }
 
-/*
-  The reveal is the one overlay here that outlives its own run, because it is the one that waits
-  to be dismissed: it holds the table until the player has seen what they are entitled to see.
-  So it only arrives, and no fill mode retains anything after that - what it is left holding is
-  its own full strength, which is what keeps it both readable and honest about covering the
-  board. Anything that ends invisible while still listening for a tap is a trap over the table.
-*/
+/* This one waits to be dismissed, so it outlives its run: arrive only, no fill mode. Anything
+   that ends invisible while still listening for a tap is a trap over the board. */
 .card-reveal-overlay {
   position: absolute;
   z-index: 150;
@@ -137,12 +144,23 @@
   gap: 18px;
   background: radial-gradient(circle, rgb(15 20 12 / 88%), rgb(7 9 6 / 56%) 58%, transparent 82%);
   animation: major-overlay-arrive 0.2s ease-out;
+
+  /* Must fit the no-scroll canvas whole, Continue button included. */
+  @media (max-width: 720px) {
+    gap: 10px;
+    align-content: safe center;
+    overflow-y: auto;
+  }
 }
 
 .card-reveal-overlay .eyebrow {
   font: 900 26px "Gillius ADF", serif;
   color: #fff4c9;
   text-shadow: 0 8px 30px #000;
+
+  @media (max-width: 720px) {
+    font-size: 18px;
+  }
 }
 
 .card-reveal-overlay .revealed-cards {
@@ -151,6 +169,10 @@
   justify-content: center;
   gap: 12px;
   max-width: min(92vw, 900px);
+
+  @media (max-width: 720px) {
+    gap: 8px;
+  }
 }
 
 .turn-change-overlay {
@@ -161,6 +183,10 @@
   letter-spacing: 0.02em;
   text-align: center;
   animation: turn-change-pop 0.95s both;
+
+  @media (max-width: 720px) {
+    font-size: clamp(48px, 17vw, 82px);
+  }
 }
 
 .coin-toss-overlay {
@@ -203,6 +229,11 @@
   width: 190px;
   height: 190px;
   animation: chip-rise 1.4s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+
+  @media (max-width: 720px) {
+    width: 140px;
+    height: 140px;
+  }
 }
 
 .blokemon-chip {
@@ -241,6 +272,10 @@
   color: #ffe14f;
   text-shadow: 0 5px 0 #0b3122, 0 0 14px #000;
   font: 900 92px "Jost", sans-serif;
+
+  @media (max-width: 720px) {
+    font-size: 68px;
+  }
 }
 
 .blokemon-chip-blank {

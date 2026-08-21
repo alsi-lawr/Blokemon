@@ -1,18 +1,14 @@
-/*
-  The table is 900px tall at its most common desktop size, and it holds two Active cards leaning
-  away from the middle, a ribbon between them and the hand along the bottom. Both sides being
-  the same size, the room for the far one is the room the table has above it: at the full card
-  size that card runs off the top and loses its name, so the Active card is sized to the table
-  instead - the same on both sides, with the corona of each still whole.
-*/
+/* Sized to the table rather than to the card: at full size the far Active runs off the top and
+   loses its name. Both sides take the same size so the halves stay mirrored. */
 .battle-screen .card-face--battle {
   --blokemon-card-scale: 0.215;
+
+  @media (max-width: 720px) {
+    --blokemon-card-scale: 0.128;
+  }
 }
 
-/*
-  Cards are press surfaces: a hold must not raise the browser's own text selection or callout,
-  and a drag across a card must still scroll the table rather than being swallowed.
-*/
+/* A hold must not raise the browser's selection or callout, and a drag must still scroll. */
 .field-card-button,
 .hand-card,
 .tray-card,
@@ -32,13 +28,8 @@
   border-radius: 10px;
 }
 
-/*
-  Every card carries the way to read it. The press surface is one control and cannot be a second
-  one, so the cards this surface can read - itself, and each card hanging off it - each get a
-  control of their own laid against the card's near edge. They are out of the way until the card
-  is engaged, so the table at rest looks exactly as it always has and a player who has reached a
-  card, by pointer or by keyboard, is shown what they can read from it.
-*/
+/* The press surface is one control and cannot be two, so each readable card - the host and every
+   attachment - gets its own, shown only once the card is engaged. */
 .card-press {
   position: relative;
 }
@@ -64,11 +55,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 4px;
-  /*
-    The row is measured by what it holds rather than by the card it hangs under, which is narrower
-    than the names on it: left to the card's own width every control would be folded onto a line of
-    its own. It gives way at the width of a full-size card and wraps from there.
-  */
+  /* Measured by its contents, not by the card: card names are wider than the card. */
   width: max-content;
   max-width: 240px;
   transform: translateX(-50%);
@@ -122,11 +109,8 @@
   transform-origin: left center;
 }
 
-/*
-  The aura is the whole interaction model: a card that can be acted on breathes a soft white
-  bloom, and the one the player has already chosen holds a brighter, steady bloom and lifts.
-  Nothing here flashes or steps; the glow swells and settles on an ease-in-out curve.
-*/
+/* The aura IS the instruction: actionable cards breathe, the chosen one holds and lifts.
+   Nothing flashes or steps. */
 .battlefield.is-choosing .field-card-button:not(.is-aura) {
   opacity: 0.42;
   filter: saturate(0.55);
@@ -171,6 +155,18 @@
   gap: 8px;
   padding: 8px;
   overflow: visible;
+
+  /* Five fixed positions, always all five - no scrolling. */
+  @media (max-width: 720px) {
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: repeat(5, 50px);
+    justify-content: center;
+    justify-items: center;
+    gap: 2px;
+    padding: 3px 10px;
+    overflow: visible;
+  }
 }
 
 .bench-slot {
@@ -179,6 +175,12 @@
   height: 137px;
   border: 1px dashed rgb(156 164 128 / 23%);
   border-radius: 7px;
+
+  @media (max-width: 720px) {
+    flex: none;
+    width: 50px;
+    height: 70px;
+  }
 }
 
 /* An empty Bench position only becomes a control while it is a legal destination. */
@@ -210,12 +212,8 @@ button.bench-slot span {
 .battle-card-shell {
   position: relative;
   width: max-content;
-  /*
-    The card is a stacking context of its own, so what it carries can be put behind its face
-    without being put behind the table. Depth inside a card is a question about that card; without
-    this the only way to sit under the face was a negative order, which is measured against the
-    whole page and takes whatever uses it out of sight entirely.
-  */
+  /* REQUIRED by the fan's z-index: -1 below. Without a stacking context here that negative order
+     is measured against the page and puts the fan behind the table entirely. */
   isolation: isolate;
   transition: transform 0.18s, filter 0.18s;
 }
@@ -240,6 +238,15 @@ button.bench-slot span {
   background: var(--danger);
   box-shadow: 0 6px 16px #0008;
   font: 700 16px "Jost", sans-serif;
+
+  @media (max-width: 720px) {
+    top: 8px;
+    right: -11px;
+    width: 38px;
+    height: 38px;
+    border-width: 2px;
+    font-size: 12px;
+  }
 }
 
 .hp-badge,
@@ -258,16 +265,21 @@ button.bench-slot span {
 
 .hp-badge {
   right: 3px;
+
+  @media (max-width: 720px) {
+    right: -3px;
+    font-size: 8px;
+  }
 }
 
-/*
-  How much Energy is on a Blokemon decides which of its attacks can be paid for, so it is read as
-  often as its staying power is and it gets the same pill at the other end of the same edge. The
-  fan says which Energy; the pill says how much, which is the question actually being asked when a
-  player looks at an attacker and works out what it can afford.
-*/
+/* The fan says which Energy; this says how much, which is what decides affordability. */
 .energy-badge {
   left: 3px;
+
+  @media (max-width: 720px) {
+    left: -3px;
+    font-size: 8px;
+  }
 }
 
 .is-compact .damage-badge {
@@ -277,30 +289,39 @@ button.bench-slot span {
   height: 28px;
   border-width: 2px;
   font-size: 9px;
+
+  /* A benched card is small enough that its damage counter has to be smaller too. */
+  @media (max-width: 720px) {
+    top: 2px;
+    right: -6px;
+    width: 24px;
+    height: 24px;
+    font-size: 9px;
+  }
 }
 
 .is-compact .hp-badge {
   display: none;
 }
 
-/*
-  A benched card drops its staying power pill because the damage counter beside it already says
-  what has happened to it. The Energy count has nowhere else on a benched card to be read, and the
-  fan is at its smallest exactly here, so this pill stays and shrinks rather than inheriting the
-  decision made about the other one.
-*/
+/* Kept on the Bench where the HP pill is dropped: the fan is at its smallest here, so this is
+   the only place the count can be read. */
 .is-compact .energy-badge {
   left: 0;
   bottom: -6px;
   padding: 2px 5px;
   font-size: 8px;
+
+  /* 50px of card: give up the padding, never the number. */
+  @media (max-width: 720px) {
+    left: -4px;
+    bottom: -5px;
+    padding: 1px 4px;
+    font-size: 7px;
+  }
 }
 
-/*
-  Attached cards are pressed off the pointer rather than by a control of their own - the surface
-  their host is pressed by is already around them - so the browser's own callout and text selection
-  have to be kept off them the same way they are kept off the card itself.
-*/
+/* Pressed through the host's surface, so they need the same callout and selection guards. */
 .attached-card {
   flex: 0 0 auto;
   touch-action: pan-x pan-y;
@@ -309,25 +330,11 @@ button.bench-slot span {
 }
 
 /*
-  The Energy fan grows away from the card it belongs to rather than underneath it, and each face
-  after the first sits one step further out and one step further back. Both halves of that matter:
-  a fan that grows under its host is painted over by it, and a fan stepped by a whole face shows
-  nothing but its front card - which is how a fully charged Blokemon came to look exactly like a
-  half charged one. The step is a fraction of a face, so every card in the fan shows an edge.
+  The Energy fan: each face steps left and back by a FRACTION of a face, so every one shows an
+  edge - stepped by a whole face the fan shows only its front card.
 
-  The fan is tucked a little way under the near edge of its host rather than starting beyond it, so
-  it reads as hanging off that card rather than lying beside it, and so the table gives up as
-  little room to it as the reading allows. Under is literal: the Vim is held by the Blokemon, so it
-  passes behind the Blokemon, and the part the tuck covers is covered by the card carrying it.
-
-  The fan reaches out only so far. Vim keeps going on and the table does not grow to suit it, so
-  once the fan is as wide as it may be the faces close up on each other instead of carrying on
-  across the board - the reach is fixed and the spacing gives. Every face still shows an edge,
-  which is the whole point of stepping them: a fan stepped by a whole face shows nothing but its
-  front card, and a fully charged Blokemon looked exactly like a half charged one.
-
-  Both distances are stated once, as one spacing and how many of them the fan may be wide, so the
-  smaller fan a Booth card carries needs only to say the spacing and the rest follows.
+  The reach is fixed and the spacing gives, so the fan stops widening at four faces and compresses
+  after that rather than crossing the table. A compact card restates only the spacing.
 */
 .attached-energy {
   /* The printed face is 750 wide, so a face in this fan is that times the scale it is drawn at.
@@ -341,26 +348,24 @@ button.bench-slot span {
     var(--energy-fan-spread),
     var(--energy-fan-reach) / max(1, var(--energy-fan-count, 1) - 1)
   );
-  /*
-    How far the first face clears its host, and it is one step like every other gap in the fan.
-    The card in front of the first Vim is the Blokemon itself, so the amount of that Vim showing
-    is decided the same way the rest are: the face is tucked under by all of itself bar a step.
-    Stated as a fixed depth it was not - the first showed the whole of itself less the tuck, which
-    on a Booth card is about twice what the faces behind it show, and the fan read as one card
-    standing off on its own with a stack behind it.
-  */
+  /* Derived, not fixed: the first gap has to be one step like every other, or the leading face
+     shows about twice what the ones behind it do. */
   --energy-fan-tuck: calc(var(--energy-fan-card) - var(--energy-fan-step));
   position: absolute;
   z-index: -1;
   right: calc(100% - var(--energy-fan-tuck));
   bottom: 16px;
   height: 0;
+
+  /* The same fan against a card roughly half the size. */
+  @media (max-width: 720px) {
+    --energy-fan-step: 12px;
+    --energy-fan-tuck: 12px;
+    bottom: 10px;
+  }
 }
 
-/*
-  Drawn back to front, so the face nearest the host is the last one painted and lies over the fan
-  behind it. Depth is how far into the fan the face sits and the table sets it on the face itself.
-*/
+/* Back to front, so the face nearest the host paints last and lies over the rest. */
 .attached-energy .attached-card {
   position: absolute;
   right: calc(var(--fan-depth, 0) * var(--energy-fan-step));
@@ -372,10 +377,20 @@ button.bench-slot span {
   --energy-fan-card: calc(750px * 0.035);
   --energy-fan-spread: 9px;
   bottom: 11px;
+
+  @media (max-width: 720px) {
+    --energy-fan-step: 6px;
+    --energy-fan-tuck: 5px;
+    bottom: 6px;
+  }
 }
 
 .is-compact .attached-energy .card-face-host {
   --blokemon-card-scale: 0.035;
+
+  @media (max-width: 720px) {
+    --blokemon-card-scale: 0.026;
+  }
 }
 
 .attached-tools {

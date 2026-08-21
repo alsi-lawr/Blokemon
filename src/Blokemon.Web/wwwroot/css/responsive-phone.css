@@ -1,36 +1,10 @@
+/*
+  What is left of the phone breakpoint: rules with no counterpart in a base stylesheet, so there
+  is nothing for them to sit beside. Every override of an existing rule now lives with it.
+*/
 @media (max-width: 720px) {
-  .appbar {
-    height: 56px;
-    padding: 0 13px;
-  }
-
   .brand span:last-child small {
     display: none;
-  }
-
-  .mainnav {
-    position: fixed;
-    z-index: 120;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 68px;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 1px;
-    padding: 5px 4px env(safe-area-inset-bottom);
-    border-top: 1px solid var(--line);
-    background: rgb(9 11 8 / 96%);
-    backdrop-filter: blur(16px);
-  }
-
-  .mainnav a {
-    padding: 5px 1px;
-    display: grid;
-    place-items: center;
-    gap: 2px;
-    border-radius: 7px;
-    font-size: 9px;
   }
 
   .mainnav a::before {
@@ -39,79 +13,8 @@
     font-size: 18px;
   }
 
-  .mainnav a.active {
-    box-shadow: inset 0 2px var(--gold);
-  }
-
-  .app-shell > main {
-    padding: 26px 16px 96px;
-  }
-
-  .app-shell > main:has(.battle-screen) {
-    padding: 0;
-  }
-
-  .topline,
-  .deck-top {
-    align-items: start;
-    margin-bottom: 24px;
-  }
-
-  .topline {
-    display: grid;
-  }
-
   .topline h1 {
     font-size: 40px;
-  }
-
-  .dev-badge {
-    width: fit-content;
-    white-space: normal;
-    font-size: 10px;
-  }
-
-  .metrics {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .metric {
-    padding: 14px 9px;
-  }
-
-  .metric b {
-    font-size: 26px;
-  }
-
-  .hero {
-    min-height: 360px;
-  }
-
-  .card-grid {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
-    gap: 12px;
-  }
-
-  .card-face--catalogue {
-    --blokemon-card-scale: 0.18;
-  }
-
-  .card-showcase {
-    max-width: calc(100vw - 20px);
-    max-height: calc(100dvh - 20px);
-  }
-
-  .card-showcase__surface {
-    min-width: 0;
-    padding: 18px 10px 28px;
-  }
-
-  .card-showcase__header {
-    padding: 0 10px;
-  }
-
-  .card-showcase__title {
-    font-size: 28px;
   }
 
   .card-showcase .card-face--showcase {
@@ -122,101 +25,17 @@
     font-size: 44px;
   }
 
-  .starter-intro {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  .starter-boxes {
-    justify-content: center;
-  }
-
-  .starter-boxes .packaging-art {
-    width: 125px;
-    height: 125px;
-  }
-
-  .starter-grid {
-    margin-right: -16px;
-  }
-
-  .starter-option {
-    min-height: 555px;
-    flex-basis: 88vw;
-  }
-
-  .leader-stage {
-    height: 265px;
-  }
-
-  .deck-top {
-    display: grid;
-  }
-
-  .deck-name-input {
-    width: 100%;
-    font-size: 36px;
-  }
-
-  .deck-top-actions {
-    width: 100%;
-  }
-
   .deck-top-actions button {
     flex: 1;
   }
 
-  .deck-builder-layout {
-    display: block;
-  }
-
-  .starter-summary,
-  .decklist {
+  .starter-summary, .decklist {
     position: static;
     margin-bottom: 13px;
   }
 
-  .filters {
-    display: flex;
-    overflow: auto;
-  }
-
-  .filter {
-    flex: 0 0 auto;
-    gap: 8px;
-  }
-
-  .catalogue-grid {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
-  }
-
-  .decklist {
-    margin-top: 13px;
-  }
-
   .pack-topline {
     display: flex;
-  }
-
-  .pack-count-badge {
-    flex: 0 0 62px;
-    width: 62px;
-    height: 62px;
-  }
-
-  .pack-shelf {
-    min-height: auto;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .pack-finish {
-    height: 370px;
-    padding: 2px;
-  }
-
-  .pack-finish .packaging-art {
-    height: 350px;
   }
 
   .pack-order {
@@ -224,200 +43,21 @@
     padding: 20px 10px 30px;
   }
 
-  .pack-order h2 {
-    font-size: 38px;
-  }
-
-  .opening-ceremony-head {
-    padding: 14px;
-    font-size: 11px;
-  }
-
-  .pack-reveal-card {
-    --reveal-card-scale: 0.3733333;
-  }
-
-  .opening-summary {
-    padding-top: 80px;
-  }
-
-  .opening-summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-
-  .battle-screen {
-    height: calc(100dvh - 124px);
-    min-height: 0;
-  }
-
-  /*
-    The phone table is exactly as tall as the screen: the two Bench rows, the two Active cards,
-    the table state between them and the hand all have to be on screen at once, so nothing here
-    is allowed to grow the canvas and start a scroll.
-  */
-  .battle-canvas {
-    min-width: 0;
-    height: 100%;
-  }
-
-  /* Squeezed to one shallow row so the opponent's held cards have their strip beneath it. */
-  .battle-hud {
-    inset: 6px 8px auto;
-    gap: 6px;
-  }
-
-  /*
-    One row, and every control on it: the chip drops to the round number alone and the buttons
-    stay inside the width, so nothing in the HUD runs off the side of the screen and the
-    opponent's Bench has the rest of the table to itself.
-  */
-  .round-chip {
-    flex: 0 1 auto;
-    min-width: 0;
-    padding: 5px 8px;
-    overflow: hidden;
-    font-size: 10px;
-    white-space: nowrap;
-  }
-
   .round-status {
     display: none;
   }
 
-  .hud-actions {
-    min-width: 0;
-    gap: 4px;
-  }
-
-  .hud-button {
-    min-height: 30px;
-    padding: 0 9px;
-  }
-
-  .skip-animation {
-    margin-left: 0;
-    padding: 7px 9px;
-    font-size: 10px;
-  }
-
-  /* The round button carries an icon, not a label, so it keeps no side padding to push it off
-     centre: the narrower phone padding above is for the buttons that carry words. */
-  .fullscreen-toggle {
-    width: 30px;
-    height: 30px;
-    padding: 0;
-  }
-
-  /*
-    Top to bottom: the opponent's held cards, their Bench, their Active, the table state, your
-    Active, your Bench. Both sides get the same share of the table, so the two halves mirror
-    each other exactly; the strip the opponent holds its cards in is reserved above them, in the
-    top padding, so it costs neither side any of the table.
-  */
-  .battlefield {
-    --fan-strip: 40px;
-
-    grid-template-rows: 1fr 28px 1fr;
-    padding: calc(38px + var(--fan-strip)) 5px 162px;
-  }
-
-  /*
-    The desktop dock is not on the phone at all, so neither is the room its retracted state
-    reserves: without this the table and the hand both sit off centre.
-  */
-  .dock-retracted .battlefield {
-    padding-right: 5px;
-  }
-
-  .dock-retracted .hand-zone {
-    width: 100%;
-  }
-
-  /*
-    The Bench needs the whole width, so the Deck and the Prize cards leave the flow and sit
-    beside the Active card instead, at the outer edge of the side they belong to.
-  */
-  .side-zone {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .deck-stack,
-  .empties-tray,
-  .prize-rack {
+  .deck-stack, .empties-tray, .prize-rack {
     position: absolute;
     z-index: 2;
   }
 
-  .opponent-zone .deck-stack,
-  .opponent-zone .empties-tray,
-  .opponent-zone .prize-rack {
+  .opponent-zone .deck-stack, .opponent-zone .empties-tray, .opponent-zone .prize-rack {
     bottom: 2px;
   }
 
-  .player-zone .deck-stack,
-  .player-zone .empties-tray,
-  .player-zone .prize-rack {
+  .player-zone .deck-stack, .player-zone .empties-tray, .player-zone .prize-rack {
     top: 2px;
-  }
-
-  .deck-stack {
-    left: 0;
-  }
-
-  /*
-    There is no room beside the Deck at this width, and there is room on the other side of the
-    Active card: the tray takes it, inside the Prize cards, so the Bench keeps the whole middle
-    and nothing on the phone table is given up for a pile that is only read now and then.
-  */
-  .empties-tray {
-    grid-column: 1;
-    right: 52px;
-  }
-
-  .empties-tray .card-face-host {
-    --blokemon-card-scale: 0.056;
-  }
-
-  .tray-top.is-nothing {
-    width: 42px;
-    height: 59px;
-  }
-
-  .prize-rack {
-    right: 0;
-  }
-
-  /*
-    The opponent holds its cards at the far edge of the table, in the strip reserved above its
-    Bench: the fan is compressed rather than dropped, so you can always see how much they are
-    holding without any of the table being given up for it.
-  */
-  .opponent-hand {
-    /* One column here, so the fan is placed against the half itself and centred on its Bench. */
-    grid-column: 1;
-    top: calc(-1 * var(--fan-strip));
-  }
-
-  /*
-    There is no room for a column of its own on a phone, so the table's card lifts out of the row
-    and rests against the inner edge of its owner's half, just inside the Deck: the Bench, the
-    Active card and the hand all keep exactly the room they had, and an empty place costs the
-    phone table nothing at all.
-  */
-  .prize-rack {
-    grid-column: 1;
-  }
-
-  .local-slot {
-    position: absolute;
-    z-index: 6;
-    grid-column: 1;
-    left: 58px;
-  }
-
-  .local-slot-empty {
-    display: none;
   }
 
   .opponent-zone .local-slot {
@@ -426,52 +66,6 @@
 
   .player-zone .local-slot {
     top: 0;
-  }
-
-  .deck-card-back {
-    width: 58px;
-  }
-
-  /* The phone table gives the Deck the least room of all, so the stack opens almost entirely
-     into the table. The piles stand the same distance apart as they do anywhere else. */
-  .shuffle-riffle {
-    --riffle-split-left: 10%;
-    --riffle-split-right: 108%;
-  }
-
-  .deck-stack b,
-  .deck-stack small,
-  .prize-rack b {
-    font-size: 8px;
-  }
-
-  .prizes {
-    grid-template-columns: repeat(2, 21px);
-    gap: 2px;
-  }
-
-  .prizes .oche-card-back {
-    width: 21px;
-  }
-
-  .opponent-hand .oche-card-back {
-    width: 26px;
-    margin-left: -17px;
-    border-radius: 4px;
-    box-shadow: 0 3px 6px #0009;
-  }
-
-  /*
-    Each side is one column of two rows: the Bench row and the Active row, with the Bench behind
-    the Active - above it for the opponent, below it for you - so both Benches read as the row
-    furthest from the middle of the table.
-  */
-  .field-center {
-    grid-column: 1 / -1;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    align-content: center;
-    gap: 2px;
   }
 
   .opponent-zone .bench-row {
@@ -490,172 +84,18 @@
     grid-row: 2;
   }
 
-  /* The Active card sits in the flow of its own row here, so the row keeps its height. */
-  .active-slot {
-    grid-column: 1;
-    height: auto;
-    min-width: 124px;
-    min-height: 148px;
-    padding-bottom: 13px;
-  }
-
-  .opponent-zone .active-slot > .field-card-button,
-  .player-zone .active-slot > .field-card-button {
+  .opponent-zone .active-slot > .field-card-button, .player-zone .active-slot > .field-card-button {
     position: relative;
     top: auto;
     bottom: auto;
-  }
-
-  .battle-screen .card-face--battle {
-    --blokemon-card-scale: 0.128;
   }
 
   .battle-screen .card-face--bench {
     --blokemon-card-scale: 0.067;
   }
 
-  /*
-    Five fixed positions, centred, always all five: no scrolling, and an empty position is as
-    tappable as a card once it is a legal destination.
-  */
-  .bench-row {
-    grid-column: 1;
-    display: grid;
-    grid-template-columns: repeat(5, 50px);
-    justify-content: center;
-    justify-items: center;
-    gap: 2px;
-    padding: 3px 10px;
-    overflow: visible;
-  }
-
-  .bench-slot {
-    flex: none;
-    width: 50px;
-    height: 70px;
-  }
-
-  .damage-badge {
-    top: 8px;
-    right: -11px;
-    width: 38px;
-    height: 38px;
-    border-width: 2px;
-    font-size: 12px;
-  }
-
-  /* A benched card is small enough that its damage counter has to be smaller too. */
-  .is-compact .damage-badge {
-    top: 2px;
-    right: -6px;
-    width: 24px;
-    height: 24px;
-    font-size: 9px;
-  }
-
-  .hp-badge {
-    right: -3px;
-    font-size: 8px;
-  }
-
-  .energy-badge {
-    left: -3px;
-    font-size: 8px;
-  }
-
-  /*
-    A benched card is 50px across here, so its Energy pill is the smallest thing on the table that
-    still has to be readable: it keeps the pill it is given everywhere else and gives up the room
-    around the number rather than the number.
-  */
-  .is-compact .energy-badge {
-    left: -4px;
-    bottom: -5px;
-    padding: 1px 4px;
-    font-size: 7px;
-  }
-
-  /*
-    The cards are roughly half the size they are on a desktop table, so the fan hanging off them is
-    too: the same fan, stepped by the same fraction of a face, drawn against a smaller card.
-  */
-  .attached-energy {
-    --energy-fan-step: 12px;
-    --energy-fan-tuck: 12px;
-    bottom: 10px;
-  }
-
   .attached-energy .card-face-host {
     --blokemon-card-scale: 0.04;
-  }
-
-  /*
-    A benched card is 50px across here and its neighbour is 2px away, so the fan is drawn as small
-    as it can be and still be counted. This is the one place the pill is doing most of the work:
-    the fan says an attacker is carrying something and roughly how much, and the pill says exactly.
-  */
-  .is-compact .attached-energy {
-    --energy-fan-step: 6px;
-    --energy-fan-tuck: 5px;
-    bottom: 6px;
-  }
-
-  .is-compact .attached-energy .card-face-host {
-    --blokemon-card-scale: 0.026;
-  }
-
-  .turn-ribbon {
-    min-height: 28px;
-    padding: 0 6px;
-    font-size: 8px;
-    letter-spacing: 0.08em;
-  }
-
-  .turn-ribbon::before,
-  .turn-ribbon::after {
-    width: 24px;
-  }
-
-  .event-toast {
-    top: 40%;
-    max-width: 92vw;
-    padding: 8px 11px;
-    font-size: 11px;
-  }
-
-  /*
-    On a phone the hand is a flat row rather than a fan, and it is dealt across the width the
-    screen has: the cards slide over one another as the hand grows so that the whole hand stays
-    on the screen, each card keeping a strip wide enough to press and the last one shown whole.
-    Nothing here scrolls and nothing here clips, so a card's corona is never cut off - the side
-    padding is wider than the glow reaches. The press-and-hold viewer makes cards this small
-    readable.
-  */
-  .hand-zone {
-    --hand-cards: max(1, var(--hand-count, 1));
-    --hand-card-width: 90px;
-    --hand-gap: 6px;
-    --hand-pitch: calc(var(--hand-card-width) + var(--hand-gap));
-    --hand-overlap: clamp(
-      0px,
-      calc(
-        (var(--hand-cards) * var(--hand-pitch) - var(--hand-gap) - 100%) /
-        max(1, var(--hand-cards) - 1)
-      ),
-      calc(var(--hand-pitch) - 12px)
-    );
-    right: 0;
-    bottom: 8px;
-    left: 0;
-    width: 100%;
-    height: 154px;
-    justify-content: safe center;
-    gap: var(--hand-gap);
-    /* The side padding is wider than the corona reaches, so the end cards glow whole. */
-    padding: 22px 20px 6px;
-    overflow: visible;
-    transform: none;
-    background: linear-gradient(transparent, #090b08 42%);
   }
 
   /*
@@ -667,16 +107,6 @@
     z-index: 32;
     bottom: 336px;
     background: linear-gradient(transparent, rgb(9 11 8 / 88%) 42%);
-  }
-
-  /* The fan is flat on a phone, so the room made for an arriving card is made along the row. */
-  .hand-card {
-    margin: 0 calc(-1 * var(--hand-overlap)) 0 0;
-    touch-action: pan-x pan-y;
-    transform: none;
-    transition:
-      transform calc(0.2s + var(--hand-index, 0) * 0.014s),
-      margin-right calc(0.24s + var(--hand-index, 0) * 0.014s);
   }
 
   /* The card on top of the hand is the one held last, and it is shown whole. */
@@ -698,71 +128,13 @@
     --blokemon-card-scale: 0.12;
   }
 
-  .hand-card:hover .card-press-surface,
-  .hand-card:has(:focus-visible) .card-press-surface,
-  .hand-card.is-aura-selected .card-press-surface {
-    transform: translateY(-14px) scale(1.04);
-  }
-
-  .card-play-overlay .card-face--showcase {
-    --blokemon-card-scale: 0.36;
-  }
-
-  .card-play-overlay strong {
-    font-size: 24px;
-  }
-
-  .turn-change-overlay {
-    font-size: clamp(48px, 17vw, 82px);
-  }
-
-  /*
-    The reveal has to fit the no-scroll canvas whole, with its Continue button still on the
-    screen: the revealed faces shrink to the sheet-tray size and the column tightens around
-    them, so six cards, the heading and the button all share the phone table's height.
-  */
-  .card-reveal-overlay {
-    gap: 10px;
-    align-content: safe center;
-    overflow-y: auto;
-  }
-
-  .card-reveal-overlay .eyebrow {
-    font-size: 18px;
-  }
-
-  .card-reveal-overlay .revealed-cards {
-    gap: 8px;
-  }
-
   .card-reveal-overlay .card-face--hand {
     --blokemon-card-scale: 0.15;
   }
 
-  .blokemon-chip-toss {
-    width: 140px;
-    height: 140px;
-  }
-
-  .blokemon-chip-badge {
-    font-size: 68px;
-  }
-
-  .action-dock {
-    display: none;
-  }
-
-  .dock-toggle {
-    display: none;
-  }
-
-  /*
-    The pop-up becomes a bottom sheet inside the table, above the navigation bar. A forced
-    decision uses the same geometry rather than a centred box, so a phone never stacks two
-    competing surfaces.
-  */
-  .action-sheet,
-  .action-sheet.is-centred {
+  /* A bottom sheet above the nav bar; a forced decision reuses the same geometry so a phone
+     never stacks two competing surfaces. */
+  .action-sheet, .action-sheet.is-centred {
     position: absolute;
     inset: auto 8px 8px;
     width: auto;
@@ -774,9 +146,4 @@
   .sheet-tray .card-face--hand {
     --blokemon-card-scale: 0.15;
   }
-
-  .profile-setup {
-    min-height: calc(100vh - 160px);
-  }
 }
-

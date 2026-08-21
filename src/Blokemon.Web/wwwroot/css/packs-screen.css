@@ -27,6 +27,12 @@
   border: 1px solid #6a5d35;
   border-radius: 50%;
   font-weight: 800;
+
+  @media (max-width: 720px) {
+    flex: 0 0 62px;
+    width: 62px;
+    height: 62px;
+  }
 }
 
 .packaging-art,
@@ -42,6 +48,12 @@
   grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) minmax(290px, 0.9fr);
   align-items: center;
   gap: clamp(18px, 3vw, 46px);
+
+  @media (max-width: 720px) {
+    min-height: auto;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
 }
 
 .pack-finish {
@@ -53,6 +65,11 @@
   border-radius: 26px;
   color: var(--ink);
   background: transparent;
+
+  @media (max-width: 720px) {
+    height: 370px;
+    padding: 2px;
+  }
 }
 
 .pack-finish:hover,
@@ -65,6 +82,10 @@
 .pack-finish .packaging-art {
   height: 540px;
   filter: drop-shadow(0 30px 28px #000c);
+
+  @media (max-width: 720px) {
+    height: 350px;
+  }
 }
 
 .pack-finish > span {
@@ -81,6 +102,10 @@
 .pack-order h2 {
   margin: 8px 0 12px;
   font: 800 clamp(34px, 4vw, 54px) / 0.98 "Gillius ADF", serif;
+
+  @media (max-width: 720px) {
+    font-size: 38px;
+  }
 }
 
 .pack-order p {

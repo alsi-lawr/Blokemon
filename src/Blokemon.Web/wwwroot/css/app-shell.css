@@ -14,6 +14,11 @@
   border-bottom: 1px solid #363628;
   background: rgb(11 13 9 / 92%);
   backdrop-filter: blur(16px);
+
+  @media (max-width: 720px) {
+    height: 56px;
+    padding: 0 13px;
+  }
 }
 
 .brand {
@@ -51,6 +56,22 @@
 .mainnav {
   display: flex;
   gap: 4px;
+
+  @media (max-width: 720px) {
+    position: fixed;
+    z-index: 120;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 68px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1px;
+    padding: 5px 4px env(safe-area-inset-bottom);
+    border-top: 1px solid var(--line);
+    background: rgb(9 11 8 / 96%);
+    backdrop-filter: blur(16px);
+  }
 }
 
 .mainnav a {
@@ -59,6 +80,15 @@
   color: var(--muted);
   text-decoration: none;
   font-weight: 700;
+
+  @media (max-width: 720px) {
+    padding: 5px 1px;
+    display: grid;
+    place-items: center;
+    gap: 2px;
+    border-radius: 7px;
+    font-size: 9px;
+  }
 }
 
 .mainnav a:hover,
@@ -69,6 +99,10 @@
 
 .mainnav a.active {
   box-shadow: inset 0 -2px var(--gold);
+
+  @media (max-width: 720px) {
+    box-shadow: inset 0 2px var(--gold);
+  }
 }
 
 .profile-chip {
@@ -99,10 +133,18 @@
 .app-shell > main {
   min-width: 0;
   padding: 42px clamp(24px, 5vw, 76px) 72px;
+
+  @media (max-width: 720px) {
+    padding: 26px 16px 96px;
+  }
 }
 
 .app-shell > main:has(.battle-screen) {
   padding: 0;
+
+  @media (max-width: 720px) {
+    padding: 0;
+  }
 }
 
 .eyebrow {
@@ -119,6 +161,12 @@
   gap: 24px;
   justify-content: space-between;
   margin-bottom: 30px;
+
+  @media (max-width: 720px) {
+    display: grid;
+    align-items: start;
+    margin-bottom: 24px;
+  }
 }
 
 .dev-badge {
@@ -128,5 +176,11 @@
   color: var(--gold-soft);
   white-space: nowrap;
   font-size: 13px;
+
+  @media (max-width: 720px) {
+    width: fit-content;
+    white-space: normal;
+    font-size: 10px;
+  }
 }
 

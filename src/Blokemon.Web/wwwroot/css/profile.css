@@ -6,6 +6,10 @@
   min-height: calc(100vh - 180px);
   display: grid;
   place-items: center;
+
+  @media (max-width: 720px) {
+    min-height: calc(100vh - 160px);
+  }
 }
 
 .setup-card {

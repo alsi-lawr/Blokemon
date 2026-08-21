@@ -8,18 +8,12 @@
     <base href="/" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <!--
-        The product's styles, one file per concern, copied in from Blokemon.Web/wwwroot/css by the
-        standalone-browser Content include. THIS LIST IS THE CASCADE ORDER, and together with the
-        identical list in Blokemon.Web/Components/App.razor it is the only place that order is
-        written down: the unconditional files first, then the four media blocks. Reordering a line
-        here silently changes what the player sees.
+        THIS LIST IS THE CASCADE ORDER, and with the identical list in Blokemon.Web/Components/
+        App.razor it is the only place it is written down. ALPHABETICAL ORDER IS NOT LOAD ORDER -
+        the Content include brings the folder across by name and does not fix the order, so never
+        build this list from a glob. A file added on one host has to be added to the other.
 
-        The filenames deliberately do not encode their position - a file is named for what it
-        holds, not for where it loads - so ALPHABETICAL ORDER IS NOT LOAD ORDER and never will be.
-        reduced-motion.css sorts before responsive-phone.css and has to load after it. The Content
-        include brings the whole folder across by name, so it does not fix the order either: never
-        build this list from a glob or a sorted listing. A file added on one host has to be added
-        on the other, in the same place.
+        Breakpoint overrides live beside the rules they override, nested in the same file.
     -->
     <link rel="stylesheet" href="css/foundation.css" />
     <link rel="stylesheet" href="css/app-shell.css" />

@@ -15,6 +15,10 @@
   box-shadow: 0 16px 45px #0009;
   backdrop-filter: blur(14px);
   transition: opacity 0.2s ease, transform 0.24s ease;
+
+  @media (max-width: 720px) {
+    display: none;
+  }
 }
 
 .action-dock.is-retracted {
@@ -39,6 +43,10 @@
   background: rgb(10 12 9 / 92%);
   box-shadow: 0 8px 24px #0008;
   transition: right 0.24s ease;
+
+  @media (max-width: 720px) {
+    display: none;
+  }
 }
 
 .dock-toggle svg {
@@ -62,10 +70,22 @@
 
 .dock-retracted .battlefield {
   padding-right: 52px;
+
+    /*
+    The desktop dock is not on the phone at all, so neither is the room its retracted state
+    reserves: without this the table and the hand both sit off centre.
+  */
+  @media (max-width: 720px) {
+    padding-right: 5px;
+  }
 }
 
 .dock-retracted .hand-zone {
   width: min(1120px, calc(100% - 104px));
+
+  @media (max-width: 720px) {
+    width: 100%;
+  }
 }
 
 .selected-card-head {

@@ -1,9 +1,5 @@
-/*
-  One pop-up surface carries every step of the interaction: the destination prompt, the list of
-  available moves, each choice step, and the final confirmation. It sits bottom-right beside the
-  table on a wide screen and becomes a bottom sheet on a phone. A forced decision centres the
-  same surface over a dimmed table.
-*/
+/* One surface for every step: prompt, moves, choices, confirmation. Beside the table on a wide
+   screen, a bottom sheet on a phone, centred over a dimmed table when forced. */
 .action-sheet {
   position: fixed;
   z-index: 200;
@@ -43,10 +39,8 @@
   animation: sheet-centre-in 0.22s ease-out both;
 }
 
-/*
-  A decision the sheet answers itself dims the table behind it. A decision the player answers by
-  tapping the table must not: the scrim would swallow the auras it is asking them to find.
-*/
+/* Only a decision the sheet answers itself may dim: a scrim would swallow the auras a
+   tap-the-table decision is asking the player to find. */
 .action-sheet.is-modal {
   box-shadow: 0 24px 80px #000e, 0 0 0 100vmax rgb(3 4 3 / 62%);
 }
@@ -111,10 +105,7 @@
   font: 700 20px "Jost", sans-serif;
 }
 
-/*
-  Cards the table cannot show - a Deck search, the Discard pile - glow inside the sheet with the
-  same aura and the same press behaviour they would have on the table.
-*/
+/* Cards the table cannot show, with the same aura and press behaviour they have on it. */
 .sheet-tray {
   display: flex;
   flex-wrap: wrap;
@@ -170,10 +161,7 @@
   min-height: 44px;
 }
 
-/*
-  The card viewer: press and hold any card in any zone. The face keeps its printed aspect ratio
-  and fills the viewport minus a 20px margin, whichever axis binds first.
-*/
+/* Keeps the printed aspect ratio and fills the viewport less a 20px margin. */
 .card-viewer {
   position: fixed;
   z-index: 400;
@@ -192,12 +180,7 @@
   animation: viewer-in 0.2s cubic-bezier(0.2, 0.75, 0.25, 1) both;
 }
 
-/*
-  A tray opened to be read. The pile itself only ever shows what is on top of it, which answers
-  none of the questions a tray is actually asked - what is left in the Deck, what a card that
-  fetches out of the tray could fetch - so the whole of it is laid out at a size it can be read at,
-  newest first, and every card in it can still be held up the way a card anywhere else can.
-*/
+/* The whole pile laid out newest first, at a size it can be read at. */
 .empties-viewer {
   position: fixed;
   z-index: 300;
@@ -251,10 +234,7 @@
   font-weight: 700;
 }
 
-/*
-  The tray scrolls rather than shrinking to fit: a pile grows all game and cards small enough for
-  fifty of them at once are too small to read, which is the one thing this surface is for.
-*/
+/* Scrolls rather than shrinking: a pile grows all game and reading it is the whole point. */
 .empties-viewer-cards {
   display: flex;
   flex-wrap: wrap;

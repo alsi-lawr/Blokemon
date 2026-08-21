@@ -50,11 +50,7 @@
   }
 }
 
-/*
-  The Deck presses down under the pull before the card comes off the top of it, then gives with
-  the card and settles back. Each of the three parts is spaced the same eased way as the arc it
-  belongs to, so pressing, giving and settling run into one another.
-*/
+/* Press, give, settle - spaced the same eased way as the arc it belongs to. */
 @keyframes deck-press {
   0% {
     transform: translate(0) rotate(0) scale(1);
@@ -109,13 +105,8 @@
   }
 }
 
-/*
-  One card of the stack crossing the gap. It slides out to its pile with the rest of its side,
-  waits at the edge of it, and comes back over the far pile: from straight above, the only thing
-  that says it went over rather than through is that it grew on the way and threw its shadow
-  further. Both distances are shares of the card's own width and height, so the split is the same
-  shape whatever size the Deck is drawn at.
-*/
+/* From straight above, growing and casting further is the only thing that says a card went OVER
+   the far pile rather than through it. Distances are shares of the card's own box. */
 @keyframes riffle-left {
   0% {
     transform: translate(0, 0) rotate(0) scale(1);

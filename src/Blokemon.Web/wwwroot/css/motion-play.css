@@ -1,8 +1,4 @@
-/*
-  The journey a played card makes: picked up with a dip, carried to the place it ends up in, and
-  set down slightly past itself. Both ends are measured by the page; with nothing measured the
-  card simply lifts where it stands.
-*/
+/* Dip, carry, set down slightly past itself. Unmeasured, it just lifts where it stands. */
 @keyframes play-travel {
   /* Picked up: the card dips where it stands and is back where it started before it goes. */
   0% {

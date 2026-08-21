@@ -15,11 +15,8 @@
 }
 
 /*
-  How every major surface over the table arrives, and the whole of what a run here is for. None of
-  them writes its own exit: a surface that waits for the player is over when the player says so,
-  and one that belongs to a beat is over when the beat is. A closing frame could only guess at
-  either, and a run that guessed shorter than the surface lasts is a surface that goes out while
-  it is still meant to be there - which is what it did, taking a card in mid-journey with it.
+  How every major surface over the table ARRIVES. None of them writes its own exit: the page owns
+  their lifetimes, and a closing frame can only guess shorter than the surface lasts.
 */
 @keyframes major-overlay-arrive {
   from {
@@ -115,11 +112,8 @@
   }
 }
 
-/*
-  The corona turns by its own angle rather than by turning its box, so the glow revolves while
-  the rim it lives in stays exactly where the card is. Registering the angle is what makes it
-  animate as an angle instead of jumping between two strings.
-*/
+/* Turns by its own angle, not its box, so the rim stays on the card. It must be REGISTERED or
+   it jumps between two strings instead of animating. */
 @property --corona-angle {
   syntax: "<angle>";
   inherits: false;
