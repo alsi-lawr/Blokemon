@@ -225,22 +225,6 @@
   }
 }
 
-/* The table is dimmed only while the card is being picked up; it is clear before it lands. */
-@keyframes play-veil {
-  0% {
-    opacity: 0;
-  }
-
-  14%,
-  40% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
 @keyframes play-name-out {
   0% {
     opacity: 0;

@@ -210,6 +210,13 @@ button.bench-slot span {
 .battle-card-shell {
   position: relative;
   width: max-content;
+  /*
+    The card is a stacking context of its own, so what it carries can be put behind its face
+    without being put behind the table. Depth inside a card is a question about that card; without
+    this the only way to sit under the face was a negative order, which is measured against the
+    whole page and takes whatever uses it out of sight entirely.
+  */
+  isolation: isolate;
   transition: transform 0.18s, filter 0.18s;
 }
 
@@ -310,15 +317,16 @@ button.bench-slot span {
 
   The fan is tucked a little way under the near edge of its host rather than starting beyond it, so
   it reads as hanging off that card rather than lying beside it, and so the table gives up as
-  little room to it as the reading allows. It is tucked over the host and not under it - being
-  under it is the defect - which is also why the counter pill sits inside the edge above the tuck
-  rather than beyond it.
+  little room to it as the reading allows. Under is what tucked means: the cards are held by the
+  Blokemon, so they pass behind it and what the tuck hides is hidden by the card carrying them. A
+  fan laid over the top covers the face of the very card it is attached to, which is the one thing
+  on the table that must never be obscured by its own Vim.
 */
 .attached-energy {
   --energy-fan-step: 16px;
   --energy-fan-tuck: 18px;
   position: absolute;
-  z-index: 8;
+  z-index: -1;
   right: calc(100% - var(--energy-fan-tuck));
   bottom: 16px;
   height: 0;

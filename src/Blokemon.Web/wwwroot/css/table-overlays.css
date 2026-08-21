@@ -98,7 +98,17 @@
   align-content: center;
   gap: 18px;
   background: radial-gradient(circle, rgb(15 20 12 / 82%), rgb(7 9 6 / 42%) 46%, transparent 72%);
-  animation: major-overlay-in 1s both;
+  /*
+    It only arrives, exactly as the reveal below does. It used to fade out at the end of its own
+    run as well, and a card being carried is drawn on this layer, so the card faded with it: the
+    run began closing at 40% of a journey the card was still making, reached nothing as the card
+    reached its slot, and the table filled the slot a moment later out of the frame. A card on its
+    way to the Booth vanishing before it got there was this, and nothing else.
+
+    Nothing has to close it. The beat holding it ends and the layer goes with it, which is true of
+    every surface the table speaks through.
+  */
+  animation: major-overlay-arrive 0.2s ease-out;
 }
 
 .card-play-overlay .card-face--showcase {

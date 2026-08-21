@@ -214,10 +214,6 @@
   pointer-events: none;
 }
 
-.card-play-overlay.is-travelling {
-  animation: play-veil 1s ease-out both;
-}
-
 .card-travel {
   display: block;
 }

@@ -65,14 +65,17 @@ public partial class Match
     // why neither happens where the viewer is opened or closed.
     private async Task MoveViewerFocus()
     {
-        if (_viewerTakesFocus && _viewer is not null)
+        // Only a viewer that is actually up can be given focus. A component reference outlives the
+        // component it was taken of - nothing clears it when the surface goes - so the card read
+        // before this one leaves a reference behind pointing at an element the page has already
+        // removed, and the card being read now is not on screen until the render that draws it.
+        if (_viewerTakesFocus && _viewerCard is not null && _viewer is not null)
         {
             _viewerTakesFocus = false;
-            await _viewer.Element.FocusAsync();
             // Taking focus is what puts the viewer in the way of the keyboard, so it is also what
             // makes it answerable for the two keys it takes off the browser. A card held up by the
             // pointer takes no focus and takes nothing.
-            if (_presentationModule is not null)
+            if (await Focused(_viewer.Element) && _presentationModule is not null)
             {
                 await _presentationModule.InvokeVoidAsync("guardViewer", _viewer.Element);
             }
@@ -81,7 +84,25 @@ public partial class Match
         if (_returnFocus is { } card)
         {
             _returnFocus = null;
-            await card.FocusAsync();
+            await Focused(card);
+        }
+    }
+
+    // The element a surface is handing focus to can leave the page between the page deciding to
+    // hand it over and the browser being asked: the card a viewer was opened from is played, or
+    // knocked off the table, while the viewer is still covering it. Focus staying where it is is a
+    // worse outcome than focus moving; the page falling over is a worse one than either.
+    private static async Task<bool> Focused(ElementReference element)
+    {
+        try
+        {
+            await element.FocusAsync();
+            return true;
+        }
+        catch (JSException)
+        {
+            // There is nothing there to focus any more.
+            return false;
         }
     }
 

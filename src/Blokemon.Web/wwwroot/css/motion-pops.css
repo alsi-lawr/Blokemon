@@ -15,27 +15,11 @@
 }
 
 /*
-  A cue that comes and goes on its own: it arrives, holds long enough to be read, and leaves. The
-  closing frame is its exit, so it belongs only to a surface whose element goes when its beat does.
-*/
-@keyframes major-overlay-in {
-  0% {
-    opacity: 0;
-  }
-  16%,
-  78% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/*
-  And the same arrival for a surface that stays: one that waits for the player must not write its
-  own exit, because the player decides when it is over. There is no closing frame here at all, so
-  once it has arrived the overlay is simply at its own full strength for as long as it is on
-  screen - however long that is, and whatever the run's length turns out to be.
+  How every major surface over the table arrives, and the whole of what a run here is for. None of
+  them writes its own exit: a surface that waits for the player is over when the player says so,
+  and one that belongs to a beat is over when the beat is. A closing frame could only guess at
+  either, and a run that guessed shorter than the surface lasts is a surface that goes out while
+  it is still meant to be there - which is what it did, taking a card in mid-journey with it.
 */
 @keyframes major-overlay-arrive {
   from {

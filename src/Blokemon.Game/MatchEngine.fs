@@ -46,6 +46,21 @@ module internal MatchSetup =
                 settled <- true
             else
                 for player in mulliganPlayers do
+                    // A mulligan is public. The rules have the player show the hand to their
+                    // opponent before it goes back, and the extra card the opponent is owed is the
+                    // other half of that same rule - the bonus was being settled below while the
+                    // hand it is compensation for was never shown at all, so a player learned that
+                    // a mulligan had happened and nothing whatever about what was in it.
+                    //
+                    // It is said before the cards move, because after this they are back in the
+                    // Deck and there is no hand left to name.
+                    builder.Events.Add
+                        { PendingMatchEvent.forActor MatchEventKind.CardsRevealed player with
+                            TargetCards =
+                                builder.CardsIn(player, CardZone.Mitt)
+                                |> Seq.map (fun card -> card.Id)
+                                |> ImmutableArray.CreateRange }
+
                     builder.ReturnMittToStack player
                     let state = builder.Player player
 
