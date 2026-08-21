@@ -200,7 +200,19 @@
   animation: knockout 0.85s ease-in both;
 }
 
-.cue-prize .prizes i:first-child {
+/* Taking a Prize, which until now has been the one card journey on the table with no movement at
+   all: this named an <i> inside the rack, and the rack has only ever been card backs, so the rule
+   has never matched anything in the product's history.
+
+   It goes to the half that took it, because a Prize is taken by whoever knocked something over and
+   comes out of their own rack - unscoped it would empty a card from both racks at once, which is
+   the defect the Deck rule at the top of this file was corrected for.
+
+   The last card goes rather than the first. The rack is a grid that loses its last cell when the
+   count drops, so leaving from the end is the only choice that leaves every card staying behind
+   where it already was. */
+.cue-prize.cue-actor-local .player-zone .prizes .oche-card-back:last-child,
+.cue-prize.cue-actor-opponent .opponent-zone .prizes .oche-card-back:last-child {
   animation: prize-take 0.6s ease-out both;
 }
 
