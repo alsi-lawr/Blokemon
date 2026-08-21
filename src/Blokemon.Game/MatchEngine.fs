@@ -259,6 +259,24 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
         then
             ImmutableArray<_>.Empty
         else
+            // Actions are proposed against a refreshed view and trial-applied against the state as
+            // it stands, which looks like reasoning under one set of continuous effects and
+            // validating under another. It is not: Apply refreshes on its own builder before it
+            // dispatches to any handler, from this same state and by this same function, so the
+            // view a handler tests against is the view proposed against, recomputed rather than
+            // shared.
+            //
+            // Demonstrated rather than assumed. A Bloke whose printed fare is 2 stands at the Oche
+            // with a card on the Booth carrying an unconditional continuous trick over its owner's
+            // Blokes, and nothing in Effects, because only a refresh puts it there. A Taxi is
+            // proposed chucking no Vim - the refreshed fare - and applying it succeeds, which it
+            // could not do if the handler were reading the printed 2. Take the refresh out of
+            // Apply and the same case proposes the same action and then deletes it, which is what
+            // a genuine split would look like.
+            //
+            // The refresh here is skipped outside Playing while Apply's is not, so the proposal
+            // can see less than the handler will. That cannot be observed either: nothing any
+            // other phase proposes reads a temporary effect at all.
             let legalState =
                 if state.Phase = MatchPhase.Playing then
                     let builder = MatchBuilder(state, catalog)
