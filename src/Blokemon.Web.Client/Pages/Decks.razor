@@ -464,14 +464,19 @@ else
     private static string MaximumLabel(CardView card) =>
         card.Kind == CardKindView.BasicVim ? "∞" : "4";
 
+    // As on the collection page: the last arm printed the enum's own name, so an unnamed kind would
+    // show a player the code's private vocabulary instead of the game's. The suppression is for the
+    // other half of the same warning: a value cast in from outside the names the enum declares,
+    // which a card handed down from the catalogue cannot be.
+#pragma warning disable CS8524
     private static string PublicKind(CardKindView kind) =>
         kind switch
         {
             CardKindView.Blokemon => "Blokemon",
             CardKindView.Kit => "Trainer",
             CardKindView.BasicVim => "Energy",
-            _ => kind.ToString(),
         };
+#pragma warning restore CS8524
 
     private async Task Save()
     {

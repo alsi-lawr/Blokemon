@@ -176,12 +176,21 @@ public static class MatchCueState
             return null;
         }
 
+        // Every place a card can be played to is named. A last arm reading "anywhere else lands in
+        // the middle" is right about the Booth and about a card put into play, and would go on
+        // being right about a fourth place that wanted an end of the table - silently, and only on
+        // screen. The suppression below is for the other half of the same warning: a value cast in
+        // from outside the names the enum declares, which cannot reach here - the kind is the one
+        // the landing itself carries, checked equal above.
+#pragma warning disable CS8524
         return kind switch
         {
             MatchLandingKind.Active when landing.Opponent => MatchLandingPlacement.Bottom,
             MatchLandingKind.Active => MatchLandingPlacement.Top,
-            _ => MatchLandingPlacement.Centre,
+            MatchLandingKind.Bench => MatchLandingPlacement.Centre,
+            MatchLandingKind.InPlay => MatchLandingPlacement.Centre,
         };
+#pragma warning restore CS8524
     }
 
     // Which pile a card of a shuffling Deck belongs to. They alternate, so that dealing them in the

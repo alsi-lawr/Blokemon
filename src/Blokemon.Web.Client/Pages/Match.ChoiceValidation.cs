@@ -168,6 +168,13 @@ public partial class Match
     private bool PlayerChoicesValid(MatchActionView action) =>
         LocalRequirements(action).Where(ChoiceIsActive).All(ChoiceRequirementComplete);
 
+    // Every kind of choice says for itself when it has been made. The last arm here answered "not
+    // yet" for any kind nobody had written down, which is the safe-looking half of the wrong
+    // answer: a kind added later would leave its action permanently unconfirmable with no sign of
+    // why. The suppression below is for the other half of the same warning: a value cast in from
+    // outside the names the enum declares, which the requirement handed down from the engine
+    // cannot be.
+#pragma warning disable CS8524
     private bool ChoiceRequirementComplete(MatchChoiceRequirementView requirement)
     {
         var draft = Draft(requirement);
@@ -184,9 +191,9 @@ public partial class Match
                 == requirement.Maximum,
             MatchChoiceKindView.Attachments => draft.Attachments.Count >= requirement.Minimum
                 && draft.Attachments.Count <= requirement.Maximum,
-            _ => false,
         };
     }
+#pragma warning restore CS8524
 
     private static string CardChoiceInstruction(int minimum, int maximum)
     {

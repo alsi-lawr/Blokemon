@@ -124,19 +124,32 @@ public static class MatchCueMarking
     // cards.
     public const int RiffleCards = 12;
 
+    // Both piles are named. A last arm here would read as "the other one", which is true of two
+    // piles and stops being true the moment there are three - and it is the shape that sent a
+    // riffle down both halves of the table in BLOKEMON-098. The suppression is for the other half
+    // of the warning: a value cast in from outside the names the enum declares, which the pile
+    // this is asked of cannot be.
+#pragma warning disable CS8524
     public static string RiffleCard(int index) =>
         MatchCueState.RifflePile(index) switch
         {
             MatchRifflePile.Left => "riffle-card is-left",
-            _ => "riffle-card is-right",
+            MatchRifflePile.Right => "riffle-card is-right",
         };
+#pragma warning restore CS8524
 
     // A card's place in the order is what spaces it behind the one before it; the stylesheet owns
     // how long that spacing is, as it owns every other duration on the table.
     public static string RiffleStyle(int index) =>
         $"--riffle-order: {index.ToString(CultureInfo.InvariantCulture)}";
 
-    // Where the landing sits decides where the card it is expecting comes to rest.
+    // Where the landing sits decides where the card it is expecting comes to rest. Nothing is the
+    // answer for a place expecting no card, and it is named as nothing rather than swept up with
+    // the placements, so that a placement added without a mark decided for it fails to compile
+    // instead of quietly wearing no mark and drawing the card wherever it already was. The
+    // suppression is for the other half of the same warning: a value cast in from outside the names
+    // the enum declares, which MatchCueState.Landing does not return.
+#pragma warning disable CS8524
     public static string? LandingClass(
         MatchLandingSlot? landing,
         MatchLandingKind kind,
@@ -147,6 +160,7 @@ public static class MatchCueMarking
             MatchLandingPlacement.Top => $"{Landing} is-landing-top",
             MatchLandingPlacement.Bottom => $"{Landing} is-landing-bottom",
             MatchLandingPlacement.Centre => $"{Landing} is-landing-centre",
-            _ => null,
+            null => null,
         };
+#pragma warning restore CS8524
 }

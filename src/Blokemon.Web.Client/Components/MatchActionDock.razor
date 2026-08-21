@@ -157,6 +157,12 @@
     [Parameter]
     public EventCallback DockToggled { get; set; }
 
+    // A throw for the kind nobody named turns a missing heading into a blank dock at the moment a
+    // player reaches for a card. Every kind is named instead, so a new one has to be given words
+    // before it can compile. The suppression is for the other half of the same warning: a value
+    // cast in from outside the names the enum declares, which a rule handed down from the engine
+    // cannot be.
+#pragma warning disable CS8524
     private static string RuleKind(CardRuleKindView kind) =>
         kind switch
         {
@@ -164,8 +170,8 @@
             CardRuleKindView.Attack => "Attack",
             CardRuleKindView.Rule => "Rule",
             CardRuleKindView.Energy => "Energy",
-            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
         };
+#pragma warning restore CS8524
 
     private static string EnergyCostLabel(MatchAttackView attack) =>
         attack.EnergyCost.Length == 0
