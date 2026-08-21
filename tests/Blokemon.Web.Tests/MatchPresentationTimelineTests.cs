@@ -422,6 +422,33 @@ public sealed class MatchPresentationTimelineTests
         beats.Skip(1).Select(beat => TableDraws(beat, Held)).ShouldAllBe(drawn => drawn);
     }
 
+    [Test]
+    public void ACardDrawnAndSpentInOneCommandIsNotStandingWhereItLandsBeforeItIsPlayed()
+    {
+        // The other half of the rule above, and the half that had it backwards. A command that
+        // draws a card and then plays it settles on a table the card is standing on the Bench of
+        // and no hand holds, so no draw of that command is one the frame is the hand of. Asked
+        // which draw it was, the answer used to be the first cue rather than none - so the whole
+        // command stood up at the draw, the card was lying on the Bench while it was still being
+        // dealt, and the cue that plays it then took it back off in order to carry it there.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                DrewAndPlayedFrame(),
+                Cue(1, MatchAnimationKindView.Draw, targets: [Held]),
+                Cue(2, MatchAnimationKindView.Play, source: Held, targets: [])
+            ),
+            HandFrame(held: false)
+        );
+
+        // Still only ever one of it.
+        beats.Select(beat => VisibleCopies(beat, Held)).ShouldAllBe(copies => copies <= 1);
+        // The Bench does not stand it up until the cue that puts it there has played: it is dealt,
+        // then carried, then standing.
+        TableDraws(beats[0], Held).ShouldBeFalse();
+        Carried(beats[1], Held).ShouldBeTrue();
+        TableDraws(beats[^1], Held).ShouldBeTrue();
+    }
+
     // ---- And the third: a card that acts without going anywhere -------------------------------
     //
     // An activated ability is announced with the same cue as a card being played, because both are
@@ -534,6 +561,14 @@ public sealed class MatchPresentationTimelineTests
                 active: Instance(Standing, 0),
                 bench: [Instance("card-benched", 0), Instance(Attacker, 0)]
             ),
+        };
+
+    // What a command that draws a card and then plays it settles on: the card is standing on the
+    // Bench, and no hand on the table ever held it.
+    private static MatchFrameView DrewAndPlayedFrame() =>
+        HandFrame(held: false) with
+        {
+            Player = Side("You", true, active: Instance(Attacker, 0), bench: [Instance(Held, 0)]),
         };
 
     // What a command that plays a card and then draws one settles on: the played card is standing

@@ -48,8 +48,11 @@ public static class MatchPresentationTimeline
             var overlay = MatchPresentationOverlay.Empty;
             var gone = new List<string>(2);
             var dealing = Dealing(step);
+            // A step whose draws the frame can show none of still has nothing for the hand to wait
+            // for, so the hand catches up at the first of them exactly as it always did.
+            var handed = dealing ?? 0;
             var stripping = Stripping(step);
-            var returned = Returned(step, dealing, stripping);
+            var returned = Returned(step, handed, stripping);
             var standing = false;
             var dealt = false;
             var stripped = false;
@@ -58,15 +61,28 @@ public static class MatchPresentationTimeline
                 var cue = step.Events[index];
 
                 // A drawn card has to be in the hand before it can be dealt into it, so a draw
-                // takes its step's frame early. The deltas go with the frame they were measured
-                // against - and a frame that has caught up needs nothing hidden from it, because
-                // it no longer has anybody anywhere they have already left.
-                if (cue.Kind == MatchAnimationKindView.Draw && index >= dealing)
+                // takes its step's frame early.
+                //
+                // The TABLE only catches up at a draw the frame is actually the hand of. A draw it
+                // is not - every draw the opponent makes, because their held cards have no identity
+                // to be recognised by, and any card drawn and spent inside its own command - would
+                // otherwise stand the whole command up at the draw: the card played three cues
+                // later is already lying on the Bench while it is still being dealt, and the cue
+                // that plays it then takes it back off to carry it there.
+                //
+                // The deltas go with the frame they were measured against, so they are only spent
+                // when the table has caught up: a frame that has needs nothing hidden from it,
+                // because it no longer has anybody anywhere they have already left, and one that
+                // has not still does.
+                if (cue.Kind == MatchAnimationKindView.Draw && index >= handed)
                 {
-                    standing = true;
                     dealt = true;
-                    overlay = MatchPresentationOverlay.Empty;
-                    gone.Clear();
+                    if (dealing is not null)
+                    {
+                        standing = true;
+                        overlay = MatchPresentationOverlay.Empty;
+                        gone.Clear();
+                    }
                 }
 
                 if (index == stripping)
@@ -319,14 +335,14 @@ public static class MatchPresentationTimeline
     // and the deal then plays over cards already lying in front of the player - which is the same
     // hand appearing from nowhere that a new game opening on the last game's table is.
     //
-    // So the frame belongs to the first draw it can show whole, and to every draw after that one. A
-    // step whose draws it can show none of keeps it from the first of them, exactly as every draw
-    // did before: a card drawn and spent inside the same command is in neither hand by the end of
-    // it, so there is nothing to wait for.
+    // So the frame belongs to the first draw it can show whole, and to every draw after that one.
+    // A step it can show none of says so, rather than naming the first cue: none and the first of
+    // them are different answers and the table treats them differently, even though the hand has
+    // nothing to wait for in either case.
     //
     // This is the player's hand and no more. The opponent's is a count of backs with nothing in it
     // to be named, so it has a rule of its own above and answers to their own draws.
-    private static int Dealing(MatchPresentationStepView step)
+    private static int? Dealing(MatchPresentationStepView step)
     {
         for (var index = 0; index < step.Events.Length; index++)
         {
@@ -339,7 +355,7 @@ public static class MatchPresentationTimeline
             }
         }
 
-        return 0;
+        return null;
     }
 
     // Which cues of a step are a go at an opening hand that went back into the Deck.
