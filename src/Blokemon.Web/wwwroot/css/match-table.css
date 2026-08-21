@@ -32,145 +32,6 @@
   }
 }
 
-.battle-hud {
-  position: absolute;
-  z-index: 40;
-  inset: 14px 18px auto;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  pointer-events: none;
-
-  /* Squeezed to one shallow row so the opponent's held cards have their strip beneath it. */
-  @media (max-width: 720px) {
-    inset: 6px 8px auto;
-    gap: 6px;
-  }
-}
-
-.round-chip {
-  background: rgb(10 12 9 / 84%);
-  backdrop-filter: blur(12px);
-}
-
-.round-chip {
-  padding: 8px 12px;
-  border: 1px solid #5a5739;
-  border-radius: 18px;
-
-  /* One row, everything inside the width, so the opponent's Bench keeps the rest. */
-  @media (max-width: 720px) {
-    flex: 0 1 auto;
-    min-width: 0;
-    padding: 5px 8px;
-    overflow: hidden;
-    font-size: 10px;
-    white-space: nowrap;
-  }
-}
-
-.skip-animation {
-  pointer-events: auto;
-
-  @media (max-width: 720px) {
-    margin-left: 0;
-    padding: 7px 9px;
-    font-size: 10px;
-  }
-}
-
-/* Only what belongs to no card lives in the HUD: End turn, Resign and the full-screen toggle. */
-.hud-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  pointer-events: auto;
-
-  @media (max-width: 720px) {
-    min-width: 0;
-    gap: 4px;
-  }
-}
-
-.hud-button {
-  min-height: 38px;
-  padding: 0 13px;
-  border: 1px solid #5a5739;
-  border-radius: 19px;
-  color: var(--ink);
-  background: rgb(10 12 9 / 88%);
-  backdrop-filter: blur(12px);
-  font: 700 12px "Jost", sans-serif;
-
-  @media (max-width: 720px) {
-    min-height: 30px;
-    padding: 0 9px;
-  }
-}
-
-.hud-end-turn {
-  border-color: #b7983d;
-  color: #f6e6ae;
-  background: linear-gradient(145deg, rgb(58 49 23 / 94%), rgb(24 27 18 / 94%));
-}
-
-.hud-resign {
-  color: var(--muted);
-}
-
-.fullscreen-toggle {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 1px solid #5a5739;
-  border-radius: 50%;
-  color: var(--gold-soft);
-  background: rgb(10 12 9 / 84%);
-  backdrop-filter: blur(12px);
-  pointer-events: auto;
-
-    /* The round button carries an icon, not a label, so it keeps no side padding to push it off
-     centre: the narrower phone padding above is for the buttons that carry words. */
-  @media (max-width: 720px) {
-    width: 30px;
-    height: 30px;
-    padding: 0;
-  }
-}
-
-.fullscreen-toggle svg {
-  width: 19px;
-  height: 19px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.fullscreen-exit {
-  display: none;
-}
-
-.battle-screen:fullscreen .fullscreen-enter {
-  display: none;
-}
-
-.battle-screen:fullscreen .fullscreen-exit {
-  display: block;
-}
-
-.battle-error {
-  position: absolute;
-  z-index: 80;
-  top: 60px;
-  left: 20px;
-  width: min(440px, calc(100% - 40px));
-}
-
 /* Equal shares, so the two halves mirror and neither leaning Active is cut off. */
 .battlefield {
   height: 100%;
@@ -250,18 +111,14 @@ button.deck-stack {
   grid-column: 5;
 
   @media (max-width: 720px) {
-    right: 0;
-  }
-
-  @media (max-width: 720px) {
     grid-column: 1;
+    right: 0;
   }
 }
 
-/* Next to the Deck it is fed from, face up, keeping its box from the first turn so the table
-   does not shift when the first card is chucked. */
-/* A tray with anything in it is the control that opens it, so it carries the reset every other
-   card surface on the table carries and keeps exactly the box it had while it was a plain pile. */
+/* Next to the Deck it is fed from, and the control that opens itself once it holds anything -
+   hence the button reset. Its box is the same empty or full, so nothing shifts on the first
+   chuck. */
 .empties-tray {
   position: relative;
   grid-column: 2;
