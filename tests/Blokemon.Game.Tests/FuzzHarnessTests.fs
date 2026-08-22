@@ -1,6 +1,7 @@
 namespace Blokemon.Game.Tests
 
 open System
+open System.Diagnostics
 open System.IO
 open Blokemon.Game
 open FsUnit
@@ -25,30 +26,34 @@ type FuzzHarnessTests() =
 
     [<Test>]
     member _.``default seeded decks should cover every authority content card``() =
-        (allPrograms.Length, Clauses.mechanicalAuthority.Id)
-        |> should equal (310, Clauses.mechanicalAuthority.Id)
+        (allPrograms.Length, Clauses.programShapes.Id)
+        |> should equal (310, Clauses.programShapes.Id)
 
-        (allContentIds.Length, Clauses.mechanicalAuthority.Id)
-        |> should equal (165, Clauses.mechanicalAuthority.Id)
+        (allContentIds.Length, Clauses.authorityInventory.Id)
+        |> should equal (165, Clauses.authorityInventory.Id)
 
-        (reconciliationAuthorityVersion, Clauses.mechanicalAuthority.Id)
-        |> should equal (MatchScenario.Authority.ManifestVersion, Clauses.mechanicalAuthority.Id)
+        (reconciliationAuthorityVersion, Clauses.programShapes.Id)
+        |> should equal (MatchScenario.Authority.ManifestVersion, Clauses.programShapes.Id)
 
-        (reconciliationProgramIds, Clauses.mechanicalAuthority.Id)
-        |> should equal (allPrograms, Clauses.mechanicalAuthority.Id)
+        (reconciliationProgramIds, Clauses.programShapes.Id)
+        |> should equal (allPrograms, Clauses.programShapes.Id)
 
-        (coveredContent DefaultSeeds, Clauses.stack.Id)
-        |> should equal (allContentIds |> Set.ofArray, Clauses.stack.Id)
+        (MatchScenario.Authority.BaseRules.BigHitters.BlokeIds.Length, Clauses.bigHitterAward.Id)
+        |> should equal (12, Clauses.bigHitterAward.Id)
+
+        (coveredContent DefaultSeeds, Clauses.authorityInventory.Id)
+        |> should equal (allContentIds |> Set.ofArray, Clauses.authorityInventory.Id)
 
     [<Test>]
     member _.``the default sweep should report program coverage and incomplete bouts``() =
-        let results = defaultSweepResults ()
+        let results, duration = defaultSweepEvidence ()
 
         let path, observed, neverObserved, incomplete =
             coverageReport
                 "BLOKEMON-079-program-coverage.md"
                 DefaultSeeds
                 DefaultStepCeiling
+                duration
                 results
 
         File.Exists path |> should be True
@@ -75,49 +80,52 @@ type FuzzHarnessTests() =
         result.FinalState.Phase |> should not' (equal MatchPhase.Complete)
 
     [<Test>]
-    member _.``the same seed and persisted harness commands should reproduce identical events and final state``
-        ()
-        =
+    member _.``the same seed should reproduce identical supported event bytes and final state``() =
         let first = runBout DefaultSeeds[0] DefaultStepCeiling
         let repeated = runBout DefaultSeeds[0] DefaultStepCeiling
         assertNoFindings [ first; repeated ]
 
-        (canonicalEventBytes repeated.Events, Clauses.deterministicState.Id)
-        |> should equal (canonicalEventBytes first.Events, Clauses.deterministicState.Id)
+        (canonicalEventBytes repeated.Events, Clauses.deterministicEvents.Id)
+        |> should equal (canonicalEventBytes first.Events, Clauses.deterministicEvents.Id)
 
-        (repeated.FinalState, Clauses.deterministicState.Id)
-        |> should equal (first.FinalState, Clauses.deterministicState.Id)
-
-        let replayedState, replayedEvents = first |> persist |> replayPersisted
-
-        (replayedState, Clauses.deterministicState.Id)
-        |> should equal (first.FinalState, Clauses.deterministicState.Id)
-
-        (canonicalEventBytes replayedEvents, Clauses.deterministicState.Id)
-        |> should equal (canonicalEventBytes first.Events, Clauses.deterministicState.Id)
+        (repeated.FinalState, Clauses.deterministicFinalState.Id)
+        |> should equal (first.FinalState, Clauses.deterministicFinalState.Id)
 
     [<Test>]
     member _.``the production persisted-document replay path should reproduce the identical final state``
         ()
         =
         task {
-            let! original, replayed = productionPersistedReplay ()
+            let! replayed = productionPersistedReplay ()
 
-            (replayed, Clauses.deterministicState.Id)
-            |> should equal (original, Clauses.deterministicState.Id)
+            (replayed.PersistedCommands > 0, Clauses.persistedReplayState.Id)
+            |> should equal (true, Clauses.persistedReplayState.Id)
+
+            (replayed.SecondState, Clauses.persistedReplayState.Id)
+            |> should equal (replayed.FirstState, Clauses.persistedReplayState.Id)
+
+            (canonicalEventBytes replayed.SecondEvents, Clauses.persistedReplayEvents.Id)
+            |> should
+                equal
+                (canonicalEventBytes replayed.FirstEvents, Clauses.persistedReplayEvents.Id)
         }
 
     [<Test>]
     [<Explicit>]
     member _.``the opt-in larger seeded sweep should obey every reached rulebook clause``() =
+        let stopwatch = Stopwatch.StartNew()
+
         let results =
             LargeSweepSeeds |> Array.map (fun seed -> runBout seed LargeSweepStepCeiling)
+
+        stopwatch.Stop()
 
         let path, observed, neverObserved, _ =
             coverageReport
                 "BLOKEMON-079-program-coverage-large.md"
                 LargeSweepSeeds
                 LargeSweepStepCeiling
+                stopwatch.Elapsed
                 results
 
         observed + neverObserved |> should equal 310

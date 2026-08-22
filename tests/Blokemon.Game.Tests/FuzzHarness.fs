@@ -3,9 +3,8 @@ namespace Blokemon.Game.Tests
 open System
 open System.Collections.Generic
 open System.Collections.Immutable
+open System.Diagnostics
 open System.IO
-open System.Reflection
-open System.Text
 open System.Text.Json
 open System.Threading.Tasks
 open Blokemon.App
@@ -21,137 +20,579 @@ module internal FuzzHarness =
 
     type RulebookClause =
         { Id: string
+          Group: string
+          AcceptedAssertion: string
           Heading: string
           Lines: string
-          Rule: string }
+          Rule: string
+          Check: string }
 
     module Clauses =
 
-        let mechanicalAuthority =
-            { Id = "TR-AUTHORITY-7-9"
+        let authorityInventory =
+            { Id = "TR-AUTHORITY-INVENTORY-7-9"
+              Group = "acceptance gate"
+              AcceptedAssertion = "All 165 cards and all 310 effect programs are in scope."
               Heading = "Authority and boundaries"
               Lines = "technical-rulebook.md:7-9"
               Rule =
-                "The declarative authority supplies the complete base rules and validates all 310 programs against executable shapes." }
+                "The declarative authority supplies the collectible, kit and Basic Vim libraries and all 310 validated programs."
+              Check =
+                "Count authority content and program IDs, bind them to the reconciliation authority, and require seeded decks to cover every content card." }
 
-        let stack =
-            { Id = "TR-STACK-15"
+        let stackSize =
+            { Id = "TR-STACK-SIZE-15"
+              Group = "(c) opening"
+              AcceptedAssertion = "Each side has exactly 60 cards."
+              Heading = "Stack and opening"
+              Lines = "technical-rulebook.md:15"
+              Rule = "Each side has exactly 60 cards."
+              Check = "Count each generated frozen deck before match start." }
+
+        let stackCopyLimit =
+            { Id = "TR-STACK-COPY-LIMIT-15"
+              Group = "(c) opening"
+              AcceptedAssertion =
+                "No mechanical identity has more than four copies except unlimited Basic Vim."
               Heading = "Stack and opening"
               Lines = "technical-rulebook.md:15"
               Rule =
-                "Each side has 60 cards, at most four of one identity except Basic Vim, and a Regular Bloke." }
+                "A mechanical identity has at most four copies, except that Basic Vim is unlimited."
+              Check = "Count each mechanical identity in each generated frozen deck." }
 
-        let opening =
-            { Id = "TR-OPENING-16"
+        let stackRegular =
+            { Id = "TR-STACK-REGULAR-15"
+              Group = "(c) opening"
+              AcceptedAssertion = "Each side's deck contains at least one Regular Bloke."
+              Heading = "Stack and opening"
+              Lines = "technical-rulebook.md:15"
+              Rule = "Each side has at least one Regular Bloke."
+              Check = "Require a Regular mechanical identity in each generated frozen deck." }
+
+        let openingSide =
+            { Id = "TR-OPENING-SIDE-16"
+              Group = "(c) opening"
+              AcceptedAssertion =
+                "The opening side is sampled before either shuffle or opening draw."
+              Heading = "Stack and opening"
+              Lines = "technical-rulebook.md:16"
+              Rule = "Sample the opening side before either shuffle or opening draw."
+              Check = "Reproduce the first deterministic RNG sample and compare the opening player." }
+
+        let openingMitt =
+            { Id = "TR-OPENING-MITT-16"
+              Group = "(c) opening"
+              AcceptedAssertion = "Each side draws a seven-card opening mitt."
+              Heading = "Stack and opening"
+              Lines = "technical-rulebook.md:16"
+              Rule = "Each side shuffles and draws a seven-card mitt."
+              Check = "Count each final opening mitt before placement." }
+
+        let openingPlacement =
+            { Id = "TR-OPENING-PLACEMENT-16"
+              Group = "(c) opening"
+              AcceptedAssertion =
+                "Each side opens with one Regular Bloke at the oche and up to five Regular Blokes in the booth."
               Heading = "Stack and opening"
               Lines = "technical-rulebook.md:16"
               Rule =
-                "Sample the opener first; draw seven, place one Regular at the oche, up to five in the booth, and six bar chits." }
+                "Place one Regular Bloke at the oche and up to five Regular Blokes in the booth."
+              Check = "Inspect each completed opening placement while setup is still in progress." }
 
-        let mulligan =
-            { Id = "TR-MULLIGAN-17"
+        let openingBarChits =
+            { Id = "TR-OPENING-BAR-CHITS-16"
+              Group = "(c) opening"
+              AcceptedAssertion = "Each side starts with six bar chits."
+              Heading = "Stack and opening"
+              Lines = "technical-rulebook.md:16"
+              Rule = "Each side sets six bar chits."
+              Check = "Compare both the opening counter and BarChit zone count with six." }
+
+        let mulliganLegalMitt =
+            { Id = "TR-MULLIGAN-LEGAL-MITT-17"
+              Group = "(c) opening"
+              AcceptedAssertion =
+                "A mitt without a Regular Bloke is reshuffled and redrawn until legal."
               Heading = "Stack and opening"
               Lines = "technical-rulebook.md:17"
-              Rule =
-                "Redraw illegal mitts; simultaneous mulligans give no bonus and each excess mulligan allows one extra card." }
+              Rule = "A mitt without a Regular Bloke is reshuffled and redrawn until legal."
+              Check =
+                "Require each final mitt to contain a Regular and each mulligan reveal to contain seven cards." }
 
-        let openerLimits =
-            { Id = "TR-OPENER-18"
+        let simultaneousMulligan =
+            { Id = "TR-MULLIGAN-SIMULTANEOUS-17"
+              Group = "(c) opening"
+              AcceptedAssertion = "Simultaneous mulligans grant no bonus."
+              Heading = "Stack and opening"
+              Lines = "technical-rulebook.md:17"
+              Rule = "Simultaneous mulligans grant no bonus."
+              Check = "Require zero allowance and zero bonus cards when mulligan counts match." }
+
+        let excessMulligan =
+            { Id = "TR-MULLIGAN-EXCESS-17"
+              Group = "(c) opening"
+              AcceptedAssertion =
+                "The other side may draw at most one extra card for each excess mulligan."
+              Heading = "Stack and opening"
+              Lines = "technical-rulebook.md:17"
+              Rule = "For each excess mulligan, the other side may draw up to one extra card."
+              Check =
+                "Compare remaining allowance plus already drawn bonus cards with the mulligan-count difference and cap the draw at that grant." }
+
+        let cardZones =
+            { Id = "TR-CARD-ZONES-18"
+              Group = "(a) every step"
+              AcceptedAssertion = "Every card instance occupies exactly one zone."
               Heading = "Stack and opening"
               Lines = "technical-rulebook.md:18"
-              Rule = "The opening side cannot play a Mate or declare an Attack in its first round." }
+              Rule = "Throughout a bout, every card instance occupies exactly one zone."
+              Check =
+                "Preserve the exact starting instance set and require Attached-zone parent, attachment and promotion-stack references to agree." }
 
-        let roundActions =
-            { Id = "TR-ROUND-23"
-              Heading = "Round, promotion, Vim, kits and taxi"
-              Lines = "technical-rulebook.md:22-23"
+        let boothLimit =
+            { Id = "TR-BOOTH-LIMIT-18"
+              Group = "(a) every step"
+              AcceptedAssertion = "Each side's booth holds at most five Blokes at every step."
+              Heading = "Stack and opening"
+              Lines = "technical-rulebook.md:18"
+              Rule = "Each side's booth holds at most five Blokes throughout a bout."
+              Check = "Count each side's Booth zone after every reached transition and probe." }
+
+        let ocheCount =
+            { Id = "TR-OCHE-COUNT-16-64"
+              Group = "(a) every step"
+              AcceptedAssertion =
+                "Each side has exactly one Bloke at the oche while play continues outside a pending replacement."
+              Heading = "Stack and opening; Send home, bar chits and terminal outcomes"
+              Lines = "technical-rulebook.md:16,64"
               Rule =
-                "A required draw opens a round; an Attack ends it, a Party Trick does not, and one normal Vim may attach." }
+                "Opening places one Regular Bloke at the oche; after send-home, continuing play promotes a booth Bloke to the oche."
+              Check =
+                "Count each side's Oche zone in settled non-terminal states, excluding only the explicit pending replacement window." }
 
-        let promotion =
-            { Id = "TR-PROMOTION-24"
+        let openerMate =
+            { Id = "TR-OPENER-MATE-19"
+              Group = "(b) each round"
+              AcceptedAssertion = "The opening side cannot play a Mate in its first round."
+              Heading = "Stack and opening"
+              Lines = "technical-rulebook.md:19"
+              Rule = "The opening side cannot play a Mate in its first round."
+              Check = "Reject any offered Mate action on the opening side's first round." }
+
+        let openerAttack =
+            { Id = "TR-OPENER-ATTACK-19"
+              Group = "(b) each round"
+              AcceptedAssertion = "The opening side cannot declare an Attack in its first round."
+              Heading = "Stack and opening"
+              Lines = "technical-rulebook.md:19"
+              Rule = "The opening side cannot declare an Attack in its first round."
+              Check = "Reject any offered Attack action on the opening side's first round." }
+
+        let requiredRoundDraw =
+            { Id = "TR-REQUIRED-ROUND-DRAW-23"
+              Group = "(d) ending"
+              AcceptedAssertion =
+                "Failure to make the required round-opening stack draw is one of the three win methods."
+              Heading = "Round, promotion, Vim, kits and taxi"
+              Lines = "technical-rulebook.md:23,66"
+              Rule =
+                "A required stack draw opens each round, and failure to make it loses the bout."
+              Check =
+                "For every RoundStarted event, require the matching required draw or a terminal short-stack loss." }
+
+        let attackEndsRound =
+            { Id = "TR-ATTACK-ENDS-ROUND-24"
+              Group = "(b) each round"
+              AcceptedAssertion = "An Attack ends the round."
               Heading = "Round, promotion, Vim, kits and taxi"
               Lines = "technical-rulebook.md:24"
-              Rule =
-                "Promotion needs the exact edge and is forbidden on first rounds, a Bloke's first round in play, or twice for one Bloke in a round, except BLK-021's companion-authority second-opener ability." }
+              Rule = "An Attack ends the round."
+              Check =
+                "Track a selected Attack through pending choices and require RoundEnded unless terminal." }
 
-        let kits =
-            { Id = "TR-KITS-25"
+        let partyTrickContinuesRound =
+            { Id = "TR-PARTY-TRICK-CONTINUES-24"
+              Group = "(b) each round"
+              AcceptedAssertion = "A Party Trick does not end the round."
+              Heading = "Round, promotion, Vim, kits and taxi"
+              Lines = "technical-rulebook.md:24"
+              Rule = "A Party Trick does not end the round."
+              Check =
+                "Track a selected Party Trick through pending choices and require the same actor and round with no RoundEnded event unless terminal." }
+
+        let vimPerRound =
+            { Id = "TR-VIM-PER-ROUND-24"
+              Group = "(b) each round"
+              AcceptedAssertion = "At most one normal Vim attachment is allowed per round."
+              Heading = "Round, promotion, Vim, kits and taxi"
+              Lines = "technical-rulebook.md:24"
+              Rule = "One normal Vim attachment is allowed per round."
+              Check =
+                "Check both recorded RoundUsage and selected AttachVim commands, including independently applied offered-action probes." }
+
+        let promotionEdge =
+            { Id = "TR-PROMOTION-EDGE-25"
+              Group = "(b) each round"
+              AcceptedAssertion = "Promotion requires the exact mechanical edge."
               Heading = "Round, promotion, Vim, kits and taxi"
               Lines = "technical-rulebook.md:25"
-              Rule =
-                "A Bloke has at most one Bar Kit; one Mate and Local may be played per round; only one Local is in play." }
+              Rule = "Promotion requires the exact mechanical edge."
+              Check = "Compare every selected promotion's source identity with PromotesFromId." }
 
-        let taxi =
-            { Id = "TR-TAXI-26"
+        let promotionLimits =
+            { Id = "TR-PROMOTION-LIMITS-9-25"
+              Group = "(b) each round"
+              AcceptedAssertion =
+                "A Bloke cannot promote on either side's first round, its first round in play, or twice in one round, subject to an authority-program override."
+              Heading = "Authority and boundaries; Round, promotion, Vim, kits and taxi"
+              Lines = "technical-rulebook.md:9,25"
+              Rule =
+                "The base promotion timing limits apply unless an authority-bound effect program explicitly overrides them; BLK-021-T01 is the mapped second-opener override."
+              Check =
+                "Inspect rounds started, entry round and last promotion round, and recognize only the active BLK-021-T01 continuous authority effect." }
+
+        let barKitPerBloke =
+            { Id = "TR-BAR-KIT-PER-BLOKE-26"
+              Group = "(a) every step"
+              AcceptedAssertion = "A Bloke has at most one Bar Kit attached."
               Heading = "Round, promotion, Vim, kits and taxi"
               Lines = "technical-rulebook.md:26"
+              Rule = "At most one Bar Kit may be attached to a Bloke."
+              Check = "Count Bar Kit attachments on every Bloke after every reached state." }
+
+        let matePerRound =
+            { Id = "TR-MATE-PER-ROUND-26"
+              Group = "(b) each round"
+              AcceptedAssertion = "At most one Mate may be played per round."
+              Heading = "Round, promotion, Vim, kits and taxi"
+              Lines = "technical-rulebook.md:26"
+              Rule = "At most one Mate may be played per round."
+              Check = "Check RoundUsage and selected Mate commands per actor and round." }
+
+        let localPerRound =
+            { Id = "TR-LOCAL-PER-ROUND-26"
+              Group = "(b) each round"
+              AcceptedAssertion = "At most one Local may be played per round."
+              Heading = "Round, promotion, Vim, kits and taxi"
+              Lines = "technical-rulebook.md:26"
+              Rule = "At most one Local may be played per round."
+              Check = "Check RoundUsage and selected Local commands per actor and round." }
+
+        let localPerSide =
+            { Id = "TR-LOCAL-PER-SIDE-26"
+              Group = "(a) every step"
+              AcceptedAssertion = "At most one Local is in play per side."
+              Heading = "Round, promotion, Vim, kits and taxi"
+              Lines = "technical-rulebook.md:26"
+              Rule = "Only one Local is in play per side."
+              Check = "Count the Local zone separately for each owner; no global limit is asserted." }
+
+        let taxiPerRound =
+            { Id = "TR-TAXI-PER-ROUND-27"
+              Group = "(b) each round"
+              AcceptedAssertion = "Taxi may be used at most once per round."
+              Heading = "Round, promotion, Vim, kits and taxi"
+              Lines = "technical-rulebook.md:27"
+              Rule = "Taxi is once per round."
+              Check = "Check RoundUsage and selected Taxi commands per actor and round." }
+
+        let taxiEligibility =
+            { Id = "TR-TAXI-ELIGIBILITY-27"
+              Group = "(b) each round"
+              AcceptedAssertion =
+                "Taxi requires a booth Bloke and cannot be used by a NoddedOff or Legless Bloke."
+              Heading = "Round, promotion, Vim, kits and taxi"
+              Lines = "technical-rulebook.md:27"
+              Rule = "Taxi requires a booth Bloke; NoddedOff or Legless Blokes cannot taxi."
+              Check =
+                "Inspect the incoming zone and outgoing oche rough states for each selected Taxi." }
+
+        let damageNonNegative =
+            { Id = "TR-DAMAGE-NONNEGATIVE-47"
+              Group = "(a) every step"
+              AcceptedAssertion = "Damage is never negative."
+              Heading = "Attack and damage ordering"
+              Lines = "technical-rulebook.md:47"
+              Rule = "Calculated damage is clamped at zero before counters are placed."
+              Check = "Require every card's persisted damage counter total to be non-negative." }
+
+        let effectChoices =
+            { Id = "TR-EFFECT-CHOICES-49"
+              Group = "(e) effects"
+              AcceptedAssertion =
+                "Pending legal effect choices and round continuations settle deterministically or are reported as failures."
+              Heading = "Attack and damage ordering"
+              Lines = "technical-rulebook.md:37-43,49"
               Rule =
-                "Taxi is once per round, needs a booth Bloke and its fare, and is barred by NoddedOff or Legless." }
+                "Required choices are resolved in attack order; explicit eligible choices, optional effects and deterministic random selections use their ruled shapes."
+              Check =
+                "Drive each payable offered action through pending choices, knockouts, bar chits, replacements and round end, recording an explicit settlement status." }
 
         let roughStateLocation =
-            { Id = "TR-ROUGH-52"
+            { Id = "TR-ROUGH-OCHE-53"
+              Group = "(a) every step"
+              AcceptedAssertion = "Only the oche Bloke has rough states."
               Heading = "Rough states and checkup"
-              Lines = "technical-rulebook.md:52"
-              Rule = "Only the oche Bloke has rough states." }
+              Lines = "technical-rulebook.md:53"
+              Rule = "Only the oche Bloke has rough states."
+              Check = "Inspect the kind and zone of every card carrying any rough state." }
 
         let roughStateCoexistence =
-            { Id = "TR-ROUGH-59"
+            { Id = "TR-ROUGH-COEXISTENCE-60"
+              Group = "(a) every step"
+              AcceptedAssertion =
+                "At most one of NoddedOff, Muddled and Legless applies; Singed and DodgyPint may coexist with it and each other."
               Heading = "Rough states and checkup"
-              Lines = "technical-rulebook.md:59"
+              Lines = "technical-rulebook.md:60"
               Rule =
-                "Only one rotated state applies; Singed and DodgyPint may coexist with it and each other." }
+                "The rotated group has at most one member; Singed and DodgyPint are independent markers."
+              Check =
+                "Count only the three rotated states and deliberately impose no mutual-exclusion assertion on Singed or DodgyPint." }
 
-        let sendHome =
-            { Id = "TR-SEND-HOME-63"
+        let sendHomeState =
+            { Id = "TR-SEND-HOME-STATE-64"
+              Group = "(a) every step"
+              AcceptedAssertion =
+                "No Bloke remains in play past a send-home check at or above staying power; a sent-home Bloke and its attachments are chucked."
               Heading = "Send home, bar chits and terminal outcomes"
-              Lines = "technical-rulebook.md:63"
+              Lines = "technical-rulebook.md:64"
+              Rule = "A Bloke at or above staying power is sent home with every attachment."
+              Check =
+                "Allow only an explicitly pending knockout at the threshold, then inspect send-home events and resulting zones and relationships." }
+
+        let normalSendHomeAward =
+            { Id = "TR-NORMAL-SEND-HOME-AWARD-64"
+              Group = "(d) ending"
+              AcceptedAssertion = "Sending home a normal target awards one bar chit."
+              Heading = "Send home, bar chits and terminal outcomes"
+              Lines = "technical-rulebook.md:64"
+              Rule = "A normal target awards one bar chit."
+              Check = "Match each normal BlokeSentHome event to its available BarChitsTaken amount." }
+
+        let terminalMethods =
+            { Id = "TR-TERMINAL-METHODS-66"
+              Group = "(d) ending"
+              AcceptedAssertion = "A bout ends only by the three rulebook win methods."
+              Heading = "Send home, bar chits and terminal outcomes"
+              Lines = "technical-rulebook.md:66"
               Rule =
-                "Damage at least staying power sends a Bloke and its attachments home and awards the stated bar chits." }
+                "A side wins by taking its last bar chit, leaving the other side with no Bloke in play, or the other side failing its required draw."
+              Check =
+                "Derive all three methods from the before/after transition and require a completed bout's winner to have more simultaneous methods." }
 
-        let damage =
-            { Id = "TR-DAMAGE-46"
-              Heading = "Attack and damage ordering"
-              Lines = "technical-rulebook.md:46"
-              Rule = "Calculated damage is clamped at zero before counters are placed." }
-
-        let terminal =
-            { Id = "TR-TERMINAL-65"
+        let suddenDeath =
+            { Id = "TR-SUDDEN-DEATH-66"
+              Group = "(d) ending"
+              AcceptedAssertion =
+                "One simultaneous win method per side starts one-bar-chit sudden death; more simultaneous methods wins immediately."
               Heading = "Send home, bar chits and terminal outcomes"
-              Lines = "technical-rulebook.md:65"
+              Lines = "technical-rulebook.md:66"
               Rule =
-                "Only the three win methods and their simultaneous sudden-death rule end rulebook self-play." }
+                "Equal simultaneous methods start one-bar-chit sudden death and repeat; more simultaneous methods wins immediately."
+              Check =
+                "Compare both sides' method counts, winner, sudden-death counter and one-chit reset." }
 
-        let fossilsAndBigHitters =
-            { Id = "TR-BIG-HITTER-67"
+        let barChitCeiling =
+            { Id = "TR-BAR-CHIT-CEILING-16-66"
+              Group = "(a) every step"
+              AcceptedAssertion = "Bar chits never exceed six."
+              Heading = "Stack and opening; Send home, bar chits and terminal outcomes"
+              Lines = "technical-rulebook.md:16,66"
+              Rule = "A side starts with six bar chits; sudden death resets it to one."
+              Check = "Bound each side's counter and BarChit zone by the opening total." }
+
+        let barChitsDoNotIncrease =
+            { Id = "TR-BAR-CHITS-DECREASE-64-66"
+              Group = "(a) every step"
+              AcceptedAssertion =
+                "Bar chits never increase during ordinary play; the one-chit sudden-death reset is the terminal-rule exception."
               Heading = "Send home, bar chits and terminal outcomes"
-              Lines = "technical-rulebook.md:67"
-              Rule = "Fossils award one bar chit and the twelve listed Big Hitters award two." }
+              Lines = "technical-rulebook.md:64,66"
+              Rule =
+                "Awards take bar chits; only the simultaneous-win rule resets each side to one for sudden death."
+              Check =
+                "Compare each side's counter across every transition and recognize only an exact sudden-death reset." }
 
-        let deterministicState =
-            { Id = "TR-STATE-9"
+        let fossilAward =
+            { Id = "TR-FOSSIL-AWARD-68"
+              Group = "(d) ending"
+              AcceptedAssertion = "A fossil Local awards one bar chit when sent home."
+              Heading = "Send home, bar chits and terminal outcomes"
+              Lines = "technical-rulebook.md:68"
+              Rule = "KIT-001 through KIT-003 award one bar chit when sent home."
+              Check = "Match fossil send-home events to their available one-chit award." }
+
+        let bigHitterAward =
+            { Id = "TR-BIG-HITTER-AWARD-68"
+              Group = "(d) ending"
+              AcceptedAssertion = "Each of the twelve Big Hitters awards two bar chits."
+              Heading = "Send home, bar chits and terminal outcomes"
+              Lines = "technical-rulebook.md:68"
+              Rule = "The twelve IDs in bigHitters.blokeIds award two bar chits."
+              Check =
+                "Require exactly twelve authority IDs and match Big Hitter send-home events to the available two-chit award." }
+
+        let programShapes =
+            { Id = "TR-PROGRAM-SHAPES-9"
+              Group = "(e) effects"
+              AcceptedAssertion =
+                "Every one of the 310 effect programs has a valid executable shape."
               Heading = "Authority and boundaries"
               Lines = "technical-rulebook.md:9"
               Rule =
-                "The game persists deterministic random state, choices, trigger timing, and command identities in MatchState." }
+                "All 310 programs are validated against executable opcode, condition, target, selection, distribution and trigger shapes."
+              Check =
+                "Load the validated runtime authority and require its exact sorted program IDs to match reconciliation." }
+
+        let offeredActionApplies =
+            { Id = "TR-OFFERED-ACTION-APPLIES-9"
+              Group = "(e) effects"
+              AcceptedAssertion = "Every offered payable legal action applies successfully."
+              Heading = "Authority and boundaries"
+              Lines = "technical-rulebook.md:9"
+              Rule = "Blokemon.Game executes the validated authority programs."
+              Check =
+                "Independently apply every payable offered action and every selected self-play action; retain every rejection as a finding." }
+
+        let offeredActionFunctional =
+            { Id = "TR-OFFERED-ACTION-FUNCTIONAL-9"
+              Group = "(e) effects"
+              AcceptedAssertion =
+                "Every offered payable legal action changes semantic state or reveals hidden cards after complete settlement."
+              Heading = "Authority and boundaries"
+              Lines = "technical-rulebook.md:9"
+              Rule = "Blokemon.Game executes the validated authority programs."
+              Check =
+                "After an explicitly settled probe, compare semantic state excluding revision and accept a CardsRevealed event as observable function." }
+
+        let effectDoesNotRaise =
+            { Id = "TR-EFFECT-NO-RAISE-9"
+              Group = "(e) effects"
+              AcceptedAssertion = "No reached effect program raises an exception."
+              Heading = "Authority and boundaries"
+              Lines = "technical-rulebook.md:9"
+              Rule = "Blokemon.Game executes programs validated against executable shapes."
+              Check =
+                "Wrap every offered and selected command application with seed, step and action evidence." }
+
+        let programCoverage =
+            { Id = "TR-PROGRAM-COVERAGE-9"
+              Group = "(e) effects"
+              AcceptedAssertion =
+                "The report distinguishes effect-attributed execution from programs not observed across the run set."
+              Heading = "Authority and boundaries"
+              Lines = "technical-rulebook.md:9"
+              Rule = "The authority contains all 310 validated programs."
+              Check =
+                "Aggregate MatchEvent.Effect attribution across self-play and settled offered-action probes, explicitly labelling unobservable executions." }
+
+        let deterministicEvents =
+            { Id = "TR-DETERMINISTIC-EVENTS-9"
+              Group = "(f) determinism"
+              AcceptedAssertion = "The same seed reproduces an identical event log."
+              Heading = "Authority and boundaries"
+              Lines = "technical-rulebook.md:9"
+              Rule =
+                "MatchState persists the deterministic random stream, choices, trigger timing and accepted command identities."
+              Check =
+                "Compare supported MatchJson UTF-8 bytes for independently generated event arrays from the same seed." }
+
+        let deterministicFinalState =
+            { Id = "TR-DETERMINISTIC-FINAL-STATE-9"
+              Group = "(f) determinism"
+              AcceptedAssertion = "The same seed reproduces the identical final MatchState."
+              Heading = "Authority and boundaries"
+              Lines = "technical-rulebook.md:9"
+              Rule =
+                "MatchState persists the deterministic random stream, choices, trigger timing and accepted command identities."
+              Check = "Compare exact final MatchState values from independent same-seed runs." }
+
+        let persistedReplayState =
+            { Id = "TR-PERSISTED-REPLAY-STATE-9"
+              Group = "(f) determinism"
+              AcceptedAssertion =
+                "The supported persisted MatchDocument replay reproduces an identical final MatchState."
+              Heading = "Authority and boundaries"
+              Lines = "technical-rulebook.md:9"
+              Rule =
+                "The App persists random state, choices, trigger timing and accepted command identities in MatchState."
+              Check =
+                "Create, start and play through LocalApplicationService, deserialize the stored MatchDocument with MatchJson, then compare exact states from independent MatchReplay.replayDocument calls." }
+
+        let persistedReplayEvents =
+            { Id = "TR-PERSISTED-REPLAY-EVENTS-9"
+              Group = "(f) determinism"
+              AcceptedAssertion =
+                "Independent supported replays of one persisted MatchDocument produce identical stable event bytes."
+              Heading = "Authority and boundaries"
+              Lines = "technical-rulebook.md:9"
+              Rule =
+                "The App persists random state, choices, trigger timing and accepted command identities in MatchState."
+              Check =
+                "Serialize each replay's exact MatchEvent array with supported MatchJson options and compare UTF-8 bytes." }
+
+        let monotonicRevision =
+            { Id = "TR-MONOTONIC-REVISION-9"
+              Group = "(f) determinism"
+              AcceptedAssertion = "Every accepted command advances revision monotonically."
+              Heading = "Authority and boundaries"
+              Lines = "technical-rulebook.md:9"
+              Rule =
+                "Accepted command identities and their deterministic state are persisted in MatchState."
+              Check =
+                "Require each applied command's revision to equal the previous revision's successor." }
 
         let All =
-            [| mechanicalAuthority
-               stack
-               opening
-               mulligan
-               openerLimits
-               roundActions
-               promotion
-               kits
-               taxi
-               damage
+            [| authorityInventory
+               stackSize
+               stackCopyLimit
+               stackRegular
+               openingSide
+               openingMitt
+               openingPlacement
+               openingBarChits
+               mulliganLegalMitt
+               simultaneousMulligan
+               excessMulligan
+               cardZones
+               boothLimit
+               ocheCount
+               openerMate
+               openerAttack
+               requiredRoundDraw
+               attackEndsRound
+               partyTrickContinuesRound
+               vimPerRound
+               promotionEdge
+               promotionLimits
+               barKitPerBloke
+               matePerRound
+               localPerRound
+               localPerSide
+               taxiPerRound
+               taxiEligibility
+               damageNonNegative
+               effectChoices
                roughStateLocation
                roughStateCoexistence
-               sendHome
-               terminal
-               fossilsAndBigHitters
-               deterministicState |]
+               sendHomeState
+               normalSendHomeAward
+               terminalMethods
+               suddenDeath
+               barChitCeiling
+               barChitsDoNotIncrease
+               fossilAward
+               bigHitterAward
+               programShapes
+               offeredActionApplies
+               offeredActionFunctional
+               effectDoesNotRaise
+               programCoverage
+               deterministicEvents
+               deterministicFinalState
+               persistedReplayState
+               persistedReplayEvents
+               monotonicRevision |]
 
     type BoutStatus =
         | Completed
@@ -160,11 +601,37 @@ module internal FuzzHarness =
     type BoutStopReason =
         | RuleCompleted
         | StepCeilingReached
-        | PolicyStalled
 
-    type PersistedStep = { Actor: string; StableKey: string }
+    type ProbeSettlementStatus =
+        | Settled
+        | DirectActionRejected
+        | NoSettlementAction
+        | SettlementActionRejected
+        | SettlementCeilingReached
 
-    type PersistedDeck = { Owner: string; Cards: string array }
+    type ProbeSettlement =
+        { Seed: uint64
+          Step: int
+          Action: string
+          Status: ProbeSettlementStatus
+          SettlementCommands: int
+          Detail: string }
+
+    type ClauseEvaluation = { ClauseId: string; Count: int }
+
+    type private SettlementResult =
+        { State: MatchState
+          Events: ImmutableArray<MatchEvent>
+          Status: ProbeSettlementStatus
+          Commands: int
+          Detail: string }
+
+    type ProductionReplayResult =
+        { PersistedCommands: int
+          FirstState: MatchState
+          FirstEvents: ImmutableArray<MatchEvent>
+          SecondState: MatchState
+          SecondEvents: ImmutableArray<MatchEvent> }
 
     type private MemoryDocumentStore() =
         let documents = Dictionary<string, StoredDocument>(StringComparer.Ordinal)
@@ -225,8 +692,11 @@ module internal FuzzHarness =
         { mutable Assertions: int
           mutable Context: string
           mutable PendingRoundAction: PendingRoundAction option
+          mutable ExpectedCardInstances: Set<CardInstanceId> option
           Findings: ResizeArray<string>
           FindingClauses: HashSet<string>
+          ClauseEvaluations: Dictionary<string, int>
+          ProbeSettlements: ResizeArray<ProbeSettlement>
           ObservedEffects: HashSet<EffectId>
           RoundActions: Dictionary<struct (PlayerId * int), RoundActionCounts> }
 
@@ -238,9 +708,10 @@ module internal FuzzHarness =
           Steps: int
           Assertions: int
           Findings: ImmutableArray<string>
+          ClauseEvaluations: ImmutableArray<ClauseEvaluation>
+          ProbeSettlements: ImmutableArray<ProbeSettlement>
           ObservedEffects: ImmutableArray<EffectId>
           StartRequest: MatchStartRequest
-          Commands: ImmutableArray<PersistedStep>
           Events: ImmutableArray<MatchEvent>
           FinalState: MatchState }
 
@@ -311,8 +782,13 @@ module internal FuzzHarness =
 
         authorityVersion, programs
 
-    let private recordAssertion (observation: Observation) =
+    let private recordAssertion (observation: Observation) (clause: RulebookClause) =
         observation.Assertions <- observation.Assertions + 1
+
+        observation.ClauseEvaluations[clause.Id] <-
+            match observation.ClauseEvaluations.TryGetValue clause.Id with
+            | true, count -> count + 1
+            | false, _ -> 1
 
     let private observeEffects (observation: Observation) (events: seq<MatchEvent>) =
         for event in events do
@@ -328,9 +804,24 @@ module internal FuzzHarness =
         (detail: string)
         (condition: bool)
         =
-        recordAssertion observation
+        recordAssertion observation clause
 
         if not condition && observation.FindingClauses.Add clause.Id then
+            observation.Findings.Add(
+                $"seed={seed}; step={step}; context={observation.Context}; clause={clause.Id} ({clause.Lines}, {clause.Heading}); {detail}; rule={clause.Rule}"
+            )
+
+    let private enforceEveryFailure
+        (observation: Observation)
+        (clause: RulebookClause)
+        (seed: uint64)
+        (step: int)
+        (detail: string)
+        (condition: bool)
+        =
+        recordAssertion observation clause
+
+        if not condition then
             observation.Findings.Add(
                 $"seed={seed}; step={step}; context={observation.Context}; clause={clause.Id} ({clause.Lines}, {clause.Heading}); {detail}; rule={clause.Rule}"
             )
@@ -398,6 +889,7 @@ module internal FuzzHarness =
         |> Seq.map (fun kit -> MechanicalCardId kit.Id)
         |> Set.ofSeq
 
+    let private fossilIds = authority.BaseRules.FossilKits.KitIds |> Set.ofArray
     let private bigHitterIds = authority.BaseRules.BigHitters.BlokeIds |> Set.ofArray
 
     let private isInPlay (card: CardState) =
@@ -466,7 +958,7 @@ module internal FuzzHarness =
         =
         enforce
             observation
-            Clauses.stack
+            Clauses.stackSize
             seed
             step
             $"deck owner={deck.Owner.Value} has {deck.Cards.Length} cards"
@@ -481,7 +973,7 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.stack
+                Clauses.stackCopyLimit
                 seed
                 step
                 $"deck owner={deck.Owner.Value}; card={mechanicalId.Value}; copies={count}; limit={limit}"
@@ -489,7 +981,7 @@ module internal FuzzHarness =
 
         enforce
             observation
-            Clauses.stack
+            Clauses.stackRegular
             seed
             step
             $"deck owner={deck.Owner.Value} must contain a Regular Bloke"
@@ -511,7 +1003,7 @@ module internal FuzzHarness =
 
         enforce
             observation
-            Clauses.opening
+            Clauses.openingSide
             seed
             0
             $"opening player={state.OpeningPlayer.Value}; expected first RNG sample={expectedOpening.Value}"
@@ -522,7 +1014,7 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.opening
+                Clauses.openingMitt
                 seed
                 0
                 $"player={player.Id.Value}; opening mitt={mitt.Length}"
@@ -530,7 +1022,7 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.mulligan
+                Clauses.mulliganLegalMitt
                 seed
                 0
                 $"player={player.Id.Value}; final redrawn mitt must contain a Regular Bloke"
@@ -541,17 +1033,37 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.mulligan
+                Clauses.excessMulligan
                 seed
                 0
                 $"player={player.Id.Value}; mulligans={player.MulliganCount}; allowance={player.MulliganBonusAllowance}; expected={expectedAllowance}"
-                (player.MulliganBonusAllowance = expectedAllowance)
+                (player.MulliganBonusAllowance + player.BonusDrawn.Length = expectedAllowance
+                 && player.BonusDrawn.Length <= expectedAllowance)
+
+            if player.MulliganCount = other.MulliganCount then
+                enforce
+                    observation
+                    Clauses.simultaneousMulligan
+                    seed
+                    0
+                    $"player={player.Id.Value}; simultaneous mulligans={player.MulliganCount}; allowance={player.MulliganBonusAllowance}; bonus cards={player.BonusDrawn.Length}"
+                    (player.MulliganBonusAllowance = 0 && player.BonusDrawn.IsEmpty)
+
+            let barChits = state.CardsIn(player.Id, CardZone.BarChit) |> Seq.length
+
+            enforce
+                observation
+                Clauses.openingBarChits
+                seed
+                0
+                $"player={player.Id.Value}; opening bar chits={player.BarChitsRemaining}; zoned={barChits}"
+                (player.BarChitsRemaining = authority.BaseRules.Opening.BarChitCount)
 
         for revealed in
             events |> Seq.filter (fun event -> event.Kind = MatchEventKind.CardsRevealed) do
             enforce
                 observation
-                Clauses.mulligan
+                Clauses.mulliganLegalMitt
                 seed
                 0
                 $"mulligan reveal actor={revealed.Actor.Value.Value}; cards={revealed.TargetCards.Length}"
@@ -563,16 +1075,15 @@ module internal FuzzHarness =
         (step: int)
         (state: MatchState)
         =
-        let ids = state.Cards |> Seq.map _.Id |> Seq.toArray
-        let distinctIds = ids |> Seq.distinct |> Seq.length
+        let ids = state.Cards |> Seq.map _.Id |> Set.ofSeq
 
         enforce
             observation
-            Clauses.mechanicalAuthority
+            Clauses.cardZones
             seed
             step
-            $"card conservation requires 120 unique instances; count={ids.Length}; unique={distinctIds}"
-            (ids.Length = 120 && distinctIds = 120)
+            $"card instance set count={ids.Count}; expected={observation.ExpectedCardInstances |> Option.map _.Count}"
+            (observation.ExpectedCardInstances = Some ids)
 
         for parent in state.Cards do
             for child in parent.Attachments do
@@ -580,7 +1091,7 @@ module internal FuzzHarness =
 
                 enforce
                     observation
-                    Clauses.mechanicalAuthority
+                    Clauses.cardZones
                     seed
                     step
                     $"parent={parent.Id.Value}; child={child.Value} must exist, be Attached, and point back"
@@ -594,7 +1105,7 @@ module internal FuzzHarness =
 
                 enforce
                     observation
-                    Clauses.mechanicalAuthority
+                    Clauses.cardZones
                     seed
                     step
                     $"promoted parent={parent.Id.Value}; underlying={child.Value} must exist in the Attached zone"
@@ -606,7 +1117,7 @@ module internal FuzzHarness =
             if card.Zone = CardZone.Attached then
                 enforce
                     observation
-                    Clauses.mechanicalAuthority
+                    Clauses.cardZones
                     seed
                     step
                     $"attached card={card.Id.Value} must point to a parent that lists it"
@@ -623,7 +1134,7 @@ module internal FuzzHarness =
             else
                 enforce
                     observation
-                    Clauses.mechanicalAuthority
+                    Clauses.cardZones
                     seed
                     step
                     $"non-attached card={card.Id.Value}; zone={card.Zone}; AttachedTo must be empty"
@@ -648,7 +1159,7 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.opening
+                Clauses.boothLimit
                 seed
                 step
                 $"player={player.Id.Value}; booth count={booth.Length}; cards={boothSummary}"
@@ -665,7 +1176,7 @@ module internal FuzzHarness =
             then
                 enforce
                     observation
-                    Clauses.opening
+                    Clauses.ocheCount
                     seed
                     step
                     $"player={player.Id.Value}; continuing play requires exactly one oche Bloke; count={oche.Length}"
@@ -674,13 +1185,34 @@ module internal FuzzHarness =
             if player.OpeningChosen && state.Phase = MatchPhase.OpeningPlacement then
                 enforce
                     observation
-                    Clauses.opening
+                    Clauses.openingPlacement
                     seed
                     step
                     $"player={player.Id.Value}; opening oche and booth cards must all be Regular"
                     (oche.Length = 1
                      && regularIds.Contains oche[0].MechanicalId
                      && (booth |> Seq.forall (fun card -> regularIds.Contains card.MechanicalId)))
+
+            let other = state.Player(state.Other player.Id)
+            let expectedAllowance = max 0 (other.MulliganCount - player.MulliganCount)
+
+            enforce
+                observation
+                Clauses.excessMulligan
+                seed
+                step
+                $"player={player.Id.Value}; mulligans={player.MulliganCount}; allowance={player.MulliganBonusAllowance}; bonus cards={player.BonusDrawn.Length}; expected allowance={expectedAllowance}"
+                (player.MulliganBonusAllowance + player.BonusDrawn.Length = expectedAllowance
+                 && player.BonusDrawn.Length <= expectedAllowance)
+
+            if player.MulliganCount = other.MulliganCount then
+                enforce
+                    observation
+                    Clauses.simultaneousMulligan
+                    seed
+                    step
+                    $"player={player.Id.Value}; simultaneous mulligans={player.MulliganCount}; allowance={player.MulliganBonusAllowance}; bonus cards={player.BonusDrawn.Length}"
+                    (player.MulliganBonusAllowance = 0 && player.BonusDrawn.IsEmpty)
 
             let locals =
                 state.Cards
@@ -689,7 +1221,7 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.kits
+                Clauses.localPerSide
                 seed
                 step
                 $"player={player.Id.Value}; Locals={locals}"
@@ -697,14 +1229,25 @@ module internal FuzzHarness =
 
             let barChits = state.CardsIn(player.Id, CardZone.BarChit) |> Seq.length
 
+            if
+                state.Players |> Seq.forall _.OpeningChosen
+                && player.BarChitsRemaining = authority.BaseRules.Opening.BarChitCount
+            then
+                enforce
+                    observation
+                    Clauses.openingBarChits
+                    seed
+                    step
+                    $"player={player.Id.Value}; set-aside opening bar chits={player.BarChitsRemaining}; zoned={barChits}"
+                    (barChits = authority.BaseRules.Opening.BarChitCount)
+
             enforce
                 observation
-                Clauses.opening
+                Clauses.barChitCeiling
                 seed
                 step
                 $"player={player.Id.Value}; bar chits={player.BarChitsRemaining}; zoned={barChits}"
-                (player.BarChitsRemaining >= 0
-                 && player.BarChitsRemaining <= authority.BaseRules.Opening.BarChitCount
+                (player.BarChitsRemaining <= authority.BaseRules.Opening.BarChitCount
                  && (not player.OpeningChosen
                      || state.Phase = MatchPhase.OpeningPlacement
                      || state.Phase = MatchPhase.Complete
@@ -713,7 +1256,7 @@ module internal FuzzHarness =
         for card in state.Cards do
             enforce
                 observation
-                Clauses.damage
+                Clauses.damageNonNegative
                 seed
                 step
                 $"card={card.Id.Value}; damage={card.Damage}"
@@ -744,7 +1287,7 @@ module internal FuzzHarness =
                 $"card={card.Id.Value}; rotated rough states={rotated}"
                 (rotated <= 1)
 
-            if isInPlay card && state.Phase <> MatchPhase.Complete then
+            if card.Kind = CardKind.Bloke then
                 let attachedBarKits =
                     card.Attachments
                     |> Seq.map state.Card
@@ -753,12 +1296,13 @@ module internal FuzzHarness =
 
                 enforce
                     observation
-                    Clauses.kits
+                    Clauses.barKitPerBloke
                     seed
                     step
                     $"card={card.Id.Value}; attached Bar Kits={attachedBarKits}"
                     (attachedBarKits <= authority.BaseRules.Kit.BarKitsPerBloke)
 
+            if isInPlay card && state.Phase <> MatchPhase.Complete then
                 let pendingSendHome =
                     match state.PendingKnockout with
                     | ValueSome pending ->
@@ -768,7 +1312,7 @@ module internal FuzzHarness =
 
                 enforce
                     observation
-                    Clauses.sendHome
+                    Clauses.sendHomeState
                     seed
                     step
                     $"card={card.Id.Value}; damage={card.Damage}; staying power={stayingPower state card}; pending={pendingSendHome}"
@@ -776,7 +1320,7 @@ module internal FuzzHarness =
 
         enforce
             observation
-            Clauses.roundActions
+            Clauses.vimPerRound
             seed
             step
             $"round={state.RoundNumber}; recorded Vim attachments={state.RoundUsage.VimAttachments}"
@@ -785,31 +1329,27 @@ module internal FuzzHarness =
 
         enforce
             observation
-            Clauses.kits
+            Clauses.matePerRound
             seed
             step
-            $"round={state.RoundNumber}; Mates={state.RoundUsage.MatesPlayed}; Locals={state.RoundUsage.LocalsPlayed}"
-            (state.RoundUsage.MatesPlayed <= authority.BaseRules.Kit.MatesPerRound
-             && state.RoundUsage.LocalsPlayed <= authority.BaseRules.Kit.LocalsPerRound)
+            $"round={state.RoundNumber}; Mates={state.RoundUsage.MatesPlayed}"
+            (state.RoundUsage.MatesPlayed <= authority.BaseRules.Kit.MatesPerRound)
 
         enforce
             observation
-            Clauses.taxi
+            Clauses.localPerRound
+            seed
+            step
+            $"round={state.RoundNumber}; Locals={state.RoundUsage.LocalsPlayed}"
+            (state.RoundUsage.LocalsPlayed <= authority.BaseRules.Kit.LocalsPerRound)
+
+        enforce
+            observation
+            Clauses.taxiPerRound
             seed
             step
             $"round={state.RoundNumber}; taxis={state.RoundUsage.TaxisUsed}"
             (state.RoundUsage.TaxisUsed <= authority.BaseRules.Taxi.PerRound)
-
-        let localsInPlay =
-            state.Cards |> Seq.filter (fun card -> card.Zone = CardZone.Local) |> Seq.length
-
-        enforce
-            observation
-            Clauses.kits
-            seed
-            step
-            $"global Locals in play={localsInPlay}"
-            (localsInPlay <= 1)
 
     let private semanticState (state: MatchState) =
         state.Phase,
@@ -846,7 +1386,7 @@ module internal FuzzHarness =
         with error ->
             raise (
                 InvalidOperationException(
-                    $"seed={seed}; step={step}; clause={Clauses.mechanicalAuthority.Id}; context={context}; action={action.StableKey} raised {error.GetType().Name}",
+                    $"seed={seed}; step={step}; clause={Clauses.effectDoesNotRaise.Id}; context={context}; action={action.StableKey} raised {error.GetType().Name}",
                     error
                 )
             )
@@ -863,12 +1403,12 @@ module internal FuzzHarness =
         let events = ResizeArray<MatchEvent>(initialEvents)
         let mutable state = initial
         let mutable commands = 0
-        let mutable stalled = false
+        let mutable unsettled: (ProbeSettlementStatus * string) option = None
 
         while state.Phase <> MatchPhase.Complete
               && hasPendingResolution state
               && commands < 32
-              && not stalled do
+              && unsettled.IsNone do
             let action =
                 state.Players
                 |> Seq.map _.Id
@@ -879,16 +1419,41 @@ module internal FuzzHarness =
                     | CpuDecision.NoLegalAction -> None)
 
             match action with
-            | None -> stalled <- true
+            | None ->
+                unsettled <-
+                    Some(
+                        NoSettlementAction,
+                        $"no legal settlement action while phase={state.Phase}; pending-effect={state.PendingEffect.IsSome}; pending-knockout={state.PendingKnockout.IsSome}; pending-bar-chits={state.PendingBarChits.Length}; replacement={state.ReplacementPlayer.IsSome}; pending-round-end={state.PendingRoundEnd}"
+                    )
             | Some selected ->
                 match applyWithEvidence engine state selected seed step context with
-                | CommandOutcome.Rejected _ -> stalled <- true
+                | CommandOutcome.Rejected(_, rejection) ->
+                    unsettled <-
+                        Some(
+                            SettlementActionRejected,
+                            $"settlement action={selected.StableKey} rejected with {rejection.Code}"
+                        )
                 | CommandOutcome.Applied(applied, appliedEvents) ->
                     state <- applied
                     events.AddRange appliedEvents
                     commands <- commands + 1
 
-        state, ImmutableArray.CreateRange events
+        let status, detail =
+            match unsettled with
+            | Some failed -> failed
+            | None when state.Phase = MatchPhase.Complete ->
+                Settled, "settled at legitimate MatchPhase.Complete"
+            | None when not (hasPendingResolution state) ->
+                Settled, "all pending choices and round continuations settled"
+            | None ->
+                SettlementCeilingReached,
+                $"settlement command ceiling=32 reached while phase={state.Phase}; pending-effect={state.PendingEffect.IsSome}; pending-knockout={state.PendingKnockout.IsSome}; pending-bar-chits={state.PendingBarChits.Length}; replacement={state.ReplacementPlayer.IsSome}; pending-round-end={state.PendingRoundEnd}"
+
+        { State = state
+          Events = ImmutableArray.CreateRange events
+          Status = status
+          Commands = commands
+          Detail = detail }
 
     let private actionSource (state: MatchState) (action: LegalAction) =
         match action.Command.Action with
@@ -923,68 +1488,100 @@ module internal FuzzHarness =
                     && (state.Player actor).RoundsStarted = 1
 
                 if openingPlayerFirstRound then
-                    let isForbidden =
-                        match action.Command.Action with
-                        | MatchAction.Attack _ -> true
-                        | MatchAction.PlayKit(kit, _) ->
-                            mateIds.Contains((state.Card kit).MechanicalId)
-                        | _ -> false
-
                     enforce
                         observation
-                        Clauses.openerLimits
+                        Clauses.openerAttack
                         seed
                         step
                         $"opening player's first-round action={action.StableKey}"
-                        (not isForbidden)
+                        (match action.Command.Action with
+                         | MatchAction.Attack _ -> false
+                         | _ -> true)
+
+                    enforce
+                        observation
+                        Clauses.openerMate
+                        seed
+                        step
+                        $"opening player's first-round action={action.StableKey}"
+                        (match action.Command.Action with
+                         | MatchAction.PlayKit(kit, _) ->
+                             not (mateIds.Contains((state.Card kit).MechanicalId))
+                         | _ -> true)
 
                 match action.Affordability with
                 | ActionAffordability.Payable ->
                     let outcome =
                         applyWithEvidence engine state action seed step observation.Context
 
+                    enforce
+                        observation
+                        Clauses.effectDoesNotRaise
+                        seed
+                        step
+                        $"offered action={action.StableKey} applied without raising"
+                        true
+
                     match outcome with
                     | CommandOutcome.Rejected(_, rejection) ->
-                        enforce
+                        observation.ProbeSettlements.Add
+                            { Seed = seed
+                              Step = step
+                              Action = action.StableKey
+                              Status = DirectActionRejected
+                              SettlementCommands = 0
+                              Detail = $"offered action rejected with {rejection.Code}" }
+
+                        enforceEveryFailure
                             observation
-                            Clauses.mechanicalAuthority
+                            Clauses.offeredActionApplies
                             seed
                             step
                             $"offered action={action.StableKey} rejected with {rejection.Code}"
                             false
                     | CommandOutcome.Applied(applied, appliedEvents) ->
-                        let settled, trialEvents =
-                            settleTrial engine seed step observation.Context applied appliedEvents
-
-                        observeEffects observation trialEvents
-                        assertState observation seed step settled
-
-                        enforce
+                        enforceEveryFailure
                             observation
-                            Clauses.mechanicalAuthority
+                            Clauses.offeredActionApplies
                             seed
                             step
-                            $"offered action={action.StableKey} must change the table or reveal hidden cards after deterministic settlement"
-                            (semanticState settled <> semanticState state
-                             || trialEvents
-                                |> Seq.exists (fun event ->
-                                    event.Kind = MatchEventKind.CardsRevealed))
-                | ActionAffordability.ShortOfTaxiFare fare ->
-                    let rejectedForFare =
-                        match
-                            applyWithEvidence engine state action seed step observation.Context
-                        with
-                        | CommandOutcome.Rejected(_, rejection) ->
-                            rejection.Code = CommandRejectionCode.InvalidTaxiFare
-                        | CommandOutcome.Applied _ -> false
+                            $"offered action={action.StableKey} applied successfully"
+                            true
 
-                    enforce
-                        observation
-                        Clauses.taxi
-                        seed
-                        step
-                        $"unaffordable UI taxi={action.StableKey}; fare={fare} must remain non-submittable"
-                        rejectedForFare
+                        let settlement =
+                            settleTrial engine seed step observation.Context applied appliedEvents
+
+                        observation.ProbeSettlements.Add
+                            { Seed = seed
+                              Step = step
+                              Action = action.StableKey
+                              Status = settlement.Status
+                              SettlementCommands = settlement.Commands
+                              Detail = settlement.Detail }
+
+                        observeEffects observation settlement.Events
+                        assertState observation seed step settlement.State
+
+                        enforceEveryFailure
+                            observation
+                            Clauses.effectChoices
+                            seed
+                            step
+                            $"offered action={action.StableKey}; settlement status={settlement.Status}; commands={settlement.Commands}; detail={settlement.Detail}"
+                            (settlement.Status = Settled)
+
+                        if settlement.Status = Settled then
+                            enforceEveryFailure
+                                observation
+                                Clauses.offeredActionFunctional
+                                seed
+                                step
+                                $"offered action={action.StableKey} must change the table or reveal hidden cards after complete deterministic settlement"
+                                (semanticState settlement.State <> semanticState state
+                                 || settlement.Events
+                                    |> Seq.exists (fun event ->
+                                        event.Kind = MatchEventKind.CardsRevealed))
+                | ActionAffordability.ShortOfTaxiFare _ -> ()
 
         observation.Context <- previousContext
 
@@ -1004,7 +1601,7 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.roundActions
+                Clauses.vimPerRound
                 seed
                 step
                 $"actor={actor.Value}; round={state.RoundNumber}; observed normal Vim attachments={counts.Vim}"
@@ -1017,7 +1614,7 @@ module internal FuzzHarness =
 
                 enforce
                     observation
-                    Clauses.kits
+                    Clauses.matePerRound
                     seed
                     step
                     $"actor={actor.Value}; round={state.RoundNumber}; observed Mates={counts.Mate}"
@@ -1028,7 +1625,7 @@ module internal FuzzHarness =
 
                 enforce
                     observation
-                    Clauses.kits
+                    Clauses.localPerRound
                     seed
                     step
                     $"actor={actor.Value}; round={state.RoundNumber}; observed Locals={counts.Local}"
@@ -1040,12 +1637,19 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.taxi
+                Clauses.taxiPerRound
                 seed
                 step
-                $"actor={actor.Value}; round={state.RoundNumber}; observed taxis={counts.Taxi}; incoming zone={incoming.Zone}; fare cards={vimToChuck.Length}"
-                (counts.Taxi <= authority.BaseRules.Taxi.PerRound
-                 && incoming.Zone = CardZone.Booth
+                $"actor={actor.Value}; round={state.RoundNumber}; observed taxis={counts.Taxi}"
+                (counts.Taxi <= authority.BaseRules.Taxi.PerRound)
+
+            enforce
+                observation
+                Clauses.taxiEligibility
+                seed
+                step
+                $"actor={actor.Value}; round={state.RoundNumber}; incoming zone={incoming.Zone}; fare cards={vimToChuck.Length}"
+                (incoming.Zone = CardZone.Booth
                  && (match outgoing with
                      | ValueSome card ->
                          card.RoughStates
@@ -1076,14 +1680,20 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.promotion
+                Clauses.promotionEdge
                 seed
                 step
-                $"actor={actor.Value}; round={state.RoundNumber}; target={target.MechanicalId.Value}; promotion={promotion.MechanicalId.Value}; rounds started={player.RoundsStarted}; entered={target.EnteredAtOwnerRound}; last promoted={target.LastPromotedRound}; observed promotions={counts.Promotions}"
-                (exactEdge
-                 && (reconciledFirstRoundException
-                     || (player.RoundsStarted > 1
-                         && target.EnteredAtOwnerRound < player.RoundsStarted))
+                $"actor={actor.Value}; target={target.MechanicalId.Value}; promotion={promotion.MechanicalId.Value}"
+                exactEdge
+
+            enforce
+                observation
+                Clauses.promotionLimits
+                seed
+                step
+                $"actor={actor.Value}; round={state.RoundNumber}; target={target.MechanicalId.Value}; rounds started={player.RoundsStarted}; entered={target.EnteredAtOwnerRound}; last promoted={target.LastPromotedRound}; BLK-021 override={reconciledFirstRoundException}"
+                ((reconciledFirstRoundException
+                  || (player.RoundsStarted > 1 && target.EnteredAtOwnerRound < player.RoundsStarted))
                  && target.LastPromotedRound <> state.RoundNumber)
         | _ -> ()
 
@@ -1133,7 +1743,7 @@ module internal FuzzHarness =
                 | LegalActionKind.Attack ->
                     enforce
                         observation
-                        Clauses.roundActions
+                        Clauses.attackEndsRound
                         seed
                         step
                         $"Attack from round={pending.RoundNumber}; terminal={after.Phase = MatchPhase.Complete}; saw RoundEnded={pending.SawRoundEnd}"
@@ -1141,7 +1751,7 @@ module internal FuzzHarness =
                 | LegalActionKind.UsePartyTrick ->
                     enforce
                         observation
-                        Clauses.roundActions
+                        Clauses.partyTrickContinuesRound
                         seed
                         step
                         $"Party Trick from actor={pending.ActivePlayer.Value}; round={pending.RoundNumber}; after actor={after.ActivePlayer.Value}; round={after.RoundNumber}; saw RoundEnded={pending.SawRoundEnd}"
@@ -1163,46 +1773,11 @@ module internal FuzzHarness =
         =
         enforce
             observation
-            Clauses.deterministicState
+            Clauses.monotonicRevision
             seed
             step
             $"revision before={before.Revision.Value}; after={after.Revision.Value}"
             (after.Revision = before.Revision.Next())
-
-        let sequences = events |> Seq.map _.Sequence |> Seq.toArray
-
-        enforce
-            observation
-            Clauses.deterministicState
-            seed
-            step
-            $"event sequences after {before.LastEventSequence}: {String.Join(',', sequences)}"
-            (sequences.Length > 0
-             && (sequences |> Seq.pairwise |> Seq.forall (fun (left, right) -> right > left))
-             && sequences[0] > before.LastEventSequence
-             && sequences[sequences.Length - 1] = after.LastEventSequence)
-
-        enforce
-            observation
-            Clauses.deterministicState
-            seed
-            step
-            "all command events must carry the committed revision"
-            (events |> Seq.forall (fun event -> event.Revision = after.Revision))
-
-        let committed = events[events.Length - 1]
-
-        enforce
-            observation
-            Clauses.deterministicState
-            seed
-            step
-            "only the terminal event may carry the committed state"
-            (committed.Kind = MatchEventKind.StateCommitted
-             && committed.CommittedState = ValueSome after
-             && (events
-                 |> Seq.take (events.Length - 1)
-                 |> Seq.forall (fun event -> event.CommittedState.IsNone)))
 
         for roundStarted in
             events |> Seq.filter (fun event -> event.Kind = MatchEventKind.RoundStarted) do
@@ -1222,7 +1797,7 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.roundActions
+                Clauses.requiredRoundDraw
                 seed
                 step
                 $"round-start actor={actor.Value}; required draw={requiredDraw}; lost for short stack={lostForShortStack}"
@@ -1238,7 +1813,7 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.terminal
+                Clauses.barChitsDoNotIncrease
                 seed
                 step
                 $"player={player.Id.Value}; bar chits before={previous}; after={current}; sudden death={suddenDeathReset}"
@@ -1275,7 +1850,7 @@ module internal FuzzHarness =
 
                 enforce
                     observation
-                    Clauses.sendHome
+                    Clauses.sendHomeState
                     seed
                     step
                     $"sent home={card.MechanicalId.Value}; zone={card.Zone}; attachments={card.Attachments.Length}; underlying={card.UnderlyingCards.Length}"
@@ -1295,9 +1870,11 @@ module internal FuzzHarness =
                 enforce
                     observation
                     (if bigHitterIds.Contains card.MechanicalId.Value then
-                         Clauses.fossilsAndBigHitters
+                         Clauses.bigHitterAward
+                     elif fossilIds.Contains card.MechanicalId.Value then
+                         Clauses.fossilAward
                      else
-                         Clauses.sendHome)
+                         Clauses.normalSendHomeAward)
                     seed
                     step
                     $"sent home={card.MechanicalId.Value}; taker={takingPlayer.Value}; expected available award={expected}"
@@ -1366,7 +1943,7 @@ module internal FuzzHarness =
 
             enforce
                 observation
-                Clauses.terminal
+                Clauses.suddenDeath
                 seed
                 step
                 $"sudden death count={after.SuddenDeathCount}; winner={after.Winner}; methods={firstMethods}:{secondMethods}"
@@ -1379,26 +1956,26 @@ module internal FuzzHarness =
                         player.BarChitsRemaining = authority.BaseRules.Win.SuddenDeathBarChits))
 
         if after.Phase = MatchPhase.Complete then
-            let winner = after.Winner
+            match after.Winner with
+            | ValueNone ->
+                enforce
+                    observation
+                    Clauses.terminalMethods
+                    seed
+                    step
+                    "completed rulebook self-play must name a winner"
+                    false
+            | ValueSome winner ->
+                let winnerMethods = winMethodCount before after events winner
+                let loserMethods = winMethodCount before after events (after.Other winner)
 
-            enforce
-                observation
-                Clauses.terminal
-                seed
-                step
-                "completed rulebook self-play must name a winner"
-                winner.IsSome
-
-            let winnerMethods = winMethodCount before after events winner.Value
-            let loserMethods = winMethodCount before after events (after.Other winner.Value)
-
-            enforce
-                observation
-                Clauses.terminal
-                seed
-                step
-                $"winner={winner.Value.Value}; winner methods={winnerMethods}; loser methods={loserMethods}"
-                (winnerMethods > 0 && winnerMethods > loserMethods)
+                enforce
+                    observation
+                    Clauses.terminalMethods
+                    seed
+                    step
+                    $"winner={winner.Value}; winner methods={winnerMethods}; loser methods={loserMethods}"
+                    (winnerMethods > 0 && winnerMethods > loserMethods)
 
     let private nextAction (engine: MatchEngine) (cpu: DeterministicCpu) (state: MatchState) =
         state.Players
@@ -1414,8 +1991,11 @@ module internal FuzzHarness =
             { Assertions = 0
               Context = "start"
               PendingRoundAction = None
+              ExpectedCardInstances = None
               Findings = ResizeArray()
               FindingClauses = HashSet(StringComparer.Ordinal)
+              ClauseEvaluations = Dictionary(StringComparer.Ordinal)
+              ProbeSettlements = ResizeArray()
               ObservedEffects = HashSet()
               RoundActions = Dictionary() }
 
@@ -1433,7 +2013,7 @@ module internal FuzzHarness =
                 with error ->
                     raise (
                         InvalidOperationException(
-                            $"seed={seed}; step=0; clause={Clauses.stack.Id}; generated match start raised {error.GetType().Name}",
+                            $"seed={seed}; step=0; clause={Clauses.stackSize.Id}; generated match start raised {error.GetType().Name}",
                             error
                         )
                     )
@@ -1443,56 +2023,63 @@ module internal FuzzHarness =
             | MatchStartOutcome.Rejected issues ->
                 enforce
                     observation
-                    Clauses.stack
+                    Clauses.stackSize
                     seed
                     0
                     $"generated decks rejected: {String.Join(',', issues |> Seq.map _.Code)}"
                     false
 
                 failwith
-                    $"seed={seed}; step=0; clause={Clauses.stack.Id}; generated decks were rejected"
+                    $"seed={seed}; step=0; clause={Clauses.stackSize.Id}; generated decks were rejected"
 
+        observation.ExpectedCardInstances <- initialState.Cards |> Seq.map _.Id |> Set.ofSeq |> Some
         assertOpening observation seed initialState initialEvents
         assertState observation seed 0 initialState
         observeEffects observation initialEvents
 
         let events = ResizeArray<MatchEvent>(initialEvents)
-        let commands = ResizeArray<PersistedStep>()
         let mutable state = initialState
         let mutable steps = 0
-        let mutable stalled = false
 
-        while state.Phase <> MatchPhase.Complete && steps < stepCeiling && not stalled do
+        while state.Phase <> MatchPhase.Complete && steps < stepCeiling do
             assertOfferedActions observation seed steps engine state
 
             match nextAction engine cpu state with
-            | None -> stalled <- true
+            | None ->
+                failwith
+                    $"seed={seed}; step={steps}; deterministic self-play had no payable action before completion"
             | Some action ->
                 let source = actionSource state action
 
                 observation.Context <- $"action={action.StableKey}; source={source}"
                 assertActionPreconditions observation seed steps state action
 
-                commands.Add
-                    { Actor = action.Command.Actor.Value
-                      StableKey = action.StableKey }
-
                 let before = state
 
+                let outcome = applyWithEvidence engine state action seed steps observation.Context
+
+                enforce
+                    observation
+                    Clauses.effectDoesNotRaise
+                    seed
+                    steps
+                    $"selected action={action.StableKey} applied without raising"
+                    true
+
                 let applied, appliedEvents =
-                    match applyWithEvidence engine state action seed steps observation.Context with
+                    match outcome with
                     | CommandOutcome.Applied(applied, appliedEvents) -> applied, appliedEvents
                     | CommandOutcome.Rejected(_, rejection) ->
-                        enforce
+                        enforceEveryFailure
                             observation
-                            Clauses.mechanicalAuthority
+                            Clauses.offeredActionApplies
                             seed
                             steps
                             $"selected action={action.StableKey} rejected with {rejection.Code}"
                             false
 
                         failwith
-                            $"seed={seed}; step={steps}; clause={Clauses.mechanicalAuthority.Id}; selected action={action.StableKey} was rejected with {rejection.Code}"
+                            $"seed={seed}; step={steps}; clause={Clauses.offeredActionApplies.Id}; selected action={action.StableKey} was rejected with {rejection.Code}"
 
                 steps <- steps + 1
                 assertTransition observation seed steps before applied appliedEvents
@@ -1512,75 +2099,214 @@ module internal FuzzHarness =
             else
                 Incomplete
           StopReason =
-            if state.Phase = MatchPhase.Complete then RuleCompleted
-            elif steps >= stepCeiling then StepCeilingReached
-            else PolicyStalled
+            if state.Phase = MatchPhase.Complete then
+                RuleCompleted
+            else
+                StepCeilingReached
           Steps = steps
           Assertions = observation.Assertions
           Findings = ImmutableArray.CreateRange observation.Findings
+          ClauseEvaluations =
+            observation.ClauseEvaluations
+            |> Seq.map (fun pair ->
+                { ClauseId = pair.Key
+                  Count = pair.Value })
+            |> Seq.sortBy _.ClauseId
+            |> ImmutableArray.CreateRange
+          ProbeSettlements = ImmutableArray.CreateRange observation.ProbeSettlements
           ObservedEffects =
             ImmutableArray.CreateRange(observation.ObservedEffects |> Seq.sortBy _.Value)
           StartRequest = request
-          Commands = ImmutableArray.CreateRange commands
           Events = ImmutableArray.CreateRange events
           FinalState = state }
 
     let private defaultSweep =
-        lazy (DefaultSeeds |> Array.map (fun seed -> runBout seed DefaultStepCeiling))
+        lazy
+            (let stopwatch = Stopwatch.StartNew()
 
-    let defaultSweepResults () = defaultSweep.Value
+             let results =
+                 DefaultSeeds |> Array.map (fun seed -> runBout seed DefaultStepCeiling)
+
+             stopwatch.Stop()
+             results, stopwatch.Elapsed)
+
+    let defaultSweepEvidence () = defaultSweep.Value
+
+    let defaultSweepResults () = defaultSweep.Value |> fst
 
     let defaultBout seed = runBout seed DefaultStepCeiling
 
     let canonicalEventBytes (events: ImmutableArray<MatchEvent>) =
-        events |> sprintf "%A" |> Encoding.UTF8.GetBytes
-
-    let private cachedState (service: LocalMatchService) =
-        let flags = BindingFlags.Instance ||| BindingFlags.NonPublic
-
-        let context =
-            typeof<LocalMatchService>.GetFields(flags)
-            |> Array.find (fun field -> field.Name.Contains("context", StringComparison.Ordinal))
-            |> fun field ->
-                match field.GetValue service with
-                | Null -> failwith "The production match service had no replay context."
-                | NonNull value -> value
-
-        let property name =
-            match
-                context
-                    .GetType()
-                    .GetProperty(
-                        name,
-                        BindingFlags.Instance ||| BindingFlags.Public ||| BindingFlags.NonPublic
-                    )
-            with
-            | Null -> failwith $"The production replay context had no {name} property."
-            | NonNull value -> value
-
-        let cached =
-            match (property "Cached").GetValue context with
-            | Null -> failwith "The production persisted-match path did not cache a replayed match."
-            | NonNull value -> value
-
-        match
-            cached
-                .GetType()
-                .GetProperty(
-                    "State",
-                    BindingFlags.Instance ||| BindingFlags.Public ||| BindingFlags.NonPublic
-                )
-        with
-        | Null -> failwith "The production replay cache had no final State property."
-        | NonNull stateProperty ->
-            match stateProperty.GetValue cached with
-            | :? MatchState as state -> state
-            | _ -> failwith "The production replay cache did not contain a MatchState."
+        JsonSerializer.SerializeToUtf8Bytes(events, MatchJson.Options)
 
     let private errorCode (error: ApiError | null) =
         match error with
         | Null -> "unknown"
         | NonNull failure -> failure.Code
+
+    let private choiceSelectionFor
+        (requirement: MatchChoiceRequirementView)
+        (accepted: Nullable<bool>)
+        (amount: Nullable<int>)
+        (cardIds: string array)
+        (mechanicalType: string | null)
+        (effectId: string | null)
+        (distribution: MatchDamageAllocationRequest array)
+        (attachments: MatchAttachmentRequest array)
+        =
+        MatchChoiceSelectionRequest(
+            requirement.Id,
+            requirement.Kind,
+            accepted,
+            amount,
+            cardIds,
+            mechanicalType,
+            effectId,
+            distribution,
+            attachments
+        )
+
+    let private choiceSelection (requirement: MatchChoiceRequirementView) =
+        let emptyBool = Nullable<bool>()
+        let emptyInt = Nullable<int>()
+        let noCards = Array.empty<string>
+        let noDistribution = Array.empty<MatchDamageAllocationRequest>
+        let noAttachments = Array.empty<MatchAttachmentRequest>
+
+        let selection accepted amount cards mechanicalType effectId distribution attachments =
+            choiceSelectionFor
+                requirement
+                accepted
+                amount
+                cards
+                mechanicalType
+                effectId
+                distribution
+                attachments
+
+        if requirement.Kind = MatchChoiceKindView.Optional then
+            selection (Nullable false) emptyInt noCards null null noDistribution noAttachments
+        elif requirement.Kind = MatchChoiceKindView.Amount then
+            selection
+                emptyBool
+                (Nullable requirement.Minimum)
+                noCards
+                null
+                null
+                noDistribution
+                noAttachments
+        elif requirement.Kind = MatchChoiceKindView.Cards then
+            selection
+                emptyBool
+                emptyInt
+                (requirement.EligibleCards
+                 |> Seq.truncate requirement.Minimum
+                 |> Seq.map _.Id
+                 |> Seq.toArray)
+                null
+                null
+                noDistribution
+                noAttachments
+        elif requirement.Kind = MatchChoiceKindView.MechanicalType then
+            selection
+                emptyBool
+                emptyInt
+                noCards
+                requirement.EligibleMechanicalTypes[0].Value
+                null
+                noDistribution
+                noAttachments
+        elif requirement.Kind = MatchChoiceKindView.Attack then
+            selection
+                emptyBool
+                emptyInt
+                noCards
+                null
+                requirement.EligibleEffects[0].Id
+                noDistribution
+                noAttachments
+        elif requirement.Kind = MatchChoiceKindView.Distribution then
+            selection
+                emptyBool
+                emptyInt
+                noCards
+                null
+                null
+                [| MatchDamageAllocationRequest(
+                       requirement.EligibleCards[0].Id,
+                       requirement.Maximum
+                   ) |]
+                noAttachments
+        elif requirement.Kind = MatchChoiceKindView.Attachments then
+            selection
+                emptyBool
+                emptyInt
+                noCards
+                null
+                null
+                noDistribution
+                (requirement.EligibleCards
+                 |> Seq.truncate requirement.Minimum
+                 |> Seq.map (fun card ->
+                     MatchAttachmentRequest(card.Id, requirement.EligibleTargets[0].Id))
+                 |> Seq.toArray)
+        else
+            failwith $"Unsupported persisted-replay choice kind {requirement.Kind}."
+
+    let private actionRequest (matchView: MatchView) (action: MatchActionView) (commandId: Guid) =
+        let localRequirements =
+            action.ChoiceRequirements |> Array.filter _.Chooser.IsLocalPlayer
+
+        let includeRequirement (requirement: MatchChoiceRequirementView) =
+            match requirement.DependsOnOptional with
+            | Null -> true
+            | NonNull dependsOn ->
+                localRequirements
+                |> Array.find (fun parent -> parent.Id = dependsOn)
+                |> fun parent -> parent.Kind <> MatchChoiceKindView.Optional
+
+        ApplyMatchActionRequest(
+            commandId,
+            matchView.Frame.Revision,
+            action.Id,
+            localRequirements
+            |> Array.filter includeRequirement
+            |> Array.map choiceSelection
+        )
+
+    let private restoreProfile (catalogue: BlokemonCatalogue) (stored: StoredDocument | null) =
+        match stored with
+        | Null -> failwith "The App persistence route did not write a profile document."
+        | NonNull document ->
+            let options = JsonSerializerOptions(JsonSerializerDefaults.Web)
+
+            match JsonSerializer.Deserialize<ProductDocument>(document.Json, options) with
+            | Null -> failwith "The App profile document deserialized to null."
+            | NonNull profileDocument ->
+                match LocalProfile.Restore(profileDocument.Profile, catalogue.Mechanics) with
+                | DomainResult.Failed failure ->
+                    failwith $"The App profile document did not restore: {failure}."
+                | DomainResult.Succeeded profile -> profile
+
+    let private replayContext (catalogue: BlokemonCatalogue) (documents: IStateDocumentStore) =
+        { Catalogue = catalogue
+          Documents = documents
+          Engine = MatchEngine(catalogue.Mechanics)
+          Cpu = DeterministicCpu()
+          Cached = null }
+
+    let private replayStoredDocument
+        (context: MatchContext)
+        (profile: LocalProfile)
+        (revision: int64)
+        (document: MatchDocument)
+        =
+        let replayed = MatchReplay.replayDocument context profile revision document
+
+        match replayed.Error, replayed.Match with
+        | Null, NonNull loaded -> loaded
+        | NonNull error, _ -> failwith $"MatchReplay.replayDocument failed: {error.Code}."
+        | Null, Null -> failwith "MatchReplay.replayDocument returned no match and no error."
 
     let productionPersistedReplay () =
         task {
@@ -1590,10 +2316,11 @@ module internal FuzzHarness =
                 |> BlokemonCatalogue.FromBootstrapJson
 
             let documents = MemoryDocumentStore()
-            let matches = LocalMatchService(bootstrap, documents)
+            let store = documents :> IStateDocumentStore
+            let matches = LocalMatchService(bootstrap, store)
 
             let application =
-                LocalApplicationService(bootstrap, documents, matches, EconomyRules.Unlimited)
+                LocalApplicationService(bootstrap, store, matches, EconomyRules.Unlimited)
 
             let! created =
                 application.CreateProfile(
@@ -1604,7 +2331,8 @@ module internal FuzzHarness =
                 )
 
             if not created.Succeeded then
-                failwith $"The deterministic replay profile failed: {errorCode created.Error}."
+                failwith
+                    $"Creating the deterministic replay profile failed: {errorCode created.Error}."
 
             let! claimed =
                 application.ClaimStarterDeck(
@@ -1615,7 +2343,8 @@ module internal FuzzHarness =
                 )
 
             if not claimed.Succeeded then
-                failwith $"The deterministic replay deck failed: {errorCode claimed.Error}."
+                failwith
+                    $"Claiming the deterministic replay deck failed: {errorCode claimed.Error}."
 
             let! started =
                 application.StartMatch(
@@ -1626,121 +2355,62 @@ module internal FuzzHarness =
                 )
 
             if not started.Succeeded then
-                failwith $"The deterministic persisted match failed: {errorCode started.Error}."
-
-            let original = cachedState matches
-            let replayMatches = LocalMatchService(bootstrap, documents)
-
-            let replayApplication =
-                LocalApplicationService(bootstrap, documents, replayMatches, EconomyRules.Unlimited)
-
-            let! replayed = replayApplication.State()
-
-            if not replayed.Succeeded then
                 failwith
-                    $"The production persisted-document replay failed: {errorCode replayed.Error}."
+                    $"Starting the deterministic persisted match failed: {errorCode started.Error}."
 
-            return original, cachedState replayMatches
-        }
+            let startedMutation = started.Value |> nonNull
 
-    let persist (result: BoutResult) =
-        use stream = new MemoryStream()
-        use writer = new Utf8JsonWriter(stream)
-
-        let writeDeck (name: string) (snapshot: FrozenDeckSnapshot) =
-            writer.WritePropertyName name
-            writer.WriteStartObject()
-            writer.WriteString("Owner", snapshot.Owner.Value)
-            writer.WritePropertyName "Cards"
-            writer.WriteStartArray()
-
-            for card in snapshot.Cards do
-                writer.WriteStringValue card.Value
-
-            writer.WriteEndArray()
-            writer.WriteEndObject()
-
-        writer.WriteStartObject()
-        writer.WriteString("MatchId", result.StartRequest.MatchId.Value)
-        writer.WriteNumber("Seed", result.Seed)
-        writeDeck "FirstDeck" result.StartRequest.FirstDeck
-        writeDeck "SecondDeck" result.StartRequest.SecondDeck
-        writer.WritePropertyName "Steps"
-        writer.WriteStartArray()
-
-        for step in result.Commands do
-            writer.WriteStartObject()
-            writer.WriteString("Actor", step.Actor)
-            writer.WriteString("StableKey", step.StableKey)
-            writer.WriteEndObject()
-
-        writer.WriteEndArray()
-        writer.WriteEndObject()
-        writer.Flush()
-        stream.ToArray()
-
-    let replayPersisted (bytes: byte array) =
-        use persisted = JsonDocument.Parse bytes
-        let root = persisted.RootElement
-
-        let elementText (value: JsonElement) (name: string) =
-            match value.GetString() with
-            | Null -> failwith $"The persisted member {name} was null."
-            | NonNull parsed -> parsed
-
-        let text (value: JsonElement) (name: string) =
-            elementText (value.GetProperty name) name
-
-        let deck (name: string) =
-            let value = root.GetProperty name
-
-            { Owner = text value "Owner"
-              Cards =
-                value.GetProperty("Cards").EnumerateArray()
-                |> Seq.map (fun card -> elementText card "Cards")
-                |> Seq.toArray }
-
-        let firstDeck = deck "FirstDeck"
-        let secondDeck = deck "SecondDeck"
-
-        let steps =
-            root.GetProperty("Steps").EnumerateArray()
-            |> Seq.map (fun value ->
-                { Actor = text value "Actor"
-                  StableKey = text value "StableKey" })
-            |> Seq.toArray
-
-        let request =
-            { MatchId = MatchId(text root "MatchId")
-              Seed = MatchSeed(root.GetProperty("Seed").GetUInt64())
-              FirstDeck = FrozenDeckSnapshot.Create(PlayerId firstDeck.Owner, firstDeck.Cards)
-              SecondDeck = FrozenDeckSnapshot.Create(PlayerId secondDeck.Owner, secondDeck.Cards) }
-
-        let engine = MatchEngine authority
-
-        let mutable state, startedEvents =
-            match engine.Start request with
-            | MatchStartOutcome.Started(state, events) -> state, events
-            | MatchStartOutcome.Rejected _ -> failwith "The persisted start request was rejected."
-
-        let events = ResizeArray<MatchEvent>(startedEvents)
-
-        for recorded in steps do
-            let actor = PlayerId recorded.Actor
+            let startedView =
+                match startedMutation.Application.Match with
+                | Null -> failwith "The App persistence route started no match."
+                | NonNull value -> value
 
             let action =
-                engine.GetLegalActions(state, actor)
-                |> Seq.filter (fun candidate -> candidate.StableKey = recorded.StableKey)
-                |> Seq.exactlyOne
+                startedView.LegalActions
+                |> Array.find (fun candidate ->
+                    candidate.Kind <> MatchActionKindView.Resign && isNull candidate.DisabledReason)
 
-            match engine.Apply(state, action.Command) with
-            | CommandOutcome.Applied(applied, appliedEvents) ->
-                state <- applied
-                events.AddRange appliedEvents
-            | CommandOutcome.Rejected(_, rejection) ->
-                failwith $"Persisted action {recorded.StableKey} rejected with {rejection.Code}."
+            let! applied =
+                application.ApplyMatchAction(
+                    startedView.Frame.Id,
+                    actionRequest
+                        startedView
+                        action
+                        (Guid.Parse "07900000-0000-0000-0000-000000000004")
+                )
 
-        state, ImmutableArray.CreateRange events
+            if not applied.Succeeded then
+                failwith
+                    $"Applying the deterministic persisted human action failed: {errorCode applied.Error}."
+
+            let! storedProfile = store.Read "profile"
+            let profile = restoreProfile bootstrap storedProfile
+            let! storedMatch = store.Read "match"
+
+            let revision, document =
+                match storedMatch with
+                | Null -> failwith "The App persistence route did not write a MatchDocument."
+                | NonNull stored ->
+                    match
+                        JsonSerializer.Deserialize<MatchDocument>(stored.Json, MatchJson.Options)
+                    with
+                    | Null -> failwith "MatchJson deserialized the persisted MatchDocument to null."
+                    | NonNull parsed ->
+                        stored.Revision, MatchDocumentNormalization.matchDocument parsed
+
+            let first =
+                replayStoredDocument (replayContext bootstrap store) profile revision document
+
+            let second =
+                replayStoredDocument (replayContext bootstrap store) profile revision document
+
+            return
+                { PersistedCommands = document.Commands.Length
+                  FirstState = first.State
+                  FirstEvents = first.Events
+                  SecondState = second.State
+                  SecondEvents = second.Events }
+        }
 
     let coveredContent (seeds: uint64 array) =
         seeds
@@ -1764,6 +2434,7 @@ module internal FuzzHarness =
         (filename: string)
         (seeds: uint64 array)
         (stepCeiling: int)
+        (runDuration: TimeSpan)
         (results: BoutResult array)
         =
         let observed =
@@ -1779,6 +2450,23 @@ module internal FuzzHarness =
         let findings =
             results |> Array.collect (fun result -> result.Findings |> Seq.toArray)
 
+        let probes =
+            results |> Array.collect (fun result -> result.ProbeSettlements |> Seq.toArray)
+
+        let probeCount status =
+            probes |> Array.filter (fun probe -> probe.Status = status) |> Array.length
+
+        let unsettledProbes = probes |> Array.filter (fun probe -> probe.Status <> Settled)
+
+        let clauseEvaluations = Dictionary<string, int>(StringComparer.Ordinal)
+
+        for result in results do
+            for evaluation in result.ClauseEvaluations do
+                clauseEvaluations[evaluation.ClauseId] <-
+                    match clauseEvaluations.TryGetValue evaluation.ClauseId with
+                    | true, count -> count + evaluation.Count
+                    | false, _ -> evaluation.Count
+
         let longestBout = results |> Array.maxBy _.Steps |> _.Steps
 
         let ceilingRationale =
@@ -1791,7 +2479,8 @@ module internal FuzzHarness =
         lines.Add "# BLOKEMON-079 self-play program coverage"
         lines.Add ""
         lines.Add "- Authority programs: 310"
-        lines.Add $"- Effect-attributed program IDs observed: {observed.Count}/310"
+        lines.Add $"- Effect-attributed executed program IDs: {observed.Count}/310"
+        lines.Add $"- Unobserved or event-unobservable program IDs: {neverObserved.Length}/310"
         lines.Add "- Coverage mode: APPROXIMATE"
 
         lines.Add
@@ -1801,9 +2490,10 @@ module internal FuzzHarness =
             "- Reason: MatchEvent.Effect records effectful events, but accepted program invocation has no universal event; continuous refresh and multi-rule Kit execution can be unobservable when no instruction emits an effect event."
 
         lines.Add
-            "- Coverage population: selected self-play commands plus deterministic settlement probes for every payable action offered in each reached state; an EffectId can be attributed before every instruction settles."
+            "- Coverage population: selected self-play commands plus explicitly settled deterministic probes for every payable action offered in each reached state; only an emitted MatchEvent.Effect is labelled executed."
 
         lines.Add $"- Seed count: {seeds.Length}"
+        lines.Add $"- Seed set: {String.Join(',', seeds)}"
 
         lines.Add(
             if seeds = DefaultSeeds then
@@ -1816,11 +2506,23 @@ module internal FuzzHarness =
             $"- Step ceiling: {stepCeiling} commands per bout (run control only; not a game rule)"
 
         lines.Add $"- Ceiling rationale: {ceilingRationale}"
+        lines.Add $"- Measured harness runtime: {runDuration.TotalSeconds:F3} seconds"
+
+        lines.Add(
+            if seeds = DefaultSeeds then
+                "- Runtime rationale: this minimum three-seed sweep covers every content card and remains in the normal Game-suite budget."
+            else
+                "- Runtime rationale: this explicit-only sweep broadens effect sampling without adding its measured cost to the normal Game suite."
+        )
+
         lines.Add $"- Content cards in seeded decks: {contentCoverage.Count}/165"
         lines.Add $"- Completed bouts: {results.Length - incomplete.Length}"
         lines.Add $"- INCOMPLETE bouts: {incomplete.Length}"
-        lines.Add $"- Rule finding representatives: {findings.Length}"
-        lines.Add "- Finding retention: first failing assertion per rulebook clause and bout"
+        lines.Add $"- Rule findings: {findings.Length}"
+
+        lines.Add
+            "- Finding retention: first ordinary failure per rulebook clause and bout; every offered-action and settlement-probe failure retained"
+
         lines.Add "- Exclusions: none"
         lines.Add ""
         lines.Add "## Bouts"
@@ -1850,7 +2552,30 @@ module internal FuzzHarness =
         lines.Add ""
 
         for clause in Clauses.All do
-            lines.Add $"- {clause.Id} | {clause.Lines} | {clause.Heading} | {clause.Rule}"
+            let evaluations = clauseEvaluations.GetValueOrDefault(clause.Id, 0)
+
+            lines.Add
+                $"- {clause.Group} | {clause.Id} | {clause.Lines} | accepted: {clause.AcceptedAssertion} | authority: {clause.Rule} | check: {clause.Check} | sweep evaluations: {evaluations}"
+
+        lines.Add ""
+        lines.Add "## Offered-action probe settlement statuses"
+        lines.Add ""
+        lines.Add $"- Total payable offered-action probes: {probes.Length}"
+        lines.Add $"- Settled: {probeCount Settled}"
+        lines.Add $"- DirectActionRejected: {probeCount DirectActionRejected}"
+        lines.Add $"- NoSettlementAction: {probeCount NoSettlementAction}"
+        lines.Add $"- SettlementActionRejected: {probeCount SettlementActionRejected}"
+        lines.Add $"- SettlementCeilingReached: {probeCount SettlementCeilingReached}"
+        lines.Add ""
+        lines.Add "### Unsettled probe details"
+        lines.Add ""
+
+        if unsettledProbes.Length = 0 then
+            lines.Add "- none"
+        else
+            for probe in unsettledProbes do
+                lines.Add
+                    $"- seed={probe.Seed}; step={probe.Step}; action={probe.Action}; status={probe.Status}; settlement-commands={probe.SettlementCommands}; detail={probe.Detail}"
 
         lines.Add ""
         lines.Add "## INCOMPLETE seeds"
@@ -1874,7 +2599,7 @@ module internal FuzzHarness =
                 lines.Add $"- {finding}"
 
         lines.Add ""
-        lines.Add "## Effect-attributed program IDs observed"
+        lines.Add "## Effect-attributed executed program IDs"
         lines.Add ""
 
         for effect in observed |> Set.toArray |> Array.sort do

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Blokemon.Game.Tests</RootNamespace>
-    <AssemblyName>Blokemon.Game.Tests</AssemblyName>
+    <AssemblyName>Blokemon.Web.Tests</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="MatchScenario.fs" />

@@ -15,6 +15,7 @@ Roadie is the display label for internal Metal on BLK-035, BLK-036 and BLK-124 s
 - Each side has exactly 60 cards, no more than four cards with one mechanical identity except unlimited Basic Vim, and at least one Regular Bloke.
 - Sample the opening side before either shuffle or opening draw. Each side shuffles, draws a seven-card mitt, places one Regular Bloke at the oche, may place up to five Regular Blokes in the booth, then sets six bar chits.
 - A mitt without a Regular Bloke is reshuffled and redrawn until legal. Simultaneous mulligans grant no bonus. For each excess mulligan, the other side may draw up to one extra card.
+- Throughout a bout, every card instance occupies exactly one zone, and each side's booth holds at most five Blokes.
 - The opening side cannot play a Mate or declare an Attack in its first round.
 
 ## Round, promotion, Vim, kits and taxi
@@ -22,7 +23,7 @@ Roadie is the display label for internal Metal on BLK-035, BLK-036 and BLK-124 s
 - Start each round with the required stack draw. Failure to make that required draw loses the bout. An effect draw from a short stack takes only available cards and does not itself lose the bout.
 - An Attack ends the round; a Party Trick does not. One normal Vim attachment is allowed per round. Attack Vim costs stay attached unless an instruction says to chuck them; Local cost symbols accept any Vim.
 - Promotion requires the exact mechanical edge. A Bloke cannot promote on either side's first round, its first round in play, or twice in one round. Promotion retains damage and attached cards while clearing rough states and Attack effects.
-- Bar Bits and Bar Kits are unlimited per round, with at most one Bar Kit on a Bloke. At most one Mate and one Local may be played per round. Only one Local is in play; an identical mechanical Local cannot replace itself and a different Local chucks the old one.
+- Bar Bits and Bar Kits are unlimited per round, with at most one Bar Kit on a Bloke. At most one Mate and one Local may be played per round. Only one Local is in play per side; an identical mechanical Local cannot replace itself and a different Local chucks the old one.
 - Taxi is once per round, requires a booth Bloke and chucks one Vim per fare symbol. NoddedOff or Legless Blokes cannot taxi. Moving to the booth clears rough states and Attack effects but retains damage and attachments.
 
 ## Attack and damage ordering
