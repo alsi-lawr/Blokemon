@@ -8,7 +8,12 @@
   }
 }
 
-/* A hold must not raise the browser's selection or callout, and a drag must still scroll. */
+/*
+  A hold must not raise the browser's selection or callout, and a drag must still scroll. Nor may
+  it wash the card in Android's tap colour: that is painted over the whole of whatever was pressed
+  and stays for as long as the press does, so a card being held to be read was being held under a
+  blue sheet. The card answers a press by coming up, which is the only answer it needs.
+*/
 .field-card-button,
 .hand-card,
 .tray-card,
@@ -20,6 +25,7 @@
   touch-action: pan-x pan-y;
   user-select: none;
   -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /*
@@ -347,6 +353,7 @@ button.bench-slot span {
   touch-action: pan-x pan-y;
   user-select: none;
   -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /*

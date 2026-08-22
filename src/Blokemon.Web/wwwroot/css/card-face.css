@@ -5,9 +5,13 @@
 */
 .card-face-host,
 .oche-card-back,
-.packaging-art {
+.packaging-art,
+.card-showcase-trigger {
   user-select: none;
   -webkit-touch-callout: none;
+  /* Android washes whatever was pressed in its own colour and holds it there for the length of
+     the press, which on a card is the card. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .card-face-host {
