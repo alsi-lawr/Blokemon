@@ -117,13 +117,20 @@ module internal EffectDamage =
                 |> Array.tryFindBack (fun effect -> effect.MechanicalTypes.Length > 0)
 
             let effectiveSoftSpots =
-                match chosenSoftSpot with
-                | Some effect -> effect.MechanicalTypes
-                | None ->
-                    ImmutableArray.CreateRange(
-                        (catalog.Bloke target.MechanicalId).SoftSpots
-                        |> Array.map (fun softSpot -> softSpot.MechanicalType)
-                    )
+                if
+                    softSpotEffects
+                    |> Array.exists (fun effect ->
+                        effect.Amount = 1 && effect.MechanicalTypes.Length = 0)
+                then
+                    ImmutableArray<_>.Empty
+                else
+                    match chosenSoftSpot with
+                    | Some effect -> effect.MechanicalTypes
+                    | None ->
+                        ImmutableArray.CreateRange(
+                            (catalog.Bloke target.MechanicalId).SoftSpots
+                            |> Array.map (fun softSpot -> softSpot.MechanicalType)
+                        )
 
             if effectiveSoftSpots |> Seq.exists (fun value -> Seq.contains value attackerTypes) then
                 damage <-

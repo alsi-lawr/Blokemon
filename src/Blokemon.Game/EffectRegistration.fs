@@ -64,17 +64,30 @@ module internal EffectRegistration =
             ()
         else
 
+            let usesAttachedToolTarget =
+                runtime.IsHouseRule
+                && kind = TemporaryEffectKind.ModifySoftSpot
+                && instruction.Targets.Length = 0
+                && not (hasDeclaredSources instruction)
+                && runtime.Source.Kind = CardKind.Kit
+                && runtime.Source.Zone = CardZone.Attached
+                && runtime.Source.AttachedTo.IsSome
+                && (catalog.Kit runtime.Source.MechanicalId).Kind = BlokemonKitKind.BarKit
+
             let mutable targets =
-                (match path with
-                 | ValueNone ->
-                     resolveCandidates
-                         catalog
-                         runtime.Builder
-                         runtime.Actor
-                         runtime.Source
-                         instruction
-                         ValueNone
-                 | ValueSome path -> resolveSelectedTargets catalog runtime instruction path)
+                (if usesAttachedToolTarget then
+                     Seq.empty
+                 else
+                     match path with
+                     | ValueNone ->
+                         resolveCandidates
+                             catalog
+                             runtime.Builder
+                             runtime.Actor
+                             runtime.Source
+                             instruction
+                             ValueNone
+                     | ValueSome path -> resolveSelectedTargets catalog runtime instruction path)
                 |> Seq.filter isInPlay
                 |> Seq.toArray
 

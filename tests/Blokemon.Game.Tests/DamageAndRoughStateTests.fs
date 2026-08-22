@@ -6,7 +6,59 @@ open Blokemon.Game
 open FsUnit
 open TUnit.Core
 
+[<AutoOpen>]
+module private DamageScenarios =
+
+    let matchingAttackDamageWithAndWithoutProtectiveGoggles (defenderId: string) =
+        let control =
+            MatchScenario.BattleState "BLK-001" defenderId [ "VIM-BLAZED"; "VIM-SOBER" ] 17UL
+
+        let attackDamage (state: MatchState) =
+            let applied =
+                MatchScenario.Applied(
+                    MatchScenario
+                        .Engine()
+                        .Apply(state, MatchScenario.AttackCommand state "BLK-001-B01")
+                )
+
+            (applied.Card(CardInstanceId "defender")).Damage
+
+        let defender = control.Card(CardInstanceId "defender")
+
+        let protectiveGoggles =
+            MatchScenario.AttachedCard
+                "protective-goggles"
+                "KIT-013"
+                MatchScenario.SecondPlayer
+                CardZone.Attached
+                -1
+                defender.Id
+
+        let protectedState =
+            MatchScenario.WithCards
+                control
+                [ { defender with
+                      Attachments = ImmutableArray.Create protectiveGoggles.Id }
+                  protectiveGoggles ]
+
+        attackDamage protectedState, attackDamage control
+
 type DamageAndRoughStateTests() =
+
+    [<Test>]
+    member _.``protective goggles should remove a regular defender's soft spot``() =
+        let protectedDamage, controlDamage =
+            matchingAttackDamageWithAndWithoutProtectiveGoggles "BLK-027"
+
+        protectedDamage |> should be (lessThan controlDamage)
+        controlDamage |> should equal (protectedDamage * 2)
+
+    [<Test>]
+    member _.``protective goggles should leave a seasoned defender's soft spot intact``() =
+        let protectedDamage, controlDamage =
+            matchingAttackDamageWithAndWithoutProtectiveGoggles "BLK-028"
+
+        protectedDamage |> should equal controlDamage
 
     [<Test>]
     member _.``attack damage should apply the soft spot before the defender's own reduction``() =
