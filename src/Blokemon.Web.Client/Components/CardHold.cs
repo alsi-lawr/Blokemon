@@ -14,7 +14,7 @@ internal sealed class CardHold
     // What separates a hold from a tap is now mostly that the card answers a hold while it is
     // still being made: the press starts lifting the card immediately, so the player can see the
     // gesture being taken and does not need the threshold to be long enough to be sure of it.
-    private const int _holdMilliseconds = 300;
+    private const int _holdMilliseconds = 400;
 
     // A press that travels further than this is a scroll or a drag, not a tap or a hold.
     private const double _travelTolerance = 12;
