@@ -21,8 +21,9 @@
      tabindex="-1"
      @ref="_viewer"
      @onkeydown="Key"
-     @onpointerup="Closed"
-     @onpointercancel="Closed">
+     @onpointerdown="Down"
+     @onpointerup="Up"
+     @onpointercancel="Up">
     <CardFace Card="Card"
               Size="CardFaceSize.Showcase"
               Class="card-viewer-card"
@@ -31,6 +32,10 @@
 
 @code {
     private ElementReference _viewer;
+
+    // Whether the pointer being released is one this surface was pressed by, rather than one that
+    // was already down on the table when this surface appeared underneath it.
+    private bool _pressed;
 
     [Parameter, EditorRequired]
     public required CardView Card { get; set; }
@@ -43,6 +48,24 @@
 
     // The surface itself, so the page can hand it focus once the browser has it.
     public ElementReference Element => _viewer;
+
+    private void Down() => _pressed = true;
+
+    // A card raised by a finger comes up under that finger, so the lift that finishes raising it
+    // arrives here rather than on the card. Putting it down on that lift would take it away in the
+    // same movement that asked for it, and the finger would never be off the card to read it: this
+    // surface answers only a press that began on it, which is the player's next tap. A pointer that
+    // covers nothing - a mouse - is still holding the card up, and puts it down by letting go.
+    private Task Up(PointerEventArgs eventArgs)
+    {
+        if (eventArgs.PointerType == "touch" && !_pressed)
+        {
+            return Task.CompletedTask;
+        }
+
+        _pressed = false;
+        return Closed.InvokeAsync();
+    }
 
     private Task Key(KeyboardEventArgs eventArgs) =>
         eventArgs.Key is "Escape" or "Enter" or " " ? Closed.InvokeAsync() : Task.CompletedTask;

@@ -4,6 +4,9 @@
   min-height: 0;
   overflow: auto;
   overscroll-behavior: contain;
+  /* Nothing on the table is text to take away with you, and a finger held on a card is a hold
+     rather than the start of a selection. Every word here is a game piece or a count of them. */
+  user-select: none;
   background:
     radial-gradient(ellipse at 50% 45%, #24341e 0, #11170e 50%, #090b08 85%),
     #090b08;

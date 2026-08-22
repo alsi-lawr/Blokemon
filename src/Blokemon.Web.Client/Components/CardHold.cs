@@ -20,6 +20,7 @@ internal sealed class CardHold
     private CancellationTokenSource? _hold;
     private double _startX;
     private double _startY;
+    private bool _byFinger;
 
     // Whether the press has already opened the viewer, and therefore has one to close.
     public bool Viewing { get; private set; }
@@ -30,6 +31,7 @@ internal sealed class CardHold
     public void Down(PointerEventArgs eventArgs, Func<Task> view)
     {
         Viewing = false;
+        _byFinger = eventArgs.PointerType == "touch";
         _startX = eventArgs.ClientX;
         _startY = eventArgs.ClientY;
         Stop();
@@ -61,6 +63,11 @@ internal sealed class CardHold
     }
 
     // Ends the press, saying whether it was holding a card up and so has one to put back down.
+    //
+    // A finger holding a card up is covering the card it is holding up, so lifting it is how the
+    // card is read rather than how reading it ends: a held view raised by a finger stays, and the
+    // tap that puts it down is the player's next one. A pointer that does not sit on the thing it
+    // presses hides nothing, so a mouse still reads by holding and puts the card down on release.
     public bool Release()
     {
         Stop();
@@ -70,7 +77,7 @@ internal sealed class CardHold
         }
 
         Viewing = false;
-        return true;
+        return !_byFinger;
     }
 
     private async Task Wait(CancellationTokenSource hold, Func<Task> view)
