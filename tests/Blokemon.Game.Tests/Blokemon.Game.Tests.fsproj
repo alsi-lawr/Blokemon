@@ -27,8 +27,11 @@
     <Compile Include="AuthorityErrataTests.fs" />
     <Compile Include="AuthorityParityTests.fs" />
     <Compile Include="FullSetBehaviorTests.fs" />
+    <Compile Include="FuzzHarness.fs" />
+    <Compile Include="FuzzHarnessTests.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../src/Blokemon.App/Blokemon.App.fsproj" />
     <ProjectReference Include="../../src/Blokemon.Core/Blokemon.Core.fsproj" />
     <ProjectReference Include="../../src/Blokemon.Game/Blokemon.Game.fsproj" />
   </ItemGroup>
@@ -42,6 +45,11 @@
     <PackageReference Include="FSharp.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Content
+      Include="../../src/Blokemon.Web.Client/wwwroot/content/catalogue.json"
+      Link="content/catalogue.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
     <Content
       Include="../../content/authorities/mechanics.json"
       Link="Authorities/mechanics.json"
