@@ -36,6 +36,13 @@ DELIVERED = ROOT / "content" / "art-web"
 # illustrations are the product, so the bytes are worth spending.
 QUALITY = 95
 
+# The widths a card is actually seen at. The card is drawn on a 750 x 1050 grid with the
+# illustration 590 wide, and every place it appears scales that grid down: a collection tile shows
+# the art about 124 css pixels across, a card held up to be read about 295. Multiply by the screen
+# and the range of pixels genuinely wanted runs from about 30 to the 590 the artwork has, so three
+# widths cover it without a candidate that is never the right answer.
+WIDTHS = (200, 400, 590)
+
 # The placeholder. Wide enough to carry the shape and the colours of the illustration, narrow
 # enough that inlining one into every card costs less than a single request would.
 PLACEHOLDER_WIDTH = 24
@@ -65,15 +72,21 @@ def derive(approved: pathlib.Path, work: pathlib.Path) -> str:
     png = work / f"{approved.stem}.png"
     png.write_bytes(base64.b64decode(embedded.group(1)))
 
-    full = DELIVERED / f"{approved.stem}.webp"
+    written = []
+    for width in WIDTHS:
+        target = DELIVERED / f"{approved.stem}-{width}.webp"
+        # The widest is the artwork's own size, so it is encoded rather than resampled.
+        cwebp(png, target, QUALITY, None if width >= 590 else width)
+        written.append(f"{width}w {target.stat().st_size:,}")
+
     placeholder = DELIVERED / f"{approved.stem}.lqip.webp"
-    cwebp(png, full, QUALITY, None)
     cwebp(png, placeholder, PLACEHOLDER_QUALITY, PLACEHOLDER_WIDTH)
     png.unlink()
 
     return (
-        f"{approved.stem}: {approved.stat().st_size:,} -> {full.stat().st_size:,} bytes"
-        f" (+{placeholder.stat().st_size:,} placeholder)"
+        f"{approved.stem}: {approved.stat().st_size:,} bytes -> "
+        + ", ".join(written)
+        + f" (+{placeholder.stat().st_size:,} placeholder)"
     )
 
 

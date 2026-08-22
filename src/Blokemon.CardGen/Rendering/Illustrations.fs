@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.Collections.Immutable
 open System.IO
+open System.Text.RegularExpressions
 open Blokemon.CardGen.Domain
 
 /// The part an illustration plays on a card face.
@@ -18,8 +19,13 @@ type internal IllustrationRole =
 /// One illustration as a browser receives it.
 type Delivered =
     {
-        /// The file the served art directory holds it under.
+        /// What a browser is given when it will not choose a width for itself.
         FileName: string
+
+        /// Every width the same picture is delivered at, narrowest first, so that a browser may
+        /// take the one it needs for the size the card is being shown at. Empty for artwork that
+        /// arrives as vector and is the same file at every size.
+        Widths: (string * int) list
 
         /// A base64 WebP a couple of hundred bytes wide, carried inside the card so that the space
         /// the illustration will fill is never an empty rectangle while it is on the way. Vector
@@ -44,6 +50,10 @@ module IllustrationRendering =
 
     /// What marks a file in the delivered directory as a placeholder rather than an illustration.
     let private placeholderSuffix = ".lqip.webp"
+
+    /// A delivered width, named by the picture it is a width of.
+    let private variant =
+        Regex(@"^(?<stem>.+)-(?<width>\d+)\.webp$", RegexOptions.Compiled)
 
     let private attribute role =
         match role with
@@ -92,14 +102,37 @@ module IllustrationRendering =
                 Convert.ToBase64String(File.ReadAllBytes(Path.Combine(directory, file))))
             |> readOnlyDict
 
+        let stemOf (file: string) =
+            let hit = variant.Match file
+
+            if hit.Success then
+                hit.Groups["stem"].Value
+            else
+                Path.GetFileNameWithoutExtension file |> nonNull
+
         files
         |> Seq.filter (isPlaceholder >> not)
-        |> Seq.map (fun file ->
-            let stem = Path.GetFileNameWithoutExtension file |> nonNull
+        |> Seq.groupBy stemOf
+        |> Seq.map (fun (stem, delivered) ->
+            let widths =
+                delivered
+                |> Seq.choose (fun file ->
+                    let hit = variant.Match file
+
+                    if hit.Success then
+                        Some(file, int hit.Groups["width"].Value)
+                    else
+                        None)
+                |> Seq.sortBy snd
+                |> List.ofSeq
 
             KeyValuePair(
                 stem,
-                { FileName = file
+                { FileName =
+                    match widths with
+                    | [] -> Seq.exactlyOne delivered
+                    | sized -> sized |> List.last |> fst
+                  Widths = widths
                   Placeholder =
                     match placeholders.TryGetValue stem with
                     | true, encoded -> Some encoded
@@ -117,6 +150,25 @@ module IllustrationRendering =
             sprintf " style=\"background-image:url(data:image/webp;base64,%s)\"" encoded
         | _ -> ""
 
+    /// Hands the browser every width and lets it measure the box for itself.
+    ///
+    /// `sizes="auto"` is only honoured on an image the browser is allowed to defer, so the two
+    /// travel together. It tells the truth only because the illustration is laid out at the size
+    /// it is seen at rather than at the card's own - see the note in blokemon-card.css. Vector
+    /// artwork has one file and nothing to choose between.
+    ///
+    /// A browser that does not know `auto` reads the whole attribute as invalid and falls back to
+    /// the full viewport width, which lands on the widest candidate: the picture every browser was
+    /// sent before this, so the worst case is the old behaviour rather than a broken one.
+    let private choice (delivered: Delivered) =
+        match delivered.Widths with
+        | [] -> ""
+        | widths ->
+            widths
+            |> List.map (fun (file, width) -> $"/art/{esc file} {width}w")
+            |> String.concat ", "
+            |> sprintf " loading=\"lazy\" sizes=\"auto\" srcset=\"%s\""
+
     let internal image (artwork: Artwork) role rendering =
         match rendering with
         | IllustrationRendering.Inline encoded ->
@@ -129,5 +181,5 @@ module IllustrationRendering =
 
             match delivered.TryGetValue stem with
             | true, art ->
-                $"""<img{attribute role}{standIn role art} src="/art/{esc art.FileName}" alt="{esc artwork.AltText}"/>"""
+                $"""<img{attribute role}{standIn role art}{choice art} src="/art/{esc art.FileName}" alt="{esc artwork.AltText}"/>"""
             | _ -> raise (InvalidDataException $"No illustration for {artwork.FileName}")

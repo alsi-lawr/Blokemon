@@ -553,8 +553,12 @@
   z-index: 2;
   left: 24px;
   top: 33px;
-  width: 74px;
-  height: 52px;
+  /* Laid out at the size it is seen at and scaled back, as the illustration above is, so that a
+     thumbnail this small is not sent the full-size picture. */
+  width: calc(74px * var(--blokemon-card-scale));
+  height: calc(52px * var(--blokemon-card-scale));
+  transform: scale(calc(1 / var(--blokemon-card-scale)));
+  transform-origin: 0 0;
   object-fit: contain;
   object-position: center;
   border: 0;
@@ -617,8 +621,25 @@
 
 .blokemon-gym-card .art-viewport img {
   display: block;
-  width: 100%;
-  height: 100%;
+  /*
+    Laid out at the size it is actually seen at, and scaled back up by the inverse of the card's
+    own scale so that it paints in exactly the same place at exactly the same size.
+
+    The card is a fixed 750 x 1050 grid shrunk by a transform, and a transform is a painting
+    operation: it never touches layout. An illustration written the obvious way is therefore laid
+    out at its full 590 however small the card is drawn, and `sizes="auto"` - which reads the
+    layout box - would ask for the largest picture for a tile an inch across. Inverting the scale
+    here is what makes the box the browser measures the box the player actually sees, without
+    moving a single canonical coordinate of the card.
+
+    Still a percentage of the viewport rather than a measurement of its own: the viewport is a
+    different size for a framed illustration, a full-bleed reverse and an energy field, and the
+    illustration has always taken whichever it is put in.
+  */
+  width: calc(100% * var(--blokemon-card-scale));
+  height: calc(100% * var(--blokemon-card-scale));
+  transform: scale(calc(1 / var(--blokemon-card-scale)));
+  transform-origin: 0 0;
   object-fit: contain;
   object-position: center;
   /*
