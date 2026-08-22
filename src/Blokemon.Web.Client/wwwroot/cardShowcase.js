@@ -61,6 +61,13 @@ function ensureDialogState(dialog) {
 }
 
 export function show(dialog, returnFocusTo) {
+  // A reference to an element that has left the document resolves to null rather than throwing,
+  // which is what happens when the page carrying this surface is navigated away from before the
+  // request to open it arrives. There is nothing to open and nothing has gone wrong.
+  if (!dialog) {
+    return;
+  }
+
   const state = ensureDialogState(dialog);
   state.returnFocusTo =
     returnFocusTo instanceof HTMLElement ? returnFocusTo : document.activeElement;

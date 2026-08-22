@@ -43,8 +43,18 @@
         StateHasChanged();
     }
 
+    // The module is fetched when the page arrives rather than when a card is pressed. Fetching it
+    // on the press put a network round trip between the press and the card appearing, and on a
+    // page showing the whole collection that request queues behind every illustration on it - long
+    // enough for a player to give up and go somewhere else, which took the dialog out of the
+    // document before the request to open it landed.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            _module ??= await Js.InvokeAsync<IJSObjectReference>("import", "./cardShowcase.js");
+        }
+
         if (!_showAfterRender)
         {
             return;
