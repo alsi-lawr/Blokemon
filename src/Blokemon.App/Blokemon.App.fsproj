@@ -69,6 +69,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Blokemon.Game.Tests" />
     <InternalsVisibleTo Include="Blokemon.Web.Tests" />
   </ItemGroup>
 </Project>
