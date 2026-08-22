@@ -85,7 +85,11 @@ module internal EffectCardMoves =
                         moveBlokeAndAttachedCardsToStack runtime.Builder card
                         moved <- moved + 1
                     else
-                        runtime.Builder.MoveCard(card.Id, zone)
+                        if card.Zone = CardZone.Attached && zone <> CardZone.Attached then
+                            runtime.Builder.DetachTo(card.Id, zone)
+                        else
+                            runtime.Builder.MoveCard(card.Id, zone)
+
                         moved <- moved + 1
 
                         if zone = CardZone.Booth && card.Kind = CardKind.Bloke then

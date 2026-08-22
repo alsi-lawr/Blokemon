@@ -212,8 +212,17 @@ type CardFlowTests() =
                 )
             )
 
-        (applied.Card otherVim.Id).Zone |> should equal CardZone.Mitt
-        (applied.Card otherVim.Id).Owner |> should equal MatchScenario.SecondPlayer
+        let returnedVim = applied.Card otherVim.Id
+
+        returnedVim.Zone |> should equal CardZone.Mitt
+        returnedVim.Owner |> should equal MatchScenario.SecondPlayer
+        returnedVim.AttachedTo.IsNone |> should be True
+
+        (applied.Card defender.Id).Attachments
+        |> Seq.contains otherVim.Id
+        |> should be False
+
+        (applied.Card ownVim.Id).Zone |> should equal CardZone.Attached
 
         (applied.Card ownVim.Id).AttachedTo
         |> should equal (ValueSome(CardInstanceId "attacker"))
