@@ -34,6 +34,19 @@ module internal EffectCardTransforms =
                 runtime.Builder.ClearRoughStates(runtime.Actor, outgoing.Id)
                 runtime.Builder.RemoveEffectsFor(outgoing.Id, true)
                 runtime.Builder.MoveCard(incoming.Id, CardZone.Oche)
+
+                // A card moving is not a public event - every draw and every discard is one, and a
+                // log of them is a log of the engine rather than of the game. So a swap says so
+                // itself, or the Blokemon standing opposite is replaced with nothing anywhere
+                // accounting for it. The pair is ordered arriving first and leaving second, which
+                // is the order the sentence downstream reads them in.
+                runtime.Builder.Events.Add
+                    { PendingMatchEvent.forCards
+                          MatchEventKind.OcheSwapped
+                          incoming.Owner
+                          runtime.Source.Id
+                          (ImmutableArray.Create(incoming.Id, outgoing.Id)) with
+                        Effect = ValueSome runtime.Effect }
             | _ -> ()
         | _ -> ()
 

@@ -43,6 +43,51 @@ module private ExceptionalEffectFixtures =
 type ExceptionalEffectTests() =
 
     [<Test>]
+    member _.``a switch a card effect forces should say which cards traded places``() =
+        let engine = MatchScenario.Engine()
+        let state = MatchScenario.BattleState "BLK-106" "BLK-001" [ "VIM-LAIRY" ] 397UL
+
+        let ownBench =
+            MatchScenario.PlainCard
+                "own-bench"
+                "BLK-004"
+                MatchScenario.FirstPlayer
+                CardZone.Booth
+                -1
+
+        let state = MatchScenario.WithCards state [ ownBench ]
+
+        let _, missing =
+            MatchScenario.Rejected(
+                engine.Apply(state, MatchScenario.AttackCommand state "BLK-106-B01")
+            )
+
+        let choice =
+            requirementOfKind ChoiceRequirementKind.Cards missing.ChoiceRequirements
+
+        let _, events =
+            MatchScenario.AppliedWith(
+                engine.Apply(
+                    state,
+                    MatchScenario.AttackCommandWith
+                        state
+                        "BLK-106-B01"
+                        (ImmutableArray.Create(
+                            EffectChoice.Cards(choice.Id, ImmutableArray.Create ownBench.Id)
+                        ))
+                )
+            )
+
+        let swap =
+            events
+            |> Seq.filter (fun value -> value.Kind = MatchEventKind.OcheSwapped)
+            |> Seq.exactlyOne
+
+        swap.TargetCards
+        |> Seq.toList
+        |> should equal [ ownBench.Id; CardInstanceId "attacker" ]
+
+    [<Test>]
     member _.``a spread attack should damage every opponent and switch with the chosen own booth``
         ()
         =

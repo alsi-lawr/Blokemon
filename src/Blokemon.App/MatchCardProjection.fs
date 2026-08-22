@@ -229,6 +229,11 @@ module internal MatchCardProjection =
             $"{humanize (matchEvent.RoughState.Value.ToString())} ended."
         | MatchEventKind.BarChitsTaken ->
             $"""{actor} took {matchEvent.Amount} Prize {if matchEvent.Amount = 1 then "Card" else "Cards"}."""
+        // Named rather than attributed. Whoever forced the switch, the cards trading places are the
+        // owner's, so "Bloke switched" would credit a player who may have had no say in it - and
+        // the card coming in names the side plainly enough on its own.
+        | MatchEventKind.OcheSwapped ->
+            $"{cardName state matchEvent.TargetCards[0]} switched in for {cardName state matchEvent.TargetCards[1]}."
         | MatchEventKind.RoundStarted -> $"{actor}'s turn started."
         | MatchEventKind.RoundEnded -> $"{actor} ended the turn."
         | MatchEventKind.BlokeSentHome -> "A Blokemon was Knocked Out."

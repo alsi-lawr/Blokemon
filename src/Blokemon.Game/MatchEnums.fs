@@ -92,6 +92,7 @@ type MatchEventKind =
     | SuddenDeathStarted = 21
     | MatchWon = 22
     | StateCommitted = 23
+    | OcheSwapped = 24
 
 type DeckIssueCode =
     | InvalidMatchId = 0

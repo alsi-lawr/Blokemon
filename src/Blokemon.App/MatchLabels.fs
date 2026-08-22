@@ -112,6 +112,7 @@ module internal MatchLabels =
         | MatchEventKind.RoundStarted
         | MatchEventKind.RoundEnded
         | MatchEventKind.SuddenDeathStarted
+        | MatchEventKind.OcheSwapped
         | MatchEventKind.MatchWon -> true
         | _ -> false
 
@@ -143,6 +144,10 @@ module internal MatchLabels =
         | MatchEventKind.BlokeSentHome -> Nullable MatchAnimationKindView.Knockout
         | MatchEventKind.BarChitsTaken -> Nullable MatchAnimationKindView.Prize
         | MatchEventKind.RoundStarted -> Nullable MatchAnimationKindView.Turn
+        // The table has nothing of its own to show for a swap - both cards are already standing on
+        // it and only trade places - so this takes the plain toast every other unremarkable cue
+        // takes, and says in words the one thing the board changing cannot say by itself.
+        | MatchEventKind.OcheSwapped -> Nullable MatchAnimationKindView.Other
         | MatchEventKind.MatchWon -> Nullable MatchAnimationKindView.Victory
         | _ -> Nullable()
 
