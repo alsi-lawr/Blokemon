@@ -621,6 +621,16 @@
   height: 100%;
   object-fit: contain;
   object-position: center;
+  /*
+    The card travels with a few hundred bytes of its own illustration, set as this element's
+    background, so that the space the picture will fill is never an empty rectangle while it is on
+    the way. These three lay it out in exactly the box object-fit puts the picture in, so that
+    arriving replaces it rather than uncovering it, and it says nothing at all about how a card
+    looks once its illustration is here.
+  */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 }
 
 .blokemon-gym-card .metadata-strip {

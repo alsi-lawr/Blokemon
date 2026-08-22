@@ -29,7 +29,10 @@ public static class BlokemonCatalogueBuilder
             Path.Combine(authorityRoot, "printing.json"),
             artRoot
         );
-        var cardDocument = CardDocument.LoadReferenced(artRoot);
+        // A card is bound to its approved illustration, which is what the set authority above is
+        // read against. What the browser is sent is the delivered form of that same picture, which
+        // is derived from it and lives beside it; see packaging/art/derive-web-art.py.
+        var cardDocument = CardDocument.LoadReferenced(Path.Combine(contentRoot, "art-web"));
         var mechanicsValidation = BlokemonSetValidator.ValidateRuntime(mechanics);
         if (!mechanicsValidation.IsValid)
         {

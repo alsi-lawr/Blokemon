@@ -47,8 +47,15 @@
       Link="wwwroot/css/%(RecursiveDir)%(Filename)%(Extension)"
     />
     <Content Include="../Blokemon.Web/wwwroot/favicon.svg" Link="wwwroot/favicon.svg" />
+    <!--
+      The delivered illustrations, not the approved ones. The approved artwork stays in the
+      repository as the source of record and is seventy-two megabytes of it; what a browser needs
+      is the WebP derived from it, which is under ten. The placeholders are excluded because they
+      already travel inside the cards themselves and are never fetched.
+    -->
     <Content
-      Include="../../content/art/**"
+      Include="../../content/art-web/**"
+      Exclude="../../content/art-web/*.lqip.webp"
       Link="wwwroot/art/%(RecursiveDir)%(Filename)%(Extension)"
     />
     <Content

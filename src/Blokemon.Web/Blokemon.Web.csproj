@@ -33,9 +33,18 @@
       Link="content\authorities\%(RecursiveDir)%(Filename)%(Extension)"
       CopyToOutputDirectory="PreserveNewest"
     />
+    <!--
+      Both forms travel: the approved artwork because the set authority is read against it, and the
+      delivered WebP beside it because that is what the browser is sent.
+    -->
     <Content
       Include="..\..\content\art\**"
       Link="content\art\%(RecursiveDir)%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <Content
+      Include="..\..\content\art-web\**"
+      Link="content\art-web\%(RecursiveDir)%(Filename)%(Extension)"
       CopyToOutputDirectory="PreserveNewest"
     />
     <Content

@@ -51,7 +51,10 @@ app.MapStaticAssets();
 app.UseStaticFiles(
     new StaticFileOptions
     {
-        FileProvider = new PhysicalFileProvider(Path.Combine(contentRoot, "art")),
+        // The delivered illustrations rather than the approved ones: cards ask for the WebP that
+        // was derived from the approved artwork, and the artwork itself is read only when the
+        // catalogue is assembled.
+        FileProvider = new PhysicalFileProvider(Path.Combine(contentRoot, "art-web")),
         RequestPath = "/art",
     }
 );

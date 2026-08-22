@@ -47,7 +47,10 @@
               # The browser build links the shared stylesheet and favicon out of
               # the server project, and the card art and fonts out of content.
               ./src/Blokemon.Web/wwwroot
-              ./content/art
+              # The delivered illustrations only. The approved artwork the browser build
+              # has no use for is seventy-two megabytes it would otherwise carry into
+              # every evaluation of this source.
+              ./content/art-web
               ./content/fonts
             ]
           );
@@ -73,7 +76,10 @@
               ./src/Blokemon.Web
               ./src/Blokemon.Web.Client
               ./src/Blokemon.Web.Content
+              # The server assembles the catalogue itself, so it needs the approved artwork
+              # the set authority is read against as well as the form it serves.
               ./content/art
+              ./content/art-web
               ./content/authorities
               ./content/fonts
             ]

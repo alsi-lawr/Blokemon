@@ -79,7 +79,7 @@ type CardDocument =
         { Design = File.ReadAllText(CardDelivery.design ())
           Art = IllustrationRendering.embedded content }
 
-    /// Assembles an inline-HTML printer for a content directory.
-    static member LoadReferenced(content: string) =
+    /// Assembles an inline-HTML printer for a directory of delivered illustrations.
+    static member LoadReferenced(delivered: string) =
         { Design = File.ReadAllText(CardDelivery.design ())
-          Art = IllustrationRendering.referenced content }
+          Art = IllustrationRendering.referenced delivered }
