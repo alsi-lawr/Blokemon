@@ -76,17 +76,23 @@ public static class MatchPresentationTimeline
                 // later is already lying on the Bench while it is still being dealt, and the cue
                 // that plays it then takes it back off to carry it there.
                 //
-                // The deltas go with the frame they were measured against, so they are only spent
-                // when the table has caught up: a frame that has needs nothing hidden from it,
+                // The concealments go with the frame they were measured against and are spent when
+                // the table catches up: a frame that has caught up needs nothing hidden from it,
                 // because it no longer has anybody anywhere they have already left, and one that
                 // has not still does.
+                //
+                // Damage turns the other way round at the same moment. The frame this brings
+                // forward is the one the command ENDS on, so it already carries every counter the
+                // command places, including those whose cue is still to come - and what the deltas
+                // have to do from here is hold those back until each one plays, rather than add
+                // them on top of a frame that has them.
                 if (cue.Kind == MatchAnimationKindView.Draw && index >= handed)
                 {
                     dealt = true;
                     if (dealing is not null)
                     {
                         standing = true;
-                        overlay = MatchPresentationOverlay.Empty;
+                        overlay = MatchPresentationDamage.Unplayed(step.Events, index);
                         gone.Clear();
                     }
                 }
@@ -158,7 +164,7 @@ public static class MatchPresentationTimeline
                 {
                     standing = true;
                     before = MatchPresentationCatchUp.Handed(before, cue);
-                    overlay = MatchPresentationOverlay.Empty;
+                    overlay = MatchPresentationDamage.Unplayed(step.Events, index);
                     gone.Clear();
                 }
             }

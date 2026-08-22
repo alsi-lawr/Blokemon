@@ -97,6 +97,44 @@ public sealed class MatchPresentationTimelineTests
     }
 
     [Test]
+    public void ACounterAPartyTrickPutsOnItselfLandsWithItsOwnCueRatherThanTwiceAroundIt()
+    {
+        // The Lads draw a card by putting a damage counter on themselves, and the engine does it
+        // in that order: draw, then counter. A draw takes its step's frame early so the card has
+        // a hand to be dealt into - and that frame is the one the whole command ends on, counter
+        // and all. So the Blokemon lost the HP before anything had said it would, the counter's
+        // own cue then put a second one on top of a frame that already had it, and the table
+        // settling took that one back off again: 10, 20, 10 for a single counter.
+        var drewAndTookIt = Frame(defenderDamage: 0, playerHasTurn: true) with
+        {
+            Player = Side(
+                "You",
+                true,
+                active: Instance(Attacker, 10),
+                hand: [Instance("card-drawn", 0)]
+            ),
+        };
+
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                drewAndTookIt,
+                Cue(1, MatchAnimationKindView.Draw, targets: ["card-drawn"]),
+                Cue(
+                    2,
+                    MatchAnimationKindView.Damage,
+                    amount: 10,
+                    source: Attacker,
+                    targets: [Attacker]
+                )
+            ),
+            Frame(defenderDamage: 0, playerHasTurn: true)
+        );
+
+        // Whole while the card is being dealt, the counter on for its own cue, and one counter.
+        beats.Select(beat => Shown(beat, Attacker)).ShouldBe([0, 10, 10]);
+    }
+
+    [Test]
     public void ADrawTakesItsFrameEarlySoTheCardIsThereToBeDealt()
     {
         var drawn = Frame(defenderDamage: 0, playerHasTurn: true) with
