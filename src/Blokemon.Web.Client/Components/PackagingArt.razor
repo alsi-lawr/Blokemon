@@ -1,6 +1,7 @@
 <div class="packaging-art @Class"
      aria-label="@(Decorative ? null : Label)"
-     aria-hidden="@(Decorative ? "true" : null)">
+     aria-hidden="@(Decorative ? "true" : null)"
+     @oncontextmenu:preventDefault="true">
     @((MarkupString)Markup)
 </div>
 

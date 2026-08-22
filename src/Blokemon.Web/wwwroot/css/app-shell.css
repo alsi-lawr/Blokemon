@@ -15,9 +15,20 @@
   background: rgb(11 13 9 / 92%);
   backdrop-filter: blur(16px);
 
+  @media (max-width: 900px) {
+    gap: 14px;
+  }
+
   @media (max-width: 720px) {
     height: 56px;
     padding: 0 13px;
+
+    /*
+      A filtered element is the containing block for anything fixed inside it, so a blur here
+      pins the nav below to the foot of this bar instead of the foot of the screen. The nav
+      carries the same blur itself, so the phone loses nothing by this bar going without.
+    */
+    backdrop-filter: none;
   }
 }
 
@@ -81,6 +92,11 @@
   text-decoration: none;
   font-weight: 700;
 
+  @media (max-width: 900px) {
+    padding-inline: 8px;
+    font-size: 13px;
+  }
+
   @media (max-width: 720px) {
     padding: 5px 1px;
     display: grid;
@@ -112,6 +128,10 @@
   gap: 9px;
   color: var(--muted);
   text-decoration: none;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
 }
 
 .profile-chip strong,

@@ -169,6 +169,14 @@
   gap: 20px;
   margin-top: 34px;
 
+  @media (max-width: 900px) {
+    display: flex;
+    margin-right: calc(clamp(24px, 5vw, 76px) * -1);
+    overflow: auto;
+    scroll-snap-type: x mandatory;
+    padding: 0 24px 20px 0;
+  }
+
   @media (max-width: 720px) {
     margin-right: -16px;
   }
@@ -189,6 +197,11 @@
     radial-gradient(circle at 50% 10%, color-mix(in srgb, var(--accent), transparent 75%), transparent 38%),
     linear-gradient(160deg, #1c2117, #11140e 70%);
   transition: transform 0.25s, border-color 0.25s;
+
+  @media (max-width: 900px) {
+    flex: 0 0 min(430px, 78vw);
+    scroll-snap-align: center;
+  }
 
   @media (max-width: 720px) {
     min-height: 555px;

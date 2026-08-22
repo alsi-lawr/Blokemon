@@ -1,3 +1,15 @@
+/*
+  Printed surfaces are game pieces, not pictures to keep: a hold on one must not raise the
+  browser's save-this-image callout or select the text printed on it. WebKit is told here;
+  the engines that answer a hold with a context menu are told where the surface is built.
+*/
+.card-face-host,
+.oche-card-back,
+.packaging-art {
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 .card-face-host {
   display: inline-block;
   flex: 0 0 auto;

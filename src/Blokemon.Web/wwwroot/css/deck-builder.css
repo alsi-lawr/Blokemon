@@ -62,6 +62,10 @@
   align-items: start;
   gap: 18px;
 
+  @media (max-width: 1180px) {
+    grid-template-columns: 230px minmax(0, 1fr);
+  }
+
   @media (max-width: 720px) {
     display: block;
   }
@@ -218,6 +222,12 @@
   top: 86px;
   max-height: calc(100vh - 104px);
   overflow: auto;
+
+  @media (max-width: 1180px) {
+    position: static;
+    grid-column: 1 / -1;
+    max-height: none;
+  }
 
   @media (max-width: 720px) {
     margin-top: 13px;

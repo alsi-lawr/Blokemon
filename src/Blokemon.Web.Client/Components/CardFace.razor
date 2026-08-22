@@ -1,7 +1,8 @@
 <div class="card-face-host card-face--@Size.ToString().ToLowerInvariant() @Class"
      aria-label="@(Decorative ? null : Card.Name)"
      aria-hidden="@(Decorative ? "true" : null)"
-     title="@(ShowTitle ? Card.Name : null)">
+     title="@(ShowTitle ? Card.Name : null)"
+     @oncontextmenu:preventDefault="true">
     @((MarkupString)Card.FaceHtml)
 </div>
 

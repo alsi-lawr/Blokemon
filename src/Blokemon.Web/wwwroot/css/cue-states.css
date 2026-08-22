@@ -41,6 +41,13 @@
   inset: 0;
   pointer-events: none;
 
+  /* Less room outside the Deck than the piles need, so the stack opens inward. The gap between
+     the piles is unchanged, so the shuffle keeps its shape. */
+  @media (max-width: 1180px) {
+    --riffle-split-left: 24%;
+    --riffle-split-right: 94%;
+  }
+
   /* The phone Deck has least room, so the stack opens almost entirely into the table. */
   @media (max-width: 720px) {
     --riffle-split-left: 10%;

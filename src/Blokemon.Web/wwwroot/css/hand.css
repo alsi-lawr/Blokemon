@@ -12,6 +12,10 @@
   transform: translateX(-50%);
   pointer-events: auto;
 
+  @media (max-width: 1180px) {
+    width: min(860px, calc(100% - 450px));
+  }
+
   @media (max-width: 720px) {
     --hand-cards: max(1, var(--hand-count, 1));
     --hand-card-width: 90px;
