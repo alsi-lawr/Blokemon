@@ -1,6 +1,9 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject PlayModeApplication Modes
 @inject CardArtWarmup ArtWarmup
+@inject SoundBoard Sound
+@inject NavigationManager Navigation
 
 <div class="app-shell">
     <header class="appbar">
@@ -20,6 +23,22 @@
             <span class="avatar" aria-hidden="true">L</span>
             <span><strong>@ModeName()</strong><small>@ModeLocation()</small></span>
         </a>
+        <button type="button" class="sound-toggle" aria-pressed="@Sound.Enabled"
+                aria-label="@(Sound.Enabled ? "Turn sound off" : "Turn sound on")"
+                title="@(Sound.Enabled ? "Sound on" : "Sound off")"
+                @onclick="ToggleSound">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 9v6h4l5 4V5L8 9H4z" />
+                @if (Sound.Enabled)
+                {
+                    <path class="sound-waves" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />
+                }
+                else
+                {
+                    <path class="sound-cut" d="M16.5 9.5l5 5M21.5 9.5l-5 5" />
+                }
+            </svg>
+        </button>
     </header>
     <main>@Body</main>
 </div>
@@ -34,15 +53,47 @@
 @code {
     private PlayModeState? _mode;
 
-    protected override async Task OnInitializedAsync() => _mode = await Modes.Mode();
+    protected override async Task OnInitializedAsync()
+    {
+        _mode = await Modes.Mode();
+        Sound.Changed += Redraw;
+        Navigation.LocationChanged += RouteChanged;
+    }
 
     // The shell is on screen before any card art is warmed, so warming never delays first paint.
+    // Sound is started in the same breath and for the same reason: a browser will not begin an
+    // audio context before the player has touched the page, so starting it here costs nothing and
+    // means the first thing they press is also the thing that turns the music on.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             await ArtWarmup.Start();
+            await Sound.Start();
+            await Sound.Music(ThemeForRoute());
         }
+    }
+
+    // Which theme belongs under the page is decided from the route, in one place, so a player who
+    // leaves a battle by any of the ways out of it - finishing, resigning, or the browser's own
+    // back button - is carried back to the menu theme by the same rule that put them in the battle
+    // one. A page that switched the music itself would have to remember to switch it back.
+    private SoundTheme ThemeForRoute() =>
+        Navigation.ToBaseRelativePath(Navigation.Uri).StartsWith("match", StringComparison.OrdinalIgnoreCase)
+            ? SoundTheme.Battle
+            : SoundTheme.Menu;
+
+    private async void RouteChanged(object? sender, LocationChangedEventArgs e) =>
+        await Sound.Music(ThemeForRoute());
+
+    private async Task ToggleSound() => await Sound.SetEnabled(!Sound.Enabled);
+
+    private void Redraw() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Sound.Changed -= Redraw;
+        Navigation.LocationChanged -= RouteChanged;
     }
 
     // Both places a game can be saved are named, and nothing chosen yet is named as nothing rather

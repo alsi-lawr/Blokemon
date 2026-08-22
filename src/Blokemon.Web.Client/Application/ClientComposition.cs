@@ -41,6 +41,7 @@ public static class ClientComposition
             provider.GetRequiredService<PlayModeApplication>()
         );
         services.AddScoped<CardArtWarmup>();
+        services.AddScoped<SoundBoard>();
         return services;
     }
 }

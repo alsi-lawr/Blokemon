@@ -3,6 +3,7 @@
 @inject IBlokemonApplication Api
 @inject PlayModeApplication Modes
 @inject IJSRuntime Js
+@inject SoundBoard Sound
 
 <PageTitle>Home · Blokemon</PageTitle>
 
@@ -380,6 +381,10 @@ else
     {
         _ceremonyStarter = starter;
         var sequence = ++_ceremonySequence;
+        // One cue covers the whole ceremony rather than one per stage: the carton lifting, the lid
+        // binding twice before it comes free and the fan opening are all placed against the same
+        // clock the three stages are paced by, so they cannot drift apart from each other.
+        await Sound.Play(new SoundCue("deckOpening"));
         if (!await ShowCeremonyStage(DeckOpeningStage.Boxed, BoxMilliseconds, sequence)
             || !await ShowCeremonyStage(DeckOpeningStage.Unboxing, UnboxMilliseconds, sequence)
             || !await ShowCeremonyStage(DeckOpeningStage.Drawn, DrawnMilliseconds, sequence))

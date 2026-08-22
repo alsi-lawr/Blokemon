@@ -1,4 +1,5 @@
 using Blokemon.App.Contracts;
+using Blokemon.Web.Client.Application;
 using Blokemon.Web.Client.Components;
 using Blokemon.Web.Client.Pages;
 using Microsoft.AspNetCore.Components;
@@ -21,6 +22,7 @@ public sealed class PackOpeningSkipTests
         await using var services = new ServiceCollection()
             .AddSingleton<IBlokemonApplication>(new OnePackAtATime())
             .AddSingleton<IJSRuntime>(browser)
+            .AddSingleton<SoundBoard>()
             .BuildServiceProvider();
         await using var harness = ComponentHarness.For(services);
 

@@ -2,6 +2,7 @@
 @implements IAsyncDisposable
 @inject IBlokemonApplication Api
 @inject IJSRuntime Js
+@inject SoundBoard Sound
 
 <PageTitle>Packs · Blokemon</PageTitle>
 
@@ -255,6 +256,9 @@ else
 
         var sequence = _sequence;
         _stage = PackOpeningStage.Tearing;
+        // Foil and kraft tear differently and are heard doing it: foil is thin and sharp with a
+        // scooped middle, kraft is grainy and sits low. The finish the player picked decides which.
+        await Sound.Play(new SoundCue("tear", Kraft: _stock == PackFinish.Kraft));
         await Task.Delay(TearMilliseconds);
         if (sequence != _sequence)
         {
@@ -277,6 +281,7 @@ else
         if (!_cardFaceUp)
         {
             _cardFaceUp = true;
+            await Sound.Play(new SoundCue("reveal"));
             return;
         }
 

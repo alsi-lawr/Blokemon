@@ -1,5 +1,7 @@
 @page "/profile"
+@implements IDisposable
 @inject IBlokemonApplication Api
+@inject SoundBoard Sound
 @inject PlayModeApplication Modes
 @inject NavigationManager Navigation
 
@@ -53,6 +55,7 @@ else if (_view!.Profile is not null)
             <span class="field-error" role="alert">@_validation</span>
         }
     </div>
+    @SoundPanel
     @PurgePanel
 }
 else
@@ -109,6 +112,29 @@ else
             }
         </div>;
 
+    /*
+        Sound is switched on and off from the bar, where it is reachable from anywhere; how loud it
+        is belongs here, with the other things a player sets once. The switch is repeated rather
+        than only shown, because a player who has come looking for the volume has come looking for
+        the sound settings, and finding a slider that does nothing while sound is off - with no
+        way to see why from this page - is the worse of the two.
+    */
+    private RenderFragment SoundPanel =>
+        @<div class="panel setup-card">
+            <h2>Sound</h2>
+            <p>Every sound in the game is made in your browser as it plays. Nothing is downloaded.</p>
+            <div class="actions">
+                <button class="secondary" @onclick="() => Sound.SetEnabled(!Sound.Enabled)">
+                    @(Sound.Enabled ? "Turn sound off" : "Turn sound on")
+                </button>
+            </div>
+            <label for="sound-volume">Volume</label>
+            <input id="sound-volume" type="range" min="0" max="100" step="1"
+                   value="@((int)Math.Round(Sound.Volume * 100))"
+                   disabled="@(!Sound.Enabled)"
+                   @onchange="VolumeChanged" />
+        </div>;
+
     private ApplicationView? _view;
     private PlayModeState? _mode;
     private string? _error;
@@ -118,6 +144,14 @@ else
     private bool _saving;
     private bool _confirmingPurge;
     private Guid? _commandId;
+
+    private async Task VolumeChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var percent))
+        {
+            await Sound.SetVolume(percent / 100);
+        }
+    }
 
     private async Task Purge()
     {
@@ -140,9 +174,15 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        Sound.Changed += Redraw;
         _mode = await Modes.Mode();
         await Load();
     }
+
+    // Sound can also be switched from the bar, which is on screen at the same time as this panel.
+    private void Redraw() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Sound.Changed -= Redraw;
 
     private async Task Load()
     {

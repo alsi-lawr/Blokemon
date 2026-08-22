@@ -121,6 +121,60 @@
   }
 }
 
+/*
+  The sound switch. It follows the round icon button the battle HUD already uses rather than
+  inventing a second shape for the same job, and it sits after the player chip so that adding it
+  moves nothing that was already on the bar. Below 900px the chip is hidden, so the switch takes
+  over the job of holding the right-hand end.
+*/
+.sound-toggle {
+  width: 36px;
+  height: 36px;
+  margin-left: 12px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid #5a5739;
+  border-radius: 50%;
+  color: var(--gold-soft);
+  background: rgb(10 12 9 / 84%);
+
+  @media (max-width: 900px) {
+    margin-left: auto;
+  }
+
+  @media (max-width: 720px) {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+.sound-toggle[aria-pressed="false"] {
+  color: var(--muted);
+}
+
+.sound-toggle:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.sound-toggle svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The cone is the speaker itself and is always filled; only the waves and the cut are drawn. */
+.sound-toggle svg path:first-child {
+  fill: currentColor;
+  stroke: none;
+}
+
 .profile-chip {
   margin-left: auto;
   display: flex;

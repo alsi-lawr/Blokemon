@@ -173,6 +173,12 @@ public partial class Match
             _activeCue = beat.Cue;
             _pace = Pace(beat);
             _presentationCard = PresentationCard(beat.Frame, beat.Overlay);
+
+            // The table is heard on the same beat it is seen on, and from the same cue. A sound
+            // that fails costs the sound: it is played before the frame is handed to the renderer
+            // so that the noise and the picture start together, and it is awaited only as far as
+            // handing it to the browser.
+            await PlayCueSound(beat);
             if (beat.Cue is not null)
             {
                 _animationStatus = PublicText(beat.Cue.Label);
@@ -207,6 +213,31 @@ public partial class Match
         if (ReferenceEquals(_skipSignal, skipSignal))
         {
             FinishPresentation();
+        }
+    }
+
+    // What the beat sounds like, and whether the game has reached the point where the music should
+    // lean on it.
+    //
+    // The tension layer is not a cue: it is a state the table is in, so it is set from the frame
+    // every beat rather than fired once when somebody takes their fifth prize. A player who is one
+    // prize away and then has that taken back off them - which the game allows - hears it lift.
+    private async Task PlayCueSound(MatchPresentationBeat beat)
+    {
+        var frame = beat.Frame;
+        await Sound.LastPrize(frame.Player.PrizeCards == 1 || frame.Opponent.PrizeCards == 1);
+
+        if (beat.Cue is not { } cue)
+        {
+            return;
+        }
+
+        // A prize taken while one remained is the prize that wins the game, which is the only one
+        // the bell goes with.
+        var lastPrize = frame.Player.PrizeCards == 0 || frame.Opponent.PrizeCards == 0;
+        if (MatchCueSound.For(cue, _pace, lastPrize) is { } sound)
+        {
+            await Sound.Play(sound);
         }
     }
 

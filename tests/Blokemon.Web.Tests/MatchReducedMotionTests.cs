@@ -1,4 +1,5 @@
 using Blokemon.App.Contracts;
+using Blokemon.Web.Client.Application;
 using Blokemon.Web.Client.Components;
 using Blokemon.Web.Client.Pages;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,7 @@ public sealed class MatchReducedMotionTests
         await using var services = new ServiceCollection()
             .AddSingleton<IBlokemonApplication>(application)
             .AddSingleton<IJSRuntime>(browser)
+            .AddSingleton<SoundBoard>()
             .BuildServiceProvider();
         await using var harness = ComponentHarness.For(services);
 
