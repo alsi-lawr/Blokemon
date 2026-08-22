@@ -18,23 +18,6 @@ open Blokemon.Game.EffectCardTransforms
 /// core small enough to read in one go; ValueNone means the instruction belongs to that core.
 module internal EffectInstructions =
 
-    let private remainingBoothCapacity
-        (catalog: AuthorityCatalog)
-        (runtime: EffectRuntime)
-        (destination: BlokemonEffectDestination)
-        =
-        let remaining player =
-            max
-                0
-                (catalog.Manifest.BaseRules.Opening.BoothLimit
-                 - (runtime.Builder.CardsIn(player, CardZone.Booth) |> Seq.length))
-
-        match destination with
-        | BlokemonEffectDestination.OwnBooth -> ValueSome(remaining runtime.Actor)
-        | BlokemonEffectDestination.OtherBooth ->
-            ValueSome(remaining (runtime.Builder.Other runtime.Actor))
-        | _ -> ValueNone
-
     let executeSimple
         (catalog: AuthorityCatalog)
         (runtime: EffectRuntime)
@@ -114,12 +97,10 @@ module internal EffectInstructions =
             executeDraw runtime instruction
             ValueSome true
         | BlokemonOpcode.SearchStack ->
-            let boothCapacity = remainingBoothCapacity catalog runtime instruction.Destination
+            let boothCapacity =
+                remainingBoothCapacity catalog runtime.Builder runtime.Actor instruction.Destination
 
-            if instruction.Selection = BlokemonSelection.All && boothCapacity = ValueSome 0 then
-                runtime.LastSelectedCards <- ImmutableArray<_>.Empty
-                runtime.HasCardSelection <- false
-            else
+            if boothCapacity <> ValueSome 0 then
                 let selected = selectedTargets ()
 
                 let selected =

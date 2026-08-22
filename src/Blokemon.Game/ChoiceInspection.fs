@@ -14,6 +14,23 @@ module internal ChoiceInspection =
         | ValueSome trick -> trick.Trigger <> BlokemonTrigger.OnPromotionFromMitt
         | ValueNone -> true
 
+    let remainingBoothCapacity
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (actor: PlayerId)
+        (destination: BlokemonEffectDestination)
+        =
+        let remaining player =
+            max
+                0
+                (catalog.Manifest.BaseRules.Opening.BoothLimit
+                 - (builder.CardsIn(player, CardZone.Booth) |> Seq.length))
+
+        match destination with
+        | BlokemonEffectDestination.OwnBooth -> ValueSome(remaining actor)
+        | BlokemonEffectDestination.OtherBooth -> ValueSome(remaining (builder.Other actor))
+        | _ -> ValueNone
+
     let private inspectInstructionChoice
         (catalog: AuthorityCatalog)
         (builder: MatchBuilder)
@@ -140,72 +157,79 @@ module internal ChoiceInspection =
                                 dependency
                         )
             elif instructionOwnsCardChoice instruction then
-                let candidateCards =
-                    candidatesOf ()
-                    |> Seq.distinct
-                    |> Seq.sortBy (fun card -> card.Id)
-                    |> Seq.toArray
+                let boothCapacity =
+                    remainingBoothCapacity catalog builder actor instruction.Destination
 
-                let candidates = candidateCards |> Array.map (fun card -> card.Id)
+                if
+                    instruction.Opcode <> BlokemonOpcode.SearchStack || boothCapacity <> ValueSome 0
+                then
+                    let candidateCards =
+                        candidatesOf ()
+                        |> Seq.distinct
+                        |> Seq.sortBy (fun card -> card.Id)
+                        |> Seq.toArray
 
-                let selectionMaximum =
-                    match instruction.Selection with
-                    | BlokemonSelection.Chosen
-                    | BlokemonSelection.OtherSideChosen ->
-                        min instruction.TargetCount candidates.Length
-                    | BlokemonSelection.UpTo
-                    | BlokemonSelection.All -> min instruction.Amount candidates.Length
-                    | _ -> 0
+                    let candidates = candidateCards |> Array.map (fun card -> card.Id)
 
-                let maximum =
-                    if instruction.Destination = BlokemonEffectDestination.OwnBooth then
-                        min
-                            selectionMaximum
-                            (catalog.Manifest.BaseRules.Opening.BoothLimit
-                             - (builder.CardsIn(actor, CardZone.Booth) |> Seq.length))
-                    elif instruction.Destination = BlokemonEffectDestination.OtherBooth then
-                        min
-                            selectionMaximum
-                            (catalog.Manifest.BaseRules.Opening.BoothLimit
-                             - (builder.CardsIn(builder.Other actor, CardZone.Booth) |> Seq.length))
-                    else
-                        selectionMaximum
+                    let selectionMaximum =
+                        match instruction.Selection with
+                        | BlokemonSelection.Chosen
+                        | BlokemonSelection.OtherSideChosen ->
+                            min instruction.TargetCount candidates.Length
+                        | BlokemonSelection.UpTo
+                        | BlokemonSelection.All -> min instruction.Amount candidates.Length
+                        | _ -> 0
 
-                if maximum <> 0 || instruction.Selection = BlokemonSelection.UpTo then
-                    let minimum =
-                        if instruction.Selection = BlokemonSelection.UpTo then
-                            0
+                    let maximum =
+                        if instruction.Destination = BlokemonEffectDestination.OwnBooth then
+                            min
+                                selectionMaximum
+                                (catalog.Manifest.BaseRules.Opening.BoothLimit
+                                 - (builder.CardsIn(actor, CardZone.Booth) |> Seq.length))
+                        elif instruction.Destination = BlokemonEffectDestination.OtherBooth then
+                            min
+                                selectionMaximum
+                                (catalog.Manifest.BaseRules.Opening.BoothLimit
+                                 - (builder.CardsIn(builder.Other actor, CardZone.Booth)
+                                    |> Seq.length))
                         else
-                            maximum
+                            selectionMaximum
 
-                    let chooser =
-                        if instruction.Selection = BlokemonSelection.OtherSideChosen then
-                            builder.Other actor
-                        else
-                            actor
+                    if maximum <> 0 || instruction.Selection = BlokemonSelection.UpTo then
+                        let minimum =
+                            if instruction.Selection = BlokemonSelection.UpTo then
+                                0
+                            else
+                                maximum
 
-                    requirements.Add
-                        { ChoiceRequirement.create
-                              (choiceId effect path "cards")
-                              ChoiceRequirementKind.Cards
-                              chooser
-                              minimum
-                              maximum
-                              (ImmutableArray.CreateRange candidates)
-                              ImmutableArray<_>.Empty
-                              ImmutableArray<_>.Empty
-                              dependency with
-                            RequireDifferentMechanicalTypes =
-                                (match instruction.CardFilter with
-                                 | null -> false
-                                 | filter -> filter.DifferentMechanicalTypes)
-                            EligibleCardTypes =
-                                ImmutableArray.CreateRange(
-                                    candidateCards
-                                    |> Array.map (fun card ->
-                                        { Card = card.Id
-                                          Types = catalog.MechanicalTypes card })
-                                ) }
+                        let chooser =
+                            if instruction.Selection = BlokemonSelection.OtherSideChosen then
+                                builder.Other actor
+                            else
+                                actor
+
+                        requirements.Add
+                            { ChoiceRequirement.create
+                                  (choiceId effect path "cards")
+                                  ChoiceRequirementKind.Cards
+                                  chooser
+                                  minimum
+                                  maximum
+                                  (ImmutableArray.CreateRange candidates)
+                                  ImmutableArray<_>.Empty
+                                  ImmutableArray<_>.Empty
+                                  dependency with
+                                RequireDifferentMechanicalTypes =
+                                    (match instruction.CardFilter with
+                                     | null -> false
+                                     | filter -> filter.DifferentMechanicalTypes)
+                                EligibleCardTypes =
+                                    ImmutableArray.CreateRange(
+                                        candidateCards
+                                        |> Array.map (fun card ->
+                                            { Card = card.Id
+                                              Types = catalog.MechanicalTypes card })
+                                    ) }
 
     let rec inspectProgram
         (catalog: AuthorityCatalog)

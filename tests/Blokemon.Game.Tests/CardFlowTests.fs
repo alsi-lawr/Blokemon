@@ -5,6 +5,114 @@ open Blokemon.Game
 open FsUnit
 open TUnit.Core
 
+module private FullBoothSearch =
+
+    let stateWithSearchableCard
+        (attacker: string)
+        (attachedVim: string)
+        (searchableCard: string)
+        (seed: uint64)
+        =
+        let booth =
+            [ for index in 0..4 ->
+                  MatchScenario.PlainCard
+                      $"full-booth-{index}"
+                      "BLK-004"
+                      MatchScenario.FirstPlayer
+                      CardZone.Booth
+                      index ]
+
+        let stack =
+            [ MatchScenario.PlainCard
+                  "full-search-eligible"
+                  searchableCard
+                  MatchScenario.FirstPlayer
+                  CardZone.Stack
+                  3
+              MatchScenario.PlainCard
+                  "first-draw"
+                  "BLK-003"
+                  MatchScenario.FirstPlayer
+                  CardZone.Stack
+                  9
+              MatchScenario.PlainCard
+                  "full-search-ineligible"
+                  "VIM-SOBER"
+                  MatchScenario.FirstPlayer
+                  CardZone.Stack
+                  17 ]
+
+        let state =
+            MatchScenario.WithCards
+                (MatchScenario.BattleState attacker "BLK-003" [ attachedVim ] seed)
+                (Seq.append booth stack)
+
+        state, stack
+
+    let optionalAttackCommand (engine: MatchEngine) (state: MatchState) (effect: string) =
+        let _, missing =
+            MatchScenario.Rejected(engine.Apply(state, MatchScenario.AttackCommand state effect))
+
+        let optional =
+            missing.ChoiceRequirements
+            |> Seq.filter (fun requirement -> requirement.Kind = ChoiceRequirementKind.Optional)
+            |> Seq.exactlyOne
+
+        MatchScenario.AttackCommandWith
+            state
+            effect
+            (ImmutableArray.Create(EffectChoice.Optional(optional.Id, true)))
+
+    let applyDeterministically (engine: MatchEngine) (state: MatchState) (command: MatchCommand) =
+        let applied, events = MatchScenario.AppliedWith(engine.Apply(state, command))
+
+        let repeatedState, repeatedEvents =
+            MatchScenario.AppliedWith(engine.Apply(state, command))
+
+        repeatedState |> should equal applied
+        repeatedEvents |> should equal events
+        applied, events
+
+    let assertSearchWasSkipped
+        (applied: MatchState)
+        (events: MatchEvent seq)
+        (stack: CardState list)
+        =
+        applied.PendingEffect.IsNone |> should be True
+        applied.ActivePlayer |> should equal MatchScenario.SecondPlayer
+
+        events
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.AttackDeclared)
+        |> Seq.length
+        |> should equal 1
+
+        events
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.RoundEnded)
+        |> Seq.length
+        |> should equal 1
+
+        events
+        |> Seq.exists (fun matchEvent -> matchEvent.Kind = MatchEventKind.EffectChoiceRequested)
+        |> should be False
+
+        events
+        |> Seq.exists (fun matchEvent -> matchEvent.Kind = MatchEventKind.CardsShuffled)
+        |> should be False
+
+        let stackIds = stack |> List.map (fun card -> card.Id) |> Set.ofList
+
+        events
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.CardMoved)
+        |> Seq.collect (fun matchEvent -> matchEvent.TargetCards)
+        |> Seq.exists stackIds.Contains
+        |> should be False
+
+        stack
+        |> List.map (fun card ->
+            let current = applied.Card card.Id
+            current.Zone, current.StackPosition)
+        |> should equal (stack |> List.map (fun card -> card.Zone, card.StackPosition))
+
 type CardFlowTests() =
 
     // A Booth is in the order its Blokes were put down, and the identities here are chosen to sort
@@ -482,3 +590,58 @@ type CardFlowTests() =
 
         repeatedState |> should equal applied
         repeatedEvents |> should equal events
+
+    [<Test>]
+    member _.``bring a mate with a full booth should skip its search and shuffle``() =
+        let engine = MatchScenario.Engine()
+
+        let state, stack =
+            FullBoothSearch.stateWithSearchableCard "BLK-016" "VIM-SOBER" "BLK-004" 947UL
+
+        let command = FullBoothSearch.optionalAttackCommand engine state "BLK-016-B01"
+
+        let applied, events = FullBoothSearch.applyDeterministically engine state command
+
+        FullBoothSearch.assertSearchWasSkipped applied events stack
+        applied.Random |> should equal state.Random
+
+    [<Test>]
+    member _.``come outside with a full booth should skip its search and shuffle``() =
+        let engine = MatchScenario.Engine()
+
+        let state, stack =
+            FullBoothSearch.stateWithSearchableCard "BLK-035" "VIM-GEEKED" "BLK-035" 949UL
+
+        let command = FullBoothSearch.optionalAttackCommand engine state "BLK-035-B01"
+
+        let applied, events = FullBoothSearch.applyDeterministically engine state command
+
+        FullBoothSearch.assertSearchWasSkipped applied events stack
+        applied.Random |> should equal state.Random
+
+    [<Test>]
+    member _.``share the mycelium with a full booth should toss beer mats but skip its search and shuffle``
+        ()
+        =
+        let engine = MatchScenario.Engine()
+
+        let state, stack =
+            FullBoothSearch.stateWithSearchableCard "BLK-047" "VIM-BLAZED" "BLK-001" 953UL
+
+        let command = MatchScenario.AttackCommand state "BLK-047-B01"
+
+        let applied, events = FullBoothSearch.applyDeterministically engine state command
+
+        FullBoothSearch.assertSearchWasSkipped applied events stack
+
+        events
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.BeerMatTossed)
+        |> Seq.map (fun matchEvent -> matchEvent.Effect, matchEvent.BadgeSide)
+        |> Seq.toList
+        |> should
+            equal
+            [ ValueSome(EffectId "BLK-047-B01"), ValueSome true
+              ValueSome(EffectId "BLK-047-B01"), ValueSome true ]
+
+        applied.Random.ConsumptionIndex
+        |> should equal (state.Random.ConsumptionIndex + 2)
