@@ -9,7 +9,7 @@
     the host is every press that did not land on one of its attachments, which is the whole of the
     host's own card: both fans hang outside it.
 *@
-<span class="attached-card"
+<span class="attached-card @(_hold.Pressing ? "is-holding" : null)"
       style="--fan-depth: @Attachment.Depth"
       @onpointerdown="Down"
       @onpointerdown:stopPropagation="true"
@@ -25,6 +25,7 @@
 @code {
     private readonly CardHold _hold = new();
     private bool _parametersChanged;
+    private bool _shownPressing;
 
     [Parameter, EditorRequired]
     public required MatchAttachedCardView Attachment { get; set; }
@@ -41,13 +42,14 @@
         return base.SetParametersAsync(parameters);
     }
 
-    // Press bookkeeping never changes what this face looks like, so only the parent's parameters
-    // can make it render. Pointer moves would otherwise redraw a card face for every frame of a
-    // scroll across the table.
+    // Whether a press is on the card is the one piece of press bookkeeping the face shows, so it
+    // renders for that and for the parent's parameters and for nothing else. Pointer moves would
+    // otherwise redraw a card face for every frame of a scroll across the table.
     protected override bool ShouldRender()
     {
-        var changed = _parametersChanged;
+        var changed = _parametersChanged || _shownPressing != _hold.Pressing;
         _parametersChanged = false;
+        _shownPressing = _hold.Pressing;
         return changed;
     }
 

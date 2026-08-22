@@ -155,6 +155,14 @@
   }
 }
 
+/* The card coming up under the press that is asking for it, at the pace of the hold itself. */
+@keyframes card-holding {
+  to {
+    scale: 1.07;
+    translate: 0 -9px;
+  }
+}
+
 @keyframes shuffle {
   35% {
     transform: translateX(-12px) rotate(-8deg);

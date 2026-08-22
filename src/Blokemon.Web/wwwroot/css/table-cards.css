@@ -22,6 +22,26 @@
   -webkit-touch-callout: none;
 }
 
+/*
+  A hold answers from the first frame. The card starts coming up the moment it is pressed, so the
+  wait before the viewer is the card being lifted rather than nothing happening, and the viewer
+  arrives as the end of a movement already under way.
+
+  Weighted to the end of the hold: a tap is over long before the card has visibly moved, so the
+  gesture a player makes most often still looks like a tap and not like a card that flinched.
+  Only scale and translate, which compose with the fan each card is already turned by and cost
+  the compositor nothing to run.
+*/
+.card-press-surface.is-holding,
+.attached-card.is-holding {
+  animation: card-holding 300ms cubic-bezier(0.55, 0, 0.9, 0.35) both;
+}
+
+.card-press-surface,
+.attached-card {
+  transition: scale 0.16s ease-out, translate 0.16s ease-out;
+}
+
 .field-card-button {
   position: relative;
   z-index: 1;

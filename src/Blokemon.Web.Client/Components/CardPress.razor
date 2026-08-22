@@ -14,7 +14,7 @@
 *@
 <span class="@Class card-press" style="@Style">
     <button type="button"
-            class="card-press-surface"
+            class="card-press-surface @(_hold.Pressing ? "is-holding" : null)"
             aria-label="@AriaLabel"
             aria-pressed="@AriaPressed"
             @ref="_press"
@@ -49,6 +49,7 @@
     private ElementReference _press;
     private bool _suppressTap;
     private bool _parametersChanged;
+    private bool _shownPressing;
 
     [Parameter, EditorRequired]
     public required string CardInstanceId { get; set; }
@@ -104,13 +105,14 @@
         return base.SetParametersAsync(parameters);
     }
 
-    // Press bookkeeping never changes what this button looks like, so only the parent's
-    // parameters can make it render. Pointer moves would otherwise re-render a card face
-    // for every frame of a scroll.
+    // Whether a press is on the card is the one piece of press bookkeeping the card shows, so it
+    // renders for that and for the parent's parameters and for nothing else. Pointer moves would
+    // otherwise re-render a card face for every frame of a scroll.
     protected override bool ShouldRender()
     {
-        var changed = _parametersChanged;
+        var changed = _parametersChanged || _shownPressing != _hold.Pressing;
         _parametersChanged = false;
+        _shownPressing = _hold.Pressing;
         return changed;
     }
 

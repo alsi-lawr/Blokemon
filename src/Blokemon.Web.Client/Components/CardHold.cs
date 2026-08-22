@@ -11,8 +11,10 @@ namespace Blokemon.Web.Client.Components;
 // that drifted between them would be a different gesture in each place a card happens to be drawn.
 internal sealed class CardHold
 {
-    // Long enough that a deliberate hold is unambiguous, short enough to feel immediate.
-    private const int _holdMilliseconds = 480;
+    // What separates a hold from a tap is now mostly that the card answers a hold while it is
+    // still being made: the press starts lifting the card immediately, so the player can see the
+    // gesture being taken and does not need the threshold to be long enough to be sure of it.
+    private const int _holdMilliseconds = 300;
 
     // A press that travels further than this is a scroll or a drag, not a tap or a hold.
     private const double _travelTolerance = 12;
@@ -25,12 +27,17 @@ internal sealed class CardHold
     // Whether the press has already opened the viewer, and therefore has one to close.
     public bool Viewing { get; private set; }
 
+    // Whether a press is on the card now, so the card can show that it is being held before there
+    // is anything to show for it. A press that turned out to be a scroll is not one.
+    public bool Pressing { get; private set; }
+
     // Starts a press. The viewer opens if this press is still the current one when the threshold
     // passes: a new press always starts clean, so a view whose release landed on the viewer rather
     // than on the card does not survive into the press after it.
     public void Down(PointerEventArgs eventArgs, Func<Task> view)
     {
         Viewing = false;
+        Pressing = true;
         _byFinger = eventArgs.PointerType == "touch";
         _startX = eventArgs.ClientX;
         _startY = eventArgs.ClientY;
@@ -59,6 +66,7 @@ internal sealed class CardHold
         }
 
         Stop();
+        Pressing = false;
         return true;
     }
 
@@ -71,6 +79,7 @@ internal sealed class CardHold
     public bool Release()
     {
         Stop();
+        Pressing = false;
         if (!Viewing)
         {
             return false;
