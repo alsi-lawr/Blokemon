@@ -169,14 +169,20 @@
   display: grid;
   place-items: center;
   padding: 20px;
+  /*
+    No blur behind this one. The scrim already keeps 86% of the light off the table, so a blur of
+    the remaining 14% is not visible - and the Blokemon under it never stop breathing, so the
+    browser would re-blur the whole screen every frame for as long as a card is being read.
+  */
   background: rgb(2 3 2 / 86%);
-  backdrop-filter: blur(7px);
   animation: fade-in 0.16s ease-out both;
 }
 
 .card-viewer .card-face-host {
   --blokemon-card-scale: var(--viewer-scale, 0.5);
-  filter: drop-shadow(0 26px 60px #000c);
+  /* Cast close: a filter is redrawn at every step of the arrival below it, and this card arrives
+     at a size the phone has not drawn it at before. */
+  filter: drop-shadow(0 12px 22px #000c);
   animation: viewer-in 0.2s cubic-bezier(0.2, 0.75, 0.25, 1) both;
 }
 
