@@ -1,5 +1,5 @@
 {
-  "manifestVersion": "sv151-candidate.14",
+  "manifestVersion": "sv151-candidate.15",
   "presentationStatus": "Accepted",
   "approvedMechanicalDisplayMap": [
     {
@@ -358,30 +358,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-003-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Fire",
@@ -714,30 +691,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-006-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Water",
@@ -1129,30 +1083,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-009-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Lightning",
@@ -2893,30 +2824,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-024-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Fighting",
@@ -4618,30 +4526,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-038-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Water",
@@ -4986,30 +4871,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-040-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Fighting",
@@ -5018,7 +4880,7 @@
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 2,
+      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -7797,30 +7659,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-065-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Darkness",
@@ -9057,30 +8896,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-076-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Grass",
@@ -13291,30 +13107,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-115-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Fighting",
@@ -14357,30 +14150,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-124-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Metal",
@@ -17189,30 +16959,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-145-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Lightning",
@@ -17918,30 +17665,7 @@
           ]
         }
       ],
-      "houseRules": [
-        {
-          "mechanicalId": "BLK-151-R01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "BigHitterBarChits",
-              "amount": 2,
-              "valueSource": "Fixed",
-              "targets": [
-                "BarChits"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
-            }
-          ]
-        }
-      ],
+      "houseRules": [],
       "softSpots": [
         {
           "mechanicalType": "Darkness",
@@ -20052,7 +19776,6 @@
         "BLK-009",
         "BLK-024",
         "BLK-038",
-        "BLK-040",
         "BLK-065",
         "BLK-076",
         "BLK-115",
@@ -20112,8 +19835,7 @@
       "TriggeredPartyTrick",
       "ContinuousPartyTrick",
       "OncePerRound",
-      "EndRoundEffect",
-      "BigHitterBarChits"
+      "EndRoundEffect"
     ],
     "timingVersion": "blokemon-timing-1.0.0-candidate.8",
     "timingRows": [

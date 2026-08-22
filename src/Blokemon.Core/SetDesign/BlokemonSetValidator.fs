@@ -134,9 +134,9 @@ module BlokemonSetValidator =
                    yield! programsOf card.PartyTricks card.Attacks card.HouseRules |]
 
         check
-            (programs.Length = 310)
+            (programs.Length = 298)
             "runtime.program-count"
-            "The typed manifest must structurally define all 310 mechanical programs."
+            "The typed manifest must structurally define all 298 mechanical programs."
             issues
 
         check
@@ -249,6 +249,23 @@ module BlokemonSetValidator =
              && Array.sort rules.OpcodeInventory = Array.sort opcodes)
             "runtime.opcode-inventory"
             "The runtime rules must list every finite opcode exactly once."
+            issues
+
+        let scalarBigHitters =
+            manifest.Collectibles
+            |> Array.filter (fun card ->
+                card.BarChitsWhenSentHome = rules.BigHitters.SentHomeBarChits)
+            |> Array.map (fun card -> card.Id)
+            |> Array.sort
+
+        let listedBigHitters = rules.BigHitters.BlokeIds |> Array.distinct |> Array.sort
+
+        check
+            (rules.BigHitters.SentHomeBarChits = rules.SendHome.BigHitterBarChits
+             && listedBigHitters.Length = rules.BigHitters.BlokeIds.Length
+             && listedBigHitters = scalarBigHitters)
+            "runtime.big-hitters"
+            "The Big Hitter list must exactly name every collectible with the configured Big Hitter send-home award."
             issues
 
     /// Validates the mechanical authority against the rules this repository owns.

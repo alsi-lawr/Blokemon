@@ -279,7 +279,7 @@ type AuthorityAuditTests() =
         observation |> should equal expectedObservation
 
     [<Test>]
-    member _.``the reconciled 310 effects should flatten to 641 instructions after the fossil gates were removed``
+    member _.``the reconciled 298 effects should flatten to 629 instructions before the Gen 1 conversion``
         ()
         =
         use document =
@@ -324,7 +324,7 @@ type AuthorityAuditTests() =
         |> should equal MatchScenario.Authority.ManifestVersion
 
         documented |> should equal declared
-        reconciled.Length |> should equal 310
+        reconciled.Length |> should equal 298
 
         reconciled
         |> Array.filter (fun effect ->
@@ -332,8 +332,9 @@ type AuthorityAuditTests() =
         |> Array.length
         |> should equal 94
 
-        audit.EffectCount |> should equal 310
+        audit.EffectCount |> should equal 298
         // Candidate.6's 643 was derived before BLK-113's SV151-correct optional Booth branch
-        // (+1) and before the three fossil Kits lost their spurious Optional wrappers (-3).
-        audit.InstructionCount |> should equal 641
+        // (+1), before the three fossil Kits lost their spurious Optional wrappers (-3), and before
+        // the twelve disconnected Big Hitter instructions were removed (-12).
+        audit.InstructionCount |> should equal 629
         audit.Issues.Length |> should equal 0

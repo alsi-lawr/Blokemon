@@ -1,7 +1,7 @@
 {
   "schemaVersion": "blokemon-public-content-schema-2.0.0-candidate.5",
-  "contentVersion": "blokemon-public-content-2.0.0-candidate.7",
-  "mechanicalManifestVersion": "sv151-candidate.14",
+  "contentVersion": "blokemon-public-content-2.0.0-candidate.8",
+  "mechanicalManifestVersion": "sv151-candidate.15",
   "terminologyVersion": "blokemon-public-terminology-2.0.0-candidate.5",
   "humanApprovalStatus": "Accepted",
   "terminology": [
@@ -1973,13 +1973,7 @@
           "effectText": "Playing a Supporter card from your hand this turn makes this Attack deal 90 more damage."
         }
       ],
-      "rules": [
-        {
-          "mechanicalId": "BLK-040-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
-        }
-      ],
+      "rules": [],
       "illustration": {
         "brief": "A dazzling karaoke monarch holds the centre while a semicircle joins in; broad symmetrical shot, sequinned jacket and raised microphones, rose pink under a clean silver spotlight.",
         "prompt": "Pull back wide on Karaoke Queen holding centre stage while a semicircle of ordinary pub-goers leans in with raised microphones and open expressions. Make her sequinned jacket the rose-pink anchor under one clean silver spotlight, varying the surrounding poses; lyrics, venue logos and costume text must not be visible.",

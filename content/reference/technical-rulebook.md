@@ -6,7 +6,7 @@
 
 The published mechanical authority is `content/authorities/mechanics.json`. It defines 151 collectible names and types, opaque mechanical IDs, internal mechanical types, display mappings, opcodes, targets, the fixed kit and Basic Vim library, acquisition products and the complete base-rule structure.
 
-All 310 programs are validated against executable opcode, condition, target, selection, distribution and trigger shapes. `sv151-authority-reconciliation.json` binds each effect to the preserved SV151 candidate.6 source hashes and records the narrow cases where the declarative authority corrects a candidate-program omission or ambiguity. `Blokemon.Game` executes the authority without provider, web or storage dependencies and persists random state, identified face-down bar chits, deferred choices, trigger timing and accepted command identities in `MatchState`.
+All authority programs are validated against executable opcode, condition, target, selection, distribution and trigger shapes. `sv151-authority-reconciliation.json` binds each effect to the preserved SV151 candidate.6 source hashes and records the narrow cases where the declarative authority corrects a candidate-program omission or ambiguity. `Blokemon.Game` executes the authority without provider, web or storage dependencies and persists random state, identified face-down bar chits, deferred choices, trigger timing and accepted command identities in `MatchState`.
 
 Roadie is the display label for internal Metal on BLK-035, BLK-036 and BLK-124 soft spots and BLK-137's selectable-affinity mechanic. Roadie is not a collectible type.
 
@@ -65,7 +65,7 @@ A Bloke is sent home when damage is at least staying power. Chuck that Bloke and
 
 A side wins by taking its last bar chit, leaving the other side with no Bloke in play, or having the other side fail its required opening draw. If both sides achieve one win method simultaneously, use sudden death with one bar chit and repeat until a winner. If one side achieves more simultaneous win methods, it wins immediately.
 
-KIT-001 through KIT-003 may act as Regular Local Blokes with 60 staying power. They cannot have rough states or taxi, may be chucked by their owner during their round, and award one bar chit when sent home. The twelve IDs listed in `bigHitters.blokeIds` award two bar chits.
+KIT-001 through KIT-003 may act as Regular Local Blokes with 60 staying power. They cannot have rough states or taxi, may be chucked by their owner during their round, and award one bar chit when sent home. The eleven IDs listed in `bigHitters.blokeIds` award two bar chits.
 
 ## Products
 

@@ -14,7 +14,7 @@ module BlokemonPublicContentValidator =
     let SchemaVersion = "blokemon-public-content-schema-2.0.0-candidate.5"
 
     [<Literal>]
-    let ContentVersion = "blokemon-public-content-2.0.0-candidate.7"
+    let ContentVersion = "blokemon-public-content-2.0.0-candidate.8"
 
     [<Literal>]
     let TerminologyVersion = "blokemon-public-terminology-2.0.0-candidate.5"
@@ -22,7 +22,7 @@ module BlokemonPublicContentValidator =
     [<Literal>]
     let private ArtAuthority = "Blokemon"
 
-    /// One effect the mechanical authority requires the public content to publish.
+    /// One effect the rule authority requires the public content to publish.
     type private ExpectedEffect =
         { MechanicalId: string
           Program: BlokemonEffectInstruction array
@@ -98,6 +98,21 @@ module BlokemonPublicContentValidator =
           Program = program
           CanOmitText = canOmitText
           CanBeUsedFromBench = canBeUsedFromBench }
+
+    let private expectedCollectibleRules
+        (mechanics: BlokemonRuntimeManifest)
+        (mechanical: BlokemonCollectible)
+        =
+        let executableRules =
+            mechanical.HouseRules
+            |> Array.map (fun effect -> expectedFrom effect.MechanicalId effect.Program false false)
+
+        if mechanics.BaseRules.BigHitters.BlokeIds |> Array.contains mechanical.Id then
+            Array.append
+                executableRules
+                [| expectedFrom $"{mechanical.Id}-R01" Array.empty false false |]
+        else
+            executableRules
 
     let private validateEffects
         (ownerId: string)
@@ -305,9 +320,7 @@ module BlokemonPublicContentValidator =
                 content.Id
                 "rule"
                 content.Rules
-                (mechanical.HouseRules
-                 |> Array.map (fun effect ->
-                     expectedFrom effect.MechanicalId effect.Program false false))
+                (expectedCollectibleRules mechanics mechanical)
                 issues
 
         let namedEffects =
@@ -580,7 +593,7 @@ module BlokemonPublicContentValidator =
         check
             (manifest.ContentVersion = ContentVersion)
             "document.version"
-            "The public content version is not candidate.7."
+            "The public content version is not candidate.8."
             issues
 
         check
@@ -598,7 +611,7 @@ module BlokemonPublicContentValidator =
         check
             (manifest.HumanApprovalStatus = BlokemonPublicContentApprovalStatus.Accepted)
             "document.approval"
-            "Candidate.7 must carry exact human acceptance."
+            "Candidate.8 must carry exact human acceptance."
             issues
 
         validateTerminology manifest issues

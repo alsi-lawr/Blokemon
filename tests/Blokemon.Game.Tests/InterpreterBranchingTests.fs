@@ -30,8 +30,8 @@ type InterpreterBranchingTests() =
         let audit = BlokemonInterpreter(MatchScenario.Authority).AuditAuthority()
 
         audit.IsInventoryComplete |> should be True
-        audit.EffectCount |> should equal 310
-        audit.InstructionCount |> should equal 641
+        audit.EffectCount |> should equal 298
+        audit.InstructionCount |> should equal 629
 
     [<Test>]
     member _.``a beer-mat conditional should take its badge and blank branches deterministically``

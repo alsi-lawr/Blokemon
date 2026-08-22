@@ -118,7 +118,6 @@ type BlokemonOpcode =
     | ContinuousPartyTrick = 47
     | OncePerRound = 48
     | EndRoundEffect = 49
-    | BigHitterBarChits = 50
 
 type BlokemonCondition =
     | Optional = 0

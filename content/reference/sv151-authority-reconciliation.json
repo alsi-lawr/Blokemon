@@ -1,12 +1,12 @@
 {
   "reconciliationVersion": "blokemon-sv151-authority-reconciliation-1.0.0",
-  "authorityVersion": "sv151-candidate.14",
+  "authorityVersion": "sv151-candidate.15",
   "canonicalCandidate": "blokemon-sv151-parody-1.0.0-candidate.6",
   "canonicalReferenceCommit": "718be3f2",
   "inventory": {
     "collectibles": 151,
     "supports": 14,
-    "effects": 310,
+    "effects": 298,
     "basicVim": 7
   },
   "gameplayScalarDifferences": [],
@@ -168,18 +168,6 @@
       "disposition": "Candidate6Mapped"
     },
     {
-      "mechanicalId": "BLK-003-R01",
-      "ownerId": "BLK-003",
-      "kind": "HouseRule",
-      "sourceNumber": 3,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "cd11b3c6bc2fba396e4792ecd61ee068bbd3388c720119b7577c24d9c3b9d819",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "disposition": "Candidate6Mapped"
-    },
-    {
       "mechanicalId": "BLK-004-B01",
       "ownerId": "BLK-004",
       "kind": "Attack",
@@ -252,18 +240,6 @@
       "disposition": "CorrectedFromCandidate6"
     },
     {
-      "mechanicalId": "BLK-006-R01",
-      "ownerId": "BLK-006",
-      "kind": "HouseRule",
-      "sourceNumber": 6,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "7bf225bad76c0d81678bc24b11db924af5683b80e62e308c67031d981163abcd",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "disposition": "Candidate6Mapped"
-    },
-    {
       "mechanicalId": "BLK-007-B01",
       "ownerId": "BLK-007",
       "kind": "Attack",
@@ -334,18 +310,6 @@
       "candidateProgramSha256": "3c64c72e72fb1562d4ce96f4c75be12f4bc21ab082d5f23e0b164a40ba1904b4",
       "authorityProgramSha256": "b436cfcd6a845daba744ab87abe058ba9835bd2bba8dd13f414d382dc5d7e244",
       "disposition": "CorrectedFromCandidate6"
-    },
-    {
-      "mechanicalId": "BLK-009-R01",
-      "ownerId": "BLK-009",
-      "kind": "HouseRule",
-      "sourceNumber": 9,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "78fbc0e8becbc780386d577d092c0b661bebc08d10ceb4b5583b813e2e0a1dff",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "disposition": "Candidate6Mapped"
     },
     {
       "mechanicalId": "BLK-010-B01",
@@ -648,18 +612,6 @@
       "disposition": "CorrectedFromCandidate6"
     },
     {
-      "mechanicalId": "BLK-024-R01",
-      "ownerId": "BLK-024",
-      "kind": "HouseRule",
-      "sourceNumber": 24,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "3dc0b152906325c53d58afa1f4b284392d0d05c86697b942e1f5a37e68905496",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "disposition": "Candidate6Mapped"
-    },
-    {
       "mechanicalId": "BLK-025-B01",
       "ownerId": "BLK-025",
       "kind": "Attack",
@@ -960,18 +912,6 @@
       "disposition": "Candidate6Mapped"
     },
     {
-      "mechanicalId": "BLK-038-R01",
-      "ownerId": "BLK-038",
-      "kind": "HouseRule",
-      "sourceNumber": 38,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "e1e73bee56f9f2397e2136a6d4551c222949e52d3a76dc752a05fedcc23a180c",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "disposition": "Candidate6Mapped"
-    },
-    {
       "mechanicalId": "BLK-039-B01",
       "ownerId": "BLK-039",
       "kind": "Attack",
@@ -1017,18 +957,6 @@
       "sourceTextSha256": "2cf52ddc05bd0b9573b6edd455f568655c84b16242e1228c6c872d24d580f06f",
       "candidateProgramSha256": "c52e8a41b2b15ffb8663db72040d87501208134d5a59418244fa1da48c61b982",
       "authorityProgramSha256": "c52e8a41b2b15ffb8663db72040d87501208134d5a59418244fa1da48c61b982",
-      "disposition": "Candidate6Mapped"
-    },
-    {
-      "mechanicalId": "BLK-040-R01",
-      "ownerId": "BLK-040",
-      "kind": "HouseRule",
-      "sourceNumber": 40,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "2e7b7787932e999a26f1d89c5e6b677b32732d25568e580943a863acdec50ddd",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
       "disposition": "Candidate6Mapped"
     },
     {
@@ -1548,18 +1476,6 @@
       "disposition": "Candidate6Mapped"
     },
     {
-      "mechanicalId": "BLK-065-R01",
-      "ownerId": "BLK-065",
-      "kind": "HouseRule",
-      "sourceNumber": 65,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "cd20b4f01349c6dd889a0e2a2b5350ce5b6cf1d1e7a82642b9e1b57c2909de0d",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "disposition": "Candidate6Mapped"
-    },
-    {
       "mechanicalId": "BLK-066-B01",
       "ownerId": "BLK-066",
       "kind": "Attack",
@@ -1809,18 +1725,6 @@
       "sourceTextSha256": "29dd957d45116b2c873f5bf1b28a2c32c86cecf1f7b5350f5b79593ee1d410af",
       "candidateProgramSha256": "8a26d911926961a57d3afff7d5c6c751efe8c090a8af61ed418b24be8934e459",
       "authorityProgramSha256": "8a26d911926961a57d3afff7d5c6c751efe8c090a8af61ed418b24be8934e459",
-      "disposition": "Candidate6Mapped"
-    },
-    {
-      "mechanicalId": "BLK-076-R01",
-      "ownerId": "BLK-076",
-      "kind": "HouseRule",
-      "sourceNumber": 76,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "3b3ec35d9befe422d9f8a7c17bc479c4a3f76f516ad066472c0e9b0717615c12",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
       "disposition": "Candidate6Mapped"
     },
     {
@@ -2616,18 +2520,6 @@
       "disposition": "Candidate6Mapped"
     },
     {
-      "mechanicalId": "BLK-115-R01",
-      "ownerId": "BLK-115",
-      "kind": "HouseRule",
-      "sourceNumber": 115,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "45705ed656d1ff6e7674856ae579395a19ca0740f7f9b3aa0b06c480c288e5f4",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "disposition": "Candidate6Mapped"
-    },
-    {
       "mechanicalId": "BLK-116-B01",
       "ownerId": "BLK-116",
       "kind": "Attack",
@@ -2817,18 +2709,6 @@
       "sourceTextSha256": "581eb5493ef265073d9126aa476255980a882a9cd147e6d7007fa9dba3753172",
       "candidateProgramSha256": "f072f6eb0d9844c614c9072a934985bde53ae438290b200950a0e2defc46e849",
       "authorityProgramSha256": "f072f6eb0d9844c614c9072a934985bde53ae438290b200950a0e2defc46e849",
-      "disposition": "Candidate6Mapped"
-    },
-    {
-      "mechanicalId": "BLK-124-R01",
-      "ownerId": "BLK-124",
-      "kind": "HouseRule",
-      "sourceNumber": 124,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "31a490beacf1663ecbfbd3e66ffd605c111000157685884e571036882dbe1b4b",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
       "disposition": "Candidate6Mapped"
     },
     {
@@ -3288,18 +3168,6 @@
       "disposition": "CorrectedFromCandidate6"
     },
     {
-      "mechanicalId": "BLK-145-R01",
-      "ownerId": "BLK-145",
-      "kind": "HouseRule",
-      "sourceNumber": 145,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "b2b7f63d7426998b886efd03ec425221376554ec7af9f52e1c9d39a49b8f6626",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "disposition": "Candidate6Mapped"
-    },
-    {
       "mechanicalId": "BLK-146-T01",
       "ownerId": "BLK-146",
       "kind": "PartyTrick",
@@ -3441,18 +3309,6 @@
       "sourceTextSha256": "e61a1bec179c7f874cde37e0375eb8c120198c97ad43bf30a6bf7c56085e2998",
       "candidateProgramSha256": "a5b2847458e0184c809c01c51917b2ff05999dc4007a202566a82a23a4848535",
       "authorityProgramSha256": "a5b2847458e0184c809c01c51917b2ff05999dc4007a202566a82a23a4848535",
-      "disposition": "Candidate6Mapped"
-    },
-    {
-      "mechanicalId": "BLK-151-R01",
-      "ownerId": "BLK-151",
-      "kind": "HouseRule",
-      "sourceNumber": 151,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "a002caf37cdd249e9998b4284fb7a252c01762cb39be1708489ceb4cc820f7f5",
-      "sourceTextSha256": "1c0e691bed0b7b8bbcd8eff4333470493ff6659d793b818307534a6ee2eb4185",
-      "candidateProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
-      "authorityProgramSha256": "7a79c628d1f1093b8eff98f87602cc413b3d61942b572fc43c7734392c7b7b6d",
       "disposition": "Candidate6Mapped"
     },
     {

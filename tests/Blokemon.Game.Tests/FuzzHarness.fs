@@ -32,11 +32,11 @@ module internal FuzzHarness =
         let authorityInventory =
             { Id = "TR-AUTHORITY-INVENTORY-7-9"
               Group = "acceptance gate"
-              AcceptedAssertion = "All 165 cards and all 310 effect programs are in scope."
+              AcceptedAssertion = "All authority cards and effect programs are in scope."
               Heading = "Authority and boundaries"
               Lines = "technical-rulebook.md:7-9"
               Rule =
-                "The declarative authority supplies the collectible, kit and Basic Vim libraries and all 310 validated programs."
+                "The declarative authority supplies the collectible, kit and Basic Vim libraries and every validated program."
               Check =
                 "Count authority content and program IDs, bind them to the reconciliation authority, and require seeded decks to cover every content card." }
 
@@ -425,22 +425,21 @@ module internal FuzzHarness =
         let bigHitterAward =
             { Id = "TR-BIG-HITTER-AWARD-68"
               Group = "(d) ending"
-              AcceptedAssertion = "Each of the twelve Big Hitters awards two bar chits."
+              AcceptedAssertion = "Each of the eleven Big Hitters awards two bar chits."
               Heading = "Send home, bar chits and terminal outcomes"
               Lines = "technical-rulebook.md:68"
-              Rule = "The twelve IDs in bigHitters.blokeIds award two bar chits."
+              Rule = "The eleven IDs in bigHitters.blokeIds award two bar chits."
               Check =
-                "Require exactly twelve authority IDs and match Big Hitter send-home events to the available two-chit award." }
+                "Require exactly eleven authority IDs and match Big Hitter send-home events to the available two-chit award." }
 
         let programShapes =
             { Id = "TR-PROGRAM-SHAPES-9"
               Group = "(e) effects"
-              AcceptedAssertion =
-                "Every one of the 310 effect programs has a valid executable shape."
+              AcceptedAssertion = "Every authority effect program has a valid executable shape."
               Heading = "Authority and boundaries"
               Lines = "technical-rulebook.md:9"
               Rule =
-                "All 310 programs are validated against executable opcode, condition, target, selection, distribution and trigger shapes."
+                "All authority programs are validated against executable opcode, condition, target, selection, distribution and trigger shapes."
               Check =
                 "Load the validated runtime authority and require its exact sorted program IDs to match reconciliation." }
 
@@ -482,7 +481,7 @@ module internal FuzzHarness =
                 "The report distinguishes effect-attributed execution from programs not observed across the run set."
               Heading = "Authority and boundaries"
               Lines = "technical-rulebook.md:9"
-              Rule = "The authority contains all 310 validated programs."
+              Rule = "The authority contains every validated program."
               Check =
                 "Aggregate MatchEvent.Effect attribution across self-play and settled offered-action probes, explicitly labelling unobservable executions." }
 
@@ -2476,11 +2475,15 @@ module internal FuzzHarness =
                 $"records the longest {longestBout}-command observed bout without treating a ceiling hit as a rules failure"
 
         let lines = ResizeArray<string>()
+        let programCount = allPrograms.Length
         lines.Add "# BLOKEMON-079 self-play program coverage"
         lines.Add ""
-        lines.Add "- Authority programs: 310"
-        lines.Add $"- Effect-attributed executed program IDs: {observed.Count}/310"
-        lines.Add $"- Unobserved or event-unobservable program IDs: {neverObserved.Length}/310"
+        lines.Add $"- Authority programs: {programCount}"
+        lines.Add $"- Effect-attributed executed program IDs: {observed.Count}/{programCount}"
+
+        lines.Add
+            $"- Unobserved or event-unobservable program IDs: {neverObserved.Length}/{programCount}"
+
         lines.Add "- Coverage mode: APPROXIMATE"
 
         lines.Add

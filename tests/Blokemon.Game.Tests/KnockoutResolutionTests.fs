@@ -35,6 +35,56 @@ type KnockoutResolutionTests() =
         |> Seq.toList
 
     [<Test>]
+    member _.``each listed big hitter should award two bar chits when attack damage sends it home``
+        ()
+        =
+        let bigHitters = MatchScenario.Authority.BaseRules.BigHitters.BlokeIds
+        bigHitters.Length |> should equal 11
+
+        for bigHitterId in bigHitters do
+            let state =
+                MatchScenario.BattleState
+                    "BLK-003"
+                    bigHitterId
+                    [ "VIM-BLAZED"; "VIM-BLAZED"; "VIM-SOBER" ]
+                    29UL
+
+            let mechanical =
+                MatchScenario.Authority.Collectibles
+                |> Array.find (fun card -> card.Id = bigHitterId)
+
+            let defender =
+                { state.Card(CardInstanceId "defender") with
+                    Damage = mechanical.StayingPower - 1 }
+
+            let barChits =
+                [ for index in 0..5 ->
+                      MatchScenario.PlainCard
+                          $"bar-chit-{index}"
+                          "VIM-SOBER"
+                          MatchScenario.FirstPlayer
+                          CardZone.BarChit
+                          index ]
+
+            let state = MatchScenario.WithCards state (defender :: barChits)
+
+            let applied, events =
+                MatchScenario.AppliedWith(
+                    MatchScenario
+                        .Engine()
+                        .Apply(state, MatchScenario.AttackCommand state "BLK-003-B01")
+                )
+
+            let award =
+                events
+                |> Seq.find (fun matchEvent ->
+                    matchEvent.Kind = MatchEventKind.BarChitsTaken
+                    && matchEvent.SourceCard = ValueSome defender.Id)
+
+            (bigHitterId, award.Amount, (applied.Player MatchScenario.FirstPlayer).BarChitsRemaining)
+            |> should equal (bigHitterId, 2, 4)
+
+    [<Test>]
     member _.``knocking out both actives at once should send them home in owner order and tie rather than name a winner``
         ()
         =

@@ -27,7 +27,7 @@ type FuzzHarnessTests() =
     [<Test>]
     member _.``default seeded decks should cover every authority content card``() =
         (allPrograms.Length, Clauses.programShapes.Id)
-        |> should equal (310, Clauses.programShapes.Id)
+        |> should equal (reconciliationProgramIds.Length, Clauses.programShapes.Id)
 
         (allContentIds.Length, Clauses.authorityInventory.Id)
         |> should equal (165, Clauses.authorityInventory.Id)
@@ -39,7 +39,7 @@ type FuzzHarnessTests() =
         |> should equal (allPrograms, Clauses.programShapes.Id)
 
         (MatchScenario.Authority.BaseRules.BigHitters.BlokeIds.Length, Clauses.bigHitterAward.Id)
-        |> should equal (12, Clauses.bigHitterAward.Id)
+        |> should equal (11, Clauses.bigHitterAward.Id)
 
         (coveredContent DefaultSeeds, Clauses.authorityInventory.Id)
         |> should equal (allContentIds |> Set.ofArray, Clauses.authorityInventory.Id)
@@ -57,7 +57,7 @@ type FuzzHarnessTests() =
                 results
 
         File.Exists path |> should be True
-        observed + neverObserved |> should equal 310
+        observed + neverObserved |> should equal allPrograms.Length
 
         results
         |> Array.filter (fun result -> result.Status = Incomplete)
@@ -128,7 +128,7 @@ type FuzzHarnessTests() =
                 stopwatch.Elapsed
                 results
 
-        observed + neverObserved |> should equal 310
+        observed + neverObserved |> should equal allPrograms.Length
         File.Exists path |> should be True
         Console.WriteLine $"BLOKEMON-079 large-sweep coverage report: {path}"
         assertNoFindings results
