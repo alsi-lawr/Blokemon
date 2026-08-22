@@ -59,7 +59,6 @@
   @media (max-width: 720px) {
     margin: 0 calc(-1 * var(--hand-overlap)) 0 0;
     touch-action: pan-x pan-y;
-    transform: none;
     transition:
     transform calc(0.2s + var(--hand-index, 0) * 0.014s),
     margin-right calc(0.24s + var(--hand-index, 0) * 0.014s);
@@ -75,6 +74,15 @@
   transform: rotate(var(--fan-turn, 0deg)) translateY(var(--fan-lift, 0px));
   /* Per-card periods: a hand that moves as one block reads as a list being rewritten. */
   transition: transform calc(0.2s + var(--hand-index, 0) * 0.014s);
+
+  /*
+    The arc belongs to the desktop hand, which has room to spread. A phone holds the same cards
+    shoulder to shoulder with only a strip of each showing, and a turn on every card lifts its
+    neighbours' corners across that strip: the row has to be flat for the strips to read.
+  */
+  @media (max-width: 720px) {
+    transform: none;
+  }
 }
 
 .hand-card-visual {
