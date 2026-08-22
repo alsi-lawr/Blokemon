@@ -31,14 +31,25 @@ module private ExceptionalEffectFixtures =
     let requirementOfKind kind (requirements: ImmutableArray<ChoiceRequirement>) =
         requirements |> Seq.filter (fun value -> value.Kind = kind) |> Seq.exactlyOne
 
+    let isKitAction (kit: CardInstanceId) (action: LegalAction) =
+        action.Kind = LegalActionKind.PlayKit
+        && (match action.Command.Action with
+            | MatchAction.PlayKit(played, _) -> played = kit
+            | _ -> false)
+
     let kitAction (engine: MatchEngine) (state: MatchState) (kit: CardInstanceId) =
         engine.GetLegalActions(state, MatchScenario.FirstPlayer)
-        |> Seq.filter (fun action ->
-            action.Kind = LegalActionKind.PlayKit
-            && (match action.Command.Action with
-                | MatchAction.PlayKit(played, _) -> played = kit
-                | _ -> false))
+        |> Seq.filter (isKitAction kit)
         |> Seq.exactlyOne
+
+    let boothBlokes count =
+        [ for index in 0 .. count - 1 ->
+              MatchScenario.PlainCard
+                  $"other-booth-{index}"
+                  "BLK-004"
+                  MatchScenario.SecondPlayer
+                  CardZone.Booth
+                  index ]
 
 type ExceptionalEffectTests() =
 
@@ -521,8 +532,130 @@ type ExceptionalEffectTests() =
         let state = MatchScenario.WithCards state [ kit; basic ]
         let action = kitAction engine state kit.Id
 
-        let applied = MatchScenario.Applied(engine.Apply(state, action.Command))
+        let applied, events = MatchScenario.AppliedWith(engine.Apply(state, action.Command))
 
         (applied.Card basic.Id).Zone |> should equal CardZone.Oche
         (applied.Card(CardInstanceId "defender")).Zone |> should equal CardZone.Booth
         (applied.Card kit.Id).Zone |> should equal CardZone.EmptiesTray
+
+        events
+        |> Seq.filter (fun matchEvent ->
+            matchEvent.Kind = MatchEventKind.CardMoved
+            || matchEvent.Kind = MatchEventKind.OcheSwapped)
+        |> Seq.map (fun matchEvent -> matchEvent.Kind, matchEvent.TargetCards |> Seq.toList)
+        |> Seq.toList
+        |> should
+            equal
+            [ MatchEventKind.CardMoved, [ basic.Id ]
+              MatchEventKind.CardMoved, [ CardInstanceId "defender" ]
+              MatchEventKind.CardMoved, [ basic.Id ]
+              MatchEventKind.OcheSwapped, [ basic.Id; CardInstanceId "defender" ]
+              MatchEventKind.CardMoved, [ kit.Id ] ]
+
+    [<Test>]
+    member _.``a mate should be absent and reject without changing a full opposing booth``() =
+        let engine = MatchScenario.Engine()
+        let state = MatchScenario.BattleState "BLK-001" "BLK-150" [] 443UL
+
+        let kit =
+            MatchScenario.PlainCard "supporter" "KIT-009" MatchScenario.FirstPlayer CardZone.Mitt -1
+
+        let basic =
+            MatchScenario.PlainCard
+                "other-basic"
+                "BLK-004"
+                MatchScenario.SecondPlayer
+                CardZone.Mitt
+                -1
+
+        let state = MatchScenario.WithCards state (kit :: basic :: boothBlokes 5)
+
+        engine.GetLegalActions(state, MatchScenario.FirstPlayer)
+        |> Seq.exists (isKitAction kit.Id)
+        |> should be False
+
+        let command =
+            MatchScenario.Command
+                state
+                "stale-full-booth-matchmaker"
+                MatchScenario.FirstPlayer
+                ImmutableArray<_>.Empty
+                (MatchAction.PlayKit(kit.Id, ValueNone))
+
+        let rejectedState, rejection = MatchScenario.Rejected(engine.Apply(state, command))
+
+        rejection.Code |> should equal CommandRejectionCode.RuleLimitReached
+        rejectedState |> should equal state
+        rejectedState.Revision |> should equal state.Revision
+        rejectedState.LastEventSequence |> should equal state.LastEventSequence
+        rejectedState.ProcessedCommands |> should equal state.ProcessedCommands
+        rejectedState.RoundUsage |> should equal state.RoundUsage
+        (rejectedState.Card kit.Id).Zone |> should equal CardZone.Mitt
+        (rejectedState.Card basic.Id).Zone |> should equal CardZone.Mitt
+
+    [<Test>]
+    member _.``a mate should fill four opposing booth places by switching without losing cards``() =
+        let engine = MatchScenario.Engine()
+        let state = MatchScenario.BattleState "BLK-001" "BLK-150" [] 449UL
+
+        let kit =
+            MatchScenario.PlainCard "supporter" "KIT-009" MatchScenario.FirstPlayer CardZone.Mitt -1
+
+        let basic =
+            MatchScenario.PlainCard
+                "other-basic"
+                "BLK-004"
+                MatchScenario.SecondPlayer
+                CardZone.Mitt
+                -1
+
+        let attached =
+            MatchScenario.AttachedCard
+                "defender-vim"
+                "VIM-SOBER"
+                MatchScenario.SecondPlayer
+                CardZone.Attached
+                -1
+                (CardInstanceId "defender")
+
+        let state =
+            MatchScenario.WithCards
+                (addCardsAndAttachments state "defender" [ attached ])
+                (kit :: basic :: boothBlokes 4)
+
+        let originalIds = state.Cards |> Seq.map (fun card -> card.Id) |> Seq.toList
+        let action = kitAction engine state kit.Id
+        let applied, events = MatchScenario.AppliedWith(engine.Apply(state, action.Command))
+        let defender = applied.Card(CardInstanceId "defender")
+
+        (applied.Card basic.Id).Zone |> should equal CardZone.Oche
+        defender.Zone |> should equal CardZone.Booth
+
+        applied.CardsIn(MatchScenario.SecondPlayer, CardZone.Booth)
+        |> Seq.length
+        |> should equal 5
+
+        (applied.Card kit.Id).Zone |> should equal CardZone.EmptiesTray
+
+        applied.RoundUsage.MatesPlayed
+        |> should equal (state.RoundUsage.MatesPlayed + 1)
+
+        applied.RoundUsage.KitsPlayed |> Seq.contains kit.MechanicalId |> should be True
+
+        applied.Cards
+        |> Seq.map (fun card -> card.Id)
+        |> Seq.toList
+        |> should equal originalIds
+
+        defender.Attachments |> Seq.toList |> should equal [ attached.Id ]
+        (applied.Card attached.Id).Zone |> should equal CardZone.Attached
+        (applied.Card attached.Id).AttachedTo |> should equal (ValueSome defender.Id)
+
+        let swapped =
+            events
+            |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.OcheSwapped)
+            |> Seq.exactlyOne
+
+        swapped.TargetCards
+        |> Seq.toList
+        |> should equal [ basic.Id; CardInstanceId "defender" ]

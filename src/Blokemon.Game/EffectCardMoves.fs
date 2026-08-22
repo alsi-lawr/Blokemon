@@ -65,19 +65,57 @@ module internal EffectCardMoves =
         | BlokemonEffectDestination.OtherEmptiesTray -> CardZone.EmptiesTray
         | _ -> card.Zone
 
+    let private canMove
+        (catalog: AuthorityCatalog)
+        (runtime: EffectRuntime)
+        (destination: BlokemonEffectDestination)
+        (card: CardState)
+        =
+        not (discardRecoveryIsBlocked catalog runtime card destination)
+        && not (isInPlay card && effectIsPrevented runtime card)
+
+    let private boothCapacityWouldBeExceeded
+        (catalog: AuthorityCatalog)
+        (runtime: EffectRuntime)
+        (selected: CardState array)
+        (destination: BlokemonEffectDestination)
+        =
+        let destinationOwner =
+            match destination with
+            | BlokemonEffectDestination.OwnBooth -> ValueSome runtime.Actor
+            | BlokemonEffectDestination.OtherBooth -> ValueSome(runtime.Builder.Other runtime.Actor)
+            | _ -> ValueNone
+
+        match destinationOwner with
+        | ValueNone -> false
+        | ValueSome owner ->
+            let entering =
+                selected
+                |> Seq.distinctBy (fun card -> card.Id)
+                |> Seq.filter (canMove catalog runtime destination)
+                |> Seq.filter (fun card ->
+                    card.Owner = owner && card.Kind = CardKind.Bloke && card.Zone <> CardZone.Booth)
+                |> Seq.length
+
+            (runtime.Builder.CardsIn(owner, CardZone.Booth) |> Seq.length) + entering > catalog.Manifest.BaseRules.Opening.BoothLimit
+
     let moveCardsToDestination
         (catalog: AuthorityCatalog)
         (runtime: EffectRuntime)
         (selected: CardState seq)
         (destination: BlokemonEffectDestination)
         =
+        let selected = selected |> Seq.toArray
         let mutable moved = 0
 
-        for card in selected |> Seq.toArray do
-            if
-                not (discardRecoveryIsBlocked catalog runtime card destination)
-                && not (isInPlay card && effectIsPrevented runtime card)
-            then
+        let capacityExceeded =
+            boothCapacityWouldBeExceeded catalog runtime selected destination
+
+        if capacityExceeded then
+            runtime.Rejection <- ValueSome CommandRejectionCode.RuleLimitReached
+
+        for card in selected do
+            if not capacityExceeded && canMove catalog runtime destination card then
                 let zone = zoneFor destination card
 
                 if zone <> card.Zone || destination <> BlokemonEffectDestination.Unspecified then

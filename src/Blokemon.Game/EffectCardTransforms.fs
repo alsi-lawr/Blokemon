@@ -30,10 +30,16 @@ module internal EffectCardTransforms =
             | ValueSome outgoing when not (effectIsPrevented runtime outgoing) ->
                 resolvePendingDamageFor catalog runtime outgoing.Id
                 let outgoing = runtime.Builder.Card outgoing.Id
-                runtime.Builder.MoveCard(outgoing.Id, CardZone.Booth)
-                runtime.Builder.ClearRoughStates(runtime.Actor, outgoing.Id)
-                runtime.Builder.RemoveEffectsFor(outgoing.Id, true)
-                runtime.Builder.MoveCard(incoming.Id, CardZone.Oche)
+
+                runtime.Builder.ExchangeCards(
+                    outgoing.Id,
+                    CardZone.Booth,
+                    incoming.Id,
+                    CardZone.Oche,
+                    (fun () ->
+                        runtime.Builder.ClearRoughStates(runtime.Actor, outgoing.Id)
+                        runtime.Builder.RemoveEffectsFor(outgoing.Id, true))
+                )
 
                 // A card moving is not a public event - every draw and every discard is one, and a
                 // log of them is a log of the engine rather than of the game. So a swap says so

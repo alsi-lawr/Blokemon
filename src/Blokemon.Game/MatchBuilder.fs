@@ -151,6 +151,47 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
 
     member this.MoveCard(id: CardInstanceId, zone: CardZone) = this.MoveCard(id, zone, ValueNone)
 
+    member this.ExchangeCards
+        (
+            firstId: CardInstanceId,
+            firstZone: CardZone,
+            secondId: CardInstanceId,
+            secondZone: CardZone,
+            betweenMoveEvents: unit -> unit
+        ) =
+        let first = this.Card firstId
+        let second = this.Card secondId
+
+        let exchanged card zone =
+            { card with
+                Zone = zone
+                IsFaceDown = zone = CardZone.BarChit
+                StackPosition =
+                    if zone = CardZone.Booth then
+                        this.Beneath(card.Owner, CardZone.Booth)
+                    else
+                        -1
+                AttachedTo = ValueNone }
+
+        let exchangedFirst = exchanged first firstZone
+        let exchangedSecond = exchanged second secondZone
+
+        this.SetCard exchangedFirst
+        this.SetCard exchangedSecond
+
+        let recordMove card =
+            events.Add(
+                PendingMatchEvent.forCards
+                    MatchEventKind.CardMoved
+                    card.Owner
+                    card.Id
+                    (ImmutableArray.Create card.Id)
+            )
+
+        recordMove first
+        betweenMoveEvents ()
+        recordMove second
+
     member this.Draw(player: PlayerId, count: int, reason: DrawReason) =
         let drawn =
             this.CardsIn(player, CardZone.Stack)
