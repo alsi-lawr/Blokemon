@@ -14,7 +14,10 @@
   .card-viewer,
   .card-viewer .card-face-host,
   .empties-viewer,
-  .empties-viewer-panel {
+  .empties-viewer-panel,
+  .app-menu-panel,
+  .sound-settings,
+  .sound-settings-panel {
     animation: none !important;
   }
 

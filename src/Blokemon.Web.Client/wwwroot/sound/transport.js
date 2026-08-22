@@ -6,7 +6,7 @@
 //
 // The tension drone runs continuously rather than being re-armed each bar, for the same reason.
 
-import { AC, master, now, out, noiseSrc } from "./audioContext.js";
+import { AC, musicBus, now, noiseSrc } from "./audioContext.js";
 import { mid2f } from "./instruments.js";
 import { BAR, B_BAR } from "./tempo.js";
 import { scheduleBar, scheduleBattleBar } from "./themes.js";
@@ -16,7 +16,11 @@ let roomNode = null;
 let tensionDrone = null;
 let tension = false;
 
-/* ---- room tone: the pub through a wall ---- */
+/* ---- room tone: the pub through a wall ----
+
+   It rides the music bus rather than a bus of its own. Room tone is the bed the theme is heard
+   over, it comes and goes with the theme, and a player who turns the music off has asked for the
+   room to go quiet too - not to be left with the extractor fan. */
 export function roomOn() {
   if (roomNode) return;
   const s = noiseSrc();
@@ -28,7 +32,7 @@ export function roomOn() {
   const lfo = AC.createOscillator(); lfo.frequency.value = 0.06;
   const lfoG = AC.createGain(); lfoG.gain.value = 0.016;
   lfo.connect(lfoG); lfoG.connect(g.gain); lfo.start();
-  s.connect(hp); hp.connect(lp); lp.connect(lp2); lp2.connect(g); g.connect(master);
+  s.connect(hp); hp.connect(lp); lp.connect(lp2); lp2.connect(g); g.connect(musicBus);
   s.start();
   roomNode = { s, g, lfo };
 }
@@ -96,7 +100,7 @@ export function musicOn(mode) {
   const battle = mode === "battle";
   const level = AC.createGain(); level.gain.value = 0.0001;
   const duckG = AC.createGain(); duckG.gain.value = 1;
-  level.connect(duckG); duckG.connect(master);
+  level.connect(duckG); duckG.connect(musicBus);
   level.gain.linearRampToValueAtTime(battle ? 0.78 : 1.2, now() + (battle ? 0.7 : 1.4));
   music = {
     mode, level, duckG, next: now() + 0.25, bar: 0, timer: null, tension,

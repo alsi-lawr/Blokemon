@@ -6,7 +6,7 @@
 // and never in frequency, and where several cards move together the answer is friction rather than
 // a row of taps, because that is what cards actually do to each other.
 
-import { AC, master, verbSend, noiseSrc, out } from "./audioContext.js";
+import { AC, sfxBus, sfxRoom, noiseSrc, out } from "./audioContext.js";
 import { MATERIAL, STRUCK } from "./materials.js";
 import { modal, strike, crinkle } from "./resonance.js";
 
@@ -123,9 +123,9 @@ export function cardSlide(t, o) {
   const pn = AC.createStereoPanner();
   pn.pan.setValueAtTime(pan, t);
   pn.pan.linearRampToValueAtTime(o.pan1 == null ? pan : o.pan1, t + dur);
-  s.connect(hp); hp.connect(pk); pk.connect(lp); lp.connect(g); g.connect(pn); pn.connect(master);
+  s.connect(hp); hp.connect(pk); pk.connect(lp); lp.connect(g); g.connect(pn); pn.connect(sfxBus);
   const sg = AC.createGain(); sg.gain.value = o.send == null ? 0.16 : o.send;
-  pn.connect(sg); sg.connect(verbSend);
+  pn.connect(sg); sg.connect(sfxRoom);
   s.start(t); s.stop(t + dur + 0.05);
 
   // the mass of the stack under the friction
@@ -295,8 +295,8 @@ export function whoosh(t, o) {
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   const p = AC.createStereoPanner();
   p.pan.setValueAtTime(p0, t); p.pan.linearRampToValueAtTime(p1, t + dur);
-  s.connect(bp); bp.connect(g); g.connect(p); p.connect(master);
-  const sg = AC.createGain(); sg.gain.value = 0.2; p.connect(sg); sg.connect(verbSend);
+  s.connect(bp); bp.connect(g); g.connect(p); p.connect(sfxBus);
+  const sg = AC.createGain(); sg.gain.value = 0.2; p.connect(sg); sg.connect(sfxRoom);
   s.start(t); s.stop(t + dur + 0.06);
   // The pitched component is OFF by default. A sine tracking a frequency sweep is a slide
   // whistle, which is the single thing that makes a synthesised material sound cartoon.

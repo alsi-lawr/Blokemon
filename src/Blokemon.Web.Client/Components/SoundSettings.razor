@@ -1,0 +1,96 @@
+@*
+    The two levels a player sets, and nothing else.
+
+    They are two because they are two different things to want quiet: a theme you have heard enough
+    of, and a table you are playing in a room with other people in it. Each carries its own speaker,
+    which reports what that channel is doing - open, quiet, or off - and is itself the way to switch
+    it off and back on without losing the level it was at.
+*@
+@implements IDisposable
+@inject SoundBoard Sound
+
+<div class="sound-settings"
+     role="dialog"
+     aria-modal="true"
+     aria-label="Sound"
+     tabindex="-1"
+     @onkeydown="Key"
+     @onclick="Closed">
+    <div class="sound-settings-panel" @onclick:stopPropagation="true">
+        <header>
+            <strong>Sound</strong>
+            <button type="button" class="sound-settings-close" @onclick="Closed">Done</button>
+        </header>
+        <p>Every sound in the game is made in your browser as it plays. Nothing is downloaded.</p>
+        @Channel("sound-music", "Music", Sound.MusicVolume, Sound.SetMusicVolume, Sound.ToggleMusicMute)
+        @Channel("sound-effects", "Card effects", Sound.EffectsVolume, Sound.SetEffectsVolume, Sound.ToggleEffectsMute)
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback Closed { get; set; }
+
+    // One channel: what it is, how loud it is, and the speaker that says so. The speaker draws no
+    // arcs when it is off, one when it is quiet and two when it is up, so the icon reports the
+    // level rather than merely reporting that a level exists.
+    private RenderFragment Channel(
+        string id,
+        string label,
+        double level,
+        Func<double, Task> set,
+        Func<Task> mute
+    ) =>
+        @<div class="sound-channel">
+            <label for="@id">@label</label>
+            <div class="sound-channel-row">
+                <button type="button"
+                        class="sound-mute"
+                        aria-pressed="@(level == 0 ? "true" : "false")"
+                        aria-label="@(level == 0 ? $"Turn {label.ToLowerInvariant()} on" : $"Mute {label.ToLowerInvariant()}")"
+                        @onclick="mute">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 9v6h4l5 4V5L8 9H4z" />
+                        @if (level == 0)
+                        {
+                            <path d="M16.5 9.5l5 5M21.5 9.5l-5 5" />
+                        }
+                        else
+                        {
+                            <path d="M16.5 8.5a5 5 0 0 1 0 7" />
+                            @if (level > 0.5)
+                            {
+                                <path d="M19 6a8.5 8.5 0 0 1 0 12" />
+                            }
+                        }
+                    </svg>
+                </button>
+                <input id="@id"
+                       type="range"
+                       min="0"
+                       max="100"
+                       step="1"
+                       value="@Percent(level)"
+                       style="--fill: @(Percent(level))%"
+                       @oninput="e => Moved(e, set)" />
+                <output for="@id">@Percent(level)%</output>
+            </div>
+        </div>;
+
+    protected override void OnInitialized() => Sound.Changed += Redraw;
+
+    public void Dispose() => Sound.Changed -= Redraw;
+
+    private static int Percent(double level) => (int)Math.Round(level * 100);
+
+    private static Task Moved(ChangeEventArgs eventArgs, Func<double, Task> set) =>
+        double.TryParse(eventArgs.Value?.ToString(), out var percent)
+            ? set(percent / 100)
+            : Task.CompletedTask;
+
+    private Task Key(KeyboardEventArgs eventArgs) =>
+        eventArgs.Key == "Escape" ? Closed.InvokeAsync() : Task.CompletedTask;
+
+    // A level can also be changed by the speaker beside it, which does not go through the slider.
+    private void Redraw() => InvokeAsync(StateHasChanged);
+}

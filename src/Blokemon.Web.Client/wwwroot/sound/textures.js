@@ -7,7 +7,7 @@
 // NO pitch glide whatsoever. A rising sweep is a slide-whistle convention borrowed from cartoons,
 // and it is the single thing that makes a synthesised tear sound fake.
 
-import { AC, master, verbSend, noiseSrc, out } from "./audioContext.js";
+import { AC, sfxBus, sfxRoom, noiseSrc, out } from "./audioContext.js";
 import { bezier, unease } from "./easing.js";
 
 /* A riffle is NOT a row of clicks. Reference material for card foley describes the cascade as a
@@ -129,7 +129,7 @@ export function rip(t, stock) {
   p.pan.linearRampToValueAtTime(0.55, t + dur);
 
   src.connect(hp); hp.connect(scoop); scoop.connect(top); top.connect(lp); lp.connect(g);
-  g.connect(p); p.connect(master);
-  const sg = AC.createGain(); sg.gain.value = 0.2; p.connect(sg); sg.connect(verbSend);
+  g.connect(p); p.connect(sfxBus);
+  const sg = AC.createGain(); sg.gain.value = 0.2; p.connect(sg); sg.connect(sfxRoom);
   src.start(t); src.stop(t + dur + 0.1);
 }

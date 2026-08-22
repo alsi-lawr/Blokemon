@@ -8,7 +8,7 @@
 // The riffle reads --cue-pace the same way cue-states.css does, so a mulligan's quarter-speed
 // shuffle shortens rather than being cut off part way through.
 
-import { AC, master, verbSend } from "./audioContext.js";
+import { AC, sfxBus, sfxRoom } from "./audioContext.js";
 import { modal, crinkle } from "./resonance.js";
 import { cardTap, cardSlide, deckTap, scuff, whoosh, thud } from "./foley.js";
 import { rip, cardCascade } from "./textures.js";
@@ -201,11 +201,11 @@ export function riffle(t, { pace = 1 } = {}) {
         hp.connect(friction);
         friction.connect(lp);
         lp.connect(level);
-        level.connect(master);
+        level.connect(sfxBus);
         const send = AC.createGain();
         send.gain.value = 0.18;
         level.connect(send);
-        send.connect(verbSend);
+        send.connect(sfxRoom);
         source.start(t);
         source.stop(t + cascadeFor + 0.05);
       },

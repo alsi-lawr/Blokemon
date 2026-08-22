@@ -10,7 +10,9 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  padding: 0 28px;
+  /* The right-hand padding keeps the corner clear for the menu button, which sits over the bar
+     rather than in it - see the note in app-menu.css. */
+  padding: 0 76px 0 28px;
   border-bottom: 1px solid #363628;
   background: rgb(11 13 9 / 92%);
   backdrop-filter: blur(16px);
@@ -21,7 +23,7 @@
 
   @media (max-width: 720px) {
     height: 56px;
-    padding: 0 13px;
+    padding: 0 56px 0 13px;
 
     /*
       A filtered element is the containing block for anything fixed inside it, so a blur here
@@ -76,7 +78,7 @@
     left: 0;
     height: 68px;
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 1px;
     padding: 5px 4px env(safe-area-inset-bottom);
     border-top: 1px solid var(--line);
@@ -119,89 +121,6 @@
   @media (max-width: 720px) {
     box-shadow: inset 0 2px var(--gold);
   }
-}
-
-/*
-  The sound switch. It follows the round icon button the battle HUD already uses rather than
-  inventing a second shape for the same job, and it sits after the player chip so that adding it
-  moves nothing that was already on the bar. Below 900px the chip is hidden, so the switch takes
-  over the job of holding the right-hand end.
-*/
-.sound-toggle {
-  width: 36px;
-  height: 36px;
-  margin-left: 12px;
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  padding: 0;
-  border: 1px solid #5a5739;
-  border-radius: 50%;
-  color: var(--gold-soft);
-  background: rgb(10 12 9 / 84%);
-
-  @media (max-width: 900px) {
-    margin-left: auto;
-  }
-
-  @media (max-width: 720px) {
-    width: 30px;
-    height: 30px;
-  }
-}
-
-.sound-toggle[aria-pressed="false"] {
-  color: var(--muted);
-}
-
-.sound-toggle:focus-visible {
-  outline: 3px solid var(--gold);
-  outline-offset: 3px;
-}
-
-.sound-toggle svg {
-  width: 19px;
-  height: 19px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-/* The cone is the speaker itself and is always filled; only the waves and the cut are drawn. */
-.sound-toggle svg path:first-child {
-  fill: currentColor;
-  stroke: none;
-}
-
-.profile-chip {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: var(--muted);
-  text-decoration: none;
-
-  @media (max-width: 900px) {
-    display: none;
-  }
-}
-
-.profile-chip strong,
-.profile-chip small {
-  display: block;
-}
-
-.avatar {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #536532;
-  color: white;
-  font-weight: 700;
 }
 
 .app-shell > main {

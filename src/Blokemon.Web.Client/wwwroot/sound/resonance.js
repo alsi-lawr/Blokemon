@@ -10,7 +10,7 @@
 // energies follow a power law, and below about forty a second the ear picks them out individually
 // as clicks instead of hearing a texture.
 
-import { AC, master, verbSend, noiseSrc, out } from "./audioContext.js";
+import { AC, sfxBus, sfxRoom, noiseSrc, out } from "./audioContext.js";
 import { MATERIAL, STRUCK, CRINKLE } from "./materials.js";
 
 export function modal(t, name, o) {
@@ -253,8 +253,8 @@ export function crinkle(t, name, o) {
     g.gain.linearRampToValueAtTime(gain * (0.45 + Math.random() * 0.7), t + dur * (i / steps) * 0.9);
   }
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.02);
-  head.connect(g); g.connect(master);
+  head.connect(g); g.connect(sfxBus);
   const sg = AC.createGain(); sg.gain.value = o.send == null ? 0.18 : o.send;
-  g.connect(sg); sg.connect(verbSend);
+  g.connect(sg); sg.connect(sfxRoom);
   src.start(t); src.stop(t + dur + 0.05);
 }

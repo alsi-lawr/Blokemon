@@ -81,8 +81,8 @@ public sealed class MatchCueSoundTests
             await board.Play(new SoundCue("damage"));
             await board.Music(SoundTheme.Battle);
             await board.LastPrize(true);
-            await board.SetEnabled(false);
-            await board.SetVolume(0.4);
+            await board.SetMusicVolume(0);
+            await board.SetEffectsVolume(0.4);
             await board.DisposeAsync();
         });
 
@@ -94,16 +94,47 @@ public sealed class MatchCueSoundTests
     // A player's choice is theirs until they change it, so a board that could not reach the browser
     // still answers about itself rather than reporting whatever the browser last managed to say.
     [Test]
-    public async Task TheChosenVolumeAndSwitchAreRememberedEvenWhenTheBrowserCannotBeReached()
+    public async Task TheChosenLevelsAreRememberedEvenWhenTheBrowserCannotBeReached()
     {
         var board = new SoundBoard(new SilentBrowser());
         await board.Start();
 
-        await board.SetVolume(0.4);
-        await board.SetEnabled(false);
+        await board.SetMusicVolume(0.4);
+        await board.SetEffectsVolume(0.9);
 
-        board.Volume.ShouldBe(0.4);
-        board.Enabled.ShouldBeFalse();
+        board.MusicVolume.ShouldBe(0.4);
+        board.EffectsVolume.ShouldBe(0.9);
+    }
+
+    // The two levels are two because they are wanted at different times: a table you are playing
+    // in company is quiet with the music still on, and a theme you have heard enough of goes
+    // without taking the table with it.
+    [Test]
+    public async Task SilencingOneChannelLeavesTheOtherWhereItWas()
+    {
+        var board = new SoundBoard(new SilentBrowser());
+        await board.Start();
+        await board.SetEffectsVolume(0.9);
+
+        await board.ToggleMusicMute();
+
+        board.MusicVolume.ShouldBe(0);
+        board.EffectsVolume.ShouldBe(0.9);
+    }
+
+    // Muting is not a level, so coming back off it returns the player to the level they set rather
+    // than to a default they never chose.
+    [Test]
+    public async Task UnmutingReturnsToTheLevelThePlayerLastHadItAt()
+    {
+        var board = new SoundBoard(new SilentBrowser());
+        await board.Start();
+        await board.SetMusicVolume(0.35);
+
+        await board.ToggleMusicMute();
+        await board.ToggleMusicMute();
+
+        board.MusicVolume.ShouldBe(0.35);
     }
 
     private static SoundCue? Sound(

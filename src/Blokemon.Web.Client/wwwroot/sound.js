@@ -4,12 +4,17 @@
 // but none of that is the renderer's business. What it gets is: tell me what happened and how fast
 // the table is playing it, and I will decide what that sounds like.
 //
+// There are two levels rather than one, because the music and the table are two different things
+// to want quiet. Either at nothing is that half switched off outright: the theme stops being
+// scheduled and cues stop being built at all, so a player who has turned something down to zero
+// is not paying for it.
+//
 // A browser will not start an audio context until the player has touched the page, so the context
 // is built on the first gesture rather than at load. Until then every cue is dropped on the floor,
 // which is the correct behaviour and not a failure: the first thing a player does is press
 // something, and by the second thing there is sound.
 
-import { ensure, AC, master, ready } from "./sound/audioContext.js";
+import { ensure, AC, musicBus, sfxBus, ready } from "./sound/audioContext.js";
 import { musicOn, musicOff, setTension } from "./sound/transport.js";
 import * as ceremony from "./sound/ceremonyCues.js";
 import * as match from "./sound/matchCues.js";
@@ -39,8 +44,8 @@ const CUES = {
   reveal: match.reveal,
 };
 
-let enabled = true;
-let volume = 0.7;
+let musicLevel = 0.7;
+let effectsLevel = 0.7;
 let armed = false;
 let wanted = null;
 
@@ -49,18 +54,24 @@ function stored() {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
-    // A browser with storage blocked still gets sound; it just cannot remember the choice.
+    // A browser with storage blocked still gets sound; it just cannot remember the levels.
     return null;
   }
 }
 
 function remember() {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ enabled, volume }));
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ music: musicLevel, effects: effectsLevel })
+    );
   } catch {
     // As above: not remembering is survivable, failing to make a sound is not.
   }
 }
+
+const level = (value, fallback) =>
+  typeof value === "number" && value >= 0 && value <= 1 ? value : fallback;
 
 // The first gesture is what a browser needs before it will start an audio context, so it is taken
 // from whatever the player happens to touch first rather than from a control they have to find.
@@ -70,9 +81,7 @@ function armOnFirstGesture() {
       return;
     }
     armed = true;
-    if (enabled) {
-      start();
-    }
+    start();
   };
   for (const event of ["pointerdown", "keydown", "touchstart"]) {
     window.addEventListener(event, arm, { once: true, passive: true });
@@ -84,52 +93,56 @@ function start() {
   if (AC.state === "suspended") {
     AC.resume();
   }
-  master.gain.value = volume;
-  if (wanted) {
+  musicBus.gain.value = musicLevel;
+  sfxBus.gain.value = effectsLevel;
+  if (wanted && musicLevel > 0) {
     musicOn(wanted);
   }
 }
 
-// Reads back what the player chose last time, so the control renders in the right state on the
+// Reads back what the player chose last time, so the controls render in the right state on the
 // first frame rather than flicking to it once storage has been asked.
 export function initialise() {
   const saved = stored();
   if (saved) {
-    enabled = saved.enabled !== false;
-    volume = typeof saved.volume === "number" ? saved.volume : volume;
+    musicLevel = level(saved.music, musicLevel);
+    effectsLevel = level(saved.effects, effectsLevel);
   }
   armOnFirstGesture();
-  return { enabled, volume };
+  return { music: musicLevel, effects: effectsLevel };
 }
 
-export function setEnabled(on) {
-  enabled = !!on;
+// The theme under the page. At nothing it is not merely inaudible: the bar pump stops, because a
+// loop that keeps scheduling oscillators into a silent bus is work nobody asked for.
+export function setMusicVolume(value) {
+  musicLevel = Math.min(1, Math.max(0, value));
   remember();
-  if (!enabled) {
-    musicOff();
-    if (ready()) {
-      master.gain.value = 0;
-    }
+  if (!ready()) {
     return;
   }
-  if (armed) {
-    start();
+  musicBus.gain.value = musicLevel;
+  if (musicLevel > 0) {
+    if (wanted) {
+      musicOn(wanted);
+    }
+  } else {
+    musicOff();
   }
 }
 
-export function setVolume(level) {
-  volume = Math.min(1, Math.max(0, level));
+export function setEffectsVolume(value) {
+  effectsLevel = Math.min(1, Math.max(0, value));
   remember();
-  if (enabled && ready()) {
-    master.gain.value = volume;
+  if (ready()) {
+    sfxBus.gain.value = effectsLevel;
   }
 }
 
-// Which theme the page wants under it. Held even while sound is off or before the first gesture,
-// so that turning sound on starts the music the page asked for rather than silence.
+// Which theme the page wants under it. Held even before the first gesture or while the music is at
+// nothing, so that turning it back up starts the theme the page asked for rather than silence.
 export function setMusic(mode) {
   wanted = mode || null;
-  if (!enabled || !armed) {
+  if (!armed || musicLevel === 0) {
     return;
   }
   ensure();
@@ -150,7 +163,7 @@ export function setLastPrize(on) {
 // What just happened on the table. `options` carries only what changes the sound - how fast the
 // table is playing the cue, which finish a pack has, whether a prize is the last one.
 export function cue(name, options) {
-  if (!enabled || !armed || !CUES[name]) {
+  if (!armed || effectsLevel === 0 || !CUES[name]) {
     return;
   }
   ensure();

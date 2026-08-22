@@ -16,12 +16,14 @@ public sealed class SoundBoard(IJSRuntime js) : IAsyncDisposable
 {
     private IJSObjectReference? _module;
     private bool _failed;
+    private double _musicBeforeMute = 0.7;
+    private double _effectsBeforeMute = 0.7;
 
-    /// <summary>Whether the player has sound switched on.</summary>
-    public bool Enabled { get; private set; } = true;
+    /// <summary>How loud the theme under the page is, from silent to full.</summary>
+    public double MusicVolume { get; private set; } = 0.7;
 
-    /// <summary>How loud, from silent to full.</summary>
-    public double Volume { get; private set; } = 0.7;
+    /// <summary>How loud the sounds the table makes are, from silent to full.</summary>
+    public double EffectsVolume { get; private set; } = 0.7;
 
     /// <summary>Raised when the player changes either, so the controls showing them can redraw.</summary>
     public event Action? Changed;
@@ -42,8 +44,9 @@ public sealed class SoundBoard(IJSRuntime js) : IAsyncDisposable
         {
             _module = await js.InvokeAsync<IJSObjectReference>("import", "./sound.js");
             var settings = await _module.InvokeAsync<SoundSettings>("initialise");
-            Enabled = settings.Enabled;
-            Volume = settings.Volume;
+            MusicVolume = settings.Music;
+            EffectsVolume = settings.Effects;
+            Remember();
             Changed?.Invoke();
         }
         catch (JSException)
@@ -76,20 +79,46 @@ public sealed class SoundBoard(IJSRuntime js) : IAsyncDisposable
     /// <summary>Arms the tension layer while a player is one prize from winning.</summary>
     public ValueTask LastPrize(bool armed) => Invoke("setLastPrize", armed);
 
-    /// <summary>Switches sound on or off and remembers the choice.</summary>
-    public async Task SetEnabled(bool enabled)
+    /// <summary>Sets how loud the theme is and remembers it.</summary>
+    public async Task SetMusicVolume(double volume)
     {
-        Enabled = enabled;
+        MusicVolume = Math.Clamp(volume, 0, 1);
+        Remember();
         Changed?.Invoke();
-        await Invoke("setEnabled", enabled);
+        await Invoke("setMusicVolume", MusicVolume);
     }
 
-    /// <summary>Sets the volume and remembers it.</summary>
-    public async Task SetVolume(double volume)
+    /// <summary>Sets how loud the table is and remembers it.</summary>
+    public async Task SetEffectsVolume(double volume)
     {
-        Volume = Math.Clamp(volume, 0, 1);
+        EffectsVolume = Math.Clamp(volume, 0, 1);
+        Remember();
         Changed?.Invoke();
-        await Invoke("setVolume", Volume);
+        await Invoke("setEffectsVolume", EffectsVolume);
+    }
+
+    /// <summary>Silences the theme, or puts it back where the player last had it.</summary>
+    public Task ToggleMusicMute() => SetMusicVolume(MusicVolume > 0 ? 0 : _musicBeforeMute);
+
+    /// <summary>Silences the table, or puts it back where the player last had it.</summary>
+    public Task ToggleEffectsMute() => SetEffectsVolume(EffectsVolume > 0 ? 0 : _effectsBeforeMute);
+
+    /// <summary>
+    /// Keeps the level each channel was last audible at, so that unmuting returns to where the
+    /// player had it rather than to a default they never chose. A channel that has only ever been
+    /// silent unmutes to the default, which is the only sensible thing left to do.
+    /// </summary>
+    private void Remember()
+    {
+        if (MusicVolume > 0)
+        {
+            _musicBeforeMute = MusicVolume;
+        }
+
+        if (EffectsVolume > 0)
+        {
+            _effectsBeforeMute = EffectsVolume;
+        }
     }
 
     private async ValueTask Invoke(string method, params object?[] arguments)
@@ -132,7 +161,7 @@ public sealed class SoundBoard(IJSRuntime js) : IAsyncDisposable
         _module = null;
     }
 
-    private sealed record SoundSettings(bool Enabled, double Volume);
+    private sealed record SoundSettings(double Music, double Effects);
 }
 
 /// <summary>Which theme is playing under the page.</summary>

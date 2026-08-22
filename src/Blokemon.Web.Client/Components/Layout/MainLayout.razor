@@ -1,6 +1,5 @@
 @inherits LayoutComponentBase
 @implements IDisposable
-@inject PlayModeApplication Modes
 @inject CardArtWarmup ArtWarmup
 @inject SoundBoard Sound
 @inject NavigationManager Navigation
@@ -17,29 +16,15 @@
             <NavLink href="collection" data-icon="▦">Collection</NavLink>
             <NavLink href="decks" data-icon="▤">Decks</NavLink>
             <NavLink href="match" data-icon="⚔">Battle</NavLink>
-            <NavLink href="profile" data-icon="●">Profile</NavLink>
         </nav>
-        <a class="profile-chip" href="profile">
-            <span class="avatar" aria-hidden="true">L</span>
-            <span><strong>@ModeName()</strong><small>@ModeLocation()</small></span>
-        </a>
-        <button type="button" class="sound-toggle" aria-pressed="@Sound.Enabled"
-                aria-label="@(Sound.Enabled ? "Turn sound off" : "Turn sound on")"
-                title="@(Sound.Enabled ? "Sound on" : "Sound off")"
-                @onclick="ToggleSound">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 9v6h4l5 4V5L8 9H4z" />
-                @if (Sound.Enabled)
-                {
-                    <path class="sound-waves" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />
-                }
-                else
-                {
-                    <path class="sound-cut" d="M16.5 9.5l5 5M21.5 9.5l-5 5" />
-                }
-            </svg>
-        </button>
     </header>
+    @*
+        Beside the bar rather than in it. The bar carries a backdrop blur, and a filtered element is
+        the containing block for anything fixed inside it - so a menu opened from within the header
+        would have its dismissal layer and its settings surface pinned to the 68 pixels of the bar
+        instead of to the screen. The same trap is already documented against .mainnav.
+    *@
+    <AppMenu />
     <main>@Body</main>
 </div>
 
@@ -51,14 +36,7 @@
 
 
 @code {
-    private PlayModeState? _mode;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _mode = await Modes.Mode();
-        Sound.Changed += Redraw;
-        Navigation.LocationChanged += RouteChanged;
-    }
+    protected override void OnInitialized() => Navigation.LocationChanged += RouteChanged;
 
     // The shell is on screen before any card art is warmed, so warming never delays first paint.
     // Sound is started in the same breath and for the same reason: a browser will not begin an
@@ -86,30 +64,5 @@
     private async void RouteChanged(object? sender, LocationChangedEventArgs e) =>
         await Sound.Music(ThemeForRoute());
 
-    private async Task ToggleSound() => await Sound.SetEnabled(!Sound.Enabled);
-
-    private void Redraw() => InvokeAsync(StateHasChanged);
-
-    public void Dispose()
-    {
-        Sound.Changed -= Redraw;
-        Navigation.LocationChanged -= RouteChanged;
-    }
-
-    // Both places a game can be saved are named, and nothing chosen yet is named as nothing rather
-    // than swept up with them: a third place would otherwise appear on the shell as a standing
-    // invitation to choose one, to a player who already had. The suppression is for the other half
-    // of the same warning: a value cast in from outside the names the enum declares, which the
-    // application does not hand back.
-#pragma warning disable CS8524
-    private string ModeName() =>
-        _mode?.Selected switch
-        {
-            PlayMode.BrowserLocal => "Browser game",
-            PlayMode.ServerBacked => "Server game",
-            null => "Choose your game",
-        };
-#pragma warning restore CS8524
-
-    private string ModeLocation() => _mode?.StorageLocation ?? "No player loaded";
+    public void Dispose() => Navigation.LocationChanged -= RouteChanged;
 }

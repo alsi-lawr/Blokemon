@@ -155,6 +155,15 @@
   }
 }
 
+/* A panel unfolding from the corner of the button that opened it, rather than appearing beside
+   it: the origin is set where it hangs from, so the growth points back at what was pressed. */
+@keyframes menu-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-7px) scale(0.96);
+  }
+}
+
 /* The card coming up under the press that is asking for it, at the pace of the hold itself. */
 @keyframes card-holding {
   to {
