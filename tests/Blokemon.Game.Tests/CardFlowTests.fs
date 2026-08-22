@@ -228,3 +228,257 @@ type CardFlowTests() =
         |> should equal (ValueSome(CardInstanceId "attacker"))
 
         (applied.Card kit.Id).Zone |> should equal CardZone.EmptiesTray
+
+    [<Test>]
+    member _.``get the lads in with booth room should move one regular and shuffle the remaining stack``
+        ()
+        =
+        let booth =
+            [ for index in 0..3 ->
+                  MatchScenario.PlainCard
+                      $"booth-{index}"
+                      "BLK-004"
+                      MatchScenario.FirstPlayer
+                      CardZone.Booth
+                      index ]
+
+        let ineligibleVim =
+            MatchScenario.PlainCard
+                "first-draw"
+                "VIM-BLAZED"
+                MatchScenario.FirstPlayer
+                CardZone.Stack
+                0
+
+        let firstRegular =
+            MatchScenario.PlainCard
+                "searched-regular-a"
+                "BLK-004"
+                MatchScenario.FirstPlayer
+                CardZone.Stack
+                2
+
+        let evolved =
+            MatchScenario.PlainCard
+                "searched-evolved"
+                "BLK-003"
+                MatchScenario.FirstPlayer
+                CardZone.Stack
+                4
+
+        let remainingRegulars =
+            [ MatchScenario.PlainCard
+                  "searched-regular-b"
+                  "BLK-007"
+                  MatchScenario.FirstPlayer
+                  CardZone.Stack
+                  6
+              MatchScenario.PlainCard
+                  "searched-regular-c"
+                  "BLK-025"
+                  MatchScenario.FirstPlayer
+                  CardZone.Stack
+                  8 ]
+
+        let state =
+            MatchScenario.WithCards
+                (MatchScenario.BattleState "BLK-128" "BLK-003" [ "VIM-SOBER" ] 929UL)
+                (Seq.concat [ booth; [ ineligibleVim; firstRegular; evolved ]; remainingRegulars ])
+
+        let command = MatchScenario.AttackCommand state "BLK-128-B01"
+
+        let applied, events =
+            MatchScenario.AppliedWith(MatchScenario.Engine().Apply(state, command))
+
+        let repeatedState, repeatedEvents =
+            MatchScenario.AppliedWith(MatchScenario.Engine().Apply(state, command))
+
+        applied.PendingEffect.IsNone |> should be True
+
+        events
+        |> Seq.exists (fun matchEvent -> matchEvent.Kind = MatchEventKind.EffectChoiceRequested)
+        |> should be False
+
+        applied.CardsIn(MatchScenario.FirstPlayer, CardZone.Booth)
+        |> Seq.length
+        |> should equal 5
+
+        (applied.Card firstRegular.Id).Zone |> should equal CardZone.Booth
+
+        remainingRegulars
+        |> List.map (fun card -> (applied.Card card.Id).Zone)
+        |> should equal [ CardZone.Stack; CardZone.Stack ]
+
+        (applied.Card evolved.Id).Zone |> should equal CardZone.Stack
+        (applied.Card ineligibleVim.Id).Zone |> should equal CardZone.Stack
+
+        applied.CardsIn(MatchScenario.FirstPlayer, CardZone.Stack)
+        |> Seq.map (fun card -> card.StackPosition)
+        |> Seq.sort
+        |> Seq.toList
+        |> should equal [ 0; 1; 2; 3 ]
+
+        events
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.CardsShuffled)
+        |> Seq.length
+        |> should equal 1
+
+        applied.ActivePlayer |> should equal MatchScenario.SecondPlayer
+        repeatedState |> should equal applied
+        repeatedEvents |> should equal events
+
+    [<Test>]
+    member _.``get the lads in with a full booth should end the round without searching or shuffling``
+        ()
+        =
+        let booth =
+            [ for index in 0..4 ->
+                  MatchScenario.PlainCard
+                      $"full-booth-{index}"
+                      "BLK-004"
+                      MatchScenario.FirstPlayer
+                      CardZone.Booth
+                      index ]
+
+        let stack =
+            [ MatchScenario.PlainCard
+                  "first-draw"
+                  "BLK-004"
+                  MatchScenario.FirstPlayer
+                  CardZone.Stack
+                  3
+              MatchScenario.PlainCard
+                  "full-search-regular"
+                  "BLK-007"
+                  MatchScenario.FirstPlayer
+                  CardZone.Stack
+                  9
+              MatchScenario.PlainCard
+                  "full-search-ineligible"
+                  "BLK-003"
+                  MatchScenario.FirstPlayer
+                  CardZone.Stack
+                  17 ]
+
+        let state =
+            MatchScenario.WithCards
+                (MatchScenario.BattleState "BLK-128" "BLK-003" [ "VIM-SOBER" ] 937UL)
+                (Seq.append booth stack)
+
+        let command = MatchScenario.AttackCommand state "BLK-128-B01"
+
+        let applied, events =
+            MatchScenario.AppliedWith(MatchScenario.Engine().Apply(state, command))
+
+        let repeatedState, repeatedEvents =
+            MatchScenario.AppliedWith(MatchScenario.Engine().Apply(state, command))
+
+        applied.PendingEffect.IsNone |> should be True
+        applied.ActivePlayer |> should equal MatchScenario.SecondPlayer
+
+        events
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.AttackDeclared)
+        |> Seq.length
+        |> should equal 1
+
+        events
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.RoundEnded)
+        |> Seq.length
+        |> should equal 1
+
+        events
+        |> Seq.exists (fun matchEvent -> matchEvent.Kind = MatchEventKind.CardsShuffled)
+        |> should be False
+
+        let stackIds = stack |> List.map (fun card -> card.Id)
+
+        events
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.CardMoved)
+        |> Seq.collect (fun matchEvent -> matchEvent.TargetCards)
+        |> Seq.exists (fun card -> List.contains card stackIds)
+        |> should be False
+
+        booth
+        |> List.map (fun card ->
+            let current = applied.Card card.Id
+            current.Zone, current.StackPosition)
+        |> should equal (booth |> List.map (fun card -> card.Zone, card.StackPosition))
+
+        stack
+        |> List.map (fun card ->
+            let current = applied.Card card.Id
+            current.Zone, current.StackPosition)
+        |> should equal (stack |> List.map (fun card -> card.Zone, card.StackPosition))
+
+        applied.Random |> should equal state.Random
+        repeatedState |> should equal applied
+        repeatedEvents |> should equal events
+
+    [<Test>]
+    member _.``pintman should attach exactly one searched beer vim and shuffle the remaining stack``
+        ()
+        =
+        let firstBeer =
+            MatchScenario.PlainCard
+                "searched-beer-a"
+                "VIM-BEER"
+                MatchScenario.FirstPlayer
+                CardZone.Stack
+                0
+
+        let secondBeer =
+            MatchScenario.PlainCard
+                "searched-beer-b"
+                "VIM-BEER"
+                MatchScenario.FirstPlayer
+                CardZone.Stack
+                1
+
+        let sober =
+            MatchScenario.PlainCard
+                "first-draw"
+                "VIM-SOBER"
+                MatchScenario.FirstPlayer
+                CardZone.Stack
+                2
+
+        let state =
+            MatchScenario.WithCards
+                (MatchScenario.BattleState "BLK-025" "BLK-003" [ "VIM-BEER" ] 941UL)
+                [ firstBeer; secondBeer; sober ]
+
+        let command = MatchScenario.AttackCommand state "BLK-025-B01"
+
+        let applied, events =
+            MatchScenario.AppliedWith(MatchScenario.Engine().Apply(state, command))
+
+        let repeatedState, repeatedEvents =
+            MatchScenario.AppliedWith(MatchScenario.Engine().Apply(state, command))
+
+        (applied.Card firstBeer.Id).Zone |> should equal CardZone.Attached
+
+        (applied.Card firstBeer.Id).AttachedTo
+        |> should equal (ValueSome(CardInstanceId "attacker"))
+
+        (applied.Card secondBeer.Id).Zone |> should equal CardZone.Stack
+        (applied.Card sober.Id).Zone |> should equal CardZone.Stack
+
+        (applied.Card(CardInstanceId "attacker")).Attachments
+        |> Seq.contains firstBeer.Id
+        |> should be True
+
+        (applied.Card(CardInstanceId "attacker")).Attachments.Length |> should equal 2
+
+        events
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.CardsShuffled)
+        |> Seq.length
+        |> should equal 1
+
+        applied.CardsIn(MatchScenario.FirstPlayer, CardZone.Stack)
+        |> Seq.map (fun card -> card.StackPosition)
+        |> Seq.sort
+        |> Seq.toList
+        |> should equal [ 0; 1 ]
+
+        repeatedState |> should equal applied
+        repeatedEvents |> should equal events

@@ -59,6 +59,8 @@ module internal EffectSelection =
                 match runtime.CardsChoice(choiceId runtime.Effect path "cards") with
                 | ValueSome values -> values |> Seq.map runtime.Builder.Card
                 | ValueNone -> candidates
+            | BlokemonSelection.All when instruction.Opcode = BlokemonOpcode.SearchStack ->
+                candidates |> Seq.truncate instruction.Amount
             | BlokemonSelection.All ->
                 candidates
                 |> Seq.truncate (
