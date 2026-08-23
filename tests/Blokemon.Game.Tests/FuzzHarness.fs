@@ -2280,7 +2280,13 @@ module internal FuzzHarness =
             let matches = LocalMatchService(bootstrap, store)
 
             let application =
-                LocalApplicationService(bootstrap, store, matches, EconomyRules.Unlimited)
+                LocalApplicationService(
+                    bootstrap,
+                    store,
+                    matches,
+                    EconomyRules.Unlimited,
+                    ProfileAuthorityPolicy.Preserve
+                )
 
             let! created =
                 application.CreateProfile(

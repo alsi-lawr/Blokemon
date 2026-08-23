@@ -1,5 +1,6 @@
 using Blokemon.App;
 using Blokemon.App.Contracts;
+using Blokemon.Product;
 using Blokemon.Web.Api;
 using Blokemon.Web.Components;
 using Blokemon.Web.Content;
@@ -25,7 +26,15 @@ builder.Services.AddScoped<IStateDocumentStore>(static provider =>
     provider.GetRequiredService<StateDocumentStore>()
 );
 builder.Services.AddScoped<LocalMatchService>();
-builder.Services.AddScoped<LocalApplicationService>();
+builder.Services.AddScoped<LocalApplicationService>(provider =>
+    new(
+        catalogue,
+        provider.GetRequiredService<IStateDocumentStore>(),
+        provider.GetRequiredService<LocalMatchService>(),
+        provider.GetRequiredService<EconomyRules>(),
+        ProfileAuthorityPolicy.Preserve
+    )
+);
 builder.Services.AddScoped(serviceProvider => new HttpClient
 {
     BaseAddress = new Uri(serviceProvider.GetRequiredService<NavigationManager>().BaseUri),

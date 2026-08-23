@@ -50,10 +50,6 @@ module private EconomyModeFixtures =
         left.Economy = right.Economy
         && left.EconomyPackAllowance = right.EconomyPackAllowance
         && left.AuthorityManifestVersion = right.AuthorityManifestVersion
-        && sameItems
-            left.HistoricalAuthorityManifestVersions
-            right.HistoricalAuthorityManifestVersions
-        && sameItems left.UnavailableHistoricalCardIds right.UnavailableHistoricalCardIds
         && left.ProfileId = right.ProfileId
         && left.DisplayName = right.DisplayName
         && left.GuaranteedRegularCollectibleId = right.GuaranteedRegularCollectibleId
@@ -292,8 +288,6 @@ type EconomyModeTests() =
         // reads as the defaults the persisted shape carries.
         let legacySnapshot =
             { AuthorityManifestVersion = recorded.AuthorityManifestVersion
-              HistoricalAuthorityManifestVersions = ImmutableArray<string | null>.Empty
-              UnavailableHistoricalCardIds = ImmutableArray<string | null>.Empty
               ProfileId = recorded.ProfileId
               DisplayName = recorded.DisplayName
               GuaranteedRegularCollectibleId = recorded.GuaranteedRegularCollectibleId

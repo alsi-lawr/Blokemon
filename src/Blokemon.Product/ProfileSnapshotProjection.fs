@@ -37,15 +37,6 @@ module internal ProfileSnapshotProjection =
     /// The persisted form of a profile's state.
     let toSnapshot (state: LocalProfileState) : LocalProfileSnapshot =
         { AuthorityManifestVersion = state.boundAuthorityManifestVersion
-          HistoricalAuthorityManifestVersions =
-            state.historicalAuthorityManifestVersions
-            |> Seq.map (fun version -> (version: string | null))
-            |> ImmutableArray.CreateRange
-          UnavailableHistoricalCardIds =
-            state.unavailableHistoricalCardIds
-            |> Seq.sortWith (fun left right -> String.CompareOrdinal(left.Value, right.Value))
-            |> Seq.map (fun cardId -> (cardId.Value: string | null))
-            |> ImmutableArray.CreateRange
           ProfileId = state.id.Value
           DisplayName = state.displayName.Value
           GuaranteedRegularCollectibleId = state.guaranteedRegularCollectibleId.Value

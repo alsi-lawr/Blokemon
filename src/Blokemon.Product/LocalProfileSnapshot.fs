@@ -38,8 +38,6 @@ type StarterDeckClaimSnapshot =
 /// restoration reads as empty.
 type LocalProfileSnapshot =
     { AuthorityManifestVersion: string | null
-      HistoricalAuthorityManifestVersions: ImmutableArray<string | null>
-      UnavailableHistoricalCardIds: ImmutableArray<string | null>
       ProfileId: string | null
       DisplayName: string | null
       GuaranteedRegularCollectibleId: string | null
@@ -67,8 +65,6 @@ type SnapshotDuplicateKind =
     | DeckCardId = 5
     | StarterGrantCardId = 6
     | StarterClaimCommandId = 7
-    | AuthorityManifestVersion = 8
-    | HistoricalCardId = 9
 
 /// Why a persisted profile could not be restored.
 [<RequireQualifiedAccess>]

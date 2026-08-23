@@ -24,7 +24,8 @@ public sealed class StateDocumentStoreTests
             catalogue,
             store,
             new LocalMatchService(catalogue, store),
-            EconomyRules.Unlimited
+            EconomyRules.Unlimited,
+            ProfileAuthorityPolicy.Preserve
         );
         var createCommand = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var packCommand = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -52,7 +53,8 @@ public sealed class StateDocumentStoreTests
             catalogue,
             restartedStore,
             new LocalMatchService(catalogue, restartedStore),
-            EconomyRules.Unlimited
+            EconomyRules.Unlimited,
+            ProfileAuthorityPolicy.Preserve
         );
         var restored = Value(await restarted.State());
 
@@ -64,7 +66,7 @@ public sealed class StateDocumentStoreTests
     }
 
     [Test]
-    public async Task UnavailableHistoricalCards_MigrateRemainVisibleAndSurviveASecondRestart()
+    public async Task ServerBackedHistoricalProfile_RemainsVisibleAuthorityBoundAndPreserved()
     {
         await using var database = await TestDatabase.Create();
         var catalogue = BlokemonCatalogueBuilder.Load(
@@ -121,7 +123,7 @@ public sealed class StateDocumentStoreTests
 
         var restarted = Application(catalogue, store);
         var restored = Value(await restarted.State());
-        var migrated = (await store.Read("profile"))!;
+        var after = await store.Read("profile");
         var deck = restored.Decks.Single();
         var historicalCollectible = restored.Cards.Single(card =>
             card.Id == historicalCollectibleId
@@ -140,20 +142,10 @@ public sealed class StateDocumentStoreTests
         historicalDeckCard.FaceHtml.ShouldBe(catalogue.ReverseFaceHtml);
         restored.LastPack!.Cards.Any(card => card.Id == historicalCollectibleId).ShouldBeTrue();
         restored.Cards.Single(card => card.Id == "BLK-001").Type.ShouldNotBe("Historical");
-        migrated.Revision.ShouldBe(historical.Revision + 1);
-        JsonNode
-            .DeepEquals(
-                JsonNode.Parse(migrated.Json),
-                ExpectedMigratedProfile(historical, catalogue)
-            )
-            .ShouldBeTrue();
-
-        var secondRestart = Application(catalogue, store);
-        Value(await secondRestart.State());
-        (await store.Read("profile")).ShouldBe(migrated);
+        after.ShouldBe(historical);
 
         var revised = Value(
-            await secondRestart.SaveDeck(
+            await restarted.SaveDeck(
                 new(
                     Guid.Parse("44444444-4444-4444-4444-444444444444"),
                     deck.Id,
@@ -171,10 +163,9 @@ public sealed class StateDocumentStoreTests
             .AsArray()
             .Select(static item => item!["cardId"]!.GetValue<string>())
             .ToArray();
-        var newPackCommand = Guid.Parse("45555555-5555-5555-5555-555555555555");
-        var pack = Value(await secondRestart.OpenPack(new(newPackCommand)));
-        var afterPack = (await store.Read("profile"))!;
-        var retried = Value(await secondRestart.OpenPack(new(newPackCommand)));
+        var pack = await restarted.OpenPack(
+            new(Guid.Parse("45555555-5555-5555-5555-555555555555"))
+        );
 
         revised.Decks.Single().IsLegal.ShouldBeTrue();
         revised
@@ -182,97 +173,16 @@ public sealed class StateDocumentStoreTests
             .Entries.Select(static entry => entry.CardId)
             .ShouldBe(["BLK-001", "VIM-DODGY"], ignoreOrder: true);
         (persistedProfile["authorityManifestVersion"]!.GetValue<string>()).ShouldBe(
-            catalogue.Mechanics.ManifestVersion
+            "historical-manifest"
         );
-        persistedProfile["historicalAuthorityManifestVersions"]!
-            .AsArray()
-            .Select(static version => version!.GetValue<string>())
-            .ShouldBe(["historical-manifest"]);
         persistedDeck["revision"]!.GetValue<long>().ShouldBe(deck.Revision + 1);
         persistedCardIds.ShouldBe(["BLK-001", "VIM-DODGY"], ignoreOrder: true);
-        pack.LastPack!.Sequence.ShouldBe(2);
-        retried.LastPack!.Id.ShouldBe(pack.LastPack.Id);
-        retried.LastPack.Sequence.ShouldBe(pack.LastPack.Sequence);
-        retried
-            .LastPack.Cards.Select(static card => card.Id)
-            .ShouldBe(pack.LastPack.Cards.Select(static card => card.Id));
-        (await store.Read("profile")).ShouldBe(afterPack);
-        retried.Cards.Single(card => card.Id == historicalCollectibleId).OwnedQuantity.ShouldBe(1);
-    }
-
-    [Test]
-    public async Task CurrentCardProfile_MigratesExactSnapshotBeforeFurtherOperations()
-    {
-        await using var database = await TestDatabase.Create();
-        var catalogue = BlokemonCatalogueBuilder.Load(
-            Path.Combine(AppContext.BaseDirectory, "content")
-        );
-        var store = new StateDocumentStore(database);
-        var application = Application(catalogue, store, Classic(3));
-        Value(
-            await application.CreateProfile(
-                new(Guid.Parse("61111111-1111-1111-1111-111111111111"), "Local Player")
-            )
-        );
-        Value(await application.OpenPack(new(Guid.Parse("61222222-2222-2222-2222-222222222222"))));
-        Value(
-            await application.ClaimStarterDeck(
-                new(Guid.Parse("61333333-3333-3333-3333-333333333333"), "growroom")
-            )
-        );
-        Value(
-            await application.SaveDeck(
-                new(
-                    Guid.Parse("61444444-4444-4444-4444-444444444444"),
-                    null,
-                    null,
-                    "Current deck",
-                    [new("BLK-001", 1), new("VIM-DODGY", 59)]
-                )
-            )
-        );
-        var original = (await store.Read("profile"))!;
-        var historicalJson = JsonNode.Parse(original.Json)!.AsObject();
-        historicalJson["profile"]!["authorityManifestVersion"] = "historical-manifest";
-        await store.Update("profile", original.Revision, historicalJson.ToJsonString());
-        var historical = (await store.Read("profile"))!;
-
-        var restarted = Application(catalogue, store);
-        var current = Value(await restarted.State());
-        var migrated = (await store.Read("profile"))!;
-
-        current.Profile!.DisplayName.ShouldBe("Local Player");
-        current.Profile.StarterDeckId.ShouldBe("growroom");
-        current.Profile.RemainingPacks.ShouldBe(2);
-        current.Profile.StarterClaimUsed.ShouldBe(true);
-        current.LastPack!.Sequence.ShouldBe(1);
-        current.Decks.Length.ShouldBe(2);
-        migrated.Revision.ShouldBe(historical.Revision + 1);
-        JsonNode
-            .DeepEquals(
-                JsonNode.Parse(migrated.Json),
-                ExpectedMigratedProfile(historical, catalogue)
-            )
-            .ShouldBeTrue();
-
-        var secondRestart = Application(catalogue, store);
-        Value(await secondRestart.State());
-        (await store.Read("profile")).ShouldBe(migrated);
-
-        var command = Guid.Parse("61555555-5555-5555-5555-555555555555");
-        var opened = Value(await secondRestart.OpenPack(new(command)));
-        var afterOpen = (await store.Read("profile"))!;
-        var retried = Value(await secondRestart.OpenPack(new(command)));
-
-        opened.LastPack!.Sequence.ShouldBe(2);
-        opened.Profile!.RemainingPacks.ShouldBe(1);
-        opened.Profile.StarterClaimUsed.ShouldBe(true);
-        retried.LastPack!.Id.ShouldBe(opened.LastPack.Id);
-        retried.LastPack.Sequence.ShouldBe(opened.LastPack.Sequence);
-        retried
-            .LastPack.Cards.Select(static card => card.Id)
-            .ShouldBe(opened.LastPack.Cards.Select(static card => card.Id));
-        (await store.Read("profile")).ShouldBe(afterOpen);
+        Error(pack).Code.ShouldBe("pack.authority_changed");
+        Error(pack)
+            .Message.ShouldBe(
+                "This saved player cannot use the current card set. No data changed."
+            );
+        (await store.Read("profile")).ShouldBe(persisted);
     }
 
     [Test]
@@ -343,91 +253,6 @@ public sealed class StateDocumentStoreTests
         (await store.Read("profile")).ShouldBe(afterRevision);
         started.Match.ShouldNotBeNull();
         afterRevision.ShouldNotBe(historical);
-    }
-
-    [Test]
-    public async Task ProfileMigrationConflict_ReturnsTypedFailureAndPreservesHistoricalDocument()
-    {
-        await using var database = await TestDatabase.Create();
-        var catalogue = BlokemonCatalogueBuilder.Load(
-            Path.Combine(AppContext.BaseDirectory, "content")
-        );
-        var store = new StateDocumentStore(database);
-        var application = Application(catalogue, store);
-        Value(
-            await application.CreateProfile(
-                new(Guid.Parse("71111111-1111-1111-1111-111111111111"), "Local Player")
-            )
-        );
-        var original = (await store.Read("profile"))!;
-        var document = JsonNode.Parse(original.Json)!.AsObject();
-        document["profile"]!["authorityManifestVersion"] = "historical-manifest";
-        await store.Update("profile", original.Revision, document.ToJsonString());
-        var historical = (await store.Read("profile"))!;
-
-        var response = await Application(catalogue, new ConflictOnUpdateStore(store)).State();
-
-        response.Succeeded.ShouldBeFalse();
-        response.Error!.Code.ShouldBe("state.conflict");
-        response.Value.ShouldBeNull();
-        (await store.Read("profile")).ShouldBe(historical);
-    }
-
-    [Test]
-    public async Task ProfileMigration_DoesNotBypassSavedMatchAuthorityGate()
-    {
-        await using var database = await TestDatabase.Create();
-        var catalogue = BlokemonCatalogueBuilder.Load(
-            Path.Combine(AppContext.BaseDirectory, "content")
-        );
-        var store = new StateDocumentStore(database);
-        var application = Application(catalogue, store);
-        Value(
-            await application.CreateProfile(
-                new(Guid.Parse("81111111-1111-1111-1111-111111111111"), "Local Player")
-            )
-        );
-        var saved = Value(
-            await application.SaveDeck(
-                new(
-                    Guid.Parse("82222222-2222-2222-2222-222222222222"),
-                    null,
-                    null,
-                    "Current deck",
-                    [new("BLK-001", 1), new("VIM-DODGY", 59)]
-                )
-            )
-        );
-        Value(
-            await application.StartMatch(
-                new(Guid.Parse("83333333-3333-3333-3333-333333333333"), saved.Decks.Single().Id)
-            )
-        );
-
-        var profileBefore = (await store.Read("profile"))!;
-        var historicalProfile = JsonNode.Parse(profileBefore.Json)!.AsObject();
-        historicalProfile["profile"]!["authorityManifestVersion"] = "historical-manifest";
-        await store.Update("profile", profileBefore.Revision, historicalProfile.ToJsonString());
-        var historical = (await store.Read("profile"))!;
-
-        var matchBefore = (await store.Read("match"))!;
-        var incompatibleMatch = JsonNode.Parse(matchBefore.Json)!.AsObject();
-        incompatibleMatch["authorityVersion"] = "historical-match-authority";
-        await store.Update("match", matchBefore.Revision, incompatibleMatch.ToJsonString());
-        var preservedMatch = (await store.Read("match"))!;
-
-        var state = Value(await Application(catalogue, store).State());
-        var migrated = (await store.Read("profile"))!;
-
-        state.Match.ShouldBeNull();
-        state.MatchError!.Code.ShouldBe("match.authority_changed");
-        JsonNode
-            .DeepEquals(
-                JsonNode.Parse(migrated.Json),
-                ExpectedMigratedProfile(historical, catalogue)
-            )
-            .ShouldBeTrue();
-        (await store.Read("match")).ShouldBe(preservedMatch);
     }
 
     [Test]
@@ -566,113 +391,15 @@ public sealed class StateDocumentStoreTests
 
     private static LocalApplicationService Application(
         BlokemonCatalogue catalogue,
-        IStateDocumentStore store,
-        EconomyRules? economy = null
+        StateDocumentStore store
     ) =>
         new(
             catalogue,
             store,
             new LocalMatchService(catalogue, store),
-            economy ?? EconomyRules.Unlimited
+            EconomyRules.Unlimited,
+            ProfileAuthorityPolicy.Preserve
         );
-
-    private static EconomyRules Classic(int packAllowance) =>
-        EconomyRules
-            .Classic(packAllowance)
-            .Match(
-                static rules => rules,
-                static failure =>
-                    throw new InvalidOperationException($"Expected classic rules, got {failure}.")
-            );
-
-    private static JsonObject ExpectedMigratedProfile(
-        StoredDocument historical,
-        BlokemonCatalogue catalogue
-    )
-    {
-        var expected = JsonNode.Parse(historical.Json)!.AsObject();
-        var profile = expected["profile"]!.AsObject();
-        var historicalVersion = profile["authorityManifestVersion"]!.GetValue<string>();
-        profile["authorityManifestVersion"] = catalogue.Mechanics.ManifestVersion;
-        profile["historicalAuthorityManifestVersions"] = new JsonArray(historicalVersion);
-
-        var currentCardIds = catalogue
-            .Cards.Select(static card => card.Id)
-            .ToHashSet(StringComparer.Ordinal);
-        var unavailableCardIds = new HashSet<string>(StringComparer.Ordinal);
-
-        void AddIfUnavailable(JsonNode? cardId)
-        {
-            var value = cardId!.GetValue<string>();
-            if (!currentCardIds.Contains(value))
-            {
-                unavailableCardIds.Add(value);
-            }
-        }
-
-        foreach (var cardId in profile["unavailableHistoricalCardIds"]!.AsArray())
-        {
-            unavailableCardIds.Add(cardId!.GetValue<string>());
-        }
-        AddIfUnavailable(profile["guaranteedRegularCollectibleId"]);
-        foreach (var ownership in profile["collectibleOwnership"]!.AsArray())
-        {
-            AddIfUnavailable(ownership!["cardId"]);
-        }
-        foreach (var receipt in profile["packReceipts"]!.AsArray())
-        {
-            foreach (var cardId in receipt!["sampledCollectibleIds"]!.AsArray())
-            {
-                AddIfUnavailable(cardId);
-            }
-        }
-        foreach (var deck in profile["savedDecks"]!.AsArray())
-        {
-            foreach (var card in deck!["cards"]!.AsArray())
-            {
-                AddIfUnavailable(card!["cardId"]);
-            }
-        }
-        foreach (var claim in profile["starterDeckClaims"]!.AsArray())
-        {
-            foreach (var grant in claim!["collectibleGrants"]!.AsArray())
-            {
-                AddIfUnavailable(grant!["cardId"]);
-            }
-        }
-
-        var persistedUnavailableCardIds = new JsonArray();
-        foreach (var cardId in unavailableCardIds.Order(StringComparer.Ordinal))
-        {
-            persistedUnavailableCardIds.Add(cardId);
-        }
-        profile["unavailableHistoricalCardIds"] = persistedUnavailableCardIds;
-        return expected;
-    }
-
-    private sealed class ConflictOnUpdateStore(IStateDocumentStore inner) : IStateDocumentStore
-    {
-        public Task<StoredDocument?> Read(
-            string key,
-            CancellationToken cancellationToken = default
-        ) => inner.Read(key, cancellationToken);
-
-        public Task<DocumentWriteResult> Create(
-            string key,
-            string json,
-            CancellationToken cancellationToken = default
-        ) => inner.Create(key, json, cancellationToken);
-
-        public Task<DocumentWriteResult> Update(
-            string key,
-            long expectedRevision,
-            string json,
-            CancellationToken cancellationToken = default
-        ) => Task.FromResult<DocumentWriteResult>(new DocumentWriteResult.Conflict());
-
-        public Task Delete(string key, CancellationToken cancellationToken = default) =>
-            inner.Delete(key, cancellationToken);
-    }
 
     private static ApplicationView Value(ApiResponse<MatchMutationView> response) =>
         Value<MatchMutationView>(response).Application;

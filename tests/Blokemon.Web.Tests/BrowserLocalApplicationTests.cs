@@ -114,75 +114,189 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
-    public async Task BrowserProfileAuthorityMigration_PersistsBeforeStateAndPackSuccess()
+    public async Task BrowserCompatibleAuthorityMigration_PreservesProfileAndReplaysWithoutAnotherWrite()
     {
         var catalogue = Catalogue();
         var documents = new MemoryDocumentStore();
         var server = new ServerHandler(null);
-        var application = Application(catalogue, documents, server);
-        Value(await application.SelectMode(PlayMode.BrowserLocal));
-        Value(
-            await application.CreateProfile(
-                new(Guid.Parse("93511111-1111-1111-1111-111111111111"), "Browser Player")
-            )
+        var application = Application(catalogue, documents, server, economy: Classic(3));
+        var historical = await CreateHistoricalProfile(application, documents);
+        var historicalProfileId = Guid.Parse(
+            JsonNode.Parse(historical.Json)!["profile"]!["profileId"]!.GetValue<string>()
         );
-        Value(await application.OpenPack(new(Guid.Parse("93522222-2222-2222-2222-222222222222"))));
-        var original = (await documents.Read("profile"))!;
-        var historicalJson = JsonNode.Parse(original.Json)!.AsObject();
-        historicalJson["profile"]!["authorityManifestVersion"] = "historical-manifest";
-        await documents.Update("profile", original.Revision, historicalJson.ToJsonString());
-        var historical = (await documents.Read("profile"))!;
 
-        var restarted = Application(catalogue, documents, server);
+        var restarted = Application(catalogue, documents, server, economy: Classic(3));
         var restored = Value(await restarted.State());
         var migrated = (await documents.Read("profile"))!;
 
         restored.Profile!.DisplayName.ShouldBe("Browser Player");
+        restored.Profile.Id.ShouldBe(historicalProfileId);
+        restored.Profile.RemainingPacks.ShouldBe(2);
+        restored.Profile.StarterClaimUsed.ShouldBe(true);
         restored.LastPack!.Sequence.ShouldBe(1);
+        restored.Decks.Length.ShouldBe(2);
+        restored.StarterDecks.Single(static starter => starter.IsClaimed).Id.ShouldBe("growroom");
         migrated.Revision.ShouldBe(historical.Revision + 1);
         JsonNode
             .DeepEquals(
                 JsonNode.Parse(migrated.Json),
-                ExpectedMigratedProfile(historical, catalogue)
+                ExpectedVersionOnlyProfile(historical, catalogue.Mechanics.ManifestVersion)
             )
             .ShouldBeTrue();
 
-        var secondRestart = Application(catalogue, documents, server);
+        var secondRestart = Application(catalogue, documents, server, economy: Classic(3));
         Value(await secondRestart.State());
         (await documents.Read("profile")).ShouldBe(migrated);
 
-        var command = Guid.Parse("93533333-3333-3333-3333-333333333333");
+        var ownershipBeforeOpen = Ownership(restored);
+        var command = Guid.Parse("c1555555-5555-5555-5555-555555555555");
         var opened = Value(await secondRestart.OpenPack(new(command)));
         var afterOpen = (await documents.Read("profile"))!;
         var retried = Value(await secondRestart.OpenPack(new(command)));
 
         opened.LastPack!.Sequence.ShouldBe(2);
+        opened.Profile!.RemainingPacks.ShouldBe(1);
+        Ownership(opened).Values.Sum().ShouldBe(ownershipBeforeOpen.Values.Sum() + 11);
         retried.LastPack!.Id.ShouldBe(opened.LastPack.Id);
         retried.LastPack.Sequence.ShouldBe(opened.LastPack.Sequence);
         retried
             .LastPack.Cards.Select(static card => card.Id)
             .ShouldBe(opened.LastPack.Cards.Select(static card => card.Id));
+        Ownership(retried).ShouldBe(Ownership(opened));
+        afterOpen.Revision.ShouldBe(migrated.Revision + 1);
         (await documents.Read("profile")).ShouldBe(afterOpen);
         server.Requests.ShouldBeEmpty();
     }
 
     [Test]
-    public async Task BrowserProfileAuthorityMigration_StorageFailurePreservesHistoricalDocument()
+    [Arguments("ownership", true)]
+    [Arguments("receipt", true)]
+    [Arguments("deck", true)]
+    [Arguments("guaranteed-starter", true)]
+    [Arguments("starter-claim", false)]
+    public async Task BrowserIncompatibleHistoricalCard_PreservesExactDocumentAndPriorProjection(
+        string location,
+        bool projectable
+    )
     {
         var catalogue = Catalogue();
         var documents = new MemoryDocumentStore();
         var application = Application(catalogue, documents, new ServerHandler(null));
-        Value(await application.SelectMode(PlayMode.BrowserLocal));
-        Value(
-            await application.CreateProfile(
-                new(Guid.Parse("93611111-1111-1111-1111-111111111111"), "Browser Player")
-            )
+        var historical = await CreateHistoricalProfile(
+            application,
+            documents,
+            profile => AddUnknownHistoricalCard(profile, location)
         );
-        var original = (await documents.Read("profile"))!;
-        var historicalJson = JsonNode.Parse(original.Json)!.AsObject();
-        historicalJson["profile"]!["authorityManifestVersion"] = "historical-manifest";
-        await documents.Update("profile", original.Revision, historicalJson.ToJsonString());
-        var historical = (await documents.Read("profile"))!;
+
+        var restarted = Application(catalogue, documents, new ServerHandler(null));
+        var state = await restarted.State();
+
+        if (projectable)
+        {
+            var restored = Value(state);
+            restored.Cards.ShouldContain(card => card.Id == UnknownCardId(location));
+
+            var pack = await restarted.OpenPack(
+                new(Guid.Parse("c1666666-6666-6666-6666-666666666666"))
+            );
+            pack.Succeeded.ShouldBeFalse();
+            pack.Error!.Code.ShouldBe("pack.authority_changed");
+            pack.Error.Message.ShouldBe(
+                "This saved player cannot use the current card set. No data changed."
+            );
+        }
+        else
+        {
+            state.Succeeded.ShouldBeFalse();
+            state.Error!.Code.ShouldBe("state.invalid");
+        }
+
+        (await documents.Read("profile")).ShouldBe(historical);
+    }
+
+    [Test]
+    public async Task CurrentAuthorityUnknownCard_RemainsRejectedWithoutAWhitelist()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Application(catalogue, documents, new ServerHandler(null));
+        var current = await PopulateBrowserProfile(application, documents);
+        var damagedJson = JsonNode.Parse(current.Json)!.AsObject();
+        damagedJson["profile"]!["collectibleOwnership"]!
+            .AsArray()
+            .Add(new JsonObject { ["cardId"] = "UNKNOWN-CURRENT-OWNERSHIP", ["quantity"] = 0 });
+        await documents.Update("profile", current.Revision, damagedJson.ToJsonString());
+        var damaged = (await documents.Read("profile"))!;
+
+        var response = await Application(catalogue, documents, new ServerHandler(null)).State();
+
+        response.Succeeded.ShouldBeFalse();
+        response.Error!.Code.ShouldBe("state.invalid");
+        (await documents.Read("profile")).ShouldBe(damaged);
+    }
+
+    [Test]
+    public async Task TwoCompatibleAuthorityChanges_MigrateByVersionOnlyEachTime()
+    {
+        var originalCatalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Application(originalCatalogue, documents, new ServerHandler(null));
+        var original = await PopulateBrowserProfile(application, documents);
+        var firstCatalogue = WithManifestVersion(originalCatalogue, "compatible-manifest-one");
+
+        Value(await Application(firstCatalogue, documents, new ServerHandler(null)).State());
+        var first = (await documents.Read("profile"))!;
+        var secondCatalogue = WithManifestVersion(firstCatalogue, "compatible-manifest-two");
+
+        Value(await Application(secondCatalogue, documents, new ServerHandler(null)).State());
+        var second = (await documents.Read("profile"))!;
+
+        first.Revision.ShouldBe(original.Revision + 1);
+        JsonNode
+            .DeepEquals(
+                JsonNode.Parse(first.Json),
+                ExpectedVersionOnlyProfile(original, firstCatalogue.Mechanics.ManifestVersion)
+            )
+            .ShouldBeTrue();
+        second.Revision.ShouldBe(first.Revision + 1);
+        JsonNode
+            .DeepEquals(
+                JsonNode.Parse(second.Json),
+                ExpectedVersionOnlyProfile(first, secondCatalogue.Mechanics.ManifestVersion)
+            )
+            .ShouldBeTrue();
+
+        Value(await Application(secondCatalogue, documents, new ServerHandler(null)).State());
+        (await documents.Read("profile")).ShouldBe(second);
+    }
+
+    [Test]
+    public async Task BrowserAuthorityMigration_ConflictPreservesHistoricalDocument()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var historical = await CreateHistoricalProfile(
+            Application(catalogue, documents, new ServerHandler(null)),
+            documents
+        );
+        documents.ConflictNextUpdate = true;
+
+        var response = await Application(catalogue, documents, new ServerHandler(null)).State();
+
+        response.Succeeded.ShouldBeFalse();
+        response.Error!.Code.ShouldBe("state.conflict");
+        (await documents.Read("profile")).ShouldBe(historical);
+    }
+
+    [Test]
+    public async Task BrowserAuthorityMigration_TypedStorageFailurePreservesHistoricalDocument()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var historical = await CreateHistoricalProfile(
+            Application(catalogue, documents, new ServerHandler(null)),
+            documents
+        );
         documents.FailNextWrite = DocumentStorageFailure.Full;
 
         var response = await Application(catalogue, documents, new ServerHandler(null)).State();
@@ -191,6 +305,59 @@ public sealed class BrowserLocalApplicationTests
         response.Error!.Code.ShouldBe("storage.full");
         response.Error.Message.ShouldContain("last saved game is unchanged", Case.Sensitive);
         (await documents.Read("profile")).ShouldBe(historical);
+    }
+
+    [Test]
+    public async Task BrowserAuthorityMigration_CancellationBeforePersistencePreservesHistoricalDocument()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var historical = await CreateHistoricalProfile(
+            Application(catalogue, documents, new ServerHandler(null)),
+            documents
+        );
+        using var cancellation = new CancellationTokenSource();
+        documents.AfterProfileRead = cancellation.Cancel;
+
+        await Should.ThrowAsync<OperationCanceledException>(() =>
+            Application(catalogue, documents, new ServerHandler(null)).State(cancellation.Token)
+        );
+
+        (await documents.Read("profile")).ShouldBe(historical);
+    }
+
+    [Test]
+    public async Task BrowserAuthorityMigration_DoesNotBypassMatchAuthorityMismatch()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Application(catalogue, documents, new ServerHandler(null));
+        await PopulateBrowserProfile(application, documents);
+        var current = Value(await application.State());
+        Value(
+            await application.StartMatch(
+                new(Guid.Parse("c1777777-7777-7777-7777-777777777777"), current.Decks[0].Id)
+            )
+        );
+        var historical = await SetProfileAuthorityVersion(documents, "historical-profile-manifest");
+        var match = (await documents.Read("match"))!;
+        var mismatchedMatch = JsonNode.Parse(match.Json)!.AsObject();
+        mismatchedMatch["authorityVersion"] = "historical-match-manifest";
+        await documents.Update("match", match.Revision, mismatchedMatch.ToJsonString());
+        var preservedMatch = (await documents.Read("match"))!;
+
+        var state = Value(await Application(catalogue, documents, new ServerHandler(null)).State());
+        var migrated = (await documents.Read("profile"))!;
+
+        state.Match.ShouldBeNull();
+        state.MatchError!.Code.ShouldBe("match.authority_changed");
+        JsonNode
+            .DeepEquals(
+                JsonNode.Parse(migrated.Json),
+                ExpectedVersionOnlyProfile(historical, catalogue.Mechanics.ManifestVersion)
+            )
+            .ShouldBeTrue();
+        (await documents.Read("match")).ShouldBe(preservedMatch);
     }
 
     [Test]
@@ -1129,18 +1296,163 @@ public sealed class BrowserLocalApplicationTests
                 StringComparer.Ordinal
             );
 
-    private static JsonObject ExpectedMigratedProfile(
+    private static async Task<StoredDocument> PopulateBrowserProfile(
+        PlayModeApplication application,
+        MemoryDocumentStore documents
+    )
+    {
+        Value(await application.SelectMode(PlayMode.BrowserLocal));
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("c1111111-1111-1111-1111-111111111111"), "Browser Player")
+            )
+        );
+        Value(await application.OpenPack(new(Guid.Parse("c1222222-2222-2222-2222-222222222222"))));
+        var claimed = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("c1333333-3333-3333-3333-333333333333"), "growroom")
+            )
+        );
+        var starter = claimed.Decks.Single();
+        Value(
+            await application.SaveDeck(
+                new(
+                    Guid.Parse("c1444444-4444-4444-4444-444444444444"),
+                    null,
+                    null,
+                    "Browser copy",
+                    starter.Entries
+                )
+            )
+        );
+
+        return (await documents.Read("profile"))!;
+    }
+
+    private static async Task<StoredDocument> CreateHistoricalProfile(
+        PlayModeApplication application,
+        MemoryDocumentStore documents,
+        Action<JsonObject>? mutate = null
+    )
+    {
+        var current = await PopulateBrowserProfile(application, documents);
+        var document = JsonNode.Parse(current.Json)!.AsObject();
+        var profile = document["profile"]!.AsObject();
+        profile["authorityManifestVersion"] = "historical-manifest";
+        mutate?.Invoke(profile);
+        await documents.Update("profile", current.Revision, document.ToJsonString());
+        return (await documents.Read("profile"))!;
+    }
+
+    private static async Task<StoredDocument> SetProfileAuthorityVersion(
+        MemoryDocumentStore documents,
+        string manifestVersion
+    )
+    {
+        var current = (await documents.Read("profile"))!;
+        var document = JsonNode.Parse(current.Json)!.AsObject();
+        document["profile"]!["authorityManifestVersion"] = manifestVersion;
+        await documents.Update("profile", current.Revision, document.ToJsonString());
+        return (await documents.Read("profile"))!;
+    }
+
+    private static string UnknownCardId(string location) =>
+        $"UNKNOWN-HISTORICAL-{location.ToUpperInvariant()}";
+
+    private static void AddUnknownHistoricalCard(JsonObject profile, string location)
+    {
+        var cardId = UnknownCardId(location);
+
+        switch (location)
+        {
+            case "ownership":
+                profile["collectibleOwnership"]!
+                    .AsArray()
+                    .Add(new JsonObject { ["cardId"] = cardId, ["quantity"] = 0 });
+                break;
+            case "receipt":
+            {
+                var sampled = profile["packReceipts"]![0]!["sampledCollectibleIds"]!.AsArray();
+                var replaced = sampled[0]!.GetValue<string>();
+                sampled[0] = cardId;
+                MoveOwnership(profile, replaced, cardId, 1);
+                break;
+            }
+            case "deck":
+                profile["savedDecks"]![0]!["cards"]![0]!["cardId"] = cardId;
+                break;
+            case "guaranteed-starter":
+            {
+                var replaced = profile["guaranteedRegularCollectibleId"]!.GetValue<string>();
+                profile["guaranteedRegularCollectibleId"] = cardId;
+                MoveOwnership(profile, replaced, cardId, 1);
+                break;
+            }
+            case "starter-claim":
+            {
+                var grant = profile["starterDeckClaims"]![0]!["collectibleGrants"]![0]!.AsObject();
+                var replaced = grant["cardId"]!.GetValue<string>();
+                var quantity = grant["quantity"]!.GetValue<int>();
+                grant["cardId"] = cardId;
+                MoveOwnership(profile, replaced, cardId, quantity);
+                break;
+            }
+            default:
+                throw new ArgumentOutOfRangeException(nameof(location));
+        }
+    }
+
+    private static void MoveOwnership(
+        JsonObject profile,
+        string replacedCardId,
+        string replacementCardId,
+        int quantity
+    )
+    {
+        var ownership = profile["collectibleOwnership"]!.AsArray();
+        var replaced = ownership
+            .Select(static item => item!.AsObject())
+            .Single(item => item["cardId"]!.GetValue<string>() == replacedCardId);
+        var remaining = replaced["quantity"]!.GetValue<int>() - quantity;
+
+        if (remaining == 0)
+        {
+            ownership.Remove(replaced);
+        }
+        else
+        {
+            replaced["quantity"] = remaining;
+        }
+
+        ownership.Add(new JsonObject { ["cardId"] = replacementCardId, ["quantity"] = quantity });
+    }
+
+    private static JsonObject ExpectedVersionOnlyProfile(
         StoredDocument historical,
-        BlokemonCatalogue catalogue
+        string manifestVersion
     )
     {
         var expected = JsonNode.Parse(historical.Json)!.AsObject();
-        var profile = expected["profile"]!.AsObject();
-        var historicalVersion = profile["authorityManifestVersion"]!.GetValue<string>();
-        profile["authorityManifestVersion"] = catalogue.Mechanics.ManifestVersion;
-        profile["historicalAuthorityManifestVersions"] = new JsonArray(historicalVersion);
-        profile["unavailableHistoricalCardIds"] = new JsonArray();
+        expected["profile"]!["authorityManifestVersion"] = manifestVersion;
         return expected;
+    }
+
+    private static BlokemonCatalogue WithManifestVersion(
+        BlokemonCatalogue catalogue,
+        string manifestVersion
+    )
+    {
+        var bootstrap = JsonNode.Parse(catalogue.ToBootstrapJson())!.AsObject();
+        var mechanics = JsonNode.Parse(bootstrap["mechanicsJson"]!.GetValue<string>())!.AsObject();
+        mechanics["manifestVersion"] = manifestVersion;
+        bootstrap["mechanicsJson"] = mechanics.ToJsonString();
+
+        var starterDecks = JsonNode
+            .Parse(bootstrap["starterDecksJson"]!.GetValue<string>())!
+            .AsObject();
+        starterDecks["mechanicalManifestVersion"] = manifestVersion;
+        bootstrap["starterDecksJson"] = starterDecks.ToJsonString();
+        return BlokemonCatalogue.FromBootstrapJson(bootstrap.ToJsonString());
     }
 
     private static BlokemonCatalogue Catalogue() =>
@@ -1150,13 +1462,14 @@ public sealed class BrowserLocalApplicationTests
         BlokemonCatalogue catalogue,
         MemoryDocumentStore documents,
         ServerHandler handler,
-        bool serverBackedAvailable = true
+        bool serverBackedAvailable = true,
+        EconomyRules? economy = null
     )
     {
         var http = new HttpClient(handler) { BaseAddress = new Uri("https://server.invalid/") };
         return new(
             new BlokemonApiClient(http),
-            Local(catalogue, documents, EconomyRules.Unlimited),
+            Local(catalogue, documents, economy ?? EconomyRules.Unlimited),
             documents,
             new PlayModeAvailability(serverBackedAvailable)
         );
@@ -1166,7 +1479,14 @@ public sealed class BrowserLocalApplicationTests
         BlokemonCatalogue catalogue,
         MemoryDocumentStore documents,
         EconomyRules economy
-    ) => new(catalogue, documents, new LocalMatchService(catalogue, documents), economy);
+    ) =>
+        new(
+            catalogue,
+            documents,
+            new LocalMatchService(catalogue, documents),
+            economy,
+            ProfileAuthorityPolicy.MigrateCompatible
+        );
 
     private static EconomyRules Classic(int packAllowance) =>
         EconomyRules
@@ -1292,12 +1612,24 @@ public sealed class BrowserLocalApplicationTests
 
         public DocumentStorageFailure? FailNextWrite { get; set; }
 
+        public bool ConflictNextUpdate { get; set; }
+
+        public Action? AfterProfileRead { get; set; }
+
         public Task<StoredDocument?> Read(string key, CancellationToken cancellationToken = default)
         {
+            StoredDocument? document;
             lock (_lock)
             {
-                return Task.FromResult(_documents.GetValueOrDefault(key));
+                document = _documents.GetValueOrDefault(key);
             }
+
+            if (key == "profile")
+            {
+                AfterProfileRead?.Invoke();
+            }
+
+            return Task.FromResult(document);
         }
 
         public Task<DocumentWriteResult> Create(
@@ -1337,6 +1669,11 @@ public sealed class BrowserLocalApplicationTests
             lock (_lock)
             {
                 ThrowIfWriteFails();
+                if (ConflictNextUpdate)
+                {
+                    ConflictNextUpdate = false;
+                    return Task.FromResult<DocumentWriteResult>(new DocumentWriteResult.Conflict());
+                }
                 if (
                     !_documents.TryGetValue(key, out var current)
                     || current.Revision != expectedRevision

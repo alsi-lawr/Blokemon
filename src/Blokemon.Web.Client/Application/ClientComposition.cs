@@ -24,7 +24,15 @@ public static class ClientComposition
         services.AddSingleton(economy);
         services.AddScoped<IStateDocumentStore, IndexedDbStateDocumentStore>();
         services.AddScoped<LocalMatchService>();
-        services.AddScoped<LocalApplicationService>();
+        services.AddScoped<LocalApplicationService>(static provider =>
+            new(
+                provider.GetRequiredService<BlokemonCatalogue>(),
+                provider.GetRequiredService<IStateDocumentStore>(),
+                provider.GetRequiredService<LocalMatchService>(),
+                provider.GetRequiredService<EconomyRules>(),
+                ProfileAuthorityPolicy.MigrateCompatible
+            )
+        );
         services.AddScoped<BlokemonApiClient>();
         // PlayModeApplication takes two IBlokemonApplication implementations, so the container
         // cannot pick them itself: the server side is the HTTP transport, the browser side is

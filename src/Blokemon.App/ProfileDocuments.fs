@@ -67,9 +67,16 @@ type internal ProfileLoad =
     { Profile: LoadedProfile | null
       Error: ApiError | null }
 
+/// Whether this application may atomically rebind a compatible historical profile to its
+/// checked-out card authority.
+type ProfileAuthorityPolicy =
+    | Preserve = 0
+    | MigrateCompatible = 1
+
 // The dependencies one service instance holds.
 type internal ApplicationContext =
     { Catalogue: BlokemonCatalogue
       Documents: IStateDocumentStore
       Matches: LocalMatchService
-      Economy: EconomyRules }
+      Economy: EconomyRules
+      ProfileAuthorityPolicy: ProfileAuthorityPolicy }

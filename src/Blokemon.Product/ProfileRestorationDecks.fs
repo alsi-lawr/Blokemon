@@ -50,7 +50,6 @@ module internal ProfileRestorationDecks =
         (baseState: LocalProfileState)
         (currentAuthority: BlokemonRuntimeManifest)
         (isCurrentAuthority: bool)
-        (unavailableHistoricalCardIds: Set<CardId>)
         (path: string)
         (item: SavedDeckSnapshot)
         : DomainResult<SavedDeck, LocalProfileRestorationFailure> =
@@ -79,36 +78,7 @@ module internal ProfileRestorationDecks =
 
             let selections = List.rev reversedSelections
 
-            let authorityCardIds =
-                Seq.concat
-                    [ currentAuthority.Collectibles |> Seq.map _.Id
-                      currentAuthority.Kits |> Seq.map _.Id
-                      currentAuthority.BasicVim |> Seq.map _.Id ]
-                |> Set.ofSeq
-
-            let unprovenUnknownCards =
-                selections
-                |> List.filter (fun selection ->
-                    not (authorityCardIds.Contains selection.CardId.Value)
-                    && not (unavailableHistoricalCardIds.Contains selection.CardId))
-
-            let containsUnavailableHistoricalCard =
-                selections
-                |> List.exists (fun selection ->
-                    unavailableHistoricalCardIds.Contains selection.CardId
-                    && not (authorityCardIds.Contains selection.CardId.Value))
-
-            if isCurrentAuthority && not unprovenUnknownCards.IsEmpty then
-                let issues =
-                    unprovenUnknownCards
-                    |> List.map (fun selection -> DeckValidationIssue.UnknownCard selection.CardId)
-                    |> ImmutableArray.CreateRange
-
-                return!
-                    DomainResult.Failed(
-                        LocalProfileRestorationFailure.InvalidSavedDeck(deckId, issues)
-                    )
-            elif isCurrentAuthority && not containsUnavailableHistoricalCard then
+            if isCurrentAuthority then
                 match
                     DeckRules.validate
                         baseState.OwnedQuantity
@@ -146,7 +116,6 @@ module internal ProfileRestorationDecks =
         (baseState: LocalProfileState)
         (currentAuthority: BlokemonRuntimeManifest)
         (isCurrentAuthority: bool)
-        (unavailableHistoricalCardIds: Set<CardId>)
         (decks: Map<DeckId, SavedDeck>)
         (deckIndex: int)
         (item: SavedDeckSnapshot)
@@ -157,7 +126,6 @@ module internal ProfileRestorationDecks =
                     baseState
                     currentAuthority
                     isCurrentAuthority
-                    unavailableHistoricalCardIds
                     $"SavedDecks[{deckIndex}]"
                     item
 

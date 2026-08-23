@@ -30,8 +30,6 @@ type internal LocalProfileState =
     { id: ProfileId
       displayName: DisplayName
       boundAuthorityManifestVersion: string
-      historicalAuthorityManifestVersions: ImmutableArray<string>
-      unavailableHistoricalCardIds: Set<CardId>
       guaranteedRegularCollectibleId: CardId
       economy: EconomyRules
       collectibleOwnership: ImmutableDictionary<CardId, int>

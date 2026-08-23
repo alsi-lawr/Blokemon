@@ -2062,7 +2062,8 @@ public sealed class LocalMatchTests
                     catalogue,
                     store,
                     new LocalMatchService(catalogue, store),
-                    EconomyRules.Unlimited
+                    EconomyRules.Unlimited,
+                    ProfileAuthorityPolicy.Preserve
                 )
             );
         }
@@ -2074,7 +2075,8 @@ public sealed class LocalMatchTests
                 Catalogue,
                 store,
                 new LocalMatchService(Catalogue, store),
-                EconomyRules.Unlimited
+                EconomyRules.Unlimited,
+                ProfileAuthorityPolicy.Preserve
             );
         }
     }

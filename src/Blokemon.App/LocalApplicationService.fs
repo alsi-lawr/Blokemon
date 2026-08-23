@@ -13,14 +13,16 @@ type LocalApplicationService
         catalogue: BlokemonCatalogue,
         documents: IStateDocumentStore,
         matches: LocalMatchService,
-        economy: EconomyRules
+        economy: EconomyRules,
+        profileAuthorityPolicy: ProfileAuthorityPolicy
     ) =
 
     let context: ApplicationContext =
         { Catalogue = catalogue
           Documents = documents
           Matches = matches
-          Economy = economy }
+          Economy = economy
+          ProfileAuthorityPolicy = profileAuthorityPolicy }
 
     /// Everything the client draws: the profile, its cards, decks and the saved battle.
     member _.State([<Optional>] cancellationToken: CancellationToken) =

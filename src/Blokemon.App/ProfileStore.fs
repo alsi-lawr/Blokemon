@@ -42,45 +42,62 @@ module internal ProfileStore =
                             match WebLocalIds.TryCreate restored with
                             | null -> return invalidState ()
                             | ids ->
-                                if
+                                let historical: ProfileLoad =
+                                    { Profile =
+                                        { Revision = document.Revision
+                                          Document = value
+                                          Profile = restored
+                                          Ids = ids }
+                                      Error = null }
+
+                                let isCurrentAuthority =
                                     String.Equals(
                                         restored.BoundAuthorityManifestVersion,
                                         catalogue.Mechanics.ManifestVersion,
                                         StringComparison.Ordinal
                                     )
+
+                                if
+                                    isCurrentAuthority
+                                    || context.ProfileAuthorityPolicy
+                                       <> ProfileAuthorityPolicy.MigrateCompatible
                                 then
-                                    return
-                                        { Profile =
-                                            { Revision = document.Revision
-                                              Document = value
-                                              Profile = restored
-                                              Ids = ids }
-                                          Error = null }
+                                    return historical
                                 else
-                                    let migrated = restored.MigrateAuthority catalogue.Mechanics
+                                    let candidateSnapshot =
+                                        { value.Profile with
+                                            AuthorityManifestVersion =
+                                                catalogue.Mechanics.ManifestVersion }
 
-                                    let migratedDocument =
-                                        { value with
-                                            Profile = migrated.ToSnapshot() }
+                                    match
+                                        LocalProfile.Restore(candidateSnapshot, catalogue.Mechanics)
+                                    with
+                                    | DomainResult.Failed _ -> return historical
+                                    | DomainResult.Succeeded candidate ->
+                                        let candidateDocument =
+                                            { value with
+                                                Profile = candidateSnapshot }
 
-                                    let! write =
-                                        documents.Update(
-                                            profileKey,
-                                            document.Revision,
-                                            JsonSerializer.Serialize(migratedDocument, json),
-                                            cancellationToken
-                                        )
+                                        cancellationToken.ThrowIfCancellationRequested()
 
-                                    match write with
-                                    | :? DocumentWriteResult.Written as written ->
-                                        return
-                                            { Profile =
-                                                { Revision = written.Revision
-                                                  Document = migratedDocument
-                                                  Profile = migrated
-                                                  Ids = ids }
-                                              Error = null }
-                                    | _ -> return { Profile = null; Error = conflict () }
+                                        let! write =
+                                            documents.Update(
+                                                profileKey,
+                                                document.Revision,
+                                                JsonSerializer.Serialize(candidateDocument, json),
+                                                cancellationToken
+                                            )
+
+                                        match write with
+                                        | :? DocumentWriteResult.Written as written ->
+                                            return
+                                                { Profile =
+                                                    { Revision = written.Revision
+                                                      Document = candidateDocument
+                                                      Profile = candidate
+                                                      Ids = ids }
+                                                  Error = null }
+                                        | _ -> return { Profile = null; Error = conflict () }
         }
 
     let save

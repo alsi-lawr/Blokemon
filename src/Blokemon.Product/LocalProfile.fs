@@ -100,8 +100,6 @@ type LocalProfile =
                     { id = id
                       displayName = displayName
                       boundAuthorityManifestVersion = authority.ManifestVersion
-                      historicalAuthorityManifestVersions = ImmutableArray<string>.Empty
-                      unavailableHistoricalCardIds = Set.empty
                       guaranteedRegularCollectibleId = regularId
                       economy =
                         match economy with
@@ -118,61 +116,6 @@ type LocalProfile =
     member this.OwnedCollectibleQuantity(cardId: CardId) =
         ArgumentNullException.ThrowIfNull(cardId, nameof cardId)
         this.state.OwnedQuantity cardId
-
-    /// Rebinds a restored profile to the checked-out authority without changing its product state.
-    member this.MigrateAuthority(currentAuthority: BlokemonRuntimeManifest) =
-        ArgumentNullException.ThrowIfNull(currentAuthority, nameof currentAuthority)
-
-        if
-            String.Equals(
-                this.state.boundAuthorityManifestVersion,
-                currentAuthority.ManifestVersion,
-                StringComparison.Ordinal
-            )
-        then
-            this
-        else
-            let currentCardIds =
-                Seq.concat
-                    [ currentAuthority.Collectibles |> Seq.map _.Id
-                      currentAuthority.Kits |> Seq.map _.Id
-                      currentAuthority.BasicVim |> Seq.map _.Id ]
-                |> Set.ofSeq
-
-            let unavailableCardIds =
-                seq {
-                    yield this.state.guaranteedRegularCollectibleId
-                    yield! this.state.collectibleOwnership.Keys
-
-                    for receipt in this.state.receiptsById.Values do
-                        yield! receipt.SampledCollectibleIds
-
-                    for deck in this.state.savedDecks.Values do
-                        yield! deck.Cards.Keys
-
-                    for claim in this.state.starterDeckClaims do
-                        yield! claim.CollectibleGrants |> Seq.map _.CardId
-                }
-                |> Seq.filter (fun cardId -> not (currentCardIds.Contains cardId.Value))
-                |> Seq.fold
-                    (fun historical cardId -> historical |> Set.add cardId)
-                    this.state.unavailableHistoricalCardIds
-
-            { state =
-                { this.state with
-                    boundAuthorityManifestVersion = currentAuthority.ManifestVersion
-                    historicalAuthorityManifestVersions =
-                        if
-                            this.state.historicalAuthorityManifestVersions.Contains(
-                                this.state.boundAuthorityManifestVersion
-                            )
-                        then
-                            this.state.historicalAuthorityManifestVersions
-                        else
-                            this.state.historicalAuthorityManifestVersions.Add(
-                                this.state.boundAuthorityManifestVersion
-                            )
-                    unavailableHistoricalCardIds = unavailableCardIds } }
 
     /// Opens an eleven-card pack, replaying a saved receipt when the command repeats.
     member this.OpenPack
