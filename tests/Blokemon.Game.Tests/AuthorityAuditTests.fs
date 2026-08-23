@@ -10,7 +10,7 @@ open FsUnit
 open TUnit.Core
 
 [<AutoOpen>]
-module private AuthorityAuditFixtures =
+module internal AuthorityAuditFixtures =
 
     let seedForBadge () =
         let rec search (seed: uint64) =

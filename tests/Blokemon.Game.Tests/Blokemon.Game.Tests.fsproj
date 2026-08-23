@@ -27,8 +27,15 @@
     <Compile Include="AuthorityErrataTests.fs" />
     <Compile Include="AuthorityParityTests.fs" />
     <Compile Include="FullSetBehaviorTests.fs" />
+    <Compile Include="OpcodeConformanceTests.fs" />
+    <Compile Include="ConditionConformanceTests.fs" />
+    <Compile Include="TriggerConformanceTests.fs" />
+    <Compile Include="ConformanceCensus.fs" />
+    <Compile Include="ProgramCompositionConformanceTests.fs" />
     <Compile Include="FuzzHarness.fs" />
     <Compile Include="FuzzHarnessTests.fs" />
+    <Compile Include="ConformanceEvidence.fs" />
+    <Compile Include="ConformanceCensusTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Blokemon.App/Blokemon.App.fsproj" />

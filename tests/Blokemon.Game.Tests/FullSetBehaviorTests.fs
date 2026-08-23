@@ -8,7 +8,7 @@ open FsUnit
 open TUnit.Core
 
 [<AutoOpen>]
-module private FullSetBehaviorFixtures =
+module internal FullSetBehaviorFixtures =
 
     type Execution =
         { State: MatchState

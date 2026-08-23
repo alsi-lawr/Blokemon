@@ -2487,7 +2487,7 @@ module internal FuzzHarness =
                 "- Runtime rationale: this explicit-only sweep broadens effect sampling without adding its measured cost to the normal Game suite."
         )
 
-        lines.Add $"- Content cards in seeded decks: {contentCoverage.Count}/165"
+        lines.Add $"- Content cards in seeded decks: {contentCoverage.Count}/{allContentIds.Length}"
         lines.Add $"- Completed bouts: {results.Length - incomplete.Length}"
         lines.Add $"- INCOMPLETE bouts: {incomplete.Length}"
         lines.Add $"- Rule findings: {findings.Length}"
