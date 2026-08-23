@@ -6,7 +6,7 @@
 .card-face-host,
 .oche-card-back,
 .packaging-art,
-.card-showcase-trigger {
+.card-viewer-trigger {
   user-select: none;
   -webkit-touch-callout: none;
   /* Android washes whatever was pressed in its own colour and holds it there for the length of
@@ -78,7 +78,7 @@
 }
 
 .card-tile > b,
-.card-tile > span:not(.qty) {
+.card-tile > span:not(.qty):not(.card-viewer-trigger) {
   width: 100%;
 }
 
@@ -89,13 +89,18 @@
   white-space: nowrap;
 }
 
-.card-tile > span:not(.qty) {
+.card-tile > span:not(.qty):not(.card-viewer-trigger) {
   color: var(--muted);
   font-size: 13px;
 }
 
-.card-showcase-trigger {
+.card-viewer-trigger {
   min-width: 0;
+  display: inline-block;
+  border-radius: 13px;
+}
+
+.card-viewer-trigger > .card-press-surface {
   padding: 0;
   border: 0;
   border-radius: 13px;
@@ -103,94 +108,31 @@
   background: transparent;
 }
 
-.card-showcase-trigger:focus-visible {
+.card-viewer-trigger:has(> .card-press-surface:focus-visible) {
   outline: 3px solid var(--gold);
   outline-offset: 5px;
 }
 
-.card-showcase {
-  max-width: min(94vw, 760px);
-  max-height: calc(100dvh - 36px);
-  padding: 0;
-  overflow: auto;
-  border: 1px solid #655c3e;
-  border-radius: 26px;
-  color: var(--ink);
-  background: radial-gradient(circle at 50% 34%, #28321f, #10130e 68%);
-  box-shadow: 0 34px 100px #000;
-
-  @media (max-width: 720px) {
-    max-width: calc(100vw - 20px);
-    max-height: calc(100dvh - 20px);
-  }
-}
-
-.card-showcase[open] {
-  animation: showcase-in 0.4s cubic-bezier(0.2, 0.75, 0.25, 1) both;
-}
-
-.card-showcase::backdrop {
-  background: rgb(2 3 2 / 82%);
-  backdrop-filter: blur(9px);
-}
-
-.card-showcase[open]::backdrop {
-  animation: fade-in 0.4s ease-out both;
-}
-
-.card-showcase__surface {
-  min-width: 560px;
-  padding: 24px 52px 40px;
-
-  @media (max-width: 720px) {
-    min-width: 0;
-    padding: 18px 10px 28px;
-  }
-}
-
-.card-showcase__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 12px;
-
-  @media (max-width: 720px) {
-    padding: 0 10px;
-  }
-}
-
-.card-showcase__title {
-  margin: 0;
-  font: 800 34px "Gillius ADF", serif;
-
-  @media (max-width: 720px) {
-    font-size: 28px;
-  }
-}
-
-.card-showcase__close-form {
-  margin-left: auto;
-}
-
-.card-showcase__close {
-  width: 44px;
-  height: 44px;
-  border: 1px solid #4b4c3b;
-  border-radius: 50%;
-  color: var(--ink);
-  background: #292c22;
-  font-size: 25px;
-}
-
-.card-showcase__close:focus-visible {
-  outline: 3px solid var(--gold);
-  outline-offset: 3px;
-}
-
-.card-showcase__card {
+/* Keeps the printed aspect ratio and fills the viewport less a 20px margin. */
+.card-viewer {
+  position: fixed;
+  z-index: 600;
+  inset: 0;
   display: grid;
   place-items: center;
+  padding: 20px;
+  /*
+    No blur behind this one. The scrim already keeps 86% of the light off the page, and animated
+    cards underneath it must not make the browser re-blur the whole screen while a card is read.
+  */
+  background: rgb(2 3 2 / 86%);
+  animation: fade-in 0.16s ease-out both;
+}
+
+.card-viewer .card-face-host {
+  --blokemon-card-scale: var(--viewer-scale, 0.5);
+  filter: drop-shadow(0 12px 22px #000c);
+  animation: viewer-in 0.2s cubic-bezier(0.2, 0.75, 0.25, 1) both;
 }
 
 .qty,
@@ -210,4 +152,3 @@
   right: 7px;
   padding: 5px 8px;
 }
-

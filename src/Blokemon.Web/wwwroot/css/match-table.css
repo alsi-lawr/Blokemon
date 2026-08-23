@@ -145,12 +145,15 @@ button.deck-stack {
   }
 }
 
-button.empties-tray {
+.empties-tray > .card-press-surface {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
   cursor: pointer;
 }
 
-button.empties-tray:hover .card-face-host,
-button.empties-tray:focus-visible .card-face-host {
+.empties-tray > .card-press-surface:hover .card-face-host,
+.empties-tray > .card-press-surface:focus-visible .card-face-host {
   filter: drop-shadow(-4px 4px 0 #1f2118) drop-shadow(-4px 4px 0 #353527)
     drop-shadow(0 0 9px rgb(244 189 63 / 55%));
 }
@@ -166,8 +169,8 @@ button.empties-tray:focus-visible .card-face-host {
   color: #687057;
 }
 
-/* The face on top of the pile, which is a picture of the pile rather than a card of its own: the
-   whole tray is read by opening it, so nothing inside here answers a press separately. */
+/* The face on top of the pile. Its action opens the whole tray, while its sibling reading control
+   opens only the printed card without changing the tray. */
 .tray-top {
   display: block;
 }
@@ -401,4 +404,3 @@ button.empties-tray:focus-visible .card-face-host {
   letter-spacing: 0.12em;
   font-size: 11px;
 }
-

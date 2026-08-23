@@ -11,9 +11,23 @@
        carries it between them. A card with nowhere on the table to land - one that does its work
        and is discarded - is simply shown instead. *@
     <div class="card-play-overlay @(CardTravels ? "is-travelling" : null)" role="status" aria-live="polite">
-        <span class="card-travel">
-            <CardFace Card="PresentationCard!" Size="CardFaceSize.Showcase" />
-        </span>
+        @if (CardTravels)
+        {
+            <span class="card-travel">
+                <CardFace Card="PresentationCard!" Size="CardFaceSize.Showcase" Decorative="true" />
+            </span>
+        }
+        else
+        {
+            <CardPress Card="PresentationCard!"
+                       Class="card-viewer-trigger"
+                       AriaLabel="@($"Read {PresentationCard!.Name}")"
+                       TapReads="true">
+                <span class="card-travel">
+                    <CardFace Card="PresentationCard!" Size="CardFaceSize.Showcase" Decorative="true" />
+                </span>
+            </CardPress>
+        }
         <strong>@PresentationCard!.Name</strong>
     </div>
 }
@@ -51,7 +65,12 @@ else if (Cue?.Kind == MatchAnimationKindView.Reveal && Cue.RevealedCards.Length 
         <div class="revealed-cards">
             @foreach (var card in Cue.RevealedCards)
             {
-                <CardFace Card="card" Size="CardFaceSize.Hand" />
+                <CardPress Card="card"
+                           Class="card-viewer-trigger"
+                           AriaLabel="@($"Read {card.Name}")"
+                           TapReads="true">
+                    <CardFace Card="card" Size="CardFaceSize.Hand" Decorative="true" />
+                </CardPress>
             }
         </div>
         <button type="button" class="primary reveal-continue" @onclick="RevealAcknowledged">Continue</button>

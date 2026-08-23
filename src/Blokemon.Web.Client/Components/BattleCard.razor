@@ -14,9 +14,7 @@
         <span class="attached-energy" style="--energy-fan-count: @_energy.Count">
             @foreach (var attached in _energy)
             {
-                <AttachedCard Attachment="attached"
-                              ViewOpened="ViewOpened"
-                              ViewClosed="ViewClosed" />
+                <AttachedCard Attachment="attached" />
             }
         </span>
     }
@@ -25,9 +23,7 @@
         <span class="attached-tools">
             @foreach (var attached in _tools)
             {
-                <AttachedCard Attachment="attached"
-                              ViewOpened="ViewOpened"
-                              ViewClosed="ViewClosed" />
+                <AttachedCard Attachment="attached" />
             }
         </span>
     }
@@ -79,15 +75,6 @@
     // than by the card, because every one of those facts outlives the cue that made it true.
     [Parameter]
     public MatchCueRole Role { get; set; }
-
-    // A press held on one of the attached faces opens the viewer on that card. It travels the same
-    // way a press on the host does, because the card viewer is the page's and one card is being
-    // asked for either way.
-    [Parameter]
-    public EventCallback<string> ViewOpened { get; set; }
-
-    [Parameter]
-    public EventCallback ViewClosed { get; set; }
 
     private int Shown => Damage ?? Instance.Damage;
 

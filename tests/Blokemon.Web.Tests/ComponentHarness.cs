@@ -76,12 +76,16 @@ internal sealed class ComponentHarness : Renderer
 
     // Puts the component up and waits for it to have finished arriving: its asynchronous
     // initialisation, and everything that initialisation started.
-    public async Task Show<TComponent>()
+    public Task Show<TComponent>()
+        where TComponent : IComponent => Show<TComponent>(ParameterView.Empty);
+
+    public async Task Show<TComponent>(ParameterView parameters)
         where TComponent : IComponent
     {
         await Dispatcher.InvokeAsync(() =>
             RenderRootComponentAsync(
-                AssignRootComponentId(InstantiateComponent(typeof(TComponent)))
+                AssignRootComponentId(InstantiateComponent(typeof(TComponent))),
+                parameters
             )
         );
         Rethrow();

@@ -87,15 +87,12 @@
                             <div class="sheet-tray" aria-label="@PublicText(requirement.Label)">
                                 @foreach (var card in tray)
                                 {
-                                    <CardPress CardInstanceId="@card.Id"
-                                               CardName="@card.Card.Name"
+                                    <CardPress Card="card.Card"
+                                               CardInstanceId="@card.Id"
                                                Class="@TrayCardClass(card.Id, Auras)"
                                                AriaLabel="@TrayCardLabel(PlayerName, card)"
                                                AriaPressed="@Auras.Pressed(card.Id)"
-                                               Tapped="CardTapped"
-                                               ViewOpened="CardViewOpened"
-                                               ViewClosed="CardViewClosed"
-                                               ReadRequested="CardReadRequested">
+                                               Tapped="CardTapped">
                                         <span class="tray-card-visual">
                                             <CardFace Card="card.Card" Size="CardFaceSize.Hand" ShowTitle="false" />
                                         </span>
@@ -206,15 +203,6 @@
 
     [Parameter]
     public EventCallback<string> CardTapped { get; set; }
-
-    [Parameter]
-    public EventCallback<string> CardViewOpened { get; set; }
-
-    [Parameter]
-    public EventCallback CardViewClosed { get; set; }
-
-    [Parameter]
-    public EventCallback<CardReadRequest> CardReadRequested { get; set; }
 
     [Parameter]
     public EventCallback SteppedBack { get; set; }

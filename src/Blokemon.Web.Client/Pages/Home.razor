@@ -154,7 +154,12 @@ else
                         @foreach (var card in _view.LastPack.Cards.Take(3))
                         {
                             <div class="activity-row">
-                                <CardFace Card="card" Size="CardFaceSize.Tiny" />
+                                <CardPress Card="card"
+                                           Class="card-viewer-trigger"
+                                           AriaLabel="@($"Read {card.Name}")"
+                                           TapReads="true">
+                                    <CardFace Card="card" Size="CardFaceSize.Tiny" Decorative="true" />
+                                </CardPress>
                                 <span><b>@card.Name</b><small>@card.Detail · copy @card.OwnedQuantity</small></span>
                             </div>
                         }
@@ -181,7 +186,15 @@ else
                     @{ var summaryIndex = 0; }
                     @foreach (var card in CeremonyCards())
                     {
-                        <div class="opening-summary-card" style="--summary-index: @summaryIndex"><CardFace Card="card" Size="CardFaceSize.Catalogue" /><b>@card.Name</b></div>
+                        <div class="opening-summary-card" style="--summary-index: @summaryIndex">
+                            <CardPress Card="card"
+                                       Class="card-viewer-trigger"
+                                       AriaLabel="@($"Read {card.Name}")"
+                                       TapReads="true">
+                                <CardFace Card="card" Size="CardFaceSize.Catalogue" Decorative="true" />
+                            </CardPress>
+                            <b>@card.Name</b>
+                        </div>
                         summaryIndex++;
                     }
                 </div>
@@ -248,7 +261,12 @@ else
                             <i class="type-dot" aria-hidden="true"></i>
                         </div>
                         <div class="leader-stage">
-                            <CardFace Card="starter.Leader" Size="CardFaceSize.Leader" />
+                            <CardPress Card="starter.Leader"
+                                       Class="card-viewer-trigger"
+                                       AriaLabel="@($"Read {starter.Leader.Name}")"
+                                       TapReads="true">
+                                <CardFace Card="starter.Leader" Size="CardFaceSize.Leader" Decorative="true" />
+                            </CardPress>
                         </div>
                         <div class="deck-numbers" aria-label="Deck composition">
                             <span><b>@starter.BlokemonCount</b><small>Blokemon</small></span>

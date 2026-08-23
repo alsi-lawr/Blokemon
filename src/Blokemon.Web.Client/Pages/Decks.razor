@@ -82,18 +82,16 @@ else
         <aside class="deck-panel starter-summary">
             @if (ClaimedStarter() is { } starter)
             {
-                ElementReference leaderTrigger = default;
                 <div class="leader-row">
-                    <button type="button"
-                            class="card-showcase-trigger"
-                            aria-label="@($"Show a large view of {starter.Leader.Name}")"
-                            @ref="leaderTrigger"
-                            @onclick="() => ShowCard(starter.Leader, leaderTrigger)">
+                    <CardPress Card="starter.Leader"
+                               Class="card-viewer-trigger"
+                               AriaLabel="@($"Read {starter.Leader.Name}")"
+                               TapReads="true">
                         <CardFace Card="starter.Leader"
                                   Size="CardFaceSize.Tiny"
                                   Decorative="true"
                                   ShowTitle="false" />
-                    </button>
+                    </CardPress>
                     <div><span class="eyebrow">@DeckStateLabel()</span><h3>@_deckName</h3><small>@CardCount() / 60 cards</small></div>
                 </div>
             }
@@ -141,19 +139,17 @@ else
                 @foreach (var card in AvailableCards())
                 {
                     var quantity = Quantity(card.Id);
-                    ElementReference cardTrigger = default;
                     <article class="catalogue-card">
                         <span class="count-pill">@quantity / @MaximumLabel(card)</span>
-                        <button type="button"
-                                class="card-showcase-trigger"
-                                aria-label="@($"Show a large view of {card.Name}")"
-                                @ref="cardTrigger"
-                                @onclick="() => ShowCard(card, cardTrigger)">
+                        <CardPress Card="card"
+                                   Class="card-viewer-trigger"
+                                   AriaLabel="@($"Read {card.Name}")"
+                                   TapReads="true">
                             <CardFace Card="card"
                                       Size="CardFaceSize.Catalogue"
                                       Decorative="true"
                                       ShowTitle="false" />
-                        </button>
+                        </CardPress>
                         <div class="catalogue-card-name"><b>@card.Name</b><small>@PublicKind(card.Kind) · @card.Type</small></div>
                         <div class="stepper">
                             <button aria-label="Remove @card.Name" @onclick="() => Change(card, -1)" disabled="@(quantity == 0 || _working)">−</button>
@@ -174,18 +170,16 @@ else
                     @foreach (var entry in group)
                     {
                         var card = Card(entry.CardId);
-                        ElementReference deckListTrigger = default;
                         <div class="deck-line">
-                            <button type="button"
-                                    class="card-showcase-trigger"
-                                    aria-label="@($"Show a large view of {card.Name}")"
-                                    @ref="deckListTrigger"
-                                    @onclick="() => ShowCard(card, deckListTrigger)">
+                            <CardPress Card="card"
+                                       Class="card-viewer-trigger"
+                                       AriaLabel="@($"Read {card.Name}")"
+                                       TapReads="true">
                                 <CardFace Card="card"
                                           Size="CardFaceSize.Tiny"
                                           Decorative="true"
                                           ShowTitle="false" />
-                            </button>
+                            </CardPress>
                             <span><b>@card.Name</b><small>@card.Detail · @card.Type</small></span>
                             <b>×@entry.Quantity</b>
                         </div>
@@ -200,12 +194,9 @@ else
     </div>
 }
 
-<CardShowcase @ref="_cardShowcase" />
-
 @code {
     private ApplicationView? _view;
     private DeckView? _saved;
-    private CardShowcase? _cardShowcase;
     private readonly Dictionary<string, int> _entries = new(StringComparer.Ordinal);
     private string _deckName = "My deck";
     private string _search = string.Empty;
@@ -217,9 +208,6 @@ else
     private Guid? _commandId;
     private PendingSwitch? _pendingSwitch;
     private DeckView? _pendingDelete;
-
-    private void ShowCard(CardView card, ElementReference trigger) =>
-        _cardShowcase?.Show(card, trigger);
 
     protected override async Task OnInitializedAsync()
     {

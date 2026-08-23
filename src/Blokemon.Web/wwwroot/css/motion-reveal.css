@@ -178,10 +178,3 @@
   }
 }
 
-@keyframes showcase-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.94);
-  }
-}
-

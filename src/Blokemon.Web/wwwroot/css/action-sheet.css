@@ -161,31 +161,6 @@
   min-height: 44px;
 }
 
-/* Keeps the printed aspect ratio and fills the viewport less a 20px margin. */
-.card-viewer {
-  position: fixed;
-  z-index: 400;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  /*
-    No blur behind this one. The scrim already keeps 86% of the light off the table, so a blur of
-    the remaining 14% is not visible - and the Blokemon under it never stop breathing, so the
-    browser would re-blur the whole screen every frame for as long as a card is being read.
-  */
-  background: rgb(2 3 2 / 86%);
-  animation: fade-in 0.16s ease-out both;
-}
-
-.card-viewer .card-face-host {
-  --blokemon-card-scale: var(--viewer-scale, 0.5);
-  /* Cast close: a filter is redrawn at every step of the arrival below it, and this card arrives
-     at a size the phone has not drawn it at before. */
-  filter: drop-shadow(0 12px 22px #000c);
-  animation: viewer-in 0.2s cubic-bezier(0.2, 0.75, 0.25, 1) both;
-}
-
 /* The whole pile laid out newest first, at a size it can be read at. */
 .empties-viewer {
   position: fixed;
@@ -253,4 +228,3 @@
   outline: 3px solid var(--gold);
   outline-offset: 3px;
 }
-

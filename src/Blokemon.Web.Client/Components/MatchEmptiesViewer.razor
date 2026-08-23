@@ -26,14 +26,11 @@
         <div class="empties-viewer-cards">
             @foreach (var card in Cards.Reverse())
             {
-                <CardPress CardInstanceId="@card.Id"
-                           CardName="@card.Card.Name"
+                <CardPress Card="card.Card"
+                           CardInstanceId="@card.Id"
                            Class="empties-viewer-card"
                            AriaLabel="@($"Read {card.Card.Name}, chucked")"
-                           TapReads="true"
-                           ViewOpened="CardViewOpened"
-                           ViewClosed="CardViewClosed"
-                           ReadRequested="CardReadRequested">
+                           TapReads="true">
                     <CardFace Card="card.Card" Size="CardFaceSize.Hand" ShowTitle="false" />
                 </CardPress>
             }
@@ -53,15 +50,6 @@
 
     [Parameter]
     public EventCallback Closed { get; set; }
-
-    [Parameter]
-    public EventCallback<string> CardViewOpened { get; set; }
-
-    [Parameter]
-    public EventCallback CardViewClosed { get; set; }
-
-    [Parameter]
-    public EventCallback<CardReadRequest> CardReadRequested { get; set; }
 
     // The surface itself, so the page can hand it focus once the browser has it.
     public ElementReference Element => _panel;

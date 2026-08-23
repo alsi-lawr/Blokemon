@@ -14,9 +14,6 @@
                AuraSelectedCardInstanceIds="Auras.Selected"
                AuraCounters="Auras.Counters"
                CardTapped="CardTapped"
-               CardViewOpened="CardViewOpened"
-               CardViewClosed="CardViewClosed"
-               CardReadRequested="CardReadRequested"
                EmptiesOpened="EmptiesOpened" />
     @{
         var band = MatchBand.For(Frame);
@@ -48,9 +45,6 @@
                BenchDestination="Auras.Bench"
                DeckDraw="Auras.Deck"
                CardTapped="CardTapped"
-               CardViewOpened="CardViewOpened"
-               CardViewClosed="CardViewClosed"
-               CardReadRequested="CardReadRequested"
                EmptiesOpened="EmptiesOpened"
                BenchTapped="BenchTapped"
                DeckTapped="DeckTapped" />
@@ -77,15 +71,6 @@
 
     [Parameter]
     public EventCallback<string> CardTapped { get; set; }
-
-    [Parameter]
-    public EventCallback<string> CardViewOpened { get; set; }
-
-    [Parameter]
-    public EventCallback CardViewClosed { get; set; }
-
-    [Parameter]
-    public EventCallback<CardReadRequest> CardReadRequested { get; set; }
 
     // Which Empties Tray the player has asked to look through, said as whose it is.
     [Parameter]

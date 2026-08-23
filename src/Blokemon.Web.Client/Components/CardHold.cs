@@ -9,7 +9,7 @@ namespace Blokemon.Web.Client.Components;
 // It is one object rather than one copy per surface because it is one gesture: a card on the table,
 // a card in hand and a card attached to another card are all read by the same hold, and a threshold
 // that drifted between them would be a different gesture in each place a card happens to be drawn.
-internal sealed class CardHold
+internal sealed class CardHold : IDisposable
 {
     // What separates a hold from a tap is now mostly that the card answers a hold while it is
     // still being made: the press starts lifting the card immediately, so the player can see the
@@ -120,5 +120,12 @@ internal sealed class CardHold
 
         hold.Cancel();
         hold.Dispose();
+    }
+
+    public void Dispose()
+    {
+        Stop();
+        Pressing = false;
+        Viewing = false;
     }
 }

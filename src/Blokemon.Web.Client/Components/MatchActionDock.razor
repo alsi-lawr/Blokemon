@@ -15,7 +15,12 @@
     else
     {
         <div class="selected-card-preview">
-            <CardFace Card="Selected.Card" Size="CardFaceSize.Preview" />
+            <CardPress Card="Selected.Card"
+                       Class="card-viewer-trigger"
+                       AriaLabel="@($"Read {Selected.Card.Name}")"
+                       TapReads="true">
+                <CardFace Card="Selected.Card" Size="CardFaceSize.Preview" Decorative="true" />
+            </CardPress>
         </div>
         <div class="selected-card-head"><div><span class="eyebrow">@PublicZone(Selected.Zone)</span><h2>@Selected.Card.Name</h2><small>@(Math.Max(0, Selected.HitPoints - Shown)) / @Selected.HitPoints HP</small></div></div>
         <div class="state-line">

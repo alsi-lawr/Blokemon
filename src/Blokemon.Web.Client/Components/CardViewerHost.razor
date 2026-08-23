@@ -1,0 +1,177 @@
+@using System.Globalization
+@inject IJSRuntime Js
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+<CascadingValue Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+@if (_card is not null)
+{
+    <CardViewer @ref="_viewer"
+                Card="_card"
+                Style="@ViewerStyle()"
+                Closed="Close" />
+}
+
+@code {
+    private CardView? _card;
+    private CardViewer? _viewer;
+    private IJSObjectReference? _module;
+    private ElementReference? _returnFocusTo;
+    private ElementReference? _restoreFocusTo;
+    private double _scale = 0.5;
+    private bool _armViewer;
+    private bool _pinned;
+    private bool _takeFocus;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += RouteChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await Js.InvokeAsync<IJSObjectReference>("import", "./cardViewer.js");
+        }
+
+        if (
+            _armViewer
+            && _card is not null
+            && _viewer is not null
+            && _module is not null
+        )
+        {
+            _armViewer = false;
+            await _module.InvokeVoidAsync("armViewer", _viewer.Element, _pinned);
+        }
+
+        if (_takeFocus && _card is not null && _viewer is not null)
+        {
+            _takeFocus = false;
+            if (await Focused(_viewer.Element) && _module is not null)
+            {
+                await _module.InvokeVoidAsync("guardViewer", _viewer.Element);
+            }
+        }
+
+        if (_restoreFocusTo is { } opener)
+        {
+            _restoreFocusTo = null;
+            await Focused(opener);
+        }
+    }
+
+    internal async Task Hold(CardView card)
+    {
+        await MeasureScale();
+        _armViewer = true;
+        _pinned = false;
+        _takeFocus = false;
+        _returnFocusTo = null;
+        _card = card;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    internal async Task Pin(CardView card, ElementReference returnFocusTo)
+    {
+        await MeasureScale();
+        _armViewer = true;
+        _pinned = true;
+        _takeFocus = true;
+        _returnFocusTo = returnFocusTo;
+        _card = card;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    internal Task Close() => InvokeAsync(DismissAndRestoreFocus);
+
+    private async Task MeasureScale()
+    {
+        if (_module is not null)
+        {
+            _scale = await _module.InvokeAsync<double>("viewerScale");
+        }
+    }
+
+    private void DismissAndRestoreFocus()
+    {
+        if (!Dismiss())
+        {
+            return;
+        }
+
+        _restoreFocusTo = _returnFocusTo;
+        _returnFocusTo = null;
+        StateHasChanged();
+    }
+
+    private void DismissForNavigation()
+    {
+        if (!Dismiss())
+        {
+            return;
+        }
+
+        _restoreFocusTo = null;
+        _returnFocusTo = null;
+        StateHasChanged();
+    }
+
+    private bool Dismiss()
+    {
+        if (_card is null)
+        {
+            return false;
+        }
+
+        _card = null;
+        _armViewer = false;
+        _takeFocus = false;
+        return true;
+    }
+
+    private static async Task<bool> Focused(ElementReference element)
+    {
+        try
+        {
+            await element.FocusAsync();
+            return true;
+        }
+        catch (JSException)
+        {
+            // Navigation or a game transition can remove the opener before focus is returned.
+            return false;
+        }
+    }
+
+    private string ViewerStyle() =>
+        $"--viewer-scale: {_scale.ToString("0.####", CultureInfo.InvariantCulture)}";
+
+    private void RouteChanged(object? sender, LocationChangedEventArgs eventArgs) =>
+        _ = InvokeAsync(DismissForNavigation);
+
+    public async ValueTask DisposeAsync()
+    {
+        Navigation.LocationChanged -= RouteChanged;
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // A disconnected circuit has already released the browser-side module.
+        }
+    }
+}

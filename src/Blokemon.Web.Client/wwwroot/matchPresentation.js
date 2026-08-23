@@ -30,44 +30,6 @@ export function restoreFocus() {
   }
 }
 
-// The two keys the card viewer takes off the browser while it is holding focus, and only those
-// two. Space would scroll the table the viewer is covering, and Tab would carry focus out to a
-// control behind it that nobody can see - both are the viewer's to answer while it is up. Every
-// other key still does whatever it did before: find, print, reload, save, the function keys, and
-// everything an assistive technology claims. Which keys the viewer ACTS on is decided in the
-// component; this decides only which of them the browser must stop acting on as well, because a
-// renderer cannot choose that per keystroke and choosing it once means choosing it for all of them.
-export function guardViewer(element) {
-  element?.addEventListener("keydown", (event) => {
-    if (event.key === " " || event.key === "Tab") {
-      event.preventDefault();
-    }
-  });
-}
-
-// The printed face measures 750 x 1050, so the viewer scale is whichever of the two viewport
-// margins binds first. The card keeps its aspect ratio and clears the margin on both axes.
-const cardWidth = 750;
-const cardHeight = 1050;
-const viewerMargin = 20;
-
-function viewerScaleFor(width, height) {
-  const horizontal = (width - viewerMargin * 2) / cardWidth;
-  const vertical = (height - viewerMargin * 2) / cardHeight;
-  return Math.max(0.05, Math.min(horizontal, vertical));
-}
-
-export function viewerScale() {
-  return viewerScaleFor(window.innerWidth, window.innerHeight);
-}
-
-// A viewer open across a rotation or resize is rescaled in the browser rather than through a
-// round trip, so the margin holds without re-rendering the card.
-window.addEventListener("resize", () => {
-  const viewer = document.querySelector(".card-viewer");
-  viewer?.style.setProperty("--viewer-scale", `${viewerScale()}`);
-});
-
 // How far apart two elements are on this screen at this size, which is the one thing about a
 // card's journey that cannot be written in a stylesheet. Everything measured here is handed back
 // as a custom property on an element the renderer owns; nothing is added to the page, and nothing

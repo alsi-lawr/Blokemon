@@ -1,17 +1,20 @@
 @*
-    One press surface for every card on the battle table, in any zone. A short press is a tap and
-    drives the aura interaction; a press held past the threshold is a view and opens the card
-    viewer until the pointer is released. Pointer events carry both touch and mouse, and a press
-    that moves far enough to be a scroll or a drag is neither a tap nor a view.
+    The canonical press surface for a visible card. A short press performs the card's existing
+    action, or reads a passive card directly when TapReads is set; a press held past the threshold
+    opens the viewer until the pointer is released. Pointer events carry both touch and mouse, and
+    a press that moves far enough to be a scroll or a drag is neither a tap nor a view.
 
     Reading a card cannot be a press of the same surface as well. Enter and Space on a button are
     the tap - the browser's own activation - so the keyboard has no second press to give, and a
     card attached to this one is drawn inside this surface and can never be reached on its own.
     So every card this surface can read gets a control of its own alongside it: the card itself
-    first, then each distinct card hanging off it. The controls are laid out with the card and
-    show themselves the moment it is engaged, by hover or by focus, so reaching a card is what
-    turns up the way to read it.
+    first, then each distinct card hanging off it. The controls are laid out with the card and show
+    themselves the moment it is engaged, by hover or by focus, so reaching a card is what turns up
+    the way to read it. The shared host owns every viewer this opens, including the focus it borrows
+    and returns.
 *@
+@implements IDisposable
+
 <span class="@Class card-press" style="@Style">
     <button type="button"
             class="card-press-surface @(_hold.Pressing ? "is-holding" : null)"
@@ -29,12 +32,12 @@
         @ChildContent
     </button>
     <span class="card-reading">
-        @foreach (var readable in Readable())
+        @foreach (var readable in ReadableCards())
         {
             <button type="button"
                     class="card-read"
                     aria-label="@($"Read {readable.Name}")"
-                    @onclick="() => Read(readable.Key)"
+                    @onclick="() => Read(readable)"
                     @onclick:stopPropagation="true"
                     @oncontextmenu:preventDefault="true"
                     @oncontextmenu:stopPropagation="true">
@@ -51,11 +54,14 @@
     private bool _parametersChanged;
     private bool _shownPressing;
 
-    [Parameter, EditorRequired]
-    public required string CardInstanceId { get; set; }
+    [CascadingParameter]
+    private CardViewerHost? Viewer { get; set; }
 
     [Parameter, EditorRequired]
-    public required string CardName { get; set; }
+    public required CardView Card { get; set; }
+
+    [Parameter]
+    public string? CardInstanceId { get; set; }
 
     // The cards hanging off this one, which are drawn inside this surface and so have no control
     // of their own until this one lends them each a reading control.
@@ -77,20 +83,13 @@
     [Parameter]
     public EventCallback<string> Tapped { get; set; }
 
-    // Set where a card cannot be acted on at all - an Empties Tray opened to be read through -
-    // so the only thing a press there could mean is the thing it does mean. The surface reads
-    // itself, and lends a control only to the cards hanging off it that it draws inside itself.
+    // Set for a passive face whose activation reads it directly. The surface reads itself, and
+    // lends separate controls only to cards hanging off it that are drawn inside the same surface.
     [Parameter]
     public bool TapReads { get; set; }
 
     [Parameter]
-    public EventCallback<string> ViewOpened { get; set; }
-
-    [Parameter]
-    public EventCallback ViewClosed { get; set; }
-
-    [Parameter]
-    public EventCallback<CardReadRequest> ReadRequested { get; set; }
+    public bool Readable { get; set; } = true;
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -119,11 +118,16 @@
     // Everything readable from this surface: the card itself, then the cards attached to it. Two
     // copies of one card are one thing to read, so a Blokemon carrying four of the same Energy
     // offers that Energy once rather than four times.
-    private IEnumerable<(string Key, string Name)> Readable()
+    private IEnumerable<CardView> ReadableCards()
     {
+        if (!Readable)
+        {
+            yield break;
+        }
+
         if (!TapReads)
         {
-            yield return (CardInstanceId, CardName);
+            yield return Card;
         }
 
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -131,13 +135,12 @@
         {
             if (seen.Add(attached.Card.Id))
             {
-                yield return (attached.ViewKey, attached.Card.Name);
+                yield return attached.Card;
             }
         }
     }
 
-    private Task Read(string cardInstanceId) =>
-        ReadRequested.InvokeAsync(new(cardInstanceId, _press));
+    internal Task Read(CardView card) => Host().Pin(card, _press);
 
     private async Task Tap()
     {
@@ -149,11 +152,11 @@
 
         if (TapReads)
         {
-            await Read(CardInstanceId);
+            await Read(Card);
             return;
         }
 
-        await Tapped.InvokeAsync(CardInstanceId);
+        await Tapped.InvokeAsync(CardInstanceId ?? Card.Id);
     }
 
     private void PressDown(PointerEventArgs eventArgs)
@@ -161,13 +164,18 @@
         // A new press always starts clean, so a suppression left over from the press before it
         // cannot swallow this one's tap.
         _suppressTap = false;
+        if (!Readable)
+        {
+            return;
+        }
+
         _hold.Down(
             eventArgs,
             () =>
             {
                 // The press became a view, so the release that ends it is not also a tap.
                 _suppressTap = true;
-                return ViewOpened.InvokeAsync(CardInstanceId);
+                return Host().Hold(Card);
             }
         );
     }
@@ -189,7 +197,12 @@
     {
         if (_hold.Release())
         {
-            await ViewClosed.InvokeAsync();
+            await Host().Close();
         }
     }
+
+    private CardViewerHost Host() =>
+        Viewer ?? throw new InvalidOperationException("A card reader requires CardViewerHost.");
+
+    public void Dispose() => _hold.Dispose();
 }

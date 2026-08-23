@@ -59,7 +59,15 @@ else
             <div class="recent-pack-cards">
                 @foreach (var card in _view.LastPack.Cards)
                 {
-                    <div><CardFace Card="card" Size="CardFaceSize.Tiny" /><span>@card.Name</span></div>
+                    <div>
+                        <CardPress Card="card"
+                                   Class="card-viewer-trigger"
+                                   AriaLabel="@($"Read {card.Name}")"
+                                   TapReads="true">
+                            <CardFace Card="card" Size="CardFaceSize.Tiny" Decorative="true" />
+                        </CardPress>
+                        <span>@card.Name</span>
+                    </div>
                 }
             </div>
         </section>
@@ -79,7 +87,15 @@ else
                     @for (var index = 0; index < _openingReceipt.Cards.Length; index++)
                     {
                         var card = _openingReceipt.Cards[index];
-                        <div class="opening-summary-card" style="--summary-index: @index"><CardFace Card="card" Size="CardFaceSize.Catalogue" /><b>@card.Name</b></div>
+                        <div class="opening-summary-card" style="--summary-index: @index">
+                            <CardPress Card="card"
+                                       Class="card-viewer-trigger"
+                                       AriaLabel="@($"Read {card.Name}")"
+                                       TapReads="true">
+                                <CardFace Card="card" Size="CardFaceSize.Catalogue" Decorative="true" />
+                            </CardPress>
+                            <b>@card.Name</b>
+                        </div>
                     }
                 </div>
                 <button class="primary" @onclick="CloseOpening">Done</button>
@@ -127,17 +143,19 @@ else
                 @if (_stage == PackOpeningStage.Reveal)
                 {
                     var card = _openingReceipt.Cards[_revealIndex];
-                    <button @key="_revealIndex"
-                            type="button"
-                            @ref="_revealCardElement"
-                            class="pack-reveal-card @(_revealIndex == 0 ? "pack-reveal-card--first" : null) @(_cardFaceUp ? "is-face-up" : null) @(_cardLeaving ? "is-leaving" : null)"
-                            aria-label="@(_cardFaceUp ? NextLabel() : "Turn the card over")"
-                            @onclick="TapCard">
+                    <CardPress @key="_revealIndex"
+                               @ref="_revealCard"
+                               Card="card"
+                               CardInstanceId="@card.Id"
+                               Class="@($"pack-reveal-card {(_revealIndex == 0 ? "pack-reveal-card--first" : null)} {(_cardFaceUp ? "is-face-up" : null)} {(_cardLeaving ? "is-leaving" : null)}")"
+                               AriaLabel="@(_cardFaceUp ? NextLabel() : "Turn the card over")"
+                               Readable="@_cardFaceUp"
+                               Tapped="@(_ => TapCard())">
                         <div class="reveal-flip">
                             <div class="reveal-flip-back"><CardBack /></div>
                             <div class="reveal-flip-front"><CardFace Card="card" Size="CardFaceSize.Showcase" ShowTitle="false" Decorative="true" /></div>
                         </div>
-                    </button>
+                    </CardPress>
                     <div class="opening-ceremony-copy" aria-live="polite">
                         <span class="eyebrow">Card @(_revealIndex + 1) of @_openingReceipt.Cards.Length</span>
                         <h1>@(_cardFaceUp ? card.Name : "Turn it over…")</h1>
@@ -158,7 +176,7 @@ else
     private PackReceiptView? _openingReceipt;
     private IJSObjectReference? _presentationModule;
     private ElementReference _packElement;
-    private ElementReference _revealCardElement;
+    private CardPress? _revealCard;
     private PackOpeningStage _stage;
     private PackFinish _stock;
     private string? _error;
@@ -194,7 +212,10 @@ else
         if (_focusRevealCard)
         {
             _focusRevealCard = false;
-            await _revealCardElement.FocusAsync();
+            if (_revealCard is not null)
+            {
+                await _revealCard.PressSurface.FocusAsync();
+            }
         }
     }
 

@@ -55,16 +55,17 @@
     {
         @* A tray with anything in it is a control: either player may look through either tray at
            any time, so the pile opens to be read rather than only showing what is on top of it. *@
-        <button type="button"
-                class="empties-tray"
-                aria-label="@TrayLabel()"
-                @onclick:stopPropagation="true"
-                @onclick="() => EmptiesOpened.InvokeAsync(Opponent)">
+        var chucked = Chucked()!;
+        <CardPress Card="chucked.Card"
+                   CardInstanceId="@chucked.Id"
+                   Class="empties-tray"
+                   AriaLabel="@TrayLabel()"
+                   Tapped="@(_ => EmptiesOpened.InvokeAsync(Opponent))">
             <span class="tray-top">
-                <CardFace Card="Chucked()!.Card" Size="CardFaceSize.Bench" ShowTitle="false" />
+                <CardFace Card="chucked.Card" Size="CardFaceSize.Bench" ShowTitle="false" />
             </span>
             <b>Chucked @Side.EmptiesTray.Length</b>
-        </button>
+        </CardPress>
     }
 
     @* The place a Kit in play stands in is part of the table, so it is kept whether or not a
@@ -72,24 +73,19 @@
     <div class="local-slot @Landing(MatchLandingKind.InPlay)">
         @foreach (var card in Side.InPlayKits)
         {
-            <CardPress CardInstanceId="@card.Id"
-                       CardName="@card.Card.Name"
+            <CardPress Card="card.Card"
+                       CardInstanceId="@card.Id"
                        Attached="@MatchAttachedCards.All(card)"
                        Class="@CardClass(card.Id)"
                        AriaLabel="@CardLabel(card, "in play on the table")"
                        AriaPressed="@CardPressed(card.Id)"
-                       Tapped="CardTapped"
-                       ViewOpened="CardViewOpened"
-                       ViewClosed="CardViewClosed"
-                       ReadRequested="CardReadRequested">
+                       Tapped="CardTapped">
                 <BattleCard Instance="card"
                             Damage="@Overlay.Damage(card)"
                             Compact="true"
                             ShowVitals="false"
                             Selected="@(card.Id == SelectedCardInstanceId)"
-                            Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)"
-                            ViewOpened="CardViewOpened"
-                            ViewClosed="CardViewClosed" />
+                            Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)" />
                 @if (Counter(card.Id) is { } localCounter)
                 {
                     <span class="aura-counter">@localCounter</span>
@@ -111,22 +107,17 @@
             }
             else
             {
-                <CardPress CardInstanceId="@Side.Active.Id"
-                           CardName="@Side.Active.Card.Name"
+                <CardPress Card="Side.Active.Card"
+                           CardInstanceId="@Side.Active.Id"
                            Attached="@MatchAttachedCards.All(Side.Active)"
                            Class="@CardClass(Side.Active.Id)"
                            AriaLabel="@CardLabel(Side.Active, "Active Blokemon")"
                            AriaPressed="@CardPressed(Side.Active.Id)"
-                           Tapped="CardTapped"
-                           ViewOpened="CardViewOpened"
-                           ViewClosed="CardViewClosed"
-                           ReadRequested="CardReadRequested">
+                           Tapped="CardTapped">
                     <BattleCard Instance="Side.Active"
                                 Damage="@Overlay.Damage(Side.Active)"
                                 Selected="@(Side.Active.Id == SelectedCardInstanceId)"
-                                Role="@MatchCueState.FieldCard(Cue, Overlay, Side.Active.Id)"
-                                ViewOpened="CardViewOpened"
-                                ViewClosed="CardViewClosed" />
+                                Role="@MatchCueState.FieldCard(Cue, Overlay, Side.Active.Id)" />
                     @if (Counter(Side.Active.Id) is { } activeCounter)
                     {
                         <span class="aura-counter">@activeCounter</span>
@@ -138,23 +129,18 @@
             @for (var benchIndex = 0; benchIndex < Side.Bench.Length; benchIndex++)
             {
                 var card = Side.Bench[benchIndex];
-                <CardPress CardInstanceId="@card.Id"
-                           CardName="@card.Card.Name"
+                <CardPress Card="card.Card"
+                           CardInstanceId="@card.Id"
                            Attached="@MatchAttachedCards.All(card)"
                            Class="@($"{CardClass(card.Id)} {Landing(MatchLandingKind.Bench, benchIndex)}")"
                            AriaLabel="@CardLabel(card, "Benched Blokemon")"
                            AriaPressed="@CardPressed(card.Id)"
-                           Tapped="CardTapped"
-                           ViewOpened="CardViewOpened"
-                           ViewClosed="CardViewClosed"
-                           ReadRequested="CardReadRequested">
+                           Tapped="CardTapped">
                     <BattleCard Instance="card"
                                 Damage="@Overlay.Damage(card)"
                                 Compact="true"
                                 Selected="@(card.Id == SelectedCardInstanceId)"
-                                Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)"
-                                ViewOpened="CardViewOpened"
-                                ViewClosed="CardViewClosed" />
+                                Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)" />
                     @if (Counter(card.Id) is { } benchCounter)
                     {
                         <span class="aura-counter">@benchCounter</span>
@@ -247,15 +233,6 @@
 
     [Parameter]
     public EventCallback<string> CardTapped { get; set; }
-
-    [Parameter]
-    public EventCallback<string> CardViewOpened { get; set; }
-
-    [Parameter]
-    public EventCallback CardViewClosed { get; set; }
-
-    [Parameter]
-    public EventCallback<CardReadRequest> CardReadRequested { get; set; }
 
     [Parameter]
     public EventCallback<bool> EmptiesOpened { get; set; }

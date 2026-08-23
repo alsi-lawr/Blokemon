@@ -9,6 +9,8 @@
     the host is every press that did not land on one of its attachments, which is the whole of the
     host's own card: both fans hang outside it.
 *@
+@implements IDisposable
+
 <span class="attached-card @(_hold.Pressing ? "is-holding" : null)"
       style="--fan-depth: @Attachment.Depth"
       @onpointerdown="Down"
@@ -27,14 +29,11 @@
     private bool _parametersChanged;
     private bool _shownPressing;
 
+    [CascadingParameter]
+    private CardViewerHost? Viewer { get; set; }
+
     [Parameter, EditorRequired]
     public required MatchAttachedCardView Attachment { get; set; }
-
-    [Parameter]
-    public EventCallback<string> ViewOpened { get; set; }
-
-    [Parameter]
-    public EventCallback ViewClosed { get; set; }
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -54,7 +53,7 @@
     }
 
     private void Down(PointerEventArgs eventArgs) =>
-        _hold.Down(eventArgs, () => ViewOpened.InvokeAsync(Attachment.ViewKey));
+        _hold.Down(eventArgs, () => Host().Hold(Attachment.Card));
 
     private void Move(PointerEventArgs eventArgs) => _ = _hold.Travelled(eventArgs);
 
@@ -66,7 +65,12 @@
     {
         if (_hold.Release())
         {
-            await ViewClosed.InvokeAsync();
+            await Host().Close();
         }
     }
+
+    private CardViewerHost Host() =>
+        Viewer ?? throw new InvalidOperationException("An attached card reader requires CardViewerHost.");
+
+    public void Dispose() => _hold.Dispose();
 }

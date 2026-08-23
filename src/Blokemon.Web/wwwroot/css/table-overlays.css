@@ -115,6 +115,10 @@
   animation: major-overlay-arrive 0.2s ease-out;
 }
 
+.card-play-overlay .card-press {
+  pointer-events: auto;
+}
+
 .card-play-overlay .card-face--showcase {
   --blokemon-card-scale: 0.5;
   filter: drop-shadow(0 30px 44px #000d);
@@ -314,4 +318,3 @@
   letter-spacing: 0.08em;
   animation: chip-result-in 1.4s both;
 }
-

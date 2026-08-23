@@ -122,9 +122,6 @@ else
                           Overlay="_overlay"
                           BackgroundTapped="TapBackground"
                           CardTapped="TapCard"
-                          CardViewOpened="OpenViewer"
-                          CardViewClosed="CloseViewer"
-                          CardReadRequested="ReadCard"
                           BenchTapped="TapBench"
                           DeckTapped="TapDeck"
                           EmptiesOpened="OpenEmpties" />
@@ -134,10 +131,7 @@ else
                        Cue="_activeCue"
                        Overlay="_overlay"
                        BackgroundTapped="TapBackground"
-                       CardTapped="TapCard"
-                       CardViewOpened="OpenViewer"
-                       CardViewClosed="CloseViewer"
-                       CardReadRequested="ReadCard" />
+                       CardTapped="TapCard" />
 
         <MatchActionDock Selected="selected"
                          Damage="@(selected is null ? null : _overlay.Damage(selected))"
@@ -189,9 +183,6 @@ else
                                   EffectPicked="@(effectId => PickEffect(requirement!, effectId))"
                                   AttachmentCleared="@(energy => ClearAttachment(requirement!, energy))"
                                   CardTapped="TapCard"
-                                  CardViewOpened="OpenViewer"
-                                  CardViewClosed="CloseViewer"
-                                  CardReadRequested="ReadCard"
                                   SteppedBack="StepBack"
                                   ChoiceAdvanced="AdvanceChoice"
                                   Confirmed="CommitPending" />
@@ -204,15 +195,7 @@ else
             <MatchEmptiesViewer @ref="_empties"
                                 Whose="@(emptiesOpponent ? "Opponent's" : "Your")"
                                 Cards="empties.EmptiesTray"
-                                Closed="CloseEmpties"
-                                CardViewOpened="OpenViewer"
-                                CardViewClosed="CloseViewer"
-                                CardReadRequested="ReadCard" />
-        }
-
-        @if (_viewerCard is not null)
-        {
-            <MatchCardViewer @ref="_viewer" Card="_viewerCard" Style="@ViewerStyle()" Closed="CloseViewer" />
+                                Closed="CloseEmpties" />
         }
       </div>
     </section>
@@ -226,18 +209,10 @@ else
     // What the cue on screen has already made true of the frame behind it. Presenters read it as
     // they draw; nothing writes to the page behind the renderer's back.
     private MatchPresentationOverlay _overlay = MatchPresentationOverlay.Empty;
-    private CardView? _viewerCard;
-    private MatchCardViewer? _viewer;
     // Which Empties Tray is open, said as whose it is. Nothing about the game turns on it: a tray
     // is public and looking through one is not a move, so this is a reading state and nothing more.
     private bool? _emptiesOpponent;
     private MatchEmptiesViewer? _empties;
-    // A card held up by the pointer is put down again by the same press, so it never takes focus
-    // and has nothing to hand back. A card opened from a reading control does: it takes focus once
-    // it is on screen, and the card that asked for it is owed that focus back when it goes.
-    private ElementReference? _viewerReturn;
-    private ElementReference? _returnFocus;
-    private bool _viewerTakesFocus;
     private MatchActionView? _pending;
     private MatchActionView[] _directActions = [];
     private MatchActionView[] _menu = [];
@@ -260,7 +235,6 @@ else
     private double _pace = 1;
     private Guid? _commandId;
     private Guid? _selectedDeckId;
-    private double _viewerScale = 0.5;
     private int _choiceStep = -1;
     private bool _benchDestination;
     private bool _hadDestinationStep;

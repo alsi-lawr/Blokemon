@@ -6,15 +6,17 @@
     <style>@((MarkupString)Catalogue.CardStylesheet)</style>
 </HeadContent>
 
-<Router AppAssembly="typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <LayoutView Layout="typeof(MainLayout)">
-            <PageTitle>Not found · Blokemon</PageTitle>
-            <div class="panel"><h1>That page is not here.</h1><a class="primary button" href="/">Return home</a></div>
-        </LayoutView>
-    </NotFound>
-</Router>
+<CardViewerHost>
+    <Router AppAssembly="typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="typeof(MainLayout)">
+                <PageTitle>Not found · Blokemon</PageTitle>
+                <div class="panel"><h1>That page is not here.</h1><a class="primary button" href="/">Return home</a></div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CardViewerHost>
