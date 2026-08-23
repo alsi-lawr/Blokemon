@@ -5,6 +5,9 @@ from urllib.parse import urlparse
 
 
 class StaticApplicationHandler(SimpleHTTPRequestHandler):
+    def log_message(self, format, *args):
+        pass
+
     def do_GET(self):
         request_path = urlparse(self.path).path
         if request_path.startswith("/api/"):
@@ -17,13 +20,17 @@ class StaticApplicationHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
 
-if len(argv) != 3:
-    raise SystemExit("usage: static_host.py <wwwroot> <port>")
+def static_server(root, port=0):
+    root = str(Path(root).resolve())
+    handler = lambda *args, **kwargs: StaticApplicationHandler(*args, directory=root, **kwargs)
+    return ThreadingHTTPServer(("127.0.0.1", port), handler)
 
-root = str(Path(argv[1]).resolve())
-port = int(argv[2])
-handler = lambda *args, **kwargs: StaticApplicationHandler(*args, directory=root, **kwargs)
-try:
-    ThreadingHTTPServer(("127.0.0.1", port), handler).serve_forever()
-except KeyboardInterrupt:
-    pass
+
+if __name__ == "__main__":
+    if len(argv) != 3:
+        raise SystemExit("usage: static_host.py <wwwroot> <port>")
+
+    try:
+        static_server(argv[1], int(argv[2])).serve_forever()
+    except KeyboardInterrupt:
+        pass

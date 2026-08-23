@@ -99,6 +99,39 @@ internal sealed class ComponentHarness : Renderer
         Rethrow();
     }
 
+    // Activates the one rendered button a player reaches by this accessible name. This goes
+    // through the event-handler id Blazor gave the browser rather than through a component method,
+    // so the element reference captured for that exact button is the one the event carries into
+    // the component lifecycle.
+    public async Task<string> ActivateButton(string accessibleName)
+    {
+        var matches = new List<(ulong HandlerId, string ReferenceId)>();
+        await Dispatcher.InvokeAsync(() =>
+        {
+            foreach (var component in _cast.Instances)
+            {
+                ArrayRange<RenderTreeFrame> frames;
+                try
+                {
+                    frames = GetCurrentRenderTreeFrames(GetComponentState(component).ComponentId);
+                }
+                catch (ArgumentException)
+                {
+                    continue;
+                }
+
+                FindButtons(frames, accessibleName, matches);
+            }
+        });
+
+        var match = matches.ShouldHaveSingleItem(accessibleName);
+        await Dispatcher.InvokeAsync(() =>
+            DispatchEventAsync(match.HandlerId, default, new MouseEventArgs())
+        );
+        Rethrow();
+        return match.ReferenceId;
+    }
+
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
         Painted?.Invoke();
@@ -122,6 +155,51 @@ internal sealed class ComponentHarness : Renderer
         throw thrown.Length == 1 ? thrown[0] : new AggregateException(thrown);
     }
 
+    private static void FindButtons(
+        ArrayRange<RenderTreeFrame> frames,
+        string accessibleName,
+        List<(ulong HandlerId, string ReferenceId)> matches
+    )
+    {
+        for (var index = 0; index < frames.Count; index++)
+        {
+            var frame = frames.Array[index];
+            if (frame.FrameType != RenderTreeFrameType.Element || frame.ElementName != "button")
+            {
+                continue;
+            }
+
+            var end = index + frame.ElementSubtreeLength;
+            ulong handlerId = 0;
+            string? label = null;
+            string? referenceId = null;
+            for (var child = index + 1; child < end; child++)
+            {
+                var candidate = frames.Array[child];
+                if (candidate.FrameType == RenderTreeFrameType.Attribute)
+                {
+                    if (candidate.AttributeName == "aria-label")
+                    {
+                        label = candidate.AttributeValue as string;
+                    }
+                    else if (candidate.AttributeName == "onclick")
+                    {
+                        handlerId = candidate.AttributeEventHandlerId;
+                    }
+                }
+                else if (candidate.FrameType == RenderTreeFrameType.ElementReferenceCapture)
+                {
+                    referenceId = candidate.ElementReferenceCaptureId;
+                }
+            }
+
+            if (label == accessibleName && handlerId != 0 && referenceId is not null)
+            {
+                matches.Add((handlerId, referenceId));
+            }
+        }
+    }
+
     private sealed class Cast : IComponentActivator
     {
         public List<IComponent> Instances { get; } = [];
@@ -133,6 +211,21 @@ internal sealed class ComponentHarness : Renderer
             return component;
         }
     }
+}
+
+internal static class ComponentHarnessMatches
+{
+    public static T ShouldHaveSingleItem<T>(this IReadOnlyList<T> matches, string accessibleName) =>
+        matches.Count switch
+        {
+            1 => matches[0],
+            0 => throw new InvalidOperationException(
+                $"No rendered button is named '{accessibleName}'."
+            ),
+            _ => throw new InvalidOperationException(
+                $"More than one rendered button is named '{accessibleName}'."
+            ),
+        };
 }
 
 #pragma warning restore BL0006

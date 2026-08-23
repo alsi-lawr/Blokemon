@@ -18,9 +18,10 @@ namespace Blokemon.Web.Tests;
 // What is pinned here is the whole of that journey for the hardest case: a card carried by another
 // card is opened for itself rather than for the card carrying it, the viewer takes focus while it
 // is up, and putting it down hands focus back to the card it was opened from. All three are the
-// shared viewer's own doing and all three break silently - a viewer that opens the host, or one that leaves
-// focus stranded on a surface that is no longer there, still looks right in a screenshot. The
-// shared host now owns that journey, so the second case proves the same lifecycle outside Match.
+// shared viewer's own doing and all three break silently - a viewer that opens the host, or one
+// that leaves focus stranded on a surface that is no longer there, still looks right in a
+// screenshot. The shared host now owns that journey, so the second case proves the same lifecycle
+// outside Match.
 public sealed class MatchCardReadingTests
 {
     [Test]
@@ -37,11 +38,8 @@ public sealed class MatchCardReadingTests
 
         await harness.Show<CardViewerHost>(HostParameters(Page<Match>()));
 
-        // The Blokemon standing in the Oche, which is carrying a Spanner and two Beer.
-        var standing = harness.AllShowing<CardPress>().Last(card => card.CardInstanceId == Mine);
-        var spanner = standing.Attached.Last(attached => attached.Card.Id == Spanner.Id);
-
-        await harness.Press(() => standing.Read(spanner.Card));
+        // The Blokemon standing in the Oche is carrying a Spanner and two Beer.
+        var openerId = await harness.ActivateButton($"Read {Spanner.Name}");
 
         var viewer = harness.Showing<CardViewer>();
         viewer.Card.ShouldBe(Spanner);
@@ -50,7 +48,9 @@ public sealed class MatchCardReadingTests
 
         await harness.Press(() => viewer.Closed.InvokeAsync());
 
-        browser.Focused.ShouldBe([viewer.Element, standing.PressSurface]);
+        browser
+            .Focused.Select(static element => element.Id)
+            .ShouldBe([viewer.Element.Id, openerId]);
     }
 
     [Test]
@@ -64,9 +64,7 @@ public sealed class MatchCardReadingTests
         await using var harness = ComponentHarness.For(services);
 
         await harness.Show<CardViewerHost>(HostParameters(CardReader(Spanner)));
-        var reader = harness.Showing<CardPress>();
-
-        await harness.Press(() => reader.Read(Spanner));
+        var openerId = await harness.ActivateButton($"Read {Spanner.Name}");
 
         var viewer = harness.Showing<CardViewer>();
         viewer.Card.ShouldBe(Spanner);
@@ -75,7 +73,9 @@ public sealed class MatchCardReadingTests
 
         await harness.Press(() => viewer.Closed.InvokeAsync());
 
-        browser.Focused.ShouldBe([viewer.Element, reader.PressSurface]);
+        browser
+            .Focused.Select(static element => element.Id)
+            .ShouldBe([viewer.Element.Id, openerId]);
     }
 
     private const string Mine = "you-active";
@@ -112,6 +112,7 @@ public sealed class MatchCardReadingTests
             builder.OpenComponent<CardPress>(0);
             builder.AddAttribute(1, nameof(CardPress.Card), card);
             builder.AddAttribute(2, nameof(CardPress.TapReads), true);
+            builder.AddAttribute(3, nameof(CardPress.AriaLabel), $"Read {card.Name}");
             builder.CloseComponent();
         };
 

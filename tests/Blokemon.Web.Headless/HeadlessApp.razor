@@ -1,0 +1,38 @@
+<CardViewerHost>
+    <MatchCueOverlays Cue="Cue" RevealAcknowledged="Acknowledge" />
+    <output id="cue-acknowledgements" aria-label="Cue acknowledgements">@_acknowledgements</output>
+</CardViewerHost>
+
+@code {
+    private static readonly CardView RevealedCard = new(
+        "headless-cue-card",
+        "Cue Card",
+        CardKindView.Kit,
+        "Test",
+        "A revealed card.",
+        """
+        <div class="blokemon-card-scale">
+          <article class="blokemon-gym-card"><h2 class="card-name">Cue Card</h2></article>
+        </div>
+        """,
+        [],
+        0,
+        false
+    );
+
+    private static readonly MatchEventCueView Cue = new(
+        1,
+        MatchAnimationKindView.Reveal,
+        "Cards were revealed.",
+        null,
+        [],
+        0,
+        null,
+        true,
+        [RevealedCard]
+    );
+
+    private int _acknowledgements;
+
+    private void Acknowledge() => _acknowledgements++;
+}

@@ -52,7 +52,7 @@ else
                    Opened="Open" />
     </section>
 
-    @if (_view.LastPack is not null)
+    @if (_stage == PackOpeningStage.Closed && _view.LastPack is not null)
     {
         <section class="panel recent-pack">
             <div class="panel-head"><div><span class="eyebrow">Last pack</span><h2>Pack @_view.LastPack.Sequence</h2></div><span>11 cards</span></div>

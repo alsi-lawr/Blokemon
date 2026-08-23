@@ -34,15 +34,7 @@
     <span class="card-reading">
         @foreach (var readable in ReadableCards())
         {
-            <button type="button"
-                    class="card-read"
-                    aria-label="@($"Read {readable.Name}")"
-                    @onclick="() => Read(readable)"
-                    @onclick:stopPropagation="true"
-                    @oncontextmenu:preventDefault="true"
-                    @oncontextmenu:stopPropagation="true">
-                <span class="card-read-glyph" aria-hidden="true"></span>@readable.Name
-            </button>
+            <CardReader @key="readable.Id" Card="readable" />
         }
     </span>
 </span>
@@ -140,8 +132,6 @@
         }
     }
 
-    internal Task Read(CardView card) => Host().Pin(card, _press);
-
     private async Task Tap()
     {
         if (_suppressTap)
@@ -152,7 +142,7 @@
 
         if (TapReads)
         {
-            await Read(Card);
+            await Host().Pin(Card, _press);
             return;
         }
 

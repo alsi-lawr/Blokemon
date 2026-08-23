@@ -77,19 +77,22 @@
   z-index: 90;
   top: calc(100% + 4px);
   left: 50%;
-  display: none;
+  display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 4px;
   /* Measured by its contents, not by the card: card names are wider than the card. */
   width: max-content;
   max-width: 240px;
+  opacity: 0;
+  pointer-events: none;
   transform: translateX(-50%);
 }
 
 .card-press:hover > .card-reading,
 .card-press:focus-within > .card-reading {
-  display: flex;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .card-read {
@@ -460,4 +463,3 @@ button.bench-slot span {
   font-size: 8px;
   white-space: nowrap;
 }
-
