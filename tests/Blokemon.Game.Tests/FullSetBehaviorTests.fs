@@ -753,8 +753,7 @@ type FullSetBehaviorTests() =
                 if first <> repeated then
                     failures.Add $"{trick.MechanicalId}: repeated refresh diverged"
                 elif
-                    cardId <> "BLK-040"
-                    && not (
+                    not (
                         first.State.Effects
                         |> Seq.exists (fun effect ->
                             effect.SourceEffect = EffectId trick.MechanicalId)

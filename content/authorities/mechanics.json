@@ -1,5 +1,5 @@
 {
-  "manifestVersion": "sv151-candidate.15",
+  "manifestVersion": "sv151-candidate.16",
   "presentationStatus": "Accepted",
   "approvedMechanicalDisplayMap": [
     {
@@ -4723,99 +4723,59 @@
       "approvedType": "Local",
       "presentationStatus": "Accepted",
       "rank": "Seasoned",
-      "stayingPower": 250,
+      "stayingPower": 80,
       "mechanicalTypes": [
         "Colorless"
       ],
       "promotesFromId": "BLK-039",
       "promotesToIds": [],
-      "partyTricks": [
-        {
-          "mechanicalId": "BLK-040-T01",
-          "presentationStatus": "Accepted",
-          "program": [
-            {
-              "opcode": "Conditional",
-              "amount": 0,
-              "valueSource": "Fixed",
-              "targets": [],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [
-                {
-                  "condition": "SelfHasVim",
-                  "value": 0,
-                  "mechanicalType": null,
-                  "roughState": null,
-                  "relatedId": null
-                },
-                {
-                  "condition": "SelfHasSpecialVim",
-                  "value": 0,
-                  "mechanicalType": null,
-                  "roughState": null,
-                  "relatedId": null
-                }
-              ],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [
-                {
-                  "opcode": "ContinuousPartyTrick",
-                  "amount": 100,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "Self"
-                  ],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                },
-                {
-                  "opcode": "ModifyStayingPower",
-                  "amount": 100,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "Self"
-                  ],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                }
-              ],
-              "otherwise": []
-            }
-          ],
-          "trigger": "Continuous"
-        }
-      ],
+      "partyTricks": [],
       "attacks": [
         {
           "mechanicalId": "BLK-040-B01",
+          "presentationStatus": "Accepted",
+          "vimCost": [
+            "Colorless"
+          ],
+          "printedDamage": 0,
+          "variablePrintedDamage": false,
+          "canBeUsedFromBench": false,
+          "program": [
+            {
+              "opcode": "ApplyRoughState",
+              "amount": 1,
+              "valueSource": "Fixed",
+              "targets": [
+                "OtherOche"
+              ],
+              "selection": "All",
+              "targetCount": 1,
+              "predicates": [],
+              "mechanicalTypes": [],
+              "roughStates": [
+                "NoddedOff"
+              ],
+              "relatedIds": [],
+              "then": [],
+              "otherwise": []
+            }
+          ]
+        },
+        {
+          "mechanicalId": "BLK-040-B02",
           "presentationStatus": "Accepted",
           "vimCost": [
             "Colorless",
             "Colorless",
             "Colorless"
           ],
-          "printedDamage": 90,
+          "printedDamage": 10,
           "variablePrintedDamage": true,
           "canBeUsedFromBench": false,
           "program": [
             {
               "opcode": "DealPrintedDamage",
-              "amount": 90,
+              "amount": 10,
               "valueSource": "PrintedDamage",
               "targets": [
                 "OtherOche"
@@ -4830,42 +4790,19 @@
               "otherwise": []
             },
             {
-              "opcode": "Conditional",
-              "amount": 0,
-              "valueSource": "Fixed",
-              "targets": [],
+              "opcode": "AdjustDamage",
+              "amount": 10,
+              "valueSource": "OwnBoothCount",
+              "targets": [
+                "OtherOche"
+              ],
               "selection": "All",
               "targetCount": 1,
-              "predicates": [
-                {
-                  "condition": "MatePlayedThisRound",
-                  "value": 0,
-                  "mechanicalType": null,
-                  "roughState": null,
-                  "relatedId": null
-                }
-              ],
+              "predicates": [],
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [
-                {
-                  "opcode": "AdjustDamage",
-                  "amount": 90,
-                  "valueSource": "Fixed",
-                  "targets": [
-                    "OtherOche"
-                  ],
-                  "selection": "All",
-                  "targetCount": 1,
-                  "predicates": [],
-                  "mechanicalTypes": [],
-                  "roughStates": [],
-                  "relatedIds": [],
-                  "then": [],
-                  "otherwise": []
-                }
-              ],
+              "then": [],
               "otherwise": []
             }
           ]
@@ -4878,8 +4815,13 @@
           "modifier": "\u00d72"
         }
       ],
-      "stubbornStreaks": [],
-      "taxiFare": 3,
+      "stubbornStreaks": [
+        {
+          "mechanicalType": "Psychic",
+          "modifier": "-30"
+        }
+      ],
+      "taxiFare": 2,
       "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
@@ -19810,7 +19752,6 @@
       "ReduceDamage",
       "ModifyAttackCost",
       "ModifyTaxiFare",
-      "ModifyStayingPower",
       "ModifySoftSpot",
       "IgnoreStubbornStreak",
       "IgnoreSoftSpotAndStubbornStreak",

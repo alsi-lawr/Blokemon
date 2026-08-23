@@ -47,7 +47,7 @@ module internal MatchKnockouts =
                         Effect = ValueSome effect }
 
                 let recovered = builder.Card card.Id
-                recovered.Damage < effectiveStayingPower catalog builder recovered
+                recovered.Damage < effectiveStayingPower catalog recovered
 
     /// The opponent's own blokes may want to react to the knockout. Only the first such source is
     /// asked now; the rest are parked on the pending resolution and asked in turn.
@@ -66,7 +66,7 @@ module internal MatchKnockouts =
 
         if
             attacker.Owner = knockedOut.Owner
-            || knockedOut.Damage < effectiveStayingPower catalog builder knockedOut
+            || knockedOut.Damage < effectiveStayingPower catalog knockedOut
         then
             false
         else
@@ -192,7 +192,7 @@ module internal MatchKnockouts =
                 |> Seq.filter isInPlay
                 |> Seq.filter (fun card ->
                     Seq.contains card.Id forcedSendHome
-                    || card.Damage >= effectiveStayingPower catalog builder card)
+                    || card.Damage >= effectiveStayingPower catalog card)
                 |> Seq.sortBy (fun card -> card.Owner, card.Id)
             )
 
@@ -204,7 +204,7 @@ module internal MatchKnockouts =
                 let knockedOutByAttackDamage =
                     attackingCard.IsSome
                     && Seq.contains current.Id attackDamageTargets
-                    && current.Damage >= effectiveStayingPower catalog builder current
+                    && current.Damage >= effectiveStayingPower catalog current
 
                 let damageAttacker =
                     if knockedOutByAttackDamage then

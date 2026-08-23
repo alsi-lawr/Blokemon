@@ -177,16 +177,7 @@ module internal EffectDamage =
                 else
                     pending.Amount
 
-            let stayingPower =
-                catalog.StayingPower target
-                + (runtime.Builder.Effects
-                   |> Seq.filter (fun effect ->
-                       effect.TargetCard = ValueSome target.Id
-                       && effect.Kind = TemporaryEffectKind.ModifyStayingPower
-                       && effectMatchesAttack catalog effect runtime.Source target)
-                   |> Seq.sumBy (fun effect -> effect.Amount))
-
-            damage + target.Damage >= stayingPower)
+            damage + target.Damage >= catalog.StayingPower target)
 
     let addPendingDamage
         (catalog: AuthorityCatalog)

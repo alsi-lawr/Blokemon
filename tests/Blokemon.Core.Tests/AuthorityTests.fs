@@ -35,6 +35,109 @@ type AuthorityTests() =
         publicValidation.IsValid |> should be True
 
     [<Test>]
+    member _.``karaoke queen should publish the exact Jungle Wigglytuff authority``() =
+        let instruction opcode amount valueSource targets roughStates =
+            { Opcode = opcode
+              Amount = amount
+              ValueSource = valueSource
+              Targets = targets
+              Selection = BlokemonSelection.All
+              TargetCount = 1
+              Predicates = Array.empty
+              MechanicalTypes = Array.empty
+              RoughStates = roughStates
+              RelatedIds = Array.empty
+              Then = Array.empty
+              Otherwise = Array.empty
+              Sources = null
+              Destination = BlokemonEffectDestination.Unspecified
+              CardFilter = null
+              SourceTopCount = 0 }
+
+        let authority = Authorities.mechanics.Value
+        let karaokeKev = authority.Collectibles.Single(fun card -> card.Id = "BLK-039")
+        let karaokeQueen = authority.Collectibles.Single(fun card -> card.Id = "BLK-040")
+
+        karaokeQueen.Rank |> should equal BlokemonRank.Seasoned
+        karaokeQueen.StayingPower |> should equal 80
+        karaokeQueen.PromotesFromId |> should equal "BLK-039"
+        karaokeKev.PromotesToIds |> should contain "BLK-040"
+        karaokeQueen.PartyTricks |> should be Empty
+        karaokeQueen.HouseRules |> should be Empty
+
+        karaokeQueen.Attacks
+        |> should
+            equal
+            [| { MechanicalId = "BLK-040-B01"
+                 PresentationStatus = BlokemonPresentationStatus.Accepted
+                 VimCost = [| BlokemonMechanicalType.Colorless |]
+                 PrintedDamage = 0
+                 VariablePrintedDamage = false
+                 CanBeUsedFromBench = false
+                 Program =
+                   [| instruction
+                          BlokemonOpcode.ApplyRoughState
+                          1
+                          BlokemonValueSource.Fixed
+                          [| BlokemonTarget.OtherOche |]
+                          [| BlokemonRoughState.NoddedOff |] |] }
+               { MechanicalId = "BLK-040-B02"
+                 PresentationStatus = BlokemonPresentationStatus.Accepted
+                 VimCost =
+                   [| BlokemonMechanicalType.Colorless
+                      BlokemonMechanicalType.Colorless
+                      BlokemonMechanicalType.Colorless |]
+                 PrintedDamage = 10
+                 VariablePrintedDamage = true
+                 CanBeUsedFromBench = false
+                 Program =
+                   [| instruction
+                          BlokemonOpcode.DealPrintedDamage
+                          10
+                          BlokemonValueSource.PrintedDamage
+                          [| BlokemonTarget.OtherOche |]
+                          Array.empty
+                      instruction
+                          BlokemonOpcode.AdjustDamage
+                          10
+                          BlokemonValueSource.OwnBoothCount
+                          [| BlokemonTarget.OtherOche |]
+                          Array.empty |] } |]
+
+        karaokeQueen.SoftSpots
+        |> should
+            equal
+            [| { MechanicalType = BlokemonMechanicalType.Fighting
+                 Modifier = "×2" } |]
+
+        karaokeQueen.StubbornStreaks
+        |> should
+            equal
+            [| { MechanicalType = BlokemonMechanicalType.Psychic
+                 Modifier = "-30" } |]
+
+        (karaokeQueen.TaxiFare, karaokeQueen.BarChitsWhenSentHome)
+        |> should equal (2, 1)
+
+        authority.BaseRules.BigHitters.BlokeIds |> should not' (contain "BLK-040")
+
+        let publicCard =
+            Authorities.publicContent.Value.Collectibles.Single(fun card -> card.Id = "BLK-040")
+
+        publicCard.Abilities |> should be Empty
+        publicCard.Rules |> should be Empty
+
+        publicCard.Attacks
+        |> should
+            equal
+            [| { MechanicalId = "BLK-040-B01"
+                 Name = "Lullaby"
+                 EffectText = "Your opponent's Active Blokemon is now Asleep." }
+               { MechanicalId = "BLK-040-B02"
+                 Name = "Do the Wave"
+                 EffectText = "This Attack deals 10 more damage for each of your Benched Blokemon." } |]
+
+    [<Test>]
     member _.``eleven card sampling should be deterministic and preserve pack composition``() =
         let manifest = Authorities.mechanics.Value
         let first = BlokemonSeededRandom(0xB10CE188UL)

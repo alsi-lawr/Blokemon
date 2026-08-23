@@ -41,10 +41,6 @@ module internal EffectPredicates =
         | BlokemonCondition.SelfHasDamage -> (self ()).Damage > 0
         | BlokemonCondition.SelfHasVim ->
             attachedVim builder runtime.Source.Id |> Seq.isEmpty |> not
-        | BlokemonCondition.SelfHasSpecialVim ->
-            attachedVim builder runtime.Source.Id
-            |> Seq.exists (fun vim ->
-                not (vim.MechanicalId.Value.StartsWith("VIM-", StringComparison.Ordinal)))
         | BlokemonCondition.SelfHasRoughState ->
             predicate.RoughState.HasValue
             && (self ()).RoughStates

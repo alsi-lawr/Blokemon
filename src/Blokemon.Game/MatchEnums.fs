@@ -44,7 +44,6 @@ type TemporaryEffectKind =
     | ReduceDamage = 2
     | ModifyAttackCost = 3
     | ModifyTaxiFare = 4
-    | ModifyStayingPower = 5
     | ModifySoftSpot = 6
     | IgnoreStubbornStreak = 7
     | IgnoreSoftSpotAndStubbornStreak = 8

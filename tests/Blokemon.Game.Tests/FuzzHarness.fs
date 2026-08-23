@@ -910,44 +910,13 @@ module internal FuzzHarness =
             observation.RoundActions[key] <- counts
             counts
 
-    let private rankMatches (effect: TemporaryEffect) (card: CardState) =
-        if card.Kind <> CardKind.Bloke then
-            not (
-                effect.Conditions
-                |> Seq.exists (fun condition ->
-                    condition = BlokemonCondition.TargetIsRegular
-                    || condition = BlokemonCondition.TargetIsSeasoned
-                    || condition = BlokemonCondition.TargetIsLandlord)
-            )
+    let private stayingPower (card: CardState) =
+        if card.Kind = CardKind.Bloke then
+            authority.Collectibles
+            |> Array.find (fun candidate -> candidate.Id = card.MechanicalId.Value)
+            |> _.StayingPower
         else
-            let rank =
-                authority.Collectibles
-                |> Array.find (fun candidate -> candidate.Id = card.MechanicalId.Value)
-                |> _.Rank
-
-            (not (Seq.contains BlokemonCondition.TargetIsRegular effect.Conditions)
-             || rank = BlokemonRank.Regular)
-            && (not (Seq.contains BlokemonCondition.TargetIsSeasoned effect.Conditions)
-                || rank = BlokemonRank.Seasoned)
-            && (not (Seq.contains BlokemonCondition.TargetIsLandlord effect.Conditions)
-                || rank = BlokemonRank.Landlord)
-
-    let private stayingPower (state: MatchState) (card: CardState) =
-        let printed =
-            if card.Kind = CardKind.Bloke then
-                authority.Collectibles
-                |> Array.find (fun candidate -> candidate.Id = card.MechanicalId.Value)
-                |> _.StayingPower
-            else
-                authority.BaseRules.FossilKits.PlayAsRegularLocalStayingPower
-
-        printed
-        + (state.Effects
-           |> Seq.filter (fun effect ->
-               effect.TargetCard = ValueSome card.Id
-               && effect.Kind = TemporaryEffectKind.ModifyStayingPower
-               && rankMatches effect card)
-           |> Seq.sumBy _.Amount)
+            authority.BaseRules.FossilKits.PlayAsRegularLocalStayingPower
 
     let private assertDeck
         (observation: Observation)
@@ -1314,8 +1283,8 @@ module internal FuzzHarness =
                     Clauses.sendHomeState
                     seed
                     step
-                    $"card={card.Id.Value}; damage={card.Damage}; staying power={stayingPower state card}; pending={pendingSendHome}"
-                    (pendingSendHome || card.Damage < stayingPower state card)
+                    $"card={card.Id.Value}; damage={card.Damage}; staying power={stayingPower card}; pending={pendingSendHome}"
+                    (pendingSendHome || card.Damage < stayingPower card)
 
         enforce
             observation

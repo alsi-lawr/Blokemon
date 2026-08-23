@@ -1,7 +1,7 @@
 {
   "schemaVersion": "blokemon-public-content-schema-2.0.0-candidate.5",
-  "contentVersion": "blokemon-public-content-2.0.0-candidate.8",
-  "mechanicalManifestVersion": "sv151-candidate.15",
+  "contentVersion": "blokemon-public-content-2.0.0-candidate.9",
+  "mechanicalManifestVersion": "sv151-candidate.16",
   "terminologyVersion": "blokemon-public-terminology-2.0.0-candidate.5",
   "humanApprovalStatus": "Accepted",
   "terminology": [
@@ -1959,18 +1959,17 @@
       "approvedName": "Karaoke Queen",
       "approvedType": "Local",
       "flavourText": "She does not need a duet, but she has recruited the whole room.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-040-T01",
-          "name": "Room for Everyone",
-          "effectText": "While this Blokemon has any non-Basic Energy attached, it has 100 more HP."
-        }
-      ],
+      "abilities": [],
       "attacks": [
         {
           "mechanicalId": "BLK-040-B01",
-          "name": "Pack the Booth",
-          "effectText": "Playing a Supporter card from your hand this turn makes this Attack deal 90 more damage."
+          "name": "Lullaby",
+          "effectText": "Your opponent's Active Blokemon is now Asleep."
+        },
+        {
+          "mechanicalId": "BLK-040-B02",
+          "name": "Do the Wave",
+          "effectText": "This Attack deals 10 more damage for each of your Benched Blokemon."
         }
       ],
       "rules": [],

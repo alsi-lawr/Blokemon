@@ -42,7 +42,6 @@ module internal EffectRegistration =
             EffectDuration.WhileTargetInPlay
         elif
             kind = TemporaryEffectKind.ContinuousPartyTrick
-            || kind = TemporaryEffectKind.ModifyStayingPower
             || kind = TemporaryEffectKind.ModifySoftSpot
         then
             EffectDuration.WhileSourceInPlay

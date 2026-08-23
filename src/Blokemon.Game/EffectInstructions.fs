@@ -200,9 +200,6 @@ module internal EffectInstructions =
         | BlokemonOpcode.ModifyTaxiFare ->
             register TemporaryEffectKind.ModifyTaxiFare
             ValueSome true
-        | BlokemonOpcode.ModifyStayingPower ->
-            register TemporaryEffectKind.ModifyStayingPower
-            ValueSome true
         | BlokemonOpcode.ModifySoftSpot ->
             if not runtime.IsAttack || instruction.MechanicalTypes.Length > 1 then
                 registerEffect

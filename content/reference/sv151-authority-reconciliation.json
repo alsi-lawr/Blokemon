@@ -1,8 +1,17 @@
 {
   "reconciliationVersion": "blokemon-sv151-authority-reconciliation-1.0.0",
-  "authorityVersion": "sv151-candidate.15",
+  "authorityVersion": "sv151-candidate.16",
   "canonicalCandidate": "blokemon-sv151-parody-1.0.0-candidate.6",
   "canonicalReferenceCommit": "718be3f2",
+  "canonicalSourceExceptions": {
+    "BLK-040": {
+      "sourceCard": "Wigglytuff",
+      "sourceSet": "Jungle",
+      "sourceNumber": 32,
+      "sourceUrl": "https://pkmncards.com/card/wigglytuff-jungle-ju-32/",
+      "reason": "The accepted BLK-040 exception maps the original Jungle Wigglytuff as its canonical source."
+    }
+  },
   "inventory": {
     "collectibles": 151,
     "supports": 14,
@@ -52,7 +61,6 @@
     "BLK-012-B01": "Normalize the switch count independently of printed damage.",
     "BLK-023-B01": "Choose the opposing Active Energy to discard only after the successful coin result.",
     "BLK-024-B02": "Persist the opponent-owned choice of the two cards discarded from their hand.",
-    "BLK-040-T01": "Remove a non-executable Energy-attachment marker; the special-Energy condition and HP modifier are authoritative.",
     "BLK-041-T01": "Reveal the opponent hand rather than deck cards.",
     "BLK-042-B01": "Remove candidate no-Weakness marker operations; Bench damage semantics carry that rule.",
     "BLK-058-B01": "Discard exactly one chosen Sober Energy from the opposing Active Blokemon.",
@@ -936,28 +944,28 @@
       "disposition": "Candidate6Mapped"
     },
     {
-      "mechanicalId": "BLK-040-T01",
-      "ownerId": "BLK-040",
-      "kind": "PartyTrick",
-      "sourceNumber": 40,
-      "ordinal": 1,
-      "sourceMechanicalSha256": "2e7b7787932e999a26f1d89c5e6b677b32732d25568e580943a863acdec50ddd",
-      "sourceTextSha256": "f7d9de2bdd33396be3c528884bdd9a7941120dba0844bff00f6e2a4033e2322d",
-      "candidateProgramSha256": "281d2da4e9e6258dd49c62b69f7b3d8b8950920ee9e71f78e75b44201c5bd31d",
-      "authorityProgramSha256": "2579aacf34998f406140bc2777e053a776435db99057588d885d6c4310a61d98",
-      "disposition": "CorrectedFromCandidate6"
-    },
-    {
       "mechanicalId": "BLK-040-B01",
       "ownerId": "BLK-040",
       "kind": "Attack",
-      "sourceNumber": 40,
+      "sourceNumber": 32,
       "ordinal": 1,
-      "sourceMechanicalSha256": "2e7b7787932e999a26f1d89c5e6b677b32732d25568e580943a863acdec50ddd",
-      "sourceTextSha256": "2cf52ddc05bd0b9573b6edd455f568655c84b16242e1228c6c872d24d580f06f",
-      "candidateProgramSha256": "c52e8a41b2b15ffb8663db72040d87501208134d5a59418244fa1da48c61b982",
-      "authorityProgramSha256": "c52e8a41b2b15ffb8663db72040d87501208134d5a59418244fa1da48c61b982",
-      "disposition": "Candidate6Mapped"
+      "sourceMechanicalSha256": null,
+      "sourceTextSha256": null,
+      "candidateProgramSha256": null,
+      "authorityProgramSha256": "d8fa15294668c9bbf3fedb7ab91e29f5648db144ee9647e870d0cb82bcc39202",
+      "disposition": "JungleWigglytuffMapped"
+    },
+    {
+      "mechanicalId": "BLK-040-B02",
+      "ownerId": "BLK-040",
+      "kind": "Attack",
+      "sourceNumber": 32,
+      "ordinal": 2,
+      "sourceMechanicalSha256": null,
+      "sourceTextSha256": null,
+      "candidateProgramSha256": null,
+      "authorityProgramSha256": "ef2645ca55de44c730ca4bd2e1f1b78737ce08555615ff135dc4166159c5c615",
+      "disposition": "JungleWigglytuffMapped"
     },
     {
       "mechanicalId": "BLK-041-T01",

@@ -14,7 +14,7 @@ module BlokemonPublicContentValidator =
     let SchemaVersion = "blokemon-public-content-schema-2.0.0-candidate.5"
 
     [<Literal>]
-    let ContentVersion = "blokemon-public-content-2.0.0-candidate.8"
+    let ContentVersion = "blokemon-public-content-2.0.0-candidate.9"
 
     [<Literal>]
     let TerminologyVersion = "blokemon-public-terminology-2.0.0-candidate.5"
@@ -593,7 +593,7 @@ module BlokemonPublicContentValidator =
         check
             (manifest.ContentVersion = ContentVersion)
             "document.version"
-            "The public content version is not candidate.8."
+            "The public content version is not candidate.9."
             issues
 
         check
@@ -611,7 +611,7 @@ module BlokemonPublicContentValidator =
         check
             (manifest.HumanApprovalStatus = BlokemonPublicContentApprovalStatus.Accepted)
             "document.approval"
-            "Candidate.8 must carry exact human acceptance."
+            "Candidate.9 must carry exact human acceptance."
             issues
 
         validateTerminology manifest issues

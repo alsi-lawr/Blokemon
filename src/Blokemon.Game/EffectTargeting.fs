@@ -192,7 +192,6 @@ module internal EffectTargeting =
         | BlokemonOpcode.ReduceDamage
         | BlokemonOpcode.ModifyAttackCost
         | BlokemonOpcode.ModifyTaxiFare
-        | BlokemonOpcode.ModifyStayingPower
         | BlokemonOpcode.RestrictAttack
         | BlokemonOpcode.RestrictTaxi
         | BlokemonOpcode.RestrictKit

@@ -88,6 +88,8 @@ module internal EffectSelection =
             | ValueNone -> 0
         | BlokemonValueSource.OtherBoothCount ->
             builder.CardsIn(builder.Other runtime.Actor, CardZone.Booth) |> Seq.length
+        | BlokemonValueSource.OwnBoothCount ->
+            builder.CardsIn(runtime.Actor, CardZone.Booth) |> Seq.length
         | BlokemonValueSource.OwnAttachedVim ->
             attachedVim builder runtime.Source.Id
             |> Seq.filter (fun vim ->

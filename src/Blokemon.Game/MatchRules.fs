@@ -101,18 +101,8 @@ module internal MatchRules =
             instruction.Opcode = BlokemonOpcode.Conditional
             || instruction.Opcode = BlokemonOpcode.ContinuousPartyTrick)
 
-    let effectiveStayingPower
-        (catalog: AuthorityCatalog)
-        (builder: MatchBuilder)
-        (card: CardState)
-        =
+    let effectiveStayingPower (catalog: AuthorityCatalog) (card: CardState) =
         catalog.StayingPower card
-        + (builder.Effects
-           |> Seq.filter (fun effect ->
-               effect.TargetCard = ValueSome card.Id
-               && effect.Kind = TemporaryEffectKind.ModifyStayingPower
-               && effectMatchesCardRank catalog effect card)
-           |> Seq.sumBy (fun effect -> effect.Amount))
 
     let effectiveTaxiFare (catalog: AuthorityCatalog) (builder: MatchBuilder) (card: CardState) =
         let mutable fare = catalog.TaxiFare card

@@ -85,6 +85,44 @@ type KnockoutResolutionTests() =
             |> should equal (bigHitterId, 2, 4)
 
     [<Test>]
+    member _.``sending karaoke queen home should award one ordinary bar chit``() =
+        let state =
+            MatchScenario.BattleState
+                "BLK-003"
+                "BLK-040"
+                [ "VIM-BLAZED"; "VIM-BLAZED"; "VIM-SOBER" ]
+                31UL
+
+        let defender =
+            { state.Card(CardInstanceId "defender") with
+                Damage = 79 }
+
+        let barChits =
+            [ for index in 0..5 ->
+                  MatchScenario.PlainCard
+                      $"bar-chit-{index}"
+                      "VIM-SOBER"
+                      MatchScenario.FirstPlayer
+                      CardZone.BarChit
+                      index ]
+
+        let state = MatchScenario.WithCards state (defender :: barChits)
+
+        let applied, events =
+            MatchScenario.AppliedWith(
+                MatchScenario.Engine().Apply(state, MatchScenario.AttackCommand state "BLK-003-B01")
+            )
+
+        let award =
+            events
+            |> Seq.find (fun matchEvent ->
+                matchEvent.Kind = MatchEventKind.BarChitsTaken
+                && matchEvent.SourceCard = ValueSome defender.Id)
+
+        (award.Amount, (applied.Player MatchScenario.FirstPlayer).BarChitsRemaining)
+        |> should equal (1, 5)
+
+    [<Test>]
     member _.``knocking out both actives at once should send them home in owner order and tie rather than name a winner``
         ()
         =

@@ -496,3 +496,55 @@ type AuthorityErrataTests() =
             && matchEvent.Amount = 20
             && Seq.contains (CardInstanceId "defender") matchEvent.TargetCards)
         |> should be True
+
+    [<Test>]
+    member _.``lullaby should apply nodded off through the match engine``() =
+        let state = MatchScenario.BattleState "BLK-040" "BLK-150" [ "VIM-SOBER" ] 941UL
+
+        let _, events =
+            applyAttack (MatchScenario.Engine()) state MatchScenario.FirstPlayer "BLK-040-B01"
+
+        events
+        |> Seq.exists (fun matchEvent ->
+            matchEvent.Kind = MatchEventKind.RoughStateApplied
+            && matchEvent.RoughState = ValueSome BlokemonRoughState.NoddedOff
+            && Seq.contains (CardInstanceId "defender") matchEvent.TargetCards)
+        |> should be True
+
+    [<Test>]
+    member _.``do the wave should count only the attacker's boothed blokes``() =
+        let engine = MatchScenario.Engine()
+
+        let damageWith (booth: CardState seq) =
+            let state =
+                MatchScenario.WithCards
+                    (MatchScenario.BattleState
+                        "BLK-040"
+                        "BLK-150"
+                        [ "VIM-SOBER"; "VIM-BEER"; "VIM-GEEKED" ]
+                        947UL)
+                    booth
+
+            let applied, _ = applyAttack engine state MatchScenario.FirstPlayer "BLK-040-B02"
+            (applied.Card(CardInstanceId "defender")).Damage
+
+        let ownBooth =
+            [ for index in 1..2 ->
+                  MatchScenario.PlainCard
+                      $"own-booth-{index}"
+                      "BLK-001"
+                      MatchScenario.FirstPlayer
+                      CardZone.Booth
+                      index ]
+
+        let otherBooth =
+            [ for index in 1..3 ->
+                  MatchScenario.PlainCard
+                      $"other-booth-{index}"
+                      "BLK-004"
+                      MatchScenario.SecondPlayer
+                      CardZone.Booth
+                      index ]
+
+        damageWith Seq.empty |> should equal 10
+        damageWith (Seq.append ownBooth otherBooth) |> should equal 30

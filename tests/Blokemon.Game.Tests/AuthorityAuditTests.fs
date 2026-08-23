@@ -279,9 +279,7 @@ type AuthorityAuditTests() =
         observation |> should equal expectedObservation
 
     [<Test>]
-    member _.``the reconciled 298 effects should flatten to 629 instructions before the Gen 1 conversion``
-        ()
-        =
+    member _.``the reconciled Jungle authority should flatten 298 effects to 626 instructions``() =
         use document =
             JsonDocument.Parse(
                 File.ReadAllText(
@@ -295,6 +293,9 @@ type AuthorityAuditTests() =
 
         let root = document.RootElement
         let reconciled = root.GetProperty("effects").EnumerateArray() |> Seq.toArray
+
+        let sourceException =
+            root.GetProperty("canonicalSourceExceptions").GetProperty("BLK-040")
 
         let effectIds (partyTricks: BlokemonPartyTrick array) attacks houseRules =
             Seq.concat
@@ -323,6 +324,14 @@ type AuthorityAuditTests() =
         root.GetProperty("authorityVersion").GetString()
         |> should equal MatchScenario.Authority.ManifestVersion
 
+        (sourceException.GetProperty("sourceCard").GetString(),
+         sourceException.GetProperty("sourceSet").GetString(),
+         sourceException.GetProperty("sourceNumber").GetInt32(),
+         sourceException.GetProperty("sourceUrl").GetString())
+        |> should
+            equal
+            ("Wigglytuff", "Jungle", 32, "https://pkmncards.com/card/wigglytuff-jungle-ju-32/")
+
         documented |> should equal declared
         reconciled.Length |> should equal 298
 
@@ -330,11 +339,12 @@ type AuthorityAuditTests() =
         |> Array.filter (fun effect ->
             effect.GetProperty("disposition").GetString() = "CorrectedFromCandidate6")
         |> Array.length
-        |> should equal 94
+        |> should equal 93
 
         audit.EffectCount |> should equal 298
         // Candidate.6's 643 was derived before BLK-113's SV151-correct optional Booth branch
         // (+1), before the three fossil Kits lost their spurious Optional wrappers (-3), and before
-        // the twelve disconnected Big Hitter instructions were removed (-12).
-        audit.InstructionCount |> should equal 629
+        // the twelve disconnected Big Hitter instructions were removed (-12). Replacing BLK-040's
+        // Party Trick and Attack with its two Jungle Attacks removes three more instructions (-3).
+        audit.InstructionCount |> should equal 626
         audit.Issues.Length |> should equal 0
