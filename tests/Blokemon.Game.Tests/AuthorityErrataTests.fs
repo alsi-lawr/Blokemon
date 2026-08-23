@@ -501,8 +501,16 @@ type AuthorityErrataTests() =
     member _.``lullaby should apply nodded off through the match engine``() =
         let state = MatchScenario.BattleState "BLK-040" "BLK-150" [ "VIM-SOBER" ] 941UL
 
-        let _, events =
+        let applied, events =
             applyAttack (MatchScenario.Engine()) state MatchScenario.FirstPlayer "BLK-040-B01"
+
+        let defender = applied.Card(CardInstanceId "defender")
+
+        defender.Damage |> should equal 0
+
+        defender.RoughStates
+        |> Seq.map _.State
+        |> should contain BlokemonRoughState.NoddedOff
 
         events
         |> Seq.exists (fun matchEvent ->
@@ -510,6 +518,42 @@ type AuthorityErrataTests() =
             && matchEvent.RoughState = ValueSome BlokemonRoughState.NoddedOff
             && Seq.contains (CardInstanceId "defender") matchEvent.TargetCards)
         |> should be True
+
+    [<Test>]
+    member _.``karaoke queen should take double damage from a lairy attack``() =
+        let damageAgainst defenderId =
+            let state =
+                MatchScenario.BattleState "BLK-050" defenderId [ "VIM-LAIRY"; "VIM-LAIRY" ] 943UL
+
+            let applied, _ =
+                applyAttack (MatchScenario.Engine()) state MatchScenario.FirstPlayer "BLK-050-B02"
+
+            (applied.Card(CardInstanceId "defender")).Damage
+
+        let controlDamage = damageAgainst "BLK-148"
+        let softSpotDamage = damageAgainst "BLK-040"
+
+        controlDamage |> should equal 30
+        softSpotDamage |> should equal 60
+        softSpotDamage |> should equal (controlDamage * 2)
+
+    [<Test>]
+    member _.``karaoke queen should subtract thirty from geeked damage and clamp at zero``() =
+        let damageAgainst defenderId =
+            let state =
+                MatchScenario.BattleState "BLK-093" defenderId [ "VIM-GEEKED"; "VIM-SOBER" ] 945UL
+
+            let applied, _ =
+                applyAttack (MatchScenario.Engine()) state MatchScenario.FirstPlayer "BLK-093-B01"
+
+            (applied.Card(CardInstanceId "defender")).Damage
+
+        let controlDamage = damageAgainst "BLK-148"
+        let stubbornStreakDamage = damageAgainst "BLK-040"
+
+        controlDamage |> should equal 30
+        stubbornStreakDamage |> should equal 0
+        controlDamage - stubbornStreakDamage |> should equal 30
 
     [<Test>]
     member _.``do the wave should count only the attacker's boothed blokes``() =

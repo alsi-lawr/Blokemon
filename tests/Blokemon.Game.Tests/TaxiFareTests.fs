@@ -88,6 +88,35 @@ type TaxiFareTests() =
         (retreated.Card (Bench First).Id).Zone |> should equal CardZone.Oche
 
     [<Test>]
+    member _.``karaoke queen should offer and accept taxi only with fare two``() =
+        let table attached =
+            MatchScenario.WithCards
+                (MatchScenario.BattleState "BLK-040" Weedman attached 95UL)
+                [ Bench First ]
+
+        let shortState = table [ "VIM-SOBER" ]
+        let shortTaxi = TaxiOffered shortState First
+
+        shortTaxi.Affordability |> should equal (ActionAffordability.ShortOfTaxiFare 2)
+
+        MatchScenario.RejectionCode(MatchScenario.Engine().Apply(shortState, shortTaxi.Command))
+        |> should equal CommandRejectionCode.InvalidTaxiFare
+
+        let payableState = table [ "VIM-SOBER"; "VIM-BEER" ]
+        let payableTaxi = TaxiOffered payableState First
+
+        payableTaxi.Affordability |> should equal ActionAffordability.Payable
+
+        let retreated =
+            MatchScenario.Applied(MatchScenario.Engine().Apply(payableState, payableTaxi.Command))
+
+        (retreated.Card (Bench First).Id).Zone |> should equal CardZone.Oche
+
+        [ CardInstanceId "vim-0"; CardInstanceId "vim-1" ]
+        |> List.map (fun vim -> (retreated.Card vim).Zone)
+        |> should equal [ CardZone.EmptiesTray; CardZone.EmptiesTray ]
+
+    [<Test>]
     member _.``the computer should finish its turn although its own active cannot pay the fare``() =
         // The taxi outranks ending the round in the computer's policy, so an unpayable one it
         // could still see would be preferred to every move behind it and rejected on the spot.
