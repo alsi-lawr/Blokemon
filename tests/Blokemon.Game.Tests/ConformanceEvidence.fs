@@ -9,6 +9,9 @@ open ConformanceCensus
 
 module internal ConformanceEvidence =
 
+    let CensusFilename = "080-conformance-census-final.md"
+    let CoverageFilename = "080-program-coverage-post-correction.md"
+
     type HistoricalDisposition =
         | Removed
         | Changed
@@ -153,8 +156,7 @@ module internal ConformanceEvidence =
         lines[runtimeLine] <-
             "- Measured harness runtime: omitted from this canonical deterministic report; wall time belongs in the verification log."
 
-        let output =
-            Path.Combine(evidenceDirectory, "080-program-coverage-post-correction.md")
+        let output = Path.Combine(evidenceDirectory, CoverageFilename)
 
         File.WriteAllLines(output, lines)
         File.Delete temporaryPath
@@ -210,6 +212,13 @@ module internal ConformanceEvidence =
         lines.Add $"- Declared-and-used conditions: {totals.DeclaredAndUsedConditions}"
         lines.Add $"- Non-Activated triggers: {totals.NonActivatedTriggers}"
         lines.Add $"- Recursively nontrivial programs: {totals.RecursiveNontrivialPrograms}"
+
+        lines.Add
+            $"- Executable nontrivial composition snapshots: {executableNontrivialPrograms.Length}"
+
+        lines.Add
+            $"- Structural nontrivial program-row exclusions: {structuralNontrivialProgramExclusions.Length}"
+
         lines.Add $"- Big Hitters: {totals.BigHitters}"
         lines.Add ""
         lines.Add "## Opcode evidence"
@@ -257,10 +266,15 @@ module internal ConformanceEvidence =
         for row, count in recursiveNontrivialPrograms do
             let conditions = conditionList row
             let displayedConditions = if conditions = "" then "none" else conditions
-            let semanticHash = expectedCompositionHashes[row.MechanicalId]
 
-            lines.Add
-                $"| `{row.MechanicalId}` | {count} | {opcodeList row} | {displayedConditions} | `{semanticHash}` | {escaped (executionEvidence row)} |"
+            match expectedCompositionHashes.TryFind row.MechanicalId with
+            | Some semanticHash ->
+                lines.Add
+                    $"| `{row.MechanicalId}` | {count} | {opcodeList row} | {displayedConditions} | `{semanticHash}` | {escaped (executionEvidence row)} |"
+            | None when declarativeKitStructuralProgramIds.Contains row.MechanicalId ->
+                lines.Add
+                    $"| `{row.MechanicalId}` | {count} | {opcodeList row} | {displayedConditions} | not executed / structural | {escaped (executionEvidence row)} |"
+            | None -> failwith $"Nontrivial program {row.MechanicalId} had no evidence disposition."
 
         lines.Add ""
         lines.Add "## Historical BLOKEMON-079 residual reconciliation"
@@ -288,7 +302,7 @@ module internal ConformanceEvidence =
         lines.Add
             $"- Unobserved or event-unobservable program IDs: {coverageUnobserved}/{totals.Programs}"
 
-        lines.Add $"- Exact report: `{coveragePath}`"
+        lines.Add $"- Exact sibling report: `{CoverageFilename}`"
         lines.Add ""
         lines.Add "## Semantic mutation checks"
         lines.Add ""
@@ -323,31 +337,43 @@ module internal ConformanceEvidence =
             "- `TriggeredPartyTrick` is structural-only: AuthorityAudit validates the marker, while each owning `BlokemonPartyTrick.Trigger` row has firing/non-firing MatchEngine proof. No other opcode's state change is credited to it."
 
         lines.Add
+            "- `TriggeredPartyTrick` remains the sole opcode-level structural exclusion. The fourteen exclusions below are program-row dispositions and do not exclude either `Conditional` or `ContinuousPartyTrick` from opcode semantics."
+
+        lines.Add
             "- `BoothHasSpace` falsy proof is the authoritative full-Booth outer guard/non-invocation route; it does not assert that the nested predicate evaluator ran."
 
         lines.Add
             "- `OwnBlokeSentHomeByOtherAttackDamage` falsy proof is authoritative trigger non-invocation for recoil; it does not assert that the nested predicate evaluator ran."
 
         lines.Add
-            "- No program row is generically excluded. Each of the 192 rows names its exact table-driven program key and an approved MatchEngine state/event SHA-256, composed with the opcode and condition tables above."
+            "- `KIT-001-R02` through `KIT-014-R02` are the exact fourteen NOT EXECUTED / STRUCTURAL PROGRAM ROW exclusions. `MatchKitHandlers` filters `isDeclarativeHouseRule` from Kit-play execution, and `MatchContinuous.refreshContinuousEffects` filters house rules containing `Optional` from continuous refresh. Their `Conditional(Optional) -> ContinuousPartyTrick` shape is declarative, so no Kit-play or refresh state change is credited to these rows."
+
+        lines.Add
+            "- The other 178 recursively nontrivial rows name exact MatchEngine composition snapshots. Together the 178 executable rows and fourteen structural rows account for all 192 without overlap."
 
         lines.Add ""
         lines.Add "## Reproduction commands"
         lines.Add ""
         lines.Add "```sh"
 
-        lines.Add
-            "git show da75b663c15a8626e991b3c70ddc37d002f3d81a:content/authorities/mechanics.json > .agent-workspace/20260822T220600Z-blokemon-080-defects/080-mechanics-pre-corrections.json"
+        lines.Add "export BLOKEMON_080_EVIDENCE_DIR='<output-directory>'"
+        lines.Add "export BLOKEMON_080_SOURCE_HEAD='<immutable-source-head>'"
+        lines.Add "export BLOKEMON_079_REPORT='<historical-079-coverage-report>'"
+
+        lines.Add "export BLOKEMON_080_PRE_CORRECTION_MECHANICS='<pre-correction-mechanics-json>'"
 
         lines.Add
-            "BLOKEMON_080_EVIDENCE_DIR=$PWD/.agent-workspace/20260822T220600Z-blokemon-080-defects BLOKEMON_080_SOURCE_HEAD=$(git rev-parse HEAD) BLOKEMON_079_REPORT=/home/alex/dev/agent-planning/projects/blokemon/investigations/20260816-fsharp-rearchitecture/evidence/079-program-coverage-large-final.md BLOKEMON_080_PRE_CORRECTION_MECHANICS=$PWD/.agent-workspace/20260822T220600Z-blokemon-080-defects/080-mechanics-pre-corrections.json dotnet test tests/Blokemon.Game.Tests/Blokemon.Game.Tests.fsproj -c Release --treenode-filter '/*/*/*/the opt-in BLOKEMON-080 evidence generator should reconcile and write the deterministic reports' -- --minimum-expected-tests 1"
+            "git show da75b663c15a8626e991b3c70ddc37d002f3d81a:content/authorities/mechanics.json > \"$BLOKEMON_080_PRE_CORRECTION_MECHANICS\""
 
         lines.Add
-            "sha256sum .agent-workspace/20260822T220600Z-blokemon-080-defects/080-conformance-census-final.md .agent-workspace/20260822T220600Z-blokemon-080-defects/080-program-coverage-post-correction.md"
+            "dotnet test tests/Blokemon.Game.Tests/Blokemon.Game.Tests.fsproj -c Release --treenode-filter '/*/*/*/the opt-in BLOKEMON-080 evidence generator should reconcile and write the deterministic reports' -- --minimum-expected-tests 1"
+
+        lines.Add
+            $"sha256sum \"$BLOKEMON_080_EVIDENCE_DIR/{CensusFilename}\" \"$BLOKEMON_080_EVIDENCE_DIR/{CoverageFilename}\""
 
         lines.Add "```"
 
-        let output = Path.Combine(evidenceDirectory, "080-conformance-census-final.md")
+        let output = Path.Combine(evidenceDirectory, CensusFilename)
         File.WriteAllLines(output, lines)
         output
 

@@ -1,5 +1,6 @@
 namespace Blokemon.Game.Tests
 
+open System
 open System.IO
 open Blokemon.Core.SetDesign
 open FsUnit
@@ -63,6 +64,72 @@ type ConformanceCensusTests() =
         |> Seq.filter (snd >> System.String.IsNullOrWhiteSpace)
         |> Seq.toList
         |> should be Empty
+
+    [<Test>]
+    member _.``nontrivial programs should partition into 178 executable and 14 exact structural rows``
+        ()
+        =
+        let expectedStructuralIds =
+            Set.ofList
+                [ "KIT-001-R02"
+                  "KIT-002-R02"
+                  "KIT-003-R02"
+                  "KIT-004-R02"
+                  "KIT-005-R02"
+                  "KIT-006-R02"
+                  "KIT-007-R02"
+                  "KIT-008-R02"
+                  "KIT-009-R02"
+                  "KIT-010-R02"
+                  "KIT-011-R02"
+                  "KIT-012-R02"
+                  "KIT-013-R02"
+                  "KIT-014-R02" ]
+
+        let structuralIds =
+            structuralNontrivialProgramExclusions
+            |> Seq.map (fun (row, _) -> row.MechanicalId)
+            |> Set.ofSeq
+
+        let executableIds =
+            executableNontrivialPrograms
+            |> Seq.map (fun (row, _) -> row.MechanicalId)
+            |> Set.ofSeq
+
+        let allNontrivialIds =
+            recursiveNontrivialPrograms
+            |> Seq.map (fun (row, _) -> row.MechanicalId)
+            |> Set.ofSeq
+
+        structuralIds |> should equal expectedStructuralIds
+        structuralNontrivialProgramExclusions.Length |> should equal 14
+        executableNontrivialPrograms.Length |> should equal 178
+        Set.intersect structuralIds executableIds |> should be Empty
+        Set.union structuralIds executableIds |> should equal allNontrivialIds
+
+        structuralNontrivialProgramExclusions
+        |> Seq.map (fun (row, count) ->
+            let flattened = instructions row.Program |> Seq.toArray
+
+            row.Kind,
+            count,
+            (flattened |> Array.map _.Opcode |> Array.toList),
+            (flattened |> Array.collect _.Predicates |> Array.map _.Condition |> Array.toList),
+            executionEvidence row)
+        |> Seq.toList
+        |> should
+            equal
+            (List.replicate
+                14
+                (ProgramKind.HouseRule,
+                 2,
+                 [ BlokemonOpcode.Conditional; BlokemonOpcode.ContinuousPartyTrick ],
+                 [ BlokemonCondition.Optional ],
+                 declarativeKitStructuralRationale))
+
+        for row, _ in structuralNontrivialProgramExclusions do
+            (fun () -> compositionHash row |> ignore)
+            |> should throw typeof<InvalidOperationException>
 
     [<Test>]
     [<Explicit>]

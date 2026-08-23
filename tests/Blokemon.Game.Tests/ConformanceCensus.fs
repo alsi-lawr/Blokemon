@@ -107,6 +107,22 @@ module internal ConformanceCensus =
             let count = instructions row.Program |> Seq.length
             if count > 1 then Some(row, count) else None)
 
+    let declarativeKitStructuralProgramIds =
+        [ 1..14 ] |> Seq.map (fun index -> $"KIT-{index:D3}-R02") |> Set.ofSeq
+
+    let declarativeKitStructuralRationale =
+        "NOT EXECUTED / STRUCTURAL PROGRAM ROW: MatchKitHandlers filters isDeclarativeHouseRule from Kit-play execution, and MatchContinuous.refreshContinuousEffects filters house rules containing Optional from continuous refresh. This Conditional(Optional) -> ContinuousPartyTrick row is intentionally declarative."
+
+    let structuralNontrivialProgramExclusions =
+        recursiveNontrivialPrograms
+        |> Array.filter (fun (row, _) ->
+            declarativeKitStructuralProgramIds.Contains row.MechanicalId)
+
+    let executableNontrivialPrograms =
+        recursiveNontrivialPrograms
+        |> Array.filter (fun (row, _) ->
+            not (declarativeKitStructuralProgramIds.Contains row.MechanicalId))
+
     let totals =
         { ProgramBearingCards = programBearingCards
           Programs = programRows.Length
@@ -241,4 +257,7 @@ module internal ConformanceCensus =
         $"TriggerConformanceTests.``every non-activated authority trigger should fire only in its declared context`` [{row.MechanicalId}]"
 
     let executionEvidence (row: ProgramRow) =
-        $"ProgramCompositionConformanceTests.``every recursive nontrivial program should preserve its MatchEngine semantic composition`` [program={row.MechanicalId}]"
+        if declarativeKitStructuralProgramIds.Contains row.MechanicalId then
+            declarativeKitStructuralRationale
+        else
+            $"ProgramCompositionConformanceTests.``every executable recursive nontrivial program should preserve its MatchEngine semantic composition`` [program={row.MechanicalId}]"

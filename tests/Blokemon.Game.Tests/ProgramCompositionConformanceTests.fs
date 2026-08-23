@@ -56,33 +56,40 @@ module internal ProgramCompositionConformanceFixtures =
         | _ -> state
 
     let private compositionBytes (row: ProgramRow) =
-        match row.Kind, row.Trigger with
-        | ProgramKind.Attack, _ ->
-            executeAttack (richBattleState row.OwnerId) row.MechanicalId |> executionBytes
-        | ProgramKind.HouseRule, _ ->
-            executeAction (kitState row.OwnerId) (playsKit (CardInstanceId "kit-under-test"))
-            |> executionBytes
-        | ProgramKind.PartyTrick, ValueSome BlokemonTrigger.Activated ->
-            executeAction (activatedState row) (usesPartyTrick row.MechanicalId)
-            |> executionBytes
-        | ProgramKind.PartyTrick, ValueSome BlokemonTrigger.Continuous ->
-            executeAction
-                (continuousState row.OwnerId)
-                (playsBloke (CardInstanceId "own-mitt-bloke"))
-            |> executionBytes
-        | ProgramKind.PartyTrick, ValueSome BlokemonTrigger.OnPromotionFromMitt ->
-            let promotion =
-                MatchScenario.Authority.Collectibles
-                |> Array.find (fun card -> card.Id = row.OwnerId)
+        if declarativeKitStructuralProgramIds.Contains row.MechanicalId then
+            raise (
+                InvalidOperationException(
+                    $"Declarative program row {row.MechanicalId} has no MatchEngine composition route."
+                )
+            )
+        else
+            match row.Kind, row.Trigger with
+            | ProgramKind.Attack, _ ->
+                executeAttack (richBattleState row.OwnerId) row.MechanicalId |> executionBytes
+            | ProgramKind.HouseRule, _ ->
+                executeAction (kitState row.OwnerId) (playsKit (CardInstanceId "kit-under-test"))
+                |> executionBytes
+            | ProgramKind.PartyTrick, ValueSome BlokemonTrigger.Activated ->
+                executeAction (activatedState row) (usesPartyTrick row.MechanicalId)
+                |> executionBytes
+            | ProgramKind.PartyTrick, ValueSome BlokemonTrigger.Continuous ->
+                executeAction
+                    (continuousState row.OwnerId)
+                    (playsBloke (CardInstanceId "own-mitt-bloke"))
+                |> executionBytes
+            | ProgramKind.PartyTrick, ValueSome BlokemonTrigger.OnPromotionFromMitt ->
+                let promotion =
+                    MatchScenario.Authority.Collectibles
+                    |> Array.find (fun card -> card.Id = row.OwnerId)
 
-            executeAction
-                (promotionState promotion)
-                (promotes (CardInstanceId "promotion") (CardInstanceId "attacker"))
-            |> executionBytes
-        | ProgramKind.PartyTrick, ValueSome trigger ->
-            observeReactiveTrigger (MatchScenario.Engine()) trigger |> BitConverter.GetBytes
-        | ProgramKind.PartyTrick, ValueNone ->
-            failwith $"Party Trick {row.MechanicalId} had no trigger."
+                executeAction
+                    (promotionState promotion)
+                    (promotes (CardInstanceId "promotion") (CardInstanceId "attacker"))
+                |> executionBytes
+            | ProgramKind.PartyTrick, ValueSome trigger ->
+                observeReactiveTrigger (MatchScenario.Engine()) trigger |> BitConverter.GetBytes
+            | ProgramKind.PartyTrick, ValueNone ->
+                failwith $"Party Trick {row.MechanicalId} had no trigger."
 
     let compositionHash row =
         row
@@ -258,44 +265,38 @@ module internal ProgramCompositionConformanceFixtures =
           "BLK-150-B02", "11ad20962d83e82b9887a8517e794b36c5b230caef5096ff843be5e6104de993"
           "BLK-151-T01", "815b54b85addde5728d6e2ce22be35aa55d2e2cc6cb09e11d97bded1bbd175d4"
           "KIT-001-R01", "f952d9ed24c3cfbd0437fdabb68349dee5b5c0126e77f192be9bef7f84665322"
-          "KIT-001-R02", "f952d9ed24c3cfbd0437fdabb68349dee5b5c0126e77f192be9bef7f84665322"
           "KIT-001-T01", "0c4e775b565916afd1a374d63408e36d7e830fd88a45abcdd4a9657cea96f4ef"
           "KIT-002-R01", "86098c161f5720fced234dc38474f1ccf14534be88050498b90f1928c2af6451"
-          "KIT-002-R02", "86098c161f5720fced234dc38474f1ccf14534be88050498b90f1928c2af6451"
           "KIT-002-T01", "c0fd6aefc737e224df232c5d9d333b4b02e9dc3825293bf158cc9eda71e5d840"
           "KIT-003-R01", "cc391512b5684f8209243c8bd4b5786eef2564c28331b665003bb4f3c410189d"
-          "KIT-003-R02", "cc391512b5684f8209243c8bd4b5786eef2564c28331b665003bb4f3c410189d"
           "KIT-003-T01", "8bdf1a403cf1f6c9d6a3f38b714f48e5cd5b8bfb60f1d503f094f44cbbc9ecff"
           "KIT-004-R01", "ed47267768a0ef3636f0598183579f296cdf1f1aa86672f7b311763a47d91da5"
-          "KIT-004-R02", "ed47267768a0ef3636f0598183579f296cdf1f1aa86672f7b311763a47d91da5"
           "KIT-005-R01", "3f89423eadc7690f22d4363d37dbb979caf9b47f0323f6e7b4321aef1b1337f5"
-          "KIT-005-R02", "3f89423eadc7690f22d4363d37dbb979caf9b47f0323f6e7b4321aef1b1337f5"
           "KIT-006-R01", "d6c963040af043b6ebaa54e6a936e236245ecf841d3220644925afb934caa7f8"
-          "KIT-006-R02", "d6c963040af043b6ebaa54e6a936e236245ecf841d3220644925afb934caa7f8"
           "KIT-007-R01", "2629f6072c9bb5a6915779fb526f427649c32f8933c5afb3742d13b1b4891931"
-          "KIT-007-R02", "2629f6072c9bb5a6915779fb526f427649c32f8933c5afb3742d13b1b4891931"
           "KIT-008-R01", "d319f13459ab3d01d33753fc6ba341a0a548ba3073cd4d60796823c2b156e0f4"
-          "KIT-008-R02", "d319f13459ab3d01d33753fc6ba341a0a548ba3073cd4d60796823c2b156e0f4"
           "KIT-009-R01", "1f6e7aa42cf63fed632eb8837fba1f9e1a57260797276514046a451d622b2032"
-          "KIT-009-R02", "1f6e7aa42cf63fed632eb8837fba1f9e1a57260797276514046a451d622b2032"
           "KIT-010-R01", "28c115d6f26e78d6a0bba409151833e1faf418e6e2a406ed5c7c9ab48c08be43"
-          "KIT-010-R02", "28c115d6f26e78d6a0bba409151833e1faf418e6e2a406ed5c7c9ab48c08be43"
           "KIT-011-R01", "61bf2d50b67dcbb88e1adb1fee7e402aabd8a93360fb42ce622b9c8f6d45942e"
-          "KIT-011-R02", "61bf2d50b67dcbb88e1adb1fee7e402aabd8a93360fb42ce622b9c8f6d45942e"
-          "KIT-012-R01", "f04bac03734bda6b045d8d5fa91f39ce9a9cdaef6841a2e6682cd6d1b6a9f92b"
-          "KIT-012-R02", "f04bac03734bda6b045d8d5fa91f39ce9a9cdaef6841a2e6682cd6d1b6a9f92b"
-          "KIT-013-R02", "c487ffcd06436cae33d7ca2fa2502fcbc4d418d863a95eada4d9ea691c56f613"
-          "KIT-014-R02", "78336d9525c08184b0f9d37cc728967f94a2863ed6a61edac293685cae92c2fa" ]
+          "KIT-012-R01", "f04bac03734bda6b045d8d5fa91f39ce9a9cdaef6841a2e6682cd6d1b6a9f92b" ]
         |> Map.ofList
 
 type ProgramCompositionConformanceTests() =
 
     [<Test>]
-    member _.``every recursive nontrivial program should preserve its MatchEngine semantic composition``
+    member _.``every executable recursive nontrivial program should preserve its MatchEngine semantic composition``
         ()
         =
+        let executableIds =
+            executableNontrivialPrograms
+            |> Seq.map (fun (row, _) -> row.MechanicalId)
+            |> Set.ofSeq
+
+        expectedCompositionHashes.Count |> should equal 178
+        expectedCompositionHashes |> Map.keys |> Set.ofSeq |> should equal executableIds
+
         let actual =
-            recursiveNontrivialPrograms
+            executableNontrivialPrograms
             |> Array.map (fun (row, _) -> row.MechanicalId, compositionHash row)
             |> Map.ofArray
 
@@ -303,10 +304,12 @@ type ProgramCompositionConformanceTests() =
 
     [<Test>]
     [<Explicit>]
-    member _.``the composition snapshot generator should print every exact program row``() =
+    member _.``the composition snapshot generator should print every exact executable program row``
+        ()
+        =
         let lines = ResizeArray<string>()
 
-        for row, _ in recursiveNontrivialPrograms do
+        for row, _ in executableNontrivialPrograms do
             let line = $"          \"{row.MechanicalId}\", \"{compositionHash row}\""
             Console.WriteLine line
             lines.Add line
@@ -316,4 +319,4 @@ type ProgramCompositionConformanceTests() =
         | "" -> ()
         | path -> File.WriteAllLines(path, lines)
 
-        recursiveNontrivialPrograms.Length |> should equal 192
+        executableNontrivialPrograms.Length |> should equal 178
