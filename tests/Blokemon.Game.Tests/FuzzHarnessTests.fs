@@ -1,8 +1,6 @@
 namespace Blokemon.Game.Tests
 
 open System
-open System.Diagnostics
-open System.IO
 open Blokemon.Game
 open FsUnit
 open TUnit.Core
@@ -18,7 +16,7 @@ type FuzzHarnessTests() =
         let result = defaultBout (uint64 seed)
 
         Console.WriteLine(
-            $"BLOKEMON-079 seed={seed}; status={result.Status}; steps={result.Steps}; assertions={result.Assertions}"
+            $"seed={seed}; status={result.Status}; steps={result.Steps}; assertions={result.Assertions}"
         )
 
         assertNoFindings [ result ]
@@ -43,29 +41,6 @@ type FuzzHarnessTests() =
 
         (coveredContent DefaultSeeds, Clauses.authorityInventory.Id)
         |> should equal (allContentIds |> Set.ofArray, Clauses.authorityInventory.Id)
-
-    [<Test>]
-    member _.``the default sweep should report program coverage and incomplete bouts``() =
-        let results, duration = defaultSweepEvidence ()
-
-        let path, observed, neverObserved, incomplete =
-            coverageReport
-                "BLOKEMON-079-program-coverage.md"
-                DefaultSeeds
-                DefaultStepCeiling
-                duration
-                results
-
-        File.Exists path |> should be True
-        observed + neverObserved |> should equal allPrograms.Length
-
-        results
-        |> Array.filter (fun result -> result.Status = Incomplete)
-        |> Array.length
-        |> should equal incomplete
-
-        Console.WriteLine $"BLOKEMON-079 coverage report: {path}"
-        assertNoFindings results
 
     [<Test>]
     member _.``reaching the step ceiling should retain assertions and report an incomplete bout``
@@ -113,22 +88,6 @@ type FuzzHarnessTests() =
     [<Test>]
     [<Explicit>]
     member _.``the opt-in larger seeded sweep should obey every reached rulebook clause``() =
-        let stopwatch = Stopwatch.StartNew()
-
-        let results =
-            LargeSweepSeeds |> Array.map (fun seed -> runBout seed LargeSweepStepCeiling)
-
-        stopwatch.Stop()
-
-        let path, observed, neverObserved, _ =
-            coverageReport
-                "BLOKEMON-079-program-coverage-large.md"
-                LargeSweepSeeds
-                LargeSweepStepCeiling
-                stopwatch.Elapsed
-                results
-
-        observed + neverObserved |> should equal allPrograms.Length
-        File.Exists path |> should be True
-        Console.WriteLine $"BLOKEMON-079 large-sweep coverage report: {path}"
-        assertNoFindings results
+        LargeSweepSeeds
+        |> Array.map (fun seed -> runBout seed LargeSweepStepCeiling)
+        |> assertNoFindings

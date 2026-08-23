@@ -1,7 +1,6 @@
 namespace Blokemon.Game.Tests
 
 open System
-open System.IO
 open Blokemon.Core.SetDesign
 open FsUnit
 open TUnit.Core
@@ -10,19 +9,7 @@ open ConformanceCensus
 type ConformanceCensusTests() =
 
     [<Test>]
-    member _.``the corrected authority should have the independently derived census totals``() =
-        totals
-        |> should
-            equal
-            { ProgramBearingCards = 165
-              Programs = 298
-              RecursiveInstructions = 626
-              DeclaredAndUsedOpcodes = 49
-              DeclaredAndUsedConditions = 31
-              NonActivatedTriggers = 26
-              RecursiveNontrivialPrograms = 192
-              BigHitters = 11 }
-
+    member _.``the current authority should use every declared opcode and condition``() =
         usedOpcodes |> should equal declaredOpcodes
         usedConditions |> should equal declaredConditions
 
@@ -70,21 +57,9 @@ type ConformanceCensusTests() =
         ()
         =
         let expectedStructuralIds =
-            Set.ofList
-                [ "KIT-001-R02"
-                  "KIT-002-R02"
-                  "KIT-003-R02"
-                  "KIT-004-R02"
-                  "KIT-005-R02"
-                  "KIT-006-R02"
-                  "KIT-007-R02"
-                  "KIT-008-R02"
-                  "KIT-009-R02"
-                  "KIT-010-R02"
-                  "KIT-011-R02"
-                  "KIT-012-R02"
-                  "KIT-013-R02"
-                  "KIT-014-R02" ]
+            (ConformanceFixture.load ()).Authority.StructuralPrograms
+            |> Seq.map _.MechanicalId
+            |> Set.ofSeq
 
         let structuralIds =
             structuralNontrivialProgramExclusions
@@ -130,27 +105,3 @@ type ConformanceCensusTests() =
         for row, _ in structuralNontrivialProgramExclusions do
             (fun () -> compositionHash row |> ignore)
             |> should throw typeof<InvalidOperationException>
-
-    [<Test>]
-    [<Explicit>]
-    member _.``the opt-in BLOKEMON-080 evidence generator should reconcile and write the deterministic reports``
-        ()
-        =
-        let censusPath, coveragePath, historical, observed, unobserved =
-            ConformanceEvidence.generate ()
-
-        File.Exists censusPath |> should be True
-        File.Exists coveragePath |> should be True
-        historical.Length |> should equal 222
-
-        historical
-        |> Array.countBy _.Disposition
-        |> Map.ofArray
-        |> should
-            equal
-            (Map.ofList
-                [ ConformanceEvidence.Removed, 13
-                  ConformanceEvidence.Changed, 1
-                  ConformanceEvidence.Surviving, 208 ])
-
-        observed + unobserved |> should equal totals.Programs

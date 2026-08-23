@@ -31,10 +31,11 @@
     <Compile Include="ConditionConformanceTests.fs" />
     <Compile Include="TriggerConformanceTests.fs" />
     <Compile Include="ConformanceCensus.fs" />
+    <Compile Include="ConformanceFixture.fs" />
     <Compile Include="ProgramCompositionConformanceTests.fs" />
+    <Compile Include="ConformanceFixtureTests.fs" />
     <Compile Include="FuzzHarness.fs" />
     <Compile Include="FuzzHarnessTests.fs" />
-    <Compile Include="ConformanceEvidence.fs" />
     <Compile Include="ConformanceCensusTests.fs" />
   </ItemGroup>
   <ItemGroup>
@@ -52,6 +53,11 @@
     <PackageReference Include="FSharp.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Content
+      Include="Fixtures/conformance.json"
+      Link="Fixtures/conformance.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
     <Content
       Include="../../src/Blokemon.Web.Client/wwwroot/content/catalogue.json"
       Link="content/catalogue.json"
