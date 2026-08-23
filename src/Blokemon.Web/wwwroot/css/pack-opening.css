@@ -256,7 +256,7 @@
   transform-style: preserve-3d;
 }
 
-.is-face-up > .reveal-flip {
+.pack-reveal-card.is-face-up > .card-press-surface > .reveal-flip {
   transform: rotateY(180deg);
   animation: card-flip 0.75s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }

@@ -44,6 +44,67 @@ module internal ProfileRestoration =
                     )
                 | version -> DomainResult.Succeeded version
 
+            let! reversedHistoricalVersions, _ =
+                foldIndexed
+                    (fun (versions, seen) index (version: string | null) ->
+                        let path = $"HistoricalAuthorityManifestVersions[{index}]"
+
+                        match version with
+                        | null ->
+                            DomainResult.Failed(
+                                LocalProfileRestorationFailure.InvalidId(
+                                    path,
+                                    TextValueFailure.Required
+                                )
+                            )
+                        | historicalVersion when String.IsNullOrWhiteSpace historicalVersion ->
+                            DomainResult.Failed(
+                                LocalProfileRestorationFailure.InvalidId(
+                                    path,
+                                    TextValueFailure.Required
+                                )
+                            )
+                        | historicalVersion when seen |> Set.contains historicalVersion ->
+                            DomainResult.Failed(
+                                LocalProfileRestorationFailure.DuplicateValue(
+                                    SnapshotDuplicateKind.AuthorityManifestVersion,
+                                    historicalVersion
+                                )
+                            )
+                        | historicalVersion ->
+                            DomainResult.Succeeded(
+                                historicalVersion :: versions,
+                                seen |> Set.add historicalVersion
+                            ))
+                    ([], Set.empty)
+                    (orEmpty snapshot.HistoricalAuthorityManifestVersions)
+
+            let historicalVersions =
+                reversedHistoricalVersions |> List.rev |> ImmutableArray.CreateRange
+
+            let! unavailableHistoricalIds, _ =
+                foldIndexed
+                    (fun (cardIds, seen) index (persistedId: string | null) ->
+                        let path = $"UnavailableHistoricalCardIds[{index}]"
+
+                        result {
+                            let! cardId = atPath path (CardId.Create persistedId)
+
+                            do!
+                                failWhen
+                                    (seen |> Set.contains cardId)
+                                    (LocalProfileRestorationFailure.DuplicateValue(
+                                        SnapshotDuplicateKind.HistoricalCardId,
+                                        cardId.Value
+                                    ))
+
+                            return cardId :: cardIds, seen |> Set.add cardId
+                        })
+                    ([], Set.empty)
+                    (orEmpty snapshot.UnavailableHistoricalCardIds)
+
+            let unavailableHistoricalCardIds = unavailableHistoricalIds |> Set.ofList
+
             let! profileId = atPath "ProfileId" (ProfileId.Create snapshot.ProfileId)
 
             let! displayName =
@@ -88,7 +149,7 @@ module internal ProfileRestoration =
                 if isCurrentAuthority then authorityCollectibles else null
 
             do!
-                if not isCurrentAuthority then
+                if not isCurrentAuthority || unavailableHistoricalCardIds.Contains starterId then
                     DomainResult.Succeeded()
                 else
                     match authorityCollectibles.TryGetValue starterId.Value with
@@ -116,13 +177,13 @@ module internal ProfileRestoration =
 
             let! ownership =
                 foldIndexed
-                    (restoreOwnershipEntry currentCollectibles)
+                    (restoreOwnershipEntry currentCollectibles unavailableHistoricalCardIds)
                     Map.empty
                     (orEmpty snapshot.CollectibleOwnership)
 
             let! receipts =
                 foldIndexed
-                    (restoreReceipt currentCollectibles)
+                    (restoreReceipt currentCollectibles unavailableHistoricalCardIds)
                     (openingHistory starterId)
                     (orEmpty snapshot.PackReceipts)
 
@@ -166,6 +227,8 @@ module internal ProfileRestoration =
                 { id = profileId
                   displayName = displayName
                   boundAuthorityManifestVersion = manifestVersion
+                  historicalAuthorityManifestVersions = historicalVersions
+                  unavailableHistoricalCardIds = unavailableHistoricalCardIds
                   guaranteedRegularCollectibleId = starterId
                   economy = economy
                   collectibleOwnership = ImmutableDictionary.CreateRange ownership
@@ -176,7 +239,11 @@ module internal ProfileRestoration =
 
             let! savedDecks =
                 foldIndexed
-                    (restoreDeckAt baseState currentAuthority isCurrentAuthority)
+                    (restoreDeckAt
+                        baseState
+                        currentAuthority
+                        isCurrentAuthority
+                        unavailableHistoricalCardIds)
                     Map.empty
                     (orEmpty snapshot.SavedDecks)
 

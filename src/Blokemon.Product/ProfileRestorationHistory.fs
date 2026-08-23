@@ -26,6 +26,7 @@ module internal ProfileRestorationHistory =
 
     let private restoreSampledCard
         (currentCollectibles: Dictionary<string, BlokemonCollectible> | null)
+        (unavailableHistoricalCardIds: Set<CardId>)
         (receiptPath: string)
         (sampled: CardId list, withinReceipt: Set<CardId>, expected: Map<CardId, int>)
         (cardIndex: int)
@@ -46,7 +47,7 @@ module internal ProfileRestorationHistory =
 
             do!
                 failWhen
-                    (isUnknownCard currentCollectibles cardId)
+                    (isUnknownCard currentCollectibles unavailableHistoricalCardIds cardId)
                     (LocalProfileRestorationFailure.UnknownCard(path, cardId))
 
             return
@@ -57,6 +58,7 @@ module internal ProfileRestorationHistory =
 
     let restoreReceipt
         (currentCollectibles: Dictionary<string, BlokemonCollectible> | null)
+        (unavailableHistoricalCardIds: Set<CardId>)
         (history: ReceiptHistory)
         (receiptIndex: int)
         (item: PackReceiptSnapshot)
@@ -101,7 +103,7 @@ module internal ProfileRestorationHistory =
 
             let! sampled, _, expectedOwnership =
                 foldIndexed
-                    (restoreSampledCard currentCollectibles path)
+                    (restoreSampledCard currentCollectibles unavailableHistoricalCardIds path)
                     ([], Set.empty, history.expectedOwnership)
                     sampledSnapshots
 

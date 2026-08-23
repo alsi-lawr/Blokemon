@@ -765,6 +765,48 @@ def setup_player(devtools, origin, viewer):
     )
 
 
+def require_reveal_face_up(devtools, viewport, activation):
+    time.sleep(0.85)
+    state = devtools.evaluate(
+        """
+        (() => {
+          const reveal = document.querySelector('.pack-reveal-card');
+          const flip = reveal?.querySelector(':scope > .card-press-surface > .reveal-flip');
+          const front = flip?.querySelector(':scope > .reveal-flip-front');
+          const back = flip?.querySelector(':scope > .reveal-flip-back');
+          if (!reveal || !flip || !front || !back) return null;
+          const flipStyle = getComputedStyle(flip);
+          const frontStyle = getComputedStyle(front);
+          const backStyle = getComputedStyle(back);
+          const flipMatrix = new DOMMatrixReadOnly(flipStyle.transform);
+          const frontMatrix = new DOMMatrixReadOnly(frontStyle.transform);
+          const backMatrix = new DOMMatrixReadOnly(backStyle.transform);
+          const renderedFront = flipMatrix.multiply(frontMatrix);
+          const renderedBack = flipMatrix.multiply(backMatrix);
+          return {
+            faceUpClass: reveal.classList.contains('is-face-up'),
+            readerVisible: reveal.querySelector('.card-read') !== null,
+            transform: flipStyle.transform,
+            rotatedFaceUp: Math.abs(flipMatrix.m11 + 1) < 0.01
+              && Math.abs(flipMatrix.m33 + 1) < 0.01,
+            frontVisible: renderedFront.m33 > 0.99 && frontStyle.backfaceVisibility === 'hidden',
+            backHidden: renderedBack.m33 < -0.99 && backStyle.backfaceVisibility === 'hidden'
+          };
+        })()
+        """
+    )
+    require(state is not None, f"measured the production Pack reveal at {viewport}")
+    print(f"INFO {viewport} {activation} Pack flip {json.dumps(state, sort_keys=True)}")
+    require(
+        state["faceUpClass"] and state["readerVisible"] and state["rotatedFaceUp"],
+        f"{viewport} {activation} activation applies the production 180-degree face-up transform",
+    )
+    require(
+        state["frontVisible"] and state["backHidden"],
+        f"{viewport} {activation} activation renders the card front and culls the card back",
+    )
+
+
 def pack_gating(devtools, origin, viewer):
     devtools.set_reduced_motion(False)
     devtools.navigate(origin, "/packs")
@@ -809,16 +851,21 @@ def pack_gating(devtools, origin, viewer):
         "Pack exposes no card identity or reading trigger before face-up",
     )
 
-    point = devtools.evaluate(
-        """
-        (() => {
-          const rect = document.querySelector('.pack-reveal-card > .card-press-surface').getBoundingClientRect();
-          return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-        })()
-        """
+    require(
+        devtools.evaluate(
+            """
+            (() => {
+              const surface = document.querySelector('.pack-reveal-card > .card-press-surface');
+              surface?.focus();
+              return document.activeElement === surface;
+            })()
+            """
+        ),
+        "desktop Pack reveal surface takes keyboard focus",
     )
-    devtools.mouse_click(point)
+    devtools.send_key("Enter", activate=True)
     devtools.wait_for("document.querySelector('.pack-reveal-card .card-read') !== null", "face-up card reader")
+    require_reveal_face_up(devtools, "1440x900", "keyboard")
     viewer.require_sibling_dom(".pack-reveal-card")
     step = devtools.evaluate("document.querySelector('.opening-ceremony-copy .eyebrow').textContent.trim()")
     viewer.open_control(".pack-reveal-card", ".card-read")
@@ -837,6 +884,51 @@ def pack_gating(devtools, origin, viewer):
         ),
         "closing the Pack reader leaves the same reveal step active",
     )
+
+    devtools.click_text("Next card")
+    devtools.wait_for(
+        "document.querySelector('.opening-ceremony-copy .eyebrow')?.textContent.trim() === 'Card 2 of 11'",
+        "next Pack card",
+    )
+    devtools.set_viewport(390, 844, touch=True)
+    mobile_hidden = devtools.evaluate(
+        """
+        (() => {
+          const reveal = document.querySelector('.pack-reveal-card');
+          return {
+            readers: reveal.querySelectorAll('.card-read').length,
+            label: reveal.querySelector(':scope > .card-press-surface').getAttribute('aria-label'),
+            step: document.querySelector('.opening-ceremony-copy .eyebrow').textContent.trim()
+          };
+        })()
+        """
+    )
+    require(
+        mobile_hidden["readers"] == 0
+        and mobile_hidden["label"] == "Turn the card over"
+        and mobile_hidden["step"] == "Card 2 of 11",
+        "390x844 touch next card starts hidden without advancing or exposing a reader",
+    )
+    point = devtools.evaluate(
+        """
+        (() => {
+          const rect = document.querySelector('.pack-reveal-card > .card-press-surface').getBoundingClientRect();
+          return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        })()
+        """
+    )
+    devtools.touch_tap(point)
+    devtools.wait_for("document.querySelector('.pack-reveal-card .card-read') !== null", "touch face-up card reader")
+    require_reveal_face_up(devtools, "390x844", "touch")
+    viewer.require_sibling_dom(".pack-reveal-card")
+    viewer.open_control(".pack-reveal-card", ".card-read", touch=True)
+    require(
+        devtools.evaluate(
+            "document.querySelector('.opening-ceremony-copy .eyebrow').textContent.trim() === 'Card 2 of 11'"
+        ),
+        "touch reading a face-up Pack reveal does not advance it",
+    )
+    viewer.close_with_pointer(touch=True)
     devtools.click_text("Skip animation")
     devtools.wait_for(
         "[...document.querySelectorAll('button')].some(button => button.textContent.trim() === 'Done')",

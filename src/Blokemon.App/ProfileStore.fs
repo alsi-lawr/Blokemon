@@ -1,5 +1,6 @@
 namespace Blokemon.App
 
+open System
 open System.Text.Json
 open System.Threading
 open Blokemon.App.ApiResponses
@@ -41,13 +42,45 @@ module internal ProfileStore =
                             match WebLocalIds.TryCreate restored with
                             | null -> return invalidState ()
                             | ids ->
-                                return
-                                    { Profile =
-                                        { Revision = document.Revision
-                                          Document = value
-                                          Profile = restored
-                                          Ids = ids }
-                                      Error = null }
+                                if
+                                    String.Equals(
+                                        restored.BoundAuthorityManifestVersion,
+                                        catalogue.Mechanics.ManifestVersion,
+                                        StringComparison.Ordinal
+                                    )
+                                then
+                                    return
+                                        { Profile =
+                                            { Revision = document.Revision
+                                              Document = value
+                                              Profile = restored
+                                              Ids = ids }
+                                          Error = null }
+                                else
+                                    let migrated = restored.MigrateAuthority catalogue.Mechanics
+
+                                    let migratedDocument =
+                                        { value with
+                                            Profile = migrated.ToSnapshot() }
+
+                                    let! write =
+                                        documents.Update(
+                                            profileKey,
+                                            document.Revision,
+                                            JsonSerializer.Serialize(migratedDocument, json),
+                                            cancellationToken
+                                        )
+
+                                    match write with
+                                    | :? DocumentWriteResult.Written as written ->
+                                        return
+                                            { Profile =
+                                                { Revision = written.Revision
+                                                  Document = migratedDocument
+                                                  Profile = migrated
+                                                  Ids = ids }
+                                              Error = null }
+                                    | _ -> return { Profile = null; Error = conflict () }
         }
 
     let save

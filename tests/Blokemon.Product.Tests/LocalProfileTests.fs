@@ -3,6 +3,7 @@ namespace Blokemon.Product.Tests
 open System
 open System.Collections.Immutable
 open System.IO
+open System.Text.Json
 open Blokemon.Core.SetDesign
 open Blokemon.Product
 open FsUnit
@@ -425,7 +426,7 @@ type LocalProfileTests() =
         retryRandom.ConsumptionIndex |> should equal 0
 
     [<Test>]
-    member _.``historical profile should preserve pack binding while decks use current mechanics``
+    member _.``historical profile migration should preserve state and allow current product operations``
         ()
         =
         let snapshot = (createPopulatedProfile ()).ToSnapshot()
@@ -474,14 +475,54 @@ type LocalProfileTests() =
 
         let restored = success (LocalProfile.Restore(historicalSnapshot, authority.Value))
         let restoredSnapshot = restored.ToSnapshot()
+        let migrated = restored.MigrateAuthority authority.Value
+        let migratedSnapshot = migrated.ToSnapshot()
+
+        let expectedMigratedSnapshot =
+            { historicalSnapshot with
+                AuthorityManifestVersion = authority.Value.ManifestVersion
+                HistoricalAuthorityManifestVersions =
+                    ImmutableArray.Create(("historical-manifest": string | null))
+                UnavailableHistoricalCardIds =
+                    ImmutableArray.CreateRange<string | null>
+                        [ historicalCardId; "HISTORICAL-DECK-CARD" ] }
+
+        let restarted = success (LocalProfile.Restore(migratedSnapshot, authority.Value))
+
+        let unprovenUnknownCard =
+            failure (
+                LocalProfile.Restore(
+                    { migratedSnapshot with
+                        CollectibleOwnership =
+                            migratedSnapshot.CollectibleOwnership.Add(
+                                { CardId = "UNPROVEN-UNKNOWN-CARD"
+                                  Quantity = 0 }
+                                : CollectibleOwnershipSnapshot
+                            ) },
+                    authority.Value
+                )
+            )
+
         let historicalDeckId = value (DeckId.Create historicalDeck.DeckId)
-        let currentCards = legalCards restored
+        let currentCards = legalCards restarted
+
+        let retryRandom = CountingRandomSource()
+
+        let replayed =
+            success (
+                restarted.OpenPack(
+                    value (CommandId.Create firstReceipt.CommandId),
+                    value (PackReceiptId.Create "ignored-after-migration"),
+                    authority.Value,
+                    retryRandom
+                )
+            )
 
         let revised =
             success (
-                restored.ReviseDeck(
+                restarted.ReviseDeck(
                     historicalDeckId,
-                    restored.SavedDecks[historicalDeckId].Revision,
+                    restarted.SavedDecks[historicalDeckId].Revision,
                     value (DeckName.Create "Current deck"),
                     currentCards,
                     authority.Value
@@ -498,15 +539,13 @@ type LocalProfileTests() =
                 )
             )
 
-        let random = CountingRandomSource()
-
-        let packFailure =
-            failure (
+        let opened =
+            success (
                 created.Profile.OpenPack(
-                    value (CommandId.Create "blocked-command"),
-                    value (PackReceiptId.Create "blocked-receipt"),
+                    value (CommandId.Create "current-command"),
+                    value (PackReceiptId.Create "current-receipt"),
                     authority.Value,
-                    random
+                    BlokemonSeededRandom 971UL
                 )
             )
 
@@ -523,6 +562,21 @@ type LocalProfileTests() =
         restoredSnapshot.SavedDecks[0].Cards
         |> Seq.exists (fun card -> card.CardId = "HISTORICAL-DECK-CARD" && card.Quantity = 59)
         |> should be True
+
+        migrated.BoundAuthorityManifestVersion
+        |> should equal authority.Value.ManifestVersion
+
+        JsonSerializer.Serialize migratedSnapshot
+        |> should equal (JsonSerializer.Serialize expectedMigratedSnapshot)
+
+        JsonSerializer.Serialize(restarted.ToSnapshot())
+        |> should equal (JsonSerializer.Serialize migratedSnapshot)
+
+        unprovenUnknownCard.IsUnknownCard |> should be True
+
+        replayed.Disposition |> should equal PackOpenDisposition.AlreadyOpened
+        replayed.Profile.PackReceipts.Count |> should equal migrated.PackReceipts.Count
+        retryRandom.ConsumptionIndex |> should equal 0
 
         revised.Deck.Cards.Keys
         |> Seq.map (fun cardId -> cardId.Value)
@@ -541,10 +595,16 @@ type LocalProfileTests() =
             (revised.Deck.Cards.Keys |> Seq.map (fun cardId -> cardId.Value) |> orderedIds)
 
         created.Profile.BoundAuthorityManifestVersion
-        |> should equal "historical-manifest"
+        |> should equal authority.Value.ManifestVersion
 
-        packFailure |> should equal PackOpenFailure.AuthorityVersionMismatch
-        random.ConsumptionIndex |> should equal 0
+        opened.Disposition |> should equal PackOpenDisposition.Opened
+
+        opened.Profile.PackReceipts.Count
+        |> should equal (created.Profile.PackReceipts.Count + 1)
+
+        opened.Profile.CollectibleOwnership.Values
+        |> Seq.sum
+        |> should equal ((created.Profile.CollectibleOwnership.Values |> Seq.sum) + 11)
 
     [<Test>]
     member _.``snapshot restore should reject invalid identity quantities and duplicates``() =

@@ -114,6 +114,86 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
+    public async Task BrowserProfileAuthorityMigration_PersistsBeforeStateAndPackSuccess()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var server = new ServerHandler(null);
+        var application = Application(catalogue, documents, server);
+        Value(await application.SelectMode(PlayMode.BrowserLocal));
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("93511111-1111-1111-1111-111111111111"), "Browser Player")
+            )
+        );
+        Value(await application.OpenPack(new(Guid.Parse("93522222-2222-2222-2222-222222222222"))));
+        var original = (await documents.Read("profile"))!;
+        var historicalJson = JsonNode.Parse(original.Json)!.AsObject();
+        historicalJson["profile"]!["authorityManifestVersion"] = "historical-manifest";
+        await documents.Update("profile", original.Revision, historicalJson.ToJsonString());
+        var historical = (await documents.Read("profile"))!;
+
+        var restarted = Application(catalogue, documents, server);
+        var restored = Value(await restarted.State());
+        var migrated = (await documents.Read("profile"))!;
+
+        restored.Profile!.DisplayName.ShouldBe("Browser Player");
+        restored.LastPack!.Sequence.ShouldBe(1);
+        migrated.Revision.ShouldBe(historical.Revision + 1);
+        JsonNode
+            .DeepEquals(
+                JsonNode.Parse(migrated.Json),
+                ExpectedMigratedProfile(historical, catalogue)
+            )
+            .ShouldBeTrue();
+
+        var secondRestart = Application(catalogue, documents, server);
+        Value(await secondRestart.State());
+        (await documents.Read("profile")).ShouldBe(migrated);
+
+        var command = Guid.Parse("93533333-3333-3333-3333-333333333333");
+        var opened = Value(await secondRestart.OpenPack(new(command)));
+        var afterOpen = (await documents.Read("profile"))!;
+        var retried = Value(await secondRestart.OpenPack(new(command)));
+
+        opened.LastPack!.Sequence.ShouldBe(2);
+        retried.LastPack!.Id.ShouldBe(opened.LastPack.Id);
+        retried.LastPack.Sequence.ShouldBe(opened.LastPack.Sequence);
+        retried
+            .LastPack.Cards.Select(static card => card.Id)
+            .ShouldBe(opened.LastPack.Cards.Select(static card => card.Id));
+        (await documents.Read("profile")).ShouldBe(afterOpen);
+        server.Requests.ShouldBeEmpty();
+    }
+
+    [Test]
+    public async Task BrowserProfileAuthorityMigration_StorageFailurePreservesHistoricalDocument()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Application(catalogue, documents, new ServerHandler(null));
+        Value(await application.SelectMode(PlayMode.BrowserLocal));
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("93611111-1111-1111-1111-111111111111"), "Browser Player")
+            )
+        );
+        var original = (await documents.Read("profile"))!;
+        var historicalJson = JsonNode.Parse(original.Json)!.AsObject();
+        historicalJson["profile"]!["authorityManifestVersion"] = "historical-manifest";
+        await documents.Update("profile", original.Revision, historicalJson.ToJsonString());
+        var historical = (await documents.Read("profile"))!;
+        documents.FailNextWrite = DocumentStorageFailure.Full;
+
+        var response = await Application(catalogue, documents, new ServerHandler(null)).State();
+
+        response.Succeeded.ShouldBeFalse();
+        response.Error!.Code.ShouldBe("storage.full");
+        response.Error.Message.ShouldContain("last saved game is unchanged", Case.Sensitive);
+        (await documents.Read("profile")).ShouldBe(historical);
+    }
+
+    [Test]
     public async Task IncompatibleBrowserSettings_AreReportedWithoutBeingReplaced()
     {
         var catalogue = Catalogue();
@@ -1048,6 +1128,20 @@ public sealed class BrowserLocalApplicationTests
                 static card => card.OwnedQuantity,
                 StringComparer.Ordinal
             );
+
+    private static JsonObject ExpectedMigratedProfile(
+        StoredDocument historical,
+        BlokemonCatalogue catalogue
+    )
+    {
+        var expected = JsonNode.Parse(historical.Json)!.AsObject();
+        var profile = expected["profile"]!.AsObject();
+        var historicalVersion = profile["authorityManifestVersion"]!.GetValue<string>();
+        profile["authorityManifestVersion"] = catalogue.Mechanics.ManifestVersion;
+        profile["historicalAuthorityManifestVersions"] = new JsonArray(historicalVersion);
+        profile["unavailableHistoricalCardIds"] = new JsonArray();
+        return expected;
+    }
 
     private static BlokemonCatalogue Catalogue() =>
         BlokemonCatalogueBuilder.Load(Path.Combine(AppContext.BaseDirectory, "content"));

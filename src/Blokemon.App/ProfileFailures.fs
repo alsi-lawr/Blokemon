@@ -91,7 +91,7 @@ module internal ProfileFailures =
         | PackOpenFailure.AuthorityVersionMismatch ->
             ApiError(
                 "pack.authority_changed",
-                "The card set changed. Reload the page before you open a pack."
+                "This saved player cannot use the current card set. No data changed."
             )
         | PackOpenFailure.PackAllowanceExhausted ->
             ApiError("pack.allowance", "You have opened every pack this player is allowed.")
