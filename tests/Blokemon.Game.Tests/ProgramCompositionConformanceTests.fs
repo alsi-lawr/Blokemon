@@ -109,13 +109,16 @@ type ProgramCompositionConformanceTests() =
     member _.``every executable recursive nontrivial program should preserve its MatchEngine semantic composition``
         ()
         =
-        let expected = (ConformanceFixture.load ()).CompositionHashes
+        let fixture = ConformanceFixture.load ()
+        let expected = fixture.CompositionHashes
 
         let executableIds =
             executableNontrivialPrograms
             |> Seq.map (fun (row, _) -> row.MechanicalId)
             |> Set.ofSeq
 
-        expected.Length |> should equal 178
+        expected.Length
+        |> should equal fixture.Authority.Totals.ExecutableNontrivialPrograms
+
         expected |> Seq.map _.MechanicalId |> Set.ofSeq |> should equal executableIds
         currentCompositionHashes () |> should equal expected

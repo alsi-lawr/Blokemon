@@ -713,6 +713,13 @@ module internal FuzzHarness =
           Events: ImmutableArray<MatchEvent>
           FinalState: MatchState }
 
+    type ApproximateCoverageSummary =
+        { ObservedPrograms: int
+          UnobservedPrograms: int
+          CompletedBouts: int
+          IncompleteBouts: int
+          Findings: int }
+
     let DefaultSeeds = [| 0UL; 78UL; 156UL |]
     let DefaultStepCeiling = 384
     let LargeSweepSeeds = [| for seed in 0UL .. 23UL -> seed * 37UL |]
@@ -2382,3 +2389,195 @@ module internal FuzzHarness =
 
         (findings.Length = 0, String.concat Environment.NewLine findings)
         |> should equal (true, "")
+
+    let writeApproximateCoverageReport
+        (outputPath: string)
+        (seeds: uint64 array)
+        (stepCeiling: int)
+        (results: BoutResult array)
+        =
+        let observed =
+            results
+            |> Seq.collect (fun result -> result.ObservedEffects |> Seq.toArray)
+            |> Seq.map _.Value
+            |> Set.ofSeq
+
+        let unobserved = allPrograms |> Array.filter (observed.Contains >> not)
+        let contentCoverage = coveredContent seeds
+        let incomplete = results |> Array.filter (fun result -> result.Status = Incomplete)
+
+        let findings =
+            results |> Array.collect (fun result -> result.Findings |> Seq.toArray)
+
+        let probes =
+            results |> Array.collect (fun result -> result.ProbeSettlements |> Seq.toArray)
+
+        let probeCount status =
+            probes |> Array.filter (fun probe -> probe.Status = status) |> Array.length
+
+        let unsettledProbes = probes |> Array.filter (fun probe -> probe.Status <> Settled)
+
+        let clauseEvaluations = Dictionary<string, int>(StringComparer.Ordinal)
+
+        for result in results do
+            for evaluation in result.ClauseEvaluations do
+                clauseEvaluations[evaluation.ClauseId] <-
+                    match clauseEvaluations.TryGetValue evaluation.ClauseId with
+                    | true, count -> count + evaluation.Count
+                    | false, _ -> evaluation.Count
+
+        let longestBout = results |> Array.maxBy _.Steps |> _.Steps
+
+        let ceilingRationale =
+            if stepCeiling > longestBout * 2 then
+                $"leaves more than 2x headroom over the longest {longestBout}-command observed bout for deferred choices and triggers"
+            else
+                $"records the longest {longestBout}-command observed bout without treating a ceiling hit as a rules failure"
+
+        let lines = ResizeArray<string>()
+        let programCount = allPrograms.Length
+        lines.Add "# Self-play program attribution"
+        lines.Add ""
+        lines.Add $"- Authority programs: {programCount}"
+        lines.Add $"- Effect-attributed program IDs: {observed.Count}/{programCount}"
+
+        lines.Add
+            $"- Unobserved or event-unobservable program IDs: {unobserved.Length}/{programCount}"
+
+        lines.Add "- Coverage mode: APPROXIMATE"
+
+        lines.Add
+            "- Interpretation: an unobserved program is not proof that the program did not execute."
+
+        lines.Add
+            "- Companion authorities: content/authorities/mechanics.json; content/reference/sv151-authority-reconciliation.json"
+
+        lines.Add
+            "- Reason: MatchEvent.Effect records effectful events, but accepted program invocation has no universal event; continuous refresh and multi-rule Kit execution can be unobservable when no instruction emits an effect event."
+
+        lines.Add
+            "- Coverage population: selected self-play commands plus explicitly settled deterministic probes for every payable action offered in each reached state; only an emitted MatchEvent.Effect is labelled attributed."
+
+        lines.Add $"- Seed count: {seeds.Length}"
+        lines.Add $"- Seed set: {String.Join(',', seeds)}"
+
+        lines.Add(
+            if seeds = DefaultSeeds then
+                "- Seed rationale: the three default seeds are the minimum recorded 39-card cyclic deck windows whose two sides cover all 165 content identities while retaining 21 Basic Vim per deck."
+            else
+                "- Seed rationale: the opt-in arithmetic progression broadens action/effect sampling while preserving deterministic, greppable seeds and the same playable deck construction."
+        )
+
+        lines.Add
+            $"- Step ceiling: {stepCeiling} commands per bout (run control only; not a game rule)"
+
+        lines.Add $"- Ceiling rationale: {ceilingRationale}"
+        lines.Add $"- Content cards in seeded decks: {contentCoverage.Count}/{allContentIds.Length}"
+        lines.Add $"- Completed bouts: {results.Length - incomplete.Length}"
+        lines.Add $"- INCOMPLETE bouts: {incomplete.Length}"
+        lines.Add $"- Rule findings: {findings.Length}"
+
+        lines.Add
+            "- Finding retention: first ordinary failure per rulebook clause and bout; every offered-action and settlement-probe failure retained"
+
+        lines.Add "- Exclusions: none"
+        lines.Add ""
+        lines.Add "## Bouts"
+        lines.Add ""
+
+        for result in results do
+            lines.Add(
+                $"- seed {result.Seed}: {result.Status.ToString().ToUpperInvariant()}, reason={result.StopReason}, steps={result.Steps}, assertions={result.Assertions}, final-revision={result.FinalState.Revision.Value}"
+            )
+
+        lines.Add ""
+        lines.Add "## Seeded deck records"
+        lines.Add ""
+
+        for result in results do
+            let first =
+                result.StartRequest.FirstDeck.Cards |> Seq.map _.Value |> String.concat ","
+
+            let second =
+                result.StartRequest.SecondDeck.Cards |> Seq.map _.Value |> String.concat ","
+
+            lines.Add $"- seed {result.Seed}, fuzz-first: {first}"
+            lines.Add $"- seed {result.Seed}, fuzz-second: {second}"
+
+        lines.Add ""
+        lines.Add "## Rulebook clause map"
+        lines.Add ""
+
+        for clause in Clauses.All do
+            let evaluations = clauseEvaluations.GetValueOrDefault(clause.Id, 0)
+
+            lines.Add
+                $"- {clause.Group} | {clause.Id} | {clause.Lines} | accepted: {clause.AcceptedAssertion} | authority: {clause.Rule} | check: {clause.Check} | sweep evaluations: {evaluations}"
+
+        lines.Add ""
+        lines.Add "## Offered-action probe settlement statuses"
+        lines.Add ""
+        lines.Add $"- Total payable offered-action probes: {probes.Length}"
+        lines.Add $"- Settled: {probeCount Settled}"
+        lines.Add $"- DirectActionRejected: {probeCount DirectActionRejected}"
+        lines.Add $"- NoSettlementAction: {probeCount NoSettlementAction}"
+        lines.Add $"- SettlementActionRejected: {probeCount SettlementActionRejected}"
+        lines.Add $"- SettlementCeilingReached: {probeCount SettlementCeilingReached}"
+        lines.Add ""
+        lines.Add "### Unsettled probe details"
+        lines.Add ""
+
+        if unsettledProbes.Length = 0 then
+            lines.Add "- none"
+        else
+            for probe in unsettledProbes do
+                lines.Add
+                    $"- seed={probe.Seed}; step={probe.Step}; action={probe.Action}; status={probe.Status}; settlement-commands={probe.SettlementCommands}; detail={probe.Detail}"
+
+        lines.Add ""
+        lines.Add "## INCOMPLETE seeds"
+        lines.Add ""
+
+        if incomplete.Length = 0 then
+            lines.Add "- none"
+        else
+            for result in incomplete do
+                lines.Add
+                    $"- {result.Seed} at {result.Steps}/{result.StepCeiling} commands; reason={result.StopReason}"
+
+        lines.Add ""
+        lines.Add "## Rule findings"
+        lines.Add ""
+
+        if findings.Length = 0 then
+            lines.Add "- none"
+        else
+            for finding in findings do
+                lines.Add $"- {finding}"
+
+        lines.Add ""
+        lines.Add "## Effect-attributed program IDs"
+        lines.Add ""
+
+        for effect in observed |> Set.toArray |> Array.sort do
+            lines.Add $"- {effect}"
+
+        lines.Add ""
+        lines.Add "## Unobserved or event-unobservable programs"
+        lines.Add ""
+
+        for effect in unobserved do
+            lines.Add $"- {effect}"
+
+        match Path.GetDirectoryName outputPath with
+        | null
+        | "" -> ()
+        | parent -> Directory.CreateDirectory parent |> ignore
+
+        File.WriteAllText(outputPath, String.concat "\n" lines + "\n")
+
+        { ObservedPrograms = observed.Count
+          UnobservedPrograms = unobserved.Length
+          CompletedBouts = results.Length - incomplete.Length
+          IncompleteBouts = incomplete.Length
+          Findings = findings.Length }

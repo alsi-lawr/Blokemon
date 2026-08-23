@@ -1,12 +1,16 @@
 namespace Blokemon.Game.Tests
 
 open System
+open System.IO
 open Blokemon.Game
 open FsUnit
 open TUnit.Core
 open FuzzHarness
 
 type FuzzHarnessTests() =
+
+    [<Literal>]
+    static let CoverageOutputEnvironmentVariable = "FUZZ_COVERAGE_OUTPUT"
 
     [<Test>]
     [<Arguments(0)>]
@@ -88,6 +92,29 @@ type FuzzHarnessTests() =
     [<Test>]
     [<Explicit>]
     member _.``the opt-in larger seeded sweep should obey every reached rulebook clause``() =
-        LargeSweepSeeds
-        |> Array.map (fun seed -> runBout seed LargeSweepStepCeiling)
-        |> assertNoFindings
+        let output =
+            match Environment.GetEnvironmentVariable CoverageOutputEnvironmentVariable with
+            | null
+            | "" ->
+                failwith $"{CoverageOutputEnvironmentVariable} must name the report output path."
+            | path -> path
+
+        let results =
+            LargeSweepSeeds |> Array.map (fun seed -> runBout seed LargeSweepStepCeiling)
+
+        assertNoFindings results
+
+        let summary =
+            writeApproximateCoverageReport output LargeSweepSeeds LargeSweepStepCeiling results
+
+        File.Exists output |> should be True
+
+        summary.ObservedPrograms + summary.UnobservedPrograms
+        |> should equal allPrograms.Length
+
+        summary.CompletedBouts + summary.IncompleteBouts |> should equal results.Length
+        summary.Findings |> should equal 0
+
+        Console.WriteLine(
+            $"observed={summary.ObservedPrograms}; unobserved={summary.UnobservedPrograms}; completed={summary.CompletedBouts}; incomplete={summary.IncompleteBouts}; findings={summary.Findings}"
+        )

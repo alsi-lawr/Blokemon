@@ -53,13 +53,18 @@ type ConformanceCensusTests() =
         |> should be Empty
 
     [<Test>]
-    member _.``nontrivial programs should partition into 178 executable and 14 exact structural rows``
-        ()
-        =
+    member _.``nontrivial programs should match the fixture partition``() =
+        let fixture = ConformanceFixture.load ()
+        let expectedStructuralPrograms = fixture.Authority.StructuralPrograms
+
+        let actualStructuralPrograms =
+            (ConformanceFixture.authorityFacts ()).StructuralPrograms
+
         let expectedStructuralIds =
-            (ConformanceFixture.load ()).Authority.StructuralPrograms
-            |> Seq.map _.MechanicalId
-            |> Set.ofSeq
+            expectedStructuralPrograms |> Seq.map _.MechanicalId |> Set.ofSeq
+
+        let expectedExecutableIds =
+            fixture.CompositionHashes |> Seq.map _.MechanicalId |> Set.ofSeq
 
         let structuralIds =
             structuralNontrivialProgramExclusions
@@ -76,31 +81,21 @@ type ConformanceCensusTests() =
             |> Seq.map (fun (row, _) -> row.MechanicalId)
             |> Set.ofSeq
 
+        actualStructuralPrograms |> should equal expectedStructuralPrograms
         structuralIds |> should equal expectedStructuralIds
-        structuralNontrivialProgramExclusions.Length |> should equal 14
-        executableNontrivialPrograms.Length |> should equal 178
-        Set.intersect structuralIds executableIds |> should be Empty
-        Set.union structuralIds executableIds |> should equal allNontrivialIds
+        executableIds |> should equal expectedExecutableIds
 
-        structuralNontrivialProgramExclusions
-        |> Seq.map (fun (row, count) ->
-            let flattened = instructions row.Program |> Seq.toArray
-
-            row.Kind,
-            count,
-            (flattened |> Array.map _.Opcode |> Array.toList),
-            (flattened |> Array.collect _.Predicates |> Array.map _.Condition |> Array.toList),
-            executionEvidence row)
-        |> Seq.toList
+        (structuralNontrivialProgramExclusions.Length,
+         executableNontrivialPrograms.Length,
+         recursiveNontrivialPrograms.Length)
         |> should
             equal
-            (List.replicate
-                14
-                (ProgramKind.HouseRule,
-                 2,
-                 [ BlokemonOpcode.Conditional; BlokemonOpcode.ContinuousPartyTrick ],
-                 [ BlokemonCondition.Optional ],
-                 declarativeKitStructuralRationale))
+            (fixture.Authority.Totals.StructuralNontrivialPrograms,
+             fixture.Authority.Totals.ExecutableNontrivialPrograms,
+             fixture.Authority.Totals.RecursiveNontrivialPrograms)
+
+        Set.intersect structuralIds executableIds |> should be Empty
+        Set.union structuralIds executableIds |> should equal allNontrivialIds
 
         for row, _ in structuralNontrivialProgramExclusions do
             (fun () -> compositionHash row |> ignore)
