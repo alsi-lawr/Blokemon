@@ -28,8 +28,10 @@ public sealed class MatchCardReadingTests
     public async Task AnAttachedCardIsReadForItselfAndHandsFocusBackToTheCardCarryingIt()
     {
         var browser = new Browser();
+        var table = new OneTable();
         await using var services = new ServiceCollection()
-            .AddSingleton<IBlokemonApplication>(new OneTable())
+            .AddSingleton<IApplicationStateReader>(table)
+            .AddSingleton<IMatchOperations>(table)
             .AddSingleton<IJSRuntime>(browser)
             .AddSingleton<NavigationManager>(new BrowserNavigation())
             .AddSingleton<SoundBoard>()
@@ -156,7 +158,7 @@ public sealed class MatchCardReadingTests
 
     // A table with one battle on it and nothing waiting to be decided, which is every card in the
     // game sitting where a player can reach it.
-    private sealed class OneTable : IBlokemonApplication
+    private sealed class OneTable : IApplicationStateReader, IMatchOperations
     {
         public Task<ApiResponse<ApplicationView>> State(
             CancellationToken cancellationToken = default
@@ -186,31 +188,6 @@ public sealed class MatchCardReadingTests
                 )
             );
 
-        public Task<ApiResponse<ApplicationView>> CreateProfile(
-            CreateProfileRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> OpenPack(
-            OpenPackRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> ClaimStarterDeck(
-            ClaimStarterDeckRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> SaveDeck(
-            SaveDeckRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> DeleteDeck(
-            DeleteDeckRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
         public Task<ApiResponse<MatchMutationView>> StartMatch(
             StartMatchRequest request,
             CancellationToken cancellationToken = default
@@ -219,10 +196,6 @@ public sealed class MatchCardReadingTests
         public Task<ApiResponse<MatchMutationView>> ApplyMatchAction(
             Guid matchId,
             ApplyMatchActionRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> PurgeData(
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
     }

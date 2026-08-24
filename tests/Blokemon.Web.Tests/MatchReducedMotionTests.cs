@@ -26,7 +26,8 @@ public sealed class MatchReducedMotionTests
         var browser = new StillBrowser();
         var application = new OneAttack(before, after, presentation);
         await using var services = new ServiceCollection()
-            .AddSingleton<IBlokemonApplication>(application)
+            .AddSingleton<IApplicationStateReader>(application)
+            .AddSingleton<IMatchOperations>(application)
             .AddSingleton<IJSRuntime>(browser)
             .AddSingleton<SoundBoard>()
             .BuildServiceProvider();
@@ -235,7 +236,7 @@ public sealed class MatchReducedMotionTests
         MatchFrameView before,
         MatchFrameView after,
         MatchPresentationView presentation
-    ) : IBlokemonApplication
+    ) : IApplicationStateReader, IMatchOperations
     {
         public Task<ApiResponse<ApplicationView>> State(
             CancellationToken cancellationToken = default
@@ -260,37 +261,8 @@ public sealed class MatchReducedMotionTests
         private static ApplicationView Playing(MatchFrameView frame, MatchActionView[] legal) =>
             MatchReducedMotionTests.State(frame, legal);
 
-        public Task<ApiResponse<ApplicationView>> CreateProfile(
-            CreateProfileRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> OpenPack(
-            OpenPackRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> ClaimStarterDeck(
-            ClaimStarterDeckRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> SaveDeck(
-            SaveDeckRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> DeleteDeck(
-            DeleteDeckRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
         public Task<ApiResponse<MatchMutationView>> StartMatch(
             StartMatchRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> PurgeData(
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
     }

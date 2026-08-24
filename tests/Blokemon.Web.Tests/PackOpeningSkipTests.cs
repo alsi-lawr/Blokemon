@@ -19,8 +19,10 @@ public sealed class PackOpeningSkipTests
     public async Task SkippingOneOpeningLeavesTheNextPackAnimating()
     {
         var browser = new WillingBrowser();
+        var application = new OnePackAtATime();
         await using var services = new ServiceCollection()
-            .AddSingleton<IBlokemonApplication>(new OnePackAtATime())
+            .AddSingleton<IApplicationStateReader>(application)
+            .AddSingleton<IPackOperations>(application)
             .AddSingleton<IJSRuntime>(browser)
             .AddSingleton<SoundBoard>()
             .BuildServiceProvider();
@@ -112,7 +114,7 @@ public sealed class PackOpeningSkipTests
     }
 
     // A player who can keep opening packs, each one a pack further along than the last.
-    private sealed class OnePackAtATime : IBlokemonApplication
+    private sealed class OnePackAtATime : IApplicationStateReader, IPackOperations
     {
         private int _sequence;
 
@@ -146,40 +148,5 @@ public sealed class PackOpeningSkipTests
                 null,
                 null
             );
-
-        public Task<ApiResponse<ApplicationView>> CreateProfile(
-            CreateProfileRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> ClaimStarterDeck(
-            ClaimStarterDeckRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> SaveDeck(
-            SaveDeckRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> DeleteDeck(
-            DeleteDeckRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<MatchMutationView>> StartMatch(
-            StartMatchRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<MatchMutationView>> ApplyMatchAction(
-            Guid matchId,
-            ApplyMatchActionRequest request,
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
-
-        public Task<ApiResponse<ApplicationView>> PurgeData(
-            CancellationToken cancellationToken = default
-        ) => throw new NotSupportedException();
     }
 }

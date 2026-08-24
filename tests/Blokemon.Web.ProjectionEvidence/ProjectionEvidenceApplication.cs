@@ -69,6 +69,7 @@ public static class ProjectionEvidenceComposition
         services.AddSingleton(evidence);
         services.AddSingleton(modes);
         services.AddSingleton<IBlokemonApplication>(modes);
+        services.AddApplicationCapabilities();
         services.AddScoped<CardArtWarmup>();
         services.AddScoped<SoundBoard>();
     }

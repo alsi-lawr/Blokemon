@@ -1,5 +1,6 @@
 @page "/profile"
-@inject IBlokemonApplication Api
+@inject IApplicationStateReader ApplicationState
+@inject IProfileOperations ProfileOperations
 @inject PlayModeApplication Modes
 @inject NavigationManager Navigation
 
@@ -123,7 +124,7 @@ else
     {
         _saving = true;
         _purgeError = null;
-        var response = await Api.PurgeData();
+        var response = await ProfileOperations.PurgeData();
         _saving = false;
         _confirmingPurge = false;
         if (!response.Succeeded)
@@ -146,7 +147,7 @@ else
 
     private async Task Load()
     {
-        var response = await Api.State();
+        var response = await ApplicationState.State();
         if (response.Succeeded)
         {
             _view = response.Value;
@@ -192,7 +193,7 @@ else
         _saving = true;
         _validation = null;
         _commandId ??= Guid.NewGuid();
-        var response = await Api.CreateProfile(new(_commandId.Value, displayName));
+        var response = await ProfileOperations.CreateProfile(new(_commandId.Value, displayName));
         _saving = false;
         if (!response.Succeeded)
         {

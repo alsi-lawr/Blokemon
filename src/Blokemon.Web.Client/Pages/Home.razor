@@ -1,6 +1,7 @@
 @page "/"
 @implements IAsyncDisposable
-@inject IBlokemonApplication Api
+@inject IApplicationStateReader ApplicationState
+@inject IStarterDeckOperations StarterDeckOperations
 @inject PlayModeApplication Modes
 @inject IJSRuntime Js
 @inject SoundBoard Sound
@@ -354,7 +355,7 @@ else
 
     private async Task Load()
     {
-        var response = await Api.State();
+        var response = await ApplicationState.State();
         if (response.Succeeded)
         {
             _view = response.Value;
@@ -373,7 +374,7 @@ else
 
         _working = true;
         _operationError = null;
-        var response = await Api.ClaimStarterDeck(
+        var response = await StarterDeckOperations.ClaimStarterDeck(
             new(_commandId ??= Guid.NewGuid(), starterDeckId)
         );
         _working = false;

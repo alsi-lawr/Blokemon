@@ -1,5 +1,5 @@
 @page "/collection"
-@inject IBlokemonApplication Api
+@inject IApplicationStateReader ApplicationState
 
 <PageTitle>Collection · Blokemon</PageTitle>
 
@@ -58,7 +58,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await Api.State();
+        var response = await ApplicationState.State();
         if (response.Succeeded)
         {
             _view = response.Value;

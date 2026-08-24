@@ -72,7 +72,7 @@ public partial class Match
         _working = true;
         _commandId ??= Guid.NewGuid();
         var match = _view!.Match!;
-        var response = await Api.ApplyMatchAction(
+        var response = await MatchOperations.ApplyMatchAction(
             match.Frame.Id,
             new(_commandId.Value, match.Frame.Revision, action.Id, choices)
         );

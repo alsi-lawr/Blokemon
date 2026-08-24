@@ -48,8 +48,33 @@ public static class ClientComposition
         services.AddScoped<IBlokemonApplication>(static provider =>
             provider.GetRequiredService<PlayModeApplication>()
         );
+        services.AddApplicationCapabilities();
         services.AddScoped<CardArtWarmup>();
         services.AddScoped<SoundBoard>();
+        return services;
+    }
+
+    internal static IServiceCollection AddApplicationCapabilities(this IServiceCollection services)
+    {
+        services.AddScoped<ApplicationCapabilities>();
+        services.AddScoped<IApplicationStateReader>(static provider =>
+            provider.GetRequiredService<ApplicationCapabilities>()
+        );
+        services.AddScoped<IDeckOperations>(static provider =>
+            provider.GetRequiredService<ApplicationCapabilities>()
+        );
+        services.AddScoped<IStarterDeckOperations>(static provider =>
+            provider.GetRequiredService<ApplicationCapabilities>()
+        );
+        services.AddScoped<IMatchOperations>(static provider =>
+            provider.GetRequiredService<ApplicationCapabilities>()
+        );
+        services.AddScoped<IPackOperations>(static provider =>
+            provider.GetRequiredService<ApplicationCapabilities>()
+        );
+        services.AddScoped<IProfileOperations>(static provider =>
+            provider.GetRequiredService<ApplicationCapabilities>()
+        );
         return services;
     }
 }

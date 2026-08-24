@@ -1,5 +1,4 @@
 using Blokemon.App.Catalogue;
-using Blokemon.App.Contracts;
 using Microsoft.JSInterop;
 
 namespace Blokemon.Web.Client.Application;
@@ -8,7 +7,7 @@ namespace Blokemon.Web.Client.Application;
 public sealed class CardArtWarmup(
     IJSRuntime js,
     BlokemonCatalogue catalogue,
-    IBlokemonApplication application
+    IApplicationStateReader application
 )
 {
     private bool _started;

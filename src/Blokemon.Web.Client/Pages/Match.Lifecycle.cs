@@ -9,7 +9,7 @@ public partial class Match
 {
     protected override async Task OnInitializedAsync()
     {
-        var response = await Api.State();
+        var response = await ApplicationState.State();
         if (response.Succeeded)
         {
             _view = response.Value;
@@ -78,7 +78,7 @@ public partial class Match
     {
         _working = true;
         _commandId ??= Guid.NewGuid();
-        var response = await Api.StartMatch(new(_commandId.Value, deckId));
+        var response = await MatchOperations.StartMatch(new(_commandId.Value, deckId));
         // A new game is not a move that can be seen happening: what came before it is the game
         // before. So it is presented over an empty table rather than over whatever the last battle
         // left standing, and the opening hands are dealt onto it.

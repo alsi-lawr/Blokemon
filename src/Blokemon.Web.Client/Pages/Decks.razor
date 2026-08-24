@@ -1,5 +1,6 @@
 @page "/decks"
-@inject IBlokemonApplication Api
+@inject IApplicationStateReader ApplicationState
+@inject IDeckOperations DeckOperations
 
 <PageTitle>Decks · Blokemon</PageTitle>
 
@@ -211,7 +212,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await Api.State();
+        var response = await ApplicationState.State();
         if (!response.Succeeded)
         {
             _error = response.Error?.Message;
@@ -303,12 +304,12 @@ else
 
         _working = true;
         _operationError = null;
-        var response = await Api.DeleteDeck(new(Guid.NewGuid(), deck.Id));
+        var response = await DeckOperations.DeleteDeck(new(Guid.NewGuid(), deck.Id));
         // A deck that is already gone is the outcome the player asked for, so a repeated
         // delete settles on the current state instead of reporting a failure.
         if (!response.Succeeded && response.Error?.Code == "deck.not_found")
         {
-            response = await Api.State();
+            response = await ApplicationState.State();
         }
         _working = false;
         if (response.Value is not { } view)
@@ -481,7 +482,7 @@ else
                 .Select(static row => new DeckEntryView(row.Key, row.Value))
                 .ToArray()
         );
-        var response = await Api.SaveDeck(request);
+        var response = await DeckOperations.SaveDeck(request);
         _working = false;
         if (!response.Succeeded)
         {

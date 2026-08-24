@@ -1,6 +1,7 @@
 @page "/packs"
 @implements IAsyncDisposable
-@inject IBlokemonApplication Api
+@inject IApplicationStateReader ApplicationState
+@inject IPackOperations PackOperations
 @inject IJSRuntime Js
 @inject SoundBoard Sound
 
@@ -221,7 +222,7 @@ else
 
     private async Task Load()
     {
-        var response = await Api.State();
+        var response = await ApplicationState.State();
         if (response.Succeeded)
         {
             _view = response.Value;
@@ -243,7 +244,7 @@ else
         _opening = true;
         _operationError = null;
         _commandId ??= Guid.NewGuid();
-        var response = await Api.OpenPack(new(_commandId.Value));
+        var response = await PackOperations.OpenPack(new(_commandId.Value));
         _opening = false;
         if (!response.Succeeded || response.Value?.LastPack is null)
         {

@@ -1,6 +1,7 @@
 @page "/match"
 @implements IAsyncDisposable
-@inject IBlokemonApplication Api
+@inject IApplicationStateReader ApplicationState
+@inject IMatchOperations MatchOperations
 @inject IJSRuntime Js
 @inject SoundBoard Sound
 @using static Blokemon.Web.Client.Components.MatchText
