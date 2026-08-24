@@ -102,18 +102,17 @@ module internal ProfileLifecycle =
                                   CreationCommandId = request.CommandId
                                   Profile = profile.ToSnapshot() }
 
+                            let documentJson = JsonSerializer.Serialize(document, json)
+
                             let! write =
-                                documents.Create(
-                                    profileKey,
-                                    JsonSerializer.Serialize(document, json),
-                                    cancellationToken
-                                )
+                                documents.Create(profileKey, documentJson, cancellationToken)
 
                             match write with
                             | :? DocumentWriteResult.Written as written ->
                                 let! view =
                                     toView
                                         { Revision = written.Revision
+                                          ContentIdentity = DocumentIdentity.ofText documentJson
                                           Document = document
                                           Profile = profile
                                           Ids =

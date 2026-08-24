@@ -36,7 +36,9 @@ type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentSt
                 return
                     { View = null
                       Error = loaded.Error
-                      Presentation = null }
+                      Presentation = null
+                      DocumentRevision = Nullable()
+                      DocumentContentIdentity = null }
             else
                 return
                     { View =
@@ -44,7 +46,15 @@ type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentSt
                         | null -> null
                         | value -> toView context value displayName
                       Error = null
-                      Presentation = null }
+                      Presentation = null
+                      DocumentRevision =
+                        match loaded.Match with
+                        | null -> Nullable()
+                        | value -> Nullable value.DocumentRevision
+                      DocumentContentIdentity =
+                        match loaded.Match with
+                        | null -> null
+                        | value -> value.DocumentContentIdentity }
         }
 
     /// Starts a battle against the computer.

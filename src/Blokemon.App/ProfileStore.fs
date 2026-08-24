@@ -45,6 +45,7 @@ module internal ProfileStore =
                                 let historical: ProfileLoad =
                                     { Profile =
                                         { Revision = document.Revision
+                                          ContentIdentity = DocumentIdentity.ofText document.Json
                                           Document = value
                                           Profile = restored
                                           Ids = ids }
@@ -78,13 +79,16 @@ module internal ProfileStore =
                                             { value with
                                                 Profile = candidateSnapshot }
 
+                                        let candidateJson =
+                                            JsonSerializer.Serialize(candidateDocument, json)
+
                                         cancellationToken.ThrowIfCancellationRequested()
 
                                         let! write =
                                             documents.Update(
                                                 profileKey,
                                                 document.Revision,
-                                                JsonSerializer.Serialize(candidateDocument, json),
+                                                candidateJson,
                                                 cancellationToken
                                             )
 
@@ -93,6 +97,8 @@ module internal ProfileStore =
                                             return
                                                 { Profile =
                                                     { Revision = written.Revision
+                                                      ContentIdentity =
+                                                        DocumentIdentity.ofText candidateJson
                                                       Document = candidateDocument
                                                       Profile = candidate
                                                       Ids = ids }
@@ -112,13 +118,10 @@ module internal ProfileStore =
             match WebLocalIds.TryCreate loaded.Profile with
             | null -> return failed<ApplicationView> (invalidStateError ())
             | ids ->
+                let documentJson = JsonSerializer.Serialize(loaded.Document, json)
+
                 let! write =
-                    documents.Update(
-                        profileKey,
-                        loaded.Revision,
-                        JsonSerializer.Serialize(loaded.Document, json),
-                        cancellationToken
-                    )
+                    documents.Update(profileKey, loaded.Revision, documentJson, cancellationToken)
 
                 match write with
                 | :? DocumentWriteResult.Written as written ->
@@ -126,6 +129,7 @@ module internal ProfileStore =
                         toView
                             { loaded with
                                 Revision = written.Revision
+                                ContentIdentity = DocumentIdentity.ofText documentJson
                                 Ids = ids }
                             cancellationToken
                             null

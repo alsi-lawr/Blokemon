@@ -14,7 +14,9 @@ type internal GameCommandId = Blokemon.Game.CommandId
 type MatchServiceResult =
     { View: MatchView | null
       Error: ApiError | null
-      Presentation: MatchPresentationView | null }
+      Presentation: MatchPresentationView | null
+      DocumentRevision: Nullable<int64>
+      DocumentContentIdentity: string | null }
 
     // The C# sealed record this replaces carried compiler-generated structural operators, and an
     // F# record emits none: a C# `==` against it would silently fall back to reference equality.
@@ -94,6 +96,7 @@ type MatchActionPayload =
 // The in-memory carriers. None of these is persisted, so none needs CLIMutable.
 type internal LoadedMatch =
     { DocumentRevision: int64
+      DocumentContentIdentity: string
       Document: MatchDocument
       State: MatchState
       Events: ImmutableArray<MatchEvent> }

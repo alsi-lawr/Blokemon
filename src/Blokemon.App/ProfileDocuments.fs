@@ -2,7 +2,6 @@ namespace Blokemon.App
 
 open System
 open System.Collections.Generic
-open Blokemon.App.Catalogue
 open Blokemon.App.Contracts
 open Blokemon.Product
 
@@ -59,6 +58,7 @@ type internal WebLocalIds =
 
 type internal LoadedProfile =
     { Revision: int64
+      ContentIdentity: string
       Document: ProductDocument
       Profile: LocalProfile
       Ids: WebLocalIds }
@@ -72,11 +72,3 @@ type internal ProfileLoad =
 type ProfileAuthorityPolicy =
     | Preserve = 0
     | MigrateCompatible = 1
-
-// The dependencies one service instance holds.
-type internal ApplicationContext =
-    { Catalogue: BlokemonCatalogue
-      Documents: IStateDocumentStore
-      Matches: LocalMatchService
-      Economy: EconomyRules
-      ProfileAuthorityPolicy: ProfileAuthorityPolicy }

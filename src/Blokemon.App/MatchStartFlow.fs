@@ -50,7 +50,9 @@ module internal MatchStartFlow =
                     return
                         { View = null
                           Error = loaded.Error
-                          Presentation = null }
+                          Presentation = null
+                          DocumentRevision = Nullable()
+                          DocumentContentIdentity = null }
                 else
 
                     let requestFingerprint = startFingerprint request
@@ -72,7 +74,9 @@ module internal MatchStartFlow =
                                     Some
                                         { View = toView existing displayName
                                           Error = null
-                                          Presentation = null }
+                                          Presentation = null
+                                          DocumentRevision = Nullable existing.DocumentRevision
+                                          DocumentContentIdentity = existing.DocumentContentIdentity }
                                 else
                                     Some(
                                         failed
@@ -180,7 +184,9 @@ module internal MatchStartFlow =
                                         return
                                             { View = null
                                               Error = advanced.Error
-                                              Presentation = null }
+                                              Presentation = null
+                                              DocumentRevision = Nullable()
+                                              DocumentContentIdentity = null }
                                     else
 
                                         let document =
@@ -216,7 +222,9 @@ module internal MatchStartFlow =
                                             return
                                                 { View = null
                                                   Error = error
-                                                  Presentation = null }
+                                                  Presentation = null
+                                                  DocumentRevision = Nullable()
+                                                  DocumentContentIdentity = null }
                                         | None ->
 
                                             let json =
@@ -245,6 +253,8 @@ module internal MatchStartFlow =
                                             | :? DocumentWriteResult.Written as written ->
                                                 let committed =
                                                     { DocumentRevision = written.Revision
+                                                      DocumentContentIdentity =
+                                                        DocumentIdentity.ofText json
                                                       Document = document
                                                       State = advanced.State
                                                       Events = ImmutableArray.CreateRange events }
@@ -258,7 +268,11 @@ module internal MatchStartFlow =
                                                         toPresentation
                                                             document
                                                             displayName
-                                                            presentation }
+                                                            presentation
+                                                      DocumentRevision =
+                                                        Nullable committed.DocumentRevision
+                                                      DocumentContentIdentity =
+                                                        committed.DocumentContentIdentity }
                                             | _ ->
                                                 return!
                                                     reconcileStartConflict

@@ -59,7 +59,9 @@ module internal MatchActionFlow =
                     return
                         { View = null
                           Error = loaded.Error
-                          Presentation = null }
+                          Presentation = null
+                          DocumentRevision = Nullable()
+                          DocumentContentIdentity = null }
                 else
 
                     match loaded.Match with
@@ -93,7 +95,9 @@ module internal MatchActionFlow =
                                     return
                                         { View = toView current displayName
                                           Error = null
-                                          Presentation = null }
+                                          Presentation = null
+                                          DocumentRevision = Nullable current.DocumentRevision
+                                          DocumentContentIdentity = current.DocumentContentIdentity }
                                 else
                                     return
                                         failed
@@ -168,7 +172,9 @@ module internal MatchActionFlow =
                                                 return
                                                     { View = null
                                                       Error = materialized.Error
-                                                      Presentation = null }
+                                                      Presentation = null
+                                                      DocumentRevision = Nullable()
+                                                      DocumentContentIdentity = null }
                                             else
 
                                                 match materialized.Command with
@@ -184,7 +190,9 @@ module internal MatchActionFlow =
                                                         return
                                                             { View = null
                                                               Error = rejection rejected.Code
-                                                              Presentation = null }
+                                                              Presentation = null
+                                                              DocumentRevision = Nullable()
+                                                              DocumentContentIdentity = null }
                                                     | CommandOutcome.Applied(appliedState,
                                                                              appliedEvents) ->
 
@@ -217,7 +225,9 @@ module internal MatchActionFlow =
                                                             return
                                                                 { View = null
                                                                   Error = advanced.Error
-                                                                  Presentation = null }
+                                                                  Presentation = null
+                                                                  DocumentRevision = Nullable()
+                                                                  DocumentContentIdentity = null }
                                                         else
 
                                                             let clientCommands =
@@ -243,14 +253,17 @@ module internal MatchActionFlow =
                                                                         ImmutableArray.CreateRange
                                                                             clientCommands }
 
+                                                            let documentJson =
+                                                                JsonSerializer.Serialize(
+                                                                    document,
+                                                                    MatchJson.Options
+                                                                )
+
                                                             let! write =
                                                                 documents.Update(
                                                                     matchKey,
                                                                     current.DocumentRevision,
-                                                                    JsonSerializer.Serialize(
-                                                                        document,
-                                                                        MatchJson.Options
-                                                                    ),
+                                                                    documentJson,
                                                                     cancellationToken
                                                                 )
 
@@ -259,6 +272,9 @@ module internal MatchActionFlow =
                                                                 let committed =
                                                                     { DocumentRevision =
                                                                         written.Revision
+                                                                      DocumentContentIdentity =
+                                                                        DocumentIdentity.ofText
+                                                                            documentJson
                                                                       Document = document
                                                                       State = advanced.State
                                                                       Events =
@@ -275,7 +291,12 @@ module internal MatchActionFlow =
                                                                         toPresentation
                                                                             document
                                                                             displayName
-                                                                            presentation }
+                                                                            presentation
+                                                                      DocumentRevision =
+                                                                        Nullable
+                                                                            committed.DocumentRevision
+                                                                      DocumentContentIdentity =
+                                                                        committed.DocumentContentIdentity }
                                                             | _ ->
                                                                 return!
                                                                     reconcileActionConflict

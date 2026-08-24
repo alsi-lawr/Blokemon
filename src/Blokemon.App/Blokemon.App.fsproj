@@ -9,6 +9,7 @@
     <Compile Include="EconomyConfiguration.fs" />
     <Compile Include="MatchJsonUnions.fs" />
     <Compile Include="MatchJson.fs" />
+    <Compile Include="DocumentIdentity.fs" />
     <Compile Include="PlayModeApplication.fs" />
     <!--
       The saved battle, decomposed by concern. F# compile order is the layering: documents and
@@ -38,6 +39,9 @@
     <Compile Include="ProfileDocuments.fs" />
     <Compile Include="ProfileFailures.fs" />
     <Compile Include="ProfileProjection.fs" />
+    <Compile Include="ApplicationProjectionModel.fs" />
+    <Compile Include="ApplicationProjectionIdentity.fs" />
+    <Compile Include="ApplicationContext.fs" />
     <Compile Include="ApplicationViewAssembly.fs" />
     <Compile Include="ProfileStore.fs" />
     <Compile Include="ProfileLifecycle.fs" />

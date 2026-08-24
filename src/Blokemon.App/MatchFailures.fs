@@ -1,5 +1,6 @@
 namespace Blokemon.App
 
+open System
 open Blokemon.App.Contracts
 open Blokemon.Game
 
@@ -21,7 +22,9 @@ module internal MatchFailures =
     let failed code message : MatchServiceResult =
         { View = null
           Error = ApiError(code, message)
-          Presentation = null }
+          Presentation = null
+          DocumentRevision = Nullable()
+          DocumentContentIdentity = null }
 
     let stateConflict () =
         failed "state.conflict" "The saved battle changed. Select the action again."

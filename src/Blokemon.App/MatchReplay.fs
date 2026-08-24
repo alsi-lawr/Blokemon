@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.Collections.Immutable
 open System.Linq
+open System.Text.Json
 open Blokemon.App.Catalogue
 open Blokemon.App.Contracts
 open Blokemon.App.DamagedDocument
@@ -267,8 +268,13 @@ module internal MatchReplay =
                         then
                             invalidReplay ()
                         else
+                            let documentContentIdentity =
+                                JsonSerializer.Serialize(document, MatchJson.Options)
+                                |> DocumentIdentity.ofText
+
                             { Match =
                                 { DocumentRevision = documentRevision
+                                  DocumentContentIdentity = documentContentIdentity
                                   Document = document
                                   State = state
                                   Events = ImmutableArray.CreateRange events }
