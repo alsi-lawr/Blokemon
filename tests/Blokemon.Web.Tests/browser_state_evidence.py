@@ -188,6 +188,23 @@ def invalidation_scenario(devtools):
             '{"owner":"after-unsubscribe"}'
           );
           await new Promise((resolve) => setTimeout(resolve, 50));
+          const forwardedAfterUnsubscribe = [...forwardedInvalidations];
+
+          const resumedSubscription = first.subscribeInvalidation({
+            invokeMethodAsync(method, key) {
+              forwardedInvalidations.push({ method, key });
+              return Promise.resolve();
+            }
+          });
+          globalThis.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+          globalThis.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+          await second.update(
+            "broadcast-affected",
+            secondUpdate + 1,
+            '{"owner":"after-resume"}'
+          );
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          first.unsubscribeInvalidation(resumedSubscription);
 
           return {
             firstAffected,
@@ -198,7 +215,8 @@ def invalidation_scenario(devtools):
             unrelatedReadTransactions: afterUnrelatedRead - beforeUnrelatedRead,
             affectedReadTransactions: afterAffectedRead - afterUnrelatedRead,
             forwardedBeforeUnsubscribe,
-            forwardedAfterUnsubscribe: forwardedInvalidations,
+            forwardedAfterUnsubscribe,
+            forwardedAfterResume: forwardedInvalidations,
             total: { ...counts }
           };
         })()
@@ -755,6 +773,12 @@ def verify_invalidation_contract(result):
     require(
         result["forwardedAfterUnsubscribe"] == result["forwardedBeforeUnsubscribe"],
         "disposing the application subscription stops later document signals",
+    )
+    require(
+        result["forwardedAfterResume"]
+        == result["forwardedBeforeUnsubscribe"]
+        + [{"method": "Invalidated", "key": "broadcast-affected"}],
+        "page-hide and BFCache resume preserve the live application subscription",
     )
 
 

@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
+import subprocess
 import tempfile
 
-from headless_card_viewer import Chrome, HostedRoot, published_root, require, run
+from headless_card_viewer import Chrome, HostedRoot, published_root, require
+
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def install_transaction_counter(devtools):
@@ -29,25 +34,37 @@ def transaction_count(devtools):
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Measure application snapshot transactions in the checked-out game"
+    )
+    parser.add_argument("--source-root", type=Path, default=ROOT)
+    parser.add_argument("--expected-hydration", type=int, default=2)
+    parser.add_argument("--expected-mutation", type=int, default=2)
+    parser.add_argument("--expected-navigation", type=int, default=0)
+    arguments = parser.parse_args()
+    source_root = arguments.source_root.resolve()
+    if not (source_root / "src/Blokemon.Web.Client/Blokemon.Web.Client.csproj").is_file():
+        raise SystemExit(f"Blokemon source root not found: {source_root}")
+
     with tempfile.TemporaryDirectory(prefix="blokemon-application-snapshot-") as temporary:
         temporary_root = Path(temporary)
         output = temporary_root / "game"
-        run(
-            [
-                "dotnet",
-                "publish",
-                "-m:1",
-                "src/Blokemon.Web.Client/Blokemon.Web.Client.csproj",
-                "--configuration",
-                "Release",
-                "--output",
-                str(output),
-                "-p:StandaloneBrowser=true",
-                "-p:PublishTrimmed=false",
-                "-p:BuildInParallel=false",
-                "-p:TreatWarningsAsErrors=true",
-            ]
-        )
+        command = [
+            "dotnet",
+            "publish",
+            "-m:1",
+            "src/Blokemon.Web.Client/Blokemon.Web.Client.csproj",
+            "--configuration",
+            "Release",
+            "--output",
+            str(output),
+            "-p:StandaloneBrowser=true",
+            "-p:PublishTrimmed=false",
+            "-p:BuildInParallel=false",
+            "-p:TreatWarningsAsErrors=true",
+        ]
+        print(f"$ {' '.join(command)}", flush=True)
+        subprocess.run(command, cwd=source_root, check=True)
 
         with HostedRoot(published_root(output)) as game:
             chrome = Chrome(temporary_root)
@@ -100,16 +117,16 @@ def main():
                 }
                 print(f"APPLICATION_SNAPSHOT {json.dumps(counts, sort_keys=True)}")
                 require(
-                    counts["pageAndWarmupHydration"] == 2,
-                    "page plus warmup hydration reads settings and profile exactly once each",
+                    counts["pageAndWarmupHydration"] == arguments.expected_hydration,
+                    "page plus warmup hydration uses the expected transaction count",
                 )
                 require(
-                    counts["createProfileMutation"] == 2,
-                    "profile creation uses one write and one complete-view match read",
+                    counts["createProfileMutation"] == arguments.expected_mutation,
+                    "profile creation uses the expected transaction count",
                 )
                 require(
-                    counts["navigationAfterMutation"] == 0,
-                    "navigation after mutation reuses the published application snapshot",
+                    counts["navigationAfterMutation"] == arguments.expected_navigation,
+                    "navigation after mutation uses the expected transaction count",
                 )
             finally:
                 chrome.close()

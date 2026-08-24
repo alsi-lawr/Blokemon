@@ -4,13 +4,114 @@ namespace Blokemon.Web.Client.Application;
 
 internal interface IApplicationDocumentInvalidations
 {
-    Task<IAsyncDisposable> Subscribe(Func<string, Task> invalidated);
+    Task<IAsyncDisposable?> Subscribe(Func<string, Task> invalidated);
+}
+
+internal sealed class ApplicationDocumentInvalidationSession(
+    IApplicationDocumentInvalidations invalidations
+) : IAsyncDisposable
+{
+    private readonly SemaphoreSlim _gate = new(1, 1);
+    private Task? _initialization;
+    private IAsyncDisposable? _subscription;
+    private bool _disposed;
+
+    public async Task Ensure(Func<string, Task> invalidated)
+    {
+        Task initialization;
+        await _gate.WaitAsync(CancellationToken.None);
+        try
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_subscription is not null)
+            {
+                return;
+            }
+
+            initialization = _initialization ??= Initialize(invalidated);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+        await initialization;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        IAsyncDisposable? subscription;
+        await _gate.WaitAsync(CancellationToken.None);
+        try
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            subscription = _subscription;
+            _subscription = null;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+
+        if (subscription is not null)
+        {
+            await subscription.DisposeAsync();
+        }
+    }
+
+    private async Task Initialize(Func<string, Task> invalidated)
+    {
+        IAsyncDisposable? subscription = null;
+        try
+        {
+            subscription = await invalidations.Subscribe(invalidated);
+        }
+        catch
+        {
+            // Cross-tab notification is optional; document CAS remains authoritative.
+        }
+
+        IAsyncDisposable? dispose = null;
+        await _gate.WaitAsync(CancellationToken.None);
+        try
+        {
+            _initialization = null;
+            if (_disposed)
+            {
+                dispose = subscription;
+            }
+            else
+            {
+                _subscription = subscription;
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+
+        if (dispose is not null)
+        {
+            try
+            {
+                await dispose.DisposeAsync();
+            }
+            catch
+            {
+                // The scope is already gone; disposal is best-effort at this optional boundary.
+            }
+        }
+    }
 }
 
 internal sealed class BrowserDocumentInvalidations(IJSRuntime js)
     : IApplicationDocumentInvalidations
 {
-    public async Task<IAsyncDisposable> Subscribe(Func<string, Task> invalidated)
+    public async Task<IAsyncDisposable?> Subscribe(Func<string, Task> invalidated)
     {
         IJSObjectReference? module = null;
         DotNetObjectReference<BrowserDocumentInvalidationReceiver>? reference = null;
@@ -25,12 +126,12 @@ internal sealed class BrowserDocumentInvalidations(IJSRuntime js)
         catch (JSException)
         {
             await Release(module, reference);
-            return EmptyAsyncDisposable.Instance;
+            return null;
         }
         catch (JSDisconnectedException)
         {
             await Release(module, reference);
-            return EmptyAsyncDisposable.Instance;
+            return null;
         }
     }
 
@@ -68,21 +169,22 @@ internal sealed class BrowserDocumentInvalidationSubscription(
     {
         try
         {
-            await module.InvokeVoidAsync("unsubscribeInvalidation", id);
-            await module.DisposeAsync();
+            await IgnoreJsFailure(() => module.InvokeVoidAsync("unsubscribeInvalidation", id));
+            await IgnoreJsFailure(module.DisposeAsync);
         }
-        catch (JSException) { }
-        catch (JSDisconnectedException) { }
         finally
         {
             receiver.Dispose();
         }
     }
-}
 
-internal sealed class EmptyAsyncDisposable : IAsyncDisposable
-{
-    public static EmptyAsyncDisposable Instance { get; } = new();
-
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    private static async Task IgnoreJsFailure(Func<ValueTask> release)
+    {
+        try
+        {
+            await release();
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+    }
 }

@@ -19,8 +19,10 @@ internal sealed class ApplicationSnapshotCoordinator(
         IAsyncDisposable
 {
     private readonly SemaphoreSlim _snapshotGate = new(1, 1);
-    private readonly SemaphoreSlim _mutationGate = new(1, 1);
-    private Task<IAsyncDisposable>? _invalidationSubscription;
+    private readonly BackgroundOperationQueue _operations = new();
+    private readonly ApplicationDocumentInvalidationSession _documentInvalidations = new(
+        documentInvalidations
+    );
     private Task<ApiResponse<ApplicationView>>? _hydration;
     private ApiResponse<ApplicationView>? _current;
     private long _epoch;
@@ -30,7 +32,9 @@ internal sealed class ApplicationSnapshotCoordinator(
         CancellationToken cancellationToken = default
     )
     {
-        await EnsureInvalidationSubscription().WaitAsync(cancellationToken);
+        var subscription = _documentInvalidations.Ensure(ExternalDocumentInvalidated);
+        _ = BackgroundOperationQueue.Observe(subscription);
+        await subscription.WaitAsync(cancellationToken);
 
         Task<ApiResponse<ApplicationView>> state;
         await _snapshotGate.WaitAsync(cancellationToken);
@@ -42,7 +46,11 @@ internal sealed class ApplicationSnapshotCoordinator(
                 return _current;
             }
 
-            _hydration ??= Hydrate(_epoch);
+            if (_hydration is null)
+            {
+                _hydration = Hydrate(_epoch);
+                _ = BackgroundOperationQueue.Observe(_hydration);
+            }
             state = _hydration;
         }
         finally
@@ -85,17 +93,18 @@ internal sealed class ApplicationSnapshotCoordinator(
     public Task<ApiResponse<ApplicationView>> SaveDeck(
         SaveDeckRequest request,
         CancellationToken cancellationToken = default
-    ) => Mutate(token => application.SaveDeck(request, token), cancellationToken);
+    ) => MutateApplication(token => application.SaveDeck(request, token), cancellationToken);
 
     public Task<ApiResponse<ApplicationView>> DeleteDeck(
         DeleteDeckRequest request,
         CancellationToken cancellationToken = default
-    ) => Mutate(token => application.DeleteDeck(request, token), cancellationToken);
+    ) => MutateApplication(token => application.DeleteDeck(request, token), cancellationToken);
 
     public Task<ApiResponse<ApplicationView>> ClaimStarterDeck(
         ClaimStarterDeckRequest request,
         CancellationToken cancellationToken = default
-    ) => Mutate(token => application.ClaimStarterDeck(request, token), cancellationToken);
+    ) =>
+        MutateApplication(token => application.ClaimStarterDeck(request, token), cancellationToken);
 
     public Task<ApiResponse<MatchMutationView>> StartMatch(
         StartMatchRequest request,
@@ -115,33 +124,21 @@ internal sealed class ApplicationSnapshotCoordinator(
     public Task<ApiResponse<ApplicationView>> OpenPack(
         OpenPackRequest request,
         CancellationToken cancellationToken = default
-    ) => Mutate(token => application.OpenPack(request, token), cancellationToken);
+    ) => MutateApplication(token => application.OpenPack(request, token), cancellationToken);
 
     public Task<ApiResponse<ApplicationView>> CreateProfile(
         CreateProfileRequest request,
         CancellationToken cancellationToken = default
-    ) => Mutate(token => application.CreateProfile(request, token), cancellationToken);
+    ) => MutateApplication(token => application.CreateProfile(request, token), cancellationToken);
 
-    public async Task<ApiResponse<ApplicationView>> PurgeData(
+    public Task<ApiResponse<ApplicationView>> PurgeData(
         CancellationToken cancellationToken = default
-    )
-    {
-        await _mutationGate.WaitAsync(cancellationToken);
-        try
-        {
-            ThrowIfDisposed();
-            var response = await application.PurgeData(cancellationToken);
-            if (response.Succeeded)
-            {
-                await Invalidate();
-            }
-            return response;
-        }
-        finally
-        {
-            _mutationGate.Release();
-        }
-    }
+    ) =>
+        Mutate(
+            token => application.PurgeData(token),
+            (response, _) => response.Succeeded ? Invalidate() : Task.CompletedTask,
+            cancellationToken
+        );
 
     public async Task<PlayModeState> Mode(CancellationToken cancellationToken = default)
     {
@@ -157,32 +154,27 @@ internal sealed class ApplicationSnapshotCoordinator(
         return await modes.Mode(cancellationToken);
     }
 
-    public async Task<ApiResponse<PlayModeState>> SelectMode(
+    public Task<ApiResponse<PlayModeState>> SelectMode(
         PlayMode mode,
         CancellationToken cancellationToken = default
-    )
-    {
-        await _mutationGate.WaitAsync(cancellationToken);
-        try
-        {
-            ThrowIfDisposed();
-            var before = await modes.Mode(cancellationToken);
-            var response = await modes.SelectMode(mode, cancellationToken);
-            if (response.Succeeded && response.Value?.Selected != before.Selected)
+    ) =>
+        _operations.Run(
+            async token =>
             {
-                await Invalidate();
-            }
-            return response;
-        }
-        finally
-        {
-            _mutationGate.Release();
-        }
-    }
+                ThrowIfDisposed();
+                var before = await modes.Mode(token);
+                var response = await modes.SelectMode(mode, token);
+                if (response.Succeeded && response.Value?.Selected != before.Selected)
+                {
+                    await Invalidate();
+                }
+                return response;
+            },
+            cancellationToken
+        );
 
     public async ValueTask DisposeAsync()
     {
-        Task<IAsyncDisposable>? subscription;
         await _snapshotGate.WaitAsync(CancellationToken.None);
         try
         {
@@ -195,40 +187,60 @@ internal sealed class ApplicationSnapshotCoordinator(
             _epoch++;
             _current = null;
             _hydration = null;
-            subscription = _invalidationSubscription;
         }
         finally
         {
             _snapshotGate.Release();
         }
 
-        if (subscription is not null)
-        {
-            await (await subscription).DisposeAsync();
-        }
+        _operations.Dispose();
+        await _documentInvalidations.DisposeAsync();
     }
 
-    private async Task<IAsyncDisposable> EnsureInvalidationSubscription()
-    {
-        Task<IAsyncDisposable> subscription;
-        await _snapshotGate.WaitAsync(CancellationToken.None);
-        try
-        {
-            ThrowIfDisposed();
-            subscription = _invalidationSubscription ??= documentInvalidations.Subscribe(
-                ExternalDocumentInvalidated
-            );
-        }
-        finally
-        {
-            _snapshotGate.Release();
-        }
-        return await subscription;
-    }
+    private Task<ApiResponse<ApplicationView>> MutateApplication(
+        Func<CancellationToken, Task<ApiResponse<ApplicationView>>> operation,
+        CancellationToken cancellationToken
+    ) =>
+        Mutate(
+            operation,
+            (response, epoch) =>
+                response.Succeeded ? Publish(response.Value, epoch) : Task.CompletedTask,
+            cancellationToken
+        );
+
+    private Task<ApiResponse<MatchMutationView>> MutateMatch(
+        Func<CancellationToken, Task<ApiResponse<MatchMutationView>>> operation,
+        CancellationToken cancellationToken
+    ) =>
+        Mutate(
+            operation,
+            (response, epoch) =>
+                response.Succeeded
+                    ? Publish(response.Value?.Application, epoch)
+                    : Task.CompletedTask,
+            cancellationToken
+        );
+
+    private Task<ApiResponse<T>> Mutate<T>(
+        Func<CancellationToken, Task<ApiResponse<T>>> operation,
+        Func<ApiResponse<T>, long, Task> settle,
+        CancellationToken cancellationToken
+    ) =>
+        _operations.Run(
+            async token =>
+            {
+                ThrowIfDisposed();
+                var epoch = await CurrentEpoch();
+                var response = await operation(token);
+                await settle(response, epoch);
+                return response;
+            },
+            cancellationToken
+        );
 
     private async Task<ApiResponse<ApplicationView>> Hydrate(long epoch)
     {
-        var response = await application.State(CancellationToken.None);
+        var response = await application.State(_operations.Lifetime);
         ApiResponse<ApplicationView>? replacement = null;
         var retry = false;
         await _snapshotGate.WaitAsync(CancellationToken.None);
@@ -252,61 +264,47 @@ internal sealed class ApplicationSnapshotCoordinator(
 
         if (retry)
         {
-            replacement = await State(CancellationToken.None);
+            replacement = await State(_operations.Lifetime);
         }
         return replacement ?? response;
     }
 
-    private async Task<ApiResponse<ApplicationView>> Mutate(
-        Func<CancellationToken, Task<ApiResponse<ApplicationView>>> operation,
-        CancellationToken cancellationToken
-    )
-    {
-        await _mutationGate.WaitAsync(cancellationToken);
-        try
-        {
-            ThrowIfDisposed();
-            var response = await operation(cancellationToken);
-            if (response.Succeeded && response.Value is not null)
-            {
-                await Publish(response.Value);
-            }
-            return response;
-        }
-        finally
-        {
-            _mutationGate.Release();
-        }
-    }
-
-    private async Task<ApiResponse<MatchMutationView>> MutateMatch(
-        Func<CancellationToken, Task<ApiResponse<MatchMutationView>>> operation,
-        CancellationToken cancellationToken
-    )
-    {
-        await _mutationGate.WaitAsync(cancellationToken);
-        try
-        {
-            ThrowIfDisposed();
-            var response = await operation(cancellationToken);
-            if (response.Succeeded && response.Value is not null)
-            {
-                await Publish(response.Value.Application);
-            }
-            return response;
-        }
-        finally
-        {
-            _mutationGate.Release();
-        }
-    }
-
-    private async Task Publish(ApplicationView view)
+    private async Task<long> CurrentEpoch()
     {
         await _snapshotGate.WaitAsync(CancellationToken.None);
         try
         {
             ThrowIfDisposed();
+            return _epoch;
+        }
+        finally
+        {
+            _snapshotGate.Release();
+        }
+    }
+
+    private async Task Publish(ApplicationView? view, long epoch)
+    {
+        if (view is null)
+        {
+            return;
+        }
+
+        await _snapshotGate.WaitAsync(CancellationToken.None);
+        try
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (_epoch != epoch)
+            {
+                _current = null;
+                _hydration = null;
+                return;
+            }
+
             _epoch++;
             _current = new(true, view, null);
             _hydration = null;

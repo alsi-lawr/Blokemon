@@ -306,11 +306,12 @@ export function unsubscribeInvalidation(id) {
 
 globalThis.addEventListener?.("pagehide", () => {
     clearDocuments();
-    invalidationSubscriptions.clear();
     if (connection) {
         invalidateConnection(connection, true);
     }
     closeBroadcastChannel();
 });
+
+globalThis.addEventListener?.("pageshow", () => currentBroadcastChannel());
 
 currentBroadcastChannel();

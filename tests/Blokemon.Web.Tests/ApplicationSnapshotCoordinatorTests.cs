@@ -142,8 +142,271 @@ public sealed class ApplicationSnapshotCoordinatorTests
             ViewFrom(await coordinator.State()).ShouldBeSameAs(current);
         }
 
+        using (var modeCancellation = new CancellationTokenSource())
+        {
+            modeCancellation.Cancel();
+            await Should.ThrowAsync<OperationCanceledException>(() =>
+                coordinator.SelectMode(PlayMode.BrowserLocal, modeCancellation.Token)
+            );
+        }
+
         application.MutationCalls.ShouldBe(9);
         await coordinator.DisposeAsync();
+    }
+
+    [Test]
+    public async Task CallerCancellationAfterAcquisition_DoesNotCancelDurableMutationPublication()
+    {
+        var current = View(1);
+        var published = View(2);
+        var application = new ScriptedApplication();
+        application.StateResponses.Enqueue(_ => Task.FromResult(Succeeded(current)));
+        var coordinator = Coordinator(application);
+        await coordinator.State();
+        var acquired = NewSignal();
+        var delivery = new TaskCompletionSource<ApiResponse<ApplicationView>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        CancellationToken operationToken = default;
+        application.ApplicationResponses.Enqueue(async token =>
+        {
+            operationToken = token;
+            acquired.SetResult();
+            return await delivery.Task.WaitAsync(token);
+        });
+        using var cancellation = new CancellationTokenSource();
+
+        var caller = coordinator.OpenPack(new(Guid.NewGuid()), cancellation.Token);
+        await acquired.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        cancellation.Cancel();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => caller);
+        operationToken.ShouldNotBe(cancellation.Token);
+        operationToken.IsCancellationRequested.ShouldBeFalse();
+        delivery.SetResult(Succeeded(published));
+        await Eventually(async () =>
+            ReferenceEquals(ViewFrom(await coordinator.State()), published)
+        );
+
+        await coordinator.DisposeAsync();
+    }
+
+    [Test]
+    public async Task CancelledCaller_BackgroundFailureIsObservedAndLaterMatchMutationStillRuns()
+    {
+        var current = View(3);
+        var later = View(4);
+        var application = new ScriptedApplication();
+        application.StateResponses.Enqueue(_ => Task.FromResult(Succeeded(current)));
+        var coordinator = Coordinator(application);
+        await coordinator.State();
+        var acquired = NewSignal();
+        var delivery = new TaskCompletionSource<ApiResponse<ApplicationView>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        application.ApplicationResponses.Enqueue(async token =>
+        {
+            acquired.SetResult();
+            return await delivery.Task.WaitAsync(token);
+        });
+        using var cancellation = new CancellationTokenSource();
+
+        var caller = coordinator.SaveDeck(
+            new(Guid.NewGuid(), null, null, "Deck", []),
+            cancellation.Token
+        );
+        await acquired.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        cancellation.Cancel();
+        await Should.ThrowAsync<OperationCanceledException>(() => caller);
+        delivery.SetException(new InvalidOperationException("Injected background failure."));
+
+        application.MatchResponses.Enqueue(_ =>
+            Task.FromResult(Succeeded(new MatchMutationView(later, null)))
+        );
+        var response = await coordinator
+            .StartMatch(new(Guid.NewGuid(), Guid.NewGuid()))
+            .WaitAsync(TimeSpan.FromSeconds(5));
+
+        response.Value!.Application.ShouldBeSameAs(later);
+        ViewFrom(await coordinator.State()).ShouldBeSameAs(later);
+        await coordinator.DisposeAsync();
+    }
+
+    [Test]
+    public async Task CancelledPurgeCaller_CompletesTheClearBoundaryInBackground()
+    {
+        var application = new ScriptedApplication();
+        application.StateResponses.Enqueue(_ => Task.FromResult(Succeeded(View(5))));
+        application.StateResponses.Enqueue(_ => Task.FromResult(Succeeded(View(6))));
+        var coordinator = Coordinator(application);
+        await coordinator.State();
+        var acquired = NewSignal();
+        var delivery = new TaskCompletionSource<ApiResponse<ApplicationView>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        application.ApplicationResponses.Enqueue(async token =>
+        {
+            acquired.SetResult();
+            return await delivery.Task.WaitAsync(token);
+        });
+        using var cancellation = new CancellationTokenSource();
+
+        var caller = coordinator.PurgeData(cancellation.Token);
+        await acquired.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        cancellation.Cancel();
+        await Should.ThrowAsync<OperationCanceledException>(() => caller);
+        delivery.SetResult(Succeeded(View(50)));
+
+        await Eventually(async () => ViewFrom(await coordinator.State()).Profile!.Revision == 6);
+        application.StateCalls.ShouldBe(2);
+        await coordinator.DisposeAsync();
+    }
+
+    [Test]
+    public async Task CancelledModeCaller_StillPublishesTheDurablySavedModeBoundary()
+    {
+        var application = new ScriptedApplication();
+        application.StateResponses.Enqueue(_ => Task.FromResult(Succeeded(View(30))));
+        application.StateResponses.Enqueue(_ => Task.FromResult(Succeeded(View(31))));
+        var documents = new BlockingModeDocumentStore();
+        var modes = new PlayModeApplication(
+            application,
+            application,
+            documents,
+            new PlayModeAvailability(serverBacked: true)
+        );
+        var coordinator = new ApplicationSnapshotCoordinator(
+            application,
+            modes,
+            new ManualDocumentInvalidations()
+        );
+        await coordinator.State();
+        using var cancellation = new CancellationTokenSource();
+
+        var caller = coordinator.SelectMode(PlayMode.BrowserLocal, cancellation.Token);
+        await documents.DurablyCreated.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        cancellation.Cancel();
+        await Should.ThrowAsync<OperationCanceledException>(() => caller);
+        documents.DeliverCreate();
+
+        await Eventually(async () => ViewFrom(await coordinator.State()).Profile!.Revision == 31);
+        (await coordinator.Mode()).Selected.ShouldBe(PlayMode.BrowserLocal);
+        application.StateCalls.ShouldBe(2);
+        await coordinator.DisposeAsync();
+    }
+
+    [Test]
+    public async Task DisposalCancelsAcquiredWorkWithoutPublishingOrWaitingForever()
+    {
+        var application = new ScriptedApplication();
+        application.StateResponses.Enqueue(_ => Task.FromResult(Succeeded(View(7))));
+        var invalidations = new ManualDocumentInvalidations();
+        var coordinator = Coordinator(application, invalidations);
+        await coordinator.State();
+        var acquired = NewSignal();
+        application.ApplicationResponses.Enqueue(async token =>
+        {
+            acquired.SetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            return Succeeded(View(8));
+        });
+
+        var operation = coordinator.DeleteDeck(new(Guid.NewGuid(), Guid.NewGuid()));
+        await acquired.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await coordinator.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
+
+        await Should.ThrowAsync<OperationCanceledException>(() => operation);
+        invalidations.SubscriptionDisposed.ShouldBeTrue();
+        await Should.ThrowAsync<ObjectDisposedException>(() => coordinator.State());
+    }
+
+    [Test]
+    public async Task ExternalInvalidationOrdersBeforeOrAfterMutationPublicationConservatively()
+    {
+        var application = new ScriptedApplication();
+        application.StateResponses.Enqueue(_ => Task.FromResult(Succeeded(View(10))));
+        application.StateResponses.Enqueue(_ => Task.FromResult(Succeeded(View(13))));
+        application.StateResponses.Enqueue(_ => Task.FromResult(Succeeded(View(15))));
+        var invalidations = new ManualDocumentInvalidations();
+        var coordinator = Coordinator(application, invalidations);
+        await coordinator.State();
+
+        invalidations.Signal("profile");
+        var afterEarlierSignal = View(11);
+        application.ApplicationResponses.Enqueue(_ =>
+            Task.FromResult(Succeeded(afterEarlierSignal))
+        );
+        await coordinator.OpenPack(new(Guid.NewGuid()));
+        ViewFrom(await coordinator.State()).ShouldBeSameAs(afterEarlierSignal);
+
+        var acquired = NewSignal();
+        var delivery = new TaskCompletionSource<ApiResponse<ApplicationView>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        application.ApplicationResponses.Enqueue(async token =>
+        {
+            acquired.SetResult();
+            return await delivery.Task.WaitAsync(token);
+        });
+        var inFlight = coordinator.CreateProfile(new(Guid.NewGuid(), "Alex"));
+        await acquired.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        invalidations.Signal("profile");
+        delivery.SetResult(Succeeded(View(12)));
+        await inFlight;
+
+        ViewFrom(await coordinator.State()).Profile!.Revision.ShouldBe(13);
+
+        application.ApplicationResponses.Enqueue(_ => Task.FromResult(Succeeded(View(14))));
+        await coordinator.OpenPack(new(Guid.NewGuid()));
+        invalidations.Signal("profile");
+        ViewFrom(await coordinator.State()).Profile!.Revision.ShouldBe(15);
+        application.StateCalls.ShouldBe(3);
+        await coordinator.DisposeAsync();
+    }
+
+    [Test]
+    public async Task FailedInvalidationSubscriptionIsRetriedAndConcurrentAttemptsAreCoalesced()
+    {
+        var application = new ScriptedApplication();
+        var state = new TaskCompletionSource<ApiResponse<ApplicationView>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        application.StateResponses.Enqueue(_ => state.Task);
+        application.StateResponses.Enqueue(_ => Task.FromResult(Succeeded(View(22))));
+        var invalidations = new ScriptedDocumentInvalidations();
+        invalidations.BlockNextSubscription(succeeds: false);
+        var coordinator = Coordinator(application, invalidations);
+
+        var first = coordinator.State();
+        var concurrent = coordinator.State();
+        await invalidations.SubscriptionStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        invalidations.ReleaseSubscription();
+        state.SetResult(Succeeded(View(21)));
+        await Task.WhenAll(first, concurrent);
+
+        invalidations.Attempts.ShouldBe(1);
+        ViewFrom(await coordinator.State()).Profile!.Revision.ShouldBe(21);
+        invalidations.Attempts.ShouldBe(2);
+        invalidations.Signal("profile");
+        ViewFrom(await coordinator.State()).Profile!.Revision.ShouldBe(22);
+        await coordinator.DisposeAsync();
+    }
+
+    [Test]
+    public async Task DisposalDoesNotWaitForPendingSubscriptionAndDisposesLateSuccess()
+    {
+        var application = new ScriptedApplication();
+        var invalidations = new ScriptedDocumentInvalidations();
+        invalidations.BlockNextSubscription(succeeds: true);
+        var coordinator = Coordinator(application, invalidations);
+        var state = coordinator.State();
+        await invalidations.SubscriptionStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        await coordinator.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
+        invalidations.ReleaseSubscription();
+
+        await Should.ThrowAsync<ObjectDisposedException>(() => state);
+        await Eventually(() => Task.FromResult(invalidations.SubscriptionDisposed));
     }
 
     [Test]
@@ -325,7 +588,7 @@ public sealed class ApplicationSnapshotCoordinatorTests
 
     private static ApplicationSnapshotCoordinator Coordinator(
         ScriptedApplication application,
-        ManualDocumentInvalidations? invalidations = null
+        IApplicationDocumentInvalidations? invalidations = null
     )
     {
         var modes = new PlayModeApplication(
@@ -336,6 +599,18 @@ public sealed class ApplicationSnapshotCoordinatorTests
         );
         return new(application, modes, invalidations ?? new ManualDocumentInvalidations());
     }
+
+    private static async Task Eventually(Func<Task<bool>> condition)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (!await condition())
+        {
+            await Task.Delay(10, timeout.Token);
+        }
+    }
+
+    private static TaskCompletionSource NewSignal() =>
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     private static BlokemonCatalogue Catalogue() =>
         BlokemonCatalogue.FromBootstrapJson(
@@ -478,10 +753,10 @@ public sealed class ApplicationSnapshotCoordinatorTests
 
         public bool SubscriptionDisposed { get; private set; }
 
-        public Task<IAsyncDisposable> Subscribe(Func<string, Task> invalidated)
+        public Task<IAsyncDisposable?> Subscribe(Func<string, Task> invalidated)
         {
             _invalidated = invalidated;
-            return Task.FromResult<IAsyncDisposable>(new Subscription(this));
+            return Task.FromResult<IAsyncDisposable?>(new Subscription(this));
         }
 
         public void Signal(string key) => _invalidated?.Invoke(key).GetAwaiter().GetResult();
@@ -495,6 +770,95 @@ public sealed class ApplicationSnapshotCoordinatorTests
                 return ValueTask.CompletedTask;
             }
         }
+    }
+
+    private sealed class ScriptedDocumentInvalidations : IApplicationDocumentInvalidations
+    {
+        private Func<string, Task>? _invalidated;
+        private TaskCompletionSource? _release;
+        private bool _pendingSucceeds;
+
+        public int Attempts { get; private set; }
+
+        public TaskCompletionSource SubscriptionStarted { get; private set; } = NewSignal();
+
+        public bool SubscriptionDisposed { get; private set; }
+
+        public void BlockNextSubscription(bool succeeds)
+        {
+            _pendingSucceeds = succeeds;
+            _release = NewSignal();
+            SubscriptionStarted = NewSignal();
+        }
+
+        public void ReleaseSubscription() => _release!.SetResult();
+
+        public async Task<IAsyncDisposable?> Subscribe(Func<string, Task> invalidated)
+        {
+            Attempts++;
+            if (_release is { } release)
+            {
+                SubscriptionStarted.SetResult();
+                await release.Task;
+                _release = null;
+                if (!_pendingSucceeds)
+                {
+                    return null;
+                }
+            }
+
+            _invalidated = invalidated;
+            return new Subscription(this);
+        }
+
+        public void Signal(string key) => _invalidated?.Invoke(key).GetAwaiter().GetResult();
+
+        private sealed class Subscription(ScriptedDocumentInvalidations owner) : IAsyncDisposable
+        {
+            public ValueTask DisposeAsync()
+            {
+                owner._invalidated = null;
+                owner.SubscriptionDisposed = true;
+                return ValueTask.CompletedTask;
+            }
+        }
+    }
+
+    private sealed class BlockingModeDocumentStore : IStateDocumentStore
+    {
+        private readonly TaskCompletionSource _delivery = NewSignal();
+        private StoredDocument? _document;
+
+        public TaskCompletionSource DurablyCreated { get; } = NewSignal();
+
+        public Task<StoredDocument?> Read(
+            string key,
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(_document);
+
+        public async Task<DocumentWriteResult> Create(
+            string key,
+            string json,
+            CancellationToken cancellationToken = default
+        )
+        {
+            _document = new(1, json);
+            DurablyCreated.SetResult();
+            await _delivery.Task.WaitAsync(cancellationToken);
+            return new DocumentWriteResult.Written(1);
+        }
+
+        public Task<DocumentWriteResult> Update(
+            string key,
+            long expectedRevision,
+            string json,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
+        public Task Delete(string key, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public void DeliverCreate() => _delivery.SetResult();
     }
 
     private sealed class MemoryDocumentStore : IStateDocumentStore
