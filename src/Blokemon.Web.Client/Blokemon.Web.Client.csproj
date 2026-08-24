@@ -12,6 +12,10 @@
     <DefineConstants>$(DefineConstants);BLOKEMON_STANDALONE_BROWSER</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(ProjectionEvidence)' == 'true'">
+    <DefineConstants>$(DefineConstants);BLOKEMON_PROJECTION_EVIDENCE</DefineConstants>
+  </PropertyGroup>
+
   <!--
     The browser reads its economy from wwwroot/appsettings.json, the same settings the server
     reads from its own configuration, and overlays wwwroot/appsettings.<environment>.json.
@@ -35,6 +39,13 @@
       Blokemon.App already are.
     -->
     <InternalsVisibleTo Include="Blokemon.Web.Tests" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(ProjectionEvidence)' == 'true'">
+    <Compile
+      Include="../../tests/Blokemon.Web.ProjectionEvidence/ProjectionEvidenceApplication.cs"
+      Link="ProjectionEvidenceApplication.cs"
+    />
   </ItemGroup>
 
   <ItemGroup Condition="'$(StandaloneBrowser)' == 'true'">

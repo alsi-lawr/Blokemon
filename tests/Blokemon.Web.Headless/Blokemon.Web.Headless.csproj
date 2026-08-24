@@ -24,18 +24,6 @@
       Include="../../src/Blokemon.Web.Client/Components/MatchAttachedCards.cs"
       Link="Components/MatchAttachedCards.cs"
     />
-    <Compile
-      Include="../../src/Blokemon.Web.Client/Components/MatchAuraView.cs"
-      Link="Components/MatchAuraView.cs"
-    />
-    <Compile
-      Include="../../src/Blokemon.Web.Client/Components/MatchSheetView.cs"
-      Link="Components/MatchSheetView.cs"
-    />
-    <Compile
-      Include="../../src/Blokemon.Web.Client/Components/MatchTable.cs"
-      Link="Components/MatchTable.cs"
-    />
     <RazorComponent
       Include="../../src/Blokemon.Web.Client/Components/BlokemonChip.razor"
       Link="Components/BlokemonChip.razor"
@@ -63,14 +51,6 @@
     <RazorComponent
       Include="../../src/Blokemon.Web.Client/Components/MatchCueOverlays.razor"
       Link="Components/MatchCueOverlays.razor"
-    />
-    <RazorComponent
-      Include="../../src/Blokemon.Web.Client/Components/MatchActionDock.razor"
-      Link="Components/MatchActionDock.razor"
-    />
-    <RazorComponent
-      Include="../../src/Blokemon.Web.Client/Components/MatchActionSheet.razor"
-      Link="Components/MatchActionSheet.razor"
     />
   </ItemGroup>
   <ItemGroup>

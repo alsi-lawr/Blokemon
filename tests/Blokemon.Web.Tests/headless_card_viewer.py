@@ -1039,15 +1039,26 @@ def energy_catalogue_surfaces(devtools, origin):
     require(True, "Decks Basic Energy filter presents exactly the seven public Energy cards")
 
 
-def home_detail_surface(devtools, origin):
+def home_energy_detail_surface(devtools, origin):
     devtools.navigate(origin, "/")
     devtools.wait_for("document.querySelectorAll('.activity-row small').length > 0", "Home recent card details")
-    details = devtools.evaluate(
-        "[...document.querySelectorAll('.activity-row small')].map(detail => detail.textContent.trim())"
+    recent = devtools.evaluate(
+        """
+        [...document.querySelectorAll('.activity-row')].map(row => ({
+          name: row.querySelector('b')?.textContent.trim(),
+          detail: row.querySelector('small')?.textContent.trim()
+        }))
+        """
+    )
+    dutch_courage = next(item for item in recent if item["name"] == "Dutch Courage")
+    require(
+        dutch_courage["detail"].split(" · copy ", 1)[0] == "Basic Energy · Beer",
+        "Home visibly names Dutch Courage as Basic Energy · Beer",
     )
     prohibited = ["Basic Vim", *MECHANICAL_ENERGY_TYPES]
     require(
-        details and all(not any(term in detail for term in prohibited) for detail in details),
+        recent
+        and all(not any(term in item["detail"] for term in prohibited) for item in recent),
         "Home renders public card detail metadata without mechanical Energy names",
     )
 
@@ -1390,10 +1401,33 @@ def reduced_motion_representatives(devtools, origin, viewer):
     )
 
 
-def energy_component_fixture(devtools, origin):
+def energy_match_route(devtools, origin):
     devtools.set_viewport(1440, 900)
     devtools.set_reduced_motion(True)
-    devtools.navigate(origin, "/?fixture=energy-projection", ready_selector="#energy-projection-fixture")
+    devtools.navigate(origin, "/match", ready_selector=".battle-screen")
+    require(
+        devtools.evaluate(
+            "document.querySelector('.battle-screen')?.getAttribute('aria-label') === 'Blokemon match table'"
+        ),
+        "production Match route loaded the deterministic checked-out game",
+    )
+    require(
+        devtools.evaluate(
+            """
+            (() => {
+              const toggle = document.querySelector('.dock-toggle');
+              if (!toggle) return false;
+              toggle.click();
+              return true;
+            })()
+            """
+        ),
+        "opened the production Match card inspector",
+    )
+    devtools.wait_for(
+        "document.querySelector('.action-dock.is-open') !== null",
+        "production Match card inspector",
+    )
     dock = devtools.evaluate(
         """
         (() => {
@@ -1415,24 +1449,41 @@ def energy_component_fixture(devtools, origin):
     require(
         dock["printed"]
         == {
-            "aria": "Beer Energy, Local Energy",
-            "initials": ["B", "L"],
-            "titles": ["Beer Energy", "Local Energy"],
+            "aria": "Local Energy",
+            "initials": ["L"],
+            "titles": ["Local Energy"],
         },
-        "action dock visibly renders approved printed costs with matching title and aria labels",
+        "selected production card visibly renders its approved printed cost, title, and aria label",
     )
     require(
         dock["live"]
         == {
-            "aria": "Blazed Energy, Local Energy",
-            "initials": ["B", "L"],
-            "titles": ["Blazed Energy", "Local Energy"],
+            "aria": "Local Energy",
+            "initials": ["L"],
+            "titles": ["Local Energy"],
         },
-        "action dock visibly renders approved live costs with matching title and aria labels",
+        "live production attack visibly renders its approved cost, title, and aria label",
+    )
+    require(
+        devtools.evaluate(
+            """
+            (() => {
+              const attack = document.querySelector('.attack-button.ready');
+              if (!attack) return false;
+              attack.click();
+              return true;
+            })()
+            """
+        ),
+        "opened the production attack choice from the selected live card",
+    )
+    devtools.wait_for(
+        "document.querySelector('.action-sheet .sheet-choice') !== null",
+        "production mechanical-type action sheet",
     )
     choices = devtools.evaluate(
         """
-        [...document.querySelectorAll('#mechanical-type-choice .sheet-options button')]
+        [...document.querySelectorAll('.action-sheet .sheet-choice .sheet-options button')]
           .map(button => ({ label: button.textContent.trim(), pressed: button.getAttribute('aria-pressed') }))
         """
     )
@@ -1441,9 +1492,17 @@ def energy_component_fixture(devtools, origin):
         "mechanical-type choice buttons render all ten approved labels",
     )
     require(
-        next(choice for choice in choices if choice["label"] == "Local")["pressed"] == "true"
-        and all(choice["label"] != "Colorless" for choice in choices),
-        "the raw Colorless mechanical choice is visibly labelled Local",
+        all(choice["label"] != "Colorless" for choice in choices),
+        "the mechanical-type choice surface never displays the raw Colorless name",
+    )
+    devtools.click_text("Local", ".action-sheet .sheet-choice .sheet-options button")
+    devtools.wait_for(
+        "DotNet.invokeMethodAsync('Blokemon.Web.Client', 'ProjectionEvidenceSubmittedMechanicalType').then(value => value === 'Colorless')",
+        "raw Colorless command submission from the Local-labelled choice",
+    )
+    require(
+        True,
+        "the production Local-labelled button submits the raw Colorless command value",
     )
 
 
@@ -1488,6 +1547,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="blokemon-card-viewer-") as temporary:
         temporary_root = Path(temporary)
         game_output = temporary_root / "game"
+        projection_output = temporary_root / "projection"
         cue_output = temporary_root / "cue"
         run(
             [
@@ -1507,6 +1567,21 @@ def main():
             [
                 "dotnet",
                 "publish",
+                "src/Blokemon.Web.Client/Blokemon.Web.Client.csproj",
+                "--configuration",
+                "Release",
+                "--output",
+                str(projection_output),
+                "-p:StandaloneBrowser=true",
+                "-p:ProjectionEvidence=true",
+                "-p:PublishTrimmed=false",
+                "-p:TreatWarningsAsErrors=true",
+            ]
+        )
+        run(
+            [
+                "dotnet",
+                "publish",
                 "tests/Blokemon.Web.Headless/Blokemon.Web.Headless.csproj",
                 "--configuration",
                 "Release",
@@ -1517,16 +1592,16 @@ def main():
             ]
         )
         with HostedRoot(published_root(game_output)) as game, HostedRoot(
-            published_root(cue_output)
-        ) as cue:
+            published_root(projection_output)
+        ) as projection, HostedRoot(published_root(cue_output)) as cue:
             chrome = Chrome(temporary_root)
             try:
                 viewer = ViewerEvidence(chrome.devtools)
                 setup_player(chrome.devtools, game.origin, viewer)
-                energy_component_fixture(chrome.devtools, cue.origin)
+                energy_match_route(chrome.devtools, projection.origin)
                 energy_catalogue_surfaces(chrome.devtools, game.origin)
                 pack_gating(chrome.devtools, game.origin, viewer)
-                home_detail_surface(chrome.devtools, game.origin)
+                home_energy_detail_surface(chrome.devtools, projection.origin)
                 collection_lifecycle(chrome.devtools, game.origin, viewer)
                 reduced_motion_representatives(chrome.devtools, game.origin, viewer)
                 cue_isolation(chrome.devtools, cue.origin, viewer)

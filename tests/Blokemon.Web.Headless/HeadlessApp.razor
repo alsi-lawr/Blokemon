@@ -1,28 +1,6 @@
-@inject NavigationManager Navigation
-
 <CardViewerHost>
-    @if (EnergyProjectionFixture)
-    {
-        <main id="energy-projection-fixture">
-            <MatchActionDock Selected="Selected"
-                             ActiveCardInstanceId="energy-active"
-                             Attacks="Attacks"
-                             DockOpen="true" />
-            <section id="mechanical-type-choice">
-                <MatchActionSheet Sheet="ChoiceSheet"
-                                  Auras="NoAuras"
-                                  Requirement="TypeRequirement"
-                                  Choice="TypeChoice"
-                                  StepComplete="true"
-                                  AdvanceLabel="Continue" />
-            </section>
-        </main>
-    }
-    else
-    {
-        <MatchCueOverlays Cue="Cue" RevealAcknowledged="Acknowledge" />
-        <output id="cue-acknowledgements" aria-label="Cue acknowledgements">@_acknowledgements</output>
-    }
+    <MatchCueOverlays Cue="Cue" RevealAcknowledged="Acknowledge" />
+    <output id="cue-acknowledgements" aria-label="Cue acknowledgements">@_acknowledgements</output>
 </CardViewerHost>
 
 @code {
@@ -54,103 +32,7 @@
         [RevealedCard]
     );
 
-    private static readonly CardView SelectedCard = new(
-        "headless-energy-card",
-        "Projection Card",
-        CardKindView.Blokemon,
-        "Blazed",
-        "Common · Regular",
-        """
-        <div class="blokemon-card-scale">
-          <article class="blokemon-gym-card" data-canonical-id="headless-energy-card"><h2 class="card-name">Projection Card</h2></article>
-        </div>
-        """,
-        [new(CardRuleKindView.Attack, "Printed Cost", null, ["Beer", "Local"], 20)],
-        0,
-        false
-    );
-
-    private static readonly MatchCardInstanceView Selected = new(
-        "energy-active",
-        SelectedCard,
-        "Headless Player",
-        "Oche",
-        0,
-        60,
-        [],
-        [],
-        [],
-        []
-    );
-
-    private static readonly MatchAttackView[] Attacks =
-    [
-        new(
-            "energy-active",
-            "headless-attack",
-            "Live Cost",
-            ["Blazed", "Local"],
-            20,
-            "attack:headless",
-            null
-        ),
-    ];
-
-    private static readonly MatchMechanicalTypeOptionView[] TypeOptions =
-    [
-        new("Grass", "Blazed"),
-        new("Fire", "Curry"),
-        new("Water", "Sober"),
-        new("Lightning", "Beer"),
-        new("Psychic", "Geeked"),
-        new("Fighting", "Lairy"),
-        new("Darkness", "Dodgy"),
-        new("Colorless", "Local"),
-        new("Dragon", "Legend"),
-        new("Metal", "Roadie"),
-    ];
-
-    private static readonly MatchChoiceRequirementView TypeRequirement = new(
-        "headless-mechanical-type",
-        MatchChoiceKindView.MechanicalType,
-        "Choose an Energy type",
-        new("headless", "Headless Player", true),
-        1,
-        1,
-        [],
-        TypeOptions,
-        [],
-        null,
-        [],
-        false,
-        []
-    );
-
-    private static readonly MatchSheetView ChoiceSheet = new(
-        MatchSheetMode.Choice,
-        "Choose an Energy type",
-        null,
-        null,
-        null,
-        null,
-        true,
-        []
-    );
-
-    private static readonly MatchChoiceView TypeChoice = new(0, "Colorless", null, []);
-
-    private static readonly MatchAuraView NoAuras = new(
-        [],
-        [],
-        false,
-        false,
-        new Dictionary<string, int>()
-    );
-
     private int _acknowledgements;
-
-    private bool EnergyProjectionFixture =>
-        Navigation.Uri.Contains("fixture=energy-projection", StringComparison.Ordinal);
 
     private void Acknowledge() => _acknowledgements++;
 }

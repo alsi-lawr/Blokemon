@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json.Nodes;
 using Blokemon.App.Contracts;
 using Blokemon.Web.Content;
@@ -66,6 +67,18 @@ public sealed class EnergyProjectionTests
             _mechanicalNames.Contains(value, StringComparer.Ordinal)
         );
         projectedMechanicalFields.ShouldNotContain("Basic Vim");
+    }
+
+    [Test]
+    public void GeneratedCatalogue_ExactlyMatchesFreshBuilderOutput()
+    {
+        var contentRoot = Path.Combine(AppContext.BaseDirectory, "content");
+        var generated = Encoding.UTF8.GetBytes(
+            BlokemonCatalogueBuilder.Load(contentRoot).ToBootstrapJson()
+        );
+        var committed = File.ReadAllBytes(Path.Combine(contentRoot, "catalogue.json"));
+
+        generated.ShouldBe(committed);
     }
 
     [Test]

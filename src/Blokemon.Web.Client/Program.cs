@@ -18,12 +18,16 @@ public static class ClientProgram
 #else
         var playModes = new PlayModeAvailability(serverBacked: true);
 #endif
+#if BLOKEMON_PROJECTION_EVIDENCE
+        await builder.Services.AddProjectionEvidence(bootstrap);
+#else
         builder.Services.AddBlokemonClient(
             http,
             BlokemonCatalogue.FromBootstrapJson(bootstrap),
             playModes,
             EconomyConfiguration.Resolve(builder.Configuration)
         );
+#endif
 
 #if BLOKEMON_STANDALONE_BROWSER
         builder.RootComponents.Add<App>("#app");

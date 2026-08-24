@@ -160,7 +160,7 @@ else
                                            TapReads="true">
                                     <CardFace Card="card" Size="CardFaceSize.Tiny" Decorative="true" />
                                 </CardPress>
-                                <span><b>@card.Name</b><small>@card.Detail · copy @card.OwnedQuantity</small></span>
+                                <span><b>@card.Name</b><small>@card.Detail@(card.Kind == CardKindView.BasicVim ? $" · {card.Type}" : null) · copy @card.OwnedQuantity</small></span>
                             </div>
                         }
                     </div>
