@@ -1,5 +1,6 @@
 const databaseName = "blokemon-browser-local-v1";
 const storeName = "documents";
+let connection = null;
 
 function failure(error) {
     const name = error?.name ?? "UnknownError";
@@ -22,7 +23,17 @@ function transactionComplete(transaction) {
     });
 }
 
-async function openDatabase() {
+function invalidateConnection(current, closeDatabase) {
+    if (connection === current) {
+        connection = null;
+    }
+
+    if (closeDatabase && current.database) {
+        current.database.close();
+    }
+}
+
+async function openDatabase(current) {
     if (!globalThis.indexedDB) {
         throw new Error("NotSupportedError: This browser does not provide IndexedDB.");
     }
@@ -34,24 +45,55 @@ async function openDatabase() {
             database.createObjectStore(storeName, { keyPath: "key" });
         }
     };
-    return await requestResult(request);
+    const database = await requestResult(request);
+    current.database = database;
+    database.onversionchange = () => invalidateConnection(current, true);
+    database.onclose = () => invalidateConnection(current, false);
+
+    if (connection !== current) {
+        database.close();
+        throw new Error("AbortError: Browser storage closed while it was opening.");
+    }
+
+    return database;
+}
+
+function currentConnection() {
+    if (connection) {
+        return connection;
+    }
+
+    const current = { database: null, promise: null };
+    current.promise = openDatabase(current).catch((error) => {
+        invalidateConnection(current, false);
+        throw error;
+    });
+    connection = current;
+    return current;
+}
+
+async function useDatabase(operation) {
+    const current = currentConnection();
+    const database = await current.promise;
+    try {
+        return await operation(database);
+    } catch (error) {
+        invalidateConnection(current, true);
+        throw error;
+    }
 }
 
 export async function read(key) {
-    const database = await openDatabase();
-    try {
+    return await useDatabase(async (database) => {
         const transaction = database.transaction(storeName, "readonly");
         const row = await requestResult(transaction.objectStore(storeName).get(key));
         await transactionComplete(transaction);
         return row ? { revision: row.revision, json: row.json } : null;
-    } finally {
-        database.close();
-    }
+    });
 }
 
 export async function create(key, json) {
-    const database = await openDatabase();
-    try {
+    return await useDatabase(async (database) => {
         const transaction = database.transaction(storeName, "readwrite");
         const completion = transactionComplete(transaction);
         const request = transaction.objectStore(storeName).add({ key, revision: 1, json });
@@ -70,27 +112,21 @@ export async function create(key, json) {
             }
             throw error;
         }
-    } finally {
-        database.close();
-    }
+    });
 }
 
 export async function remove(key) {
-    const database = await openDatabase();
-    try {
+    return await useDatabase(async (database) => {
         const transaction = database.transaction(storeName, "readwrite");
         const completion = transactionComplete(transaction);
         await requestResult(transaction.objectStore(storeName).delete(key));
         await completion;
         return null;
-    } finally {
-        database.close();
-    }
+    });
 }
 
 export async function update(key, expectedRevision, json) {
-    const database = await openDatabase();
-    try {
+    return await useDatabase(async (database) => {
         const transaction = database.transaction(storeName, "readwrite");
         const completion = transactionComplete(transaction);
         const store = transaction.objectStore(storeName);
@@ -109,7 +145,11 @@ export async function update(key, expectedRevision, json) {
         await requestResult(store.put({ key, revision, json }));
         await completion;
         return revision;
-    } finally {
-        database.close();
-    }
+    });
 }
+
+globalThis.addEventListener?.("pagehide", () => {
+    if (connection) {
+        invalidateConnection(connection, true);
+    }
+});
