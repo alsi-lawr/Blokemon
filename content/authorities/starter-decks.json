@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "starterDeckVersion": "kanto-ex-starters-1.0.0",
-  "mechanicalManifestVersion": "sv151-candidate.16",
+  "mechanicalManifestVersion": "sv151-candidate.17",
   "decks": [
     {
       "id": "growroom",

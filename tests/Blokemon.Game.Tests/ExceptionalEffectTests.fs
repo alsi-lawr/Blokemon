@@ -553,6 +553,46 @@ type ExceptionalEffectTests() =
               MatchEventKind.CardMoved, [ kit.Id ] ]
 
     [<Test>]
+    member _.``a mate should not switch an existing opposing booth bloke when no regular moves from the mitt``
+        ()
+        =
+        let engine = MatchScenario.Engine()
+        let state = MatchScenario.BattleState "BLK-001" "BLK-150" [] 443UL
+
+        let kit =
+            MatchScenario.PlainCard "supporter" "KIT-009" MatchScenario.FirstPlayer CardZone.Mitt -1
+
+        let existingBasic =
+            MatchScenario.PlainCard
+                "existing-basic"
+                "BLK-004"
+                MatchScenario.SecondPlayer
+                CardZone.Booth
+                -1
+
+        let ineligibleBloke =
+            MatchScenario.PlainCard
+                "other-seasoned"
+                "BLK-005"
+                MatchScenario.SecondPlayer
+                CardZone.Mitt
+                -1
+
+        let state = MatchScenario.WithCards state [ kit; existingBasic; ineligibleBloke ]
+        let action = kitAction engine state kit.Id
+
+        let applied, events = MatchScenario.AppliedWith(engine.Apply(state, action.Command))
+
+        (applied.Card(CardInstanceId "defender")).Zone |> should equal CardZone.Oche
+        (applied.Card existingBasic.Id).Zone |> should equal CardZone.Booth
+        (applied.Card ineligibleBloke.Id).Zone |> should equal CardZone.Mitt
+        (applied.Card kit.Id).Zone |> should equal CardZone.EmptiesTray
+
+        events
+        |> Seq.exists (fun matchEvent -> matchEvent.Kind = MatchEventKind.OcheSwapped)
+        |> should be False
+
+    [<Test>]
     member _.``a mate should be absent and reject without changing a full opposing booth``() =
         let engine = MatchScenario.Engine()
         let state = MatchScenario.BattleState "BLK-001" "BLK-150" [] 443UL

@@ -1,6 +1,6 @@
 {
   "reconciliationVersion": "blokemon-sv151-authority-reconciliation-1.0.0",
-  "authorityVersion": "sv151-candidate.16",
+  "authorityVersion": "sv151-candidate.17",
   "canonicalCandidate": "blokemon-sv151-parody-1.0.0-candidate.6",
   "canonicalReferenceCommit": "718be3f2",
   "canonicalSourceExceptions": {
@@ -3556,7 +3556,7 @@
       "sourceMechanicalSha256": "17927bc90e9734b7c38d6705ef441c09f4ba2464b99963dcb5afa59bcd4c6d6f",
       "sourceTextSha256": "71cc3282f7e2c8991f5737c9329404c229233f97922a02057f544e9e4ff87dce",
       "candidateProgramSha256": "c77a3e30ecad145db625218722dfd130a20cac08ff8ce69740707b1118cbfa3d",
-      "authorityProgramSha256": "458d3cfbcf13eb2d69fbab015880e66c00b9262225439fd6fd9adad40fb4006d",
+      "authorityProgramSha256": "bdfa045bacc305cdb1478097f67289168fdb526bb7370a77e4077a2ce3e4c710",
       "disposition": "CorrectedFromCandidate6"
     },
     {

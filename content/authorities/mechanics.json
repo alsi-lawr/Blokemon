@@ -1,5 +1,5 @@
 {
-  "manifestVersion": "sv151-candidate.16",
+  "manifestVersion": "sv151-candidate.17",
   "presentationStatus": "Accepted",
   "approvedMechanicalDisplayMap": [
     {
@@ -18799,7 +18799,24 @@
               "mechanicalTypes": [],
               "roughStates": [],
               "relatedIds": [],
-              "then": [],
+              "then": [
+                {
+                  "opcode": "SwapOche",
+                  "amount": 1,
+                  "valueSource": "Fixed",
+                  "targets": [
+                    "OtherBoothChosen"
+                  ],
+                  "selection": "All",
+                  "targetCount": 1,
+                  "predicates": [],
+                  "mechanicalTypes": [],
+                  "roughStates": [],
+                  "relatedIds": [],
+                  "then": [],
+                  "otherwise": []
+                }
+              ],
               "otherwise": [],
               "sources": [
                 "OtherMitt"
@@ -18817,22 +18834,6 @@
                 "differentMechanicalTypes": false,
                 "excludedRelatedIds": []
               }
-            },
-            {
-              "opcode": "SwapOche",
-              "amount": 1,
-              "valueSource": "Fixed",
-              "targets": [
-                "OtherBoothChosen"
-              ],
-              "selection": "All",
-              "targetCount": 1,
-              "predicates": [],
-              "mechanicalTypes": [],
-              "roughStates": [],
-              "relatedIds": [],
-              "then": [],
-              "otherwise": []
             }
           ]
         },
