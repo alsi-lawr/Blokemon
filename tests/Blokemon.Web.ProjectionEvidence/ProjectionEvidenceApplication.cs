@@ -13,14 +13,14 @@ namespace Blokemon.Web.Client.Application;
 public static class ProjectionEvidenceComposition
 {
     private static readonly Guid _profileCommand = Guid.Parse(
-        "10000000-0000-0000-0000-000000000122"
+        "7f3c9d5a-2e84-4b61-9a07-c58de04f6b93"
     );
     private static readonly Guid _starterCommand = Guid.Parse(
-        "11000000-0000-0000-0000-000000000122"
+        "a6214f8c-0d73-45be-8c29-f04a7d96e351"
     );
-    private static readonly Guid _deckCommand = Guid.Parse("20000000-0000-0000-0000-000000000122");
-    private static readonly Guid _matchCommand = Guid.Parse("30000000-0000-0000-0000-000000000122");
-    private static readonly Guid _receiptId = Guid.Parse("40000000-0000-0000-0000-000000000122");
+    private static readonly Guid _deckCommand = Guid.Parse("3d98b7e1-6a54-4c02-bf83-27e1a95c640d");
+    private static readonly Guid _matchCommand = Guid.Parse("e5b2074c-91fa-43d8-a6ce-708f2b39d154");
+    private static readonly Guid _receiptId = Guid.Parse("49ac6e70-b3d2-4f85-970c-d16b8e53a204");
     private static string? _submittedMechanicalType;
 
     public static async Task AddProjectionEvidence(
