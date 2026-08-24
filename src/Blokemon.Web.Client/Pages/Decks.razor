@@ -1,5 +1,6 @@
 @page "/decks"
 @inject IApplicationStateReader ApplicationState
+@inject IApplicationStateRefresher ApplicationRefresh
 @inject IDeckOperations DeckOperations
 
 <PageTitle>Decks · Blokemon</PageTitle>
@@ -309,7 +310,7 @@ else
         // delete settles on the current state instead of reporting a failure.
         if (!response.Succeeded && response.Error?.Code == "deck.not_found")
         {
-            response = await ApplicationState.State();
+            response = await ApplicationRefresh.Refresh();
         }
         _working = false;
         if (response.Value is not { } view)

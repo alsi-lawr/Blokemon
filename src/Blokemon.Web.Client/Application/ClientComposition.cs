@@ -56,24 +56,31 @@ public static class ClientComposition
 
     internal static IServiceCollection AddApplicationCapabilities(this IServiceCollection services)
     {
-        services.AddScoped<ApplicationCapabilities>();
+        services.AddScoped<IApplicationDocumentInvalidations, BrowserDocumentInvalidations>();
+        services.AddScoped<ApplicationSnapshotCoordinator>();
         services.AddScoped<IApplicationStateReader>(static provider =>
-            provider.GetRequiredService<ApplicationCapabilities>()
+            provider.GetRequiredService<ApplicationSnapshotCoordinator>()
+        );
+        services.AddScoped<IApplicationStateRefresher>(static provider =>
+            provider.GetRequiredService<ApplicationSnapshotCoordinator>()
         );
         services.AddScoped<IDeckOperations>(static provider =>
-            provider.GetRequiredService<ApplicationCapabilities>()
+            provider.GetRequiredService<ApplicationSnapshotCoordinator>()
         );
         services.AddScoped<IStarterDeckOperations>(static provider =>
-            provider.GetRequiredService<ApplicationCapabilities>()
+            provider.GetRequiredService<ApplicationSnapshotCoordinator>()
         );
         services.AddScoped<IMatchOperations>(static provider =>
-            provider.GetRequiredService<ApplicationCapabilities>()
+            provider.GetRequiredService<ApplicationSnapshotCoordinator>()
         );
         services.AddScoped<IPackOperations>(static provider =>
-            provider.GetRequiredService<ApplicationCapabilities>()
+            provider.GetRequiredService<ApplicationSnapshotCoordinator>()
         );
         services.AddScoped<IProfileOperations>(static provider =>
-            provider.GetRequiredService<ApplicationCapabilities>()
+            provider.GetRequiredService<ApplicationSnapshotCoordinator>()
+        );
+        services.AddScoped<IPlayModeOperations>(static provider =>
+            provider.GetRequiredService<ApplicationSnapshotCoordinator>()
         );
         return services;
     }

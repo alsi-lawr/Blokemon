@@ -156,6 +156,13 @@ def invalidation_scenario(devtools):
 
           const first = await import("/browserState.js?invalidation-first");
           const second = await import("/browserState.js?invalidation-second");
+          const forwardedInvalidations = [];
+          const subscription = first.subscribeInvalidation({
+            invokeMethodAsync(method, key) {
+              forwardedInvalidations.push({ method, key });
+              return Promise.resolve();
+            }
+          });
           await first.create("broadcast-affected", '{"owner":"first"}');
           await first.create("broadcast-unrelated", '{"owner":"first"}');
           const firstAffected = await first.read("broadcast-affected");
@@ -173,6 +180,14 @@ def invalidation_scenario(devtools):
           const afterUnrelatedRead = counts.transactions;
           const affectedAfterSignal = await first.read("broadcast-affected");
           const afterAffectedRead = counts.transactions;
+          const forwardedBeforeUnsubscribe = [...forwardedInvalidations];
+          first.unsubscribeInvalidation(subscription);
+          await second.update(
+            "broadcast-affected",
+            secondUpdate,
+            '{"owner":"after-unsubscribe"}'
+          );
+          await new Promise((resolve) => setTimeout(resolve, 50));
 
           return {
             firstAffected,
@@ -182,6 +197,8 @@ def invalidation_scenario(devtools):
             affectedAfterSignal,
             unrelatedReadTransactions: afterUnrelatedRead - beforeUnrelatedRead,
             affectedReadTransactions: afterAffectedRead - afterUnrelatedRead,
+            forwardedBeforeUnsubscribe,
+            forwardedAfterUnsubscribe: forwardedInvalidations,
             total: { ...counts }
           };
         })()
@@ -730,6 +747,15 @@ def verify_invalidation_contract(result):
     )
     require(result["unrelatedReadTransactions"] == 0, "the unrelated key remains hot")
     require(result["affectedReadTransactions"] == 1, "the affected key performs one bounded reload")
+    require(
+        result["forwardedBeforeUnsubscribe"]
+        == [{"method": "Invalidated", "key": "broadcast-affected"}],
+        "the external document signal reaches the subscribed application boundary once",
+    )
+    require(
+        result["forwardedAfterUnsubscribe"] == result["forwardedBeforeUnsubscribe"],
+        "disposing the application subscription stops later document signals",
+    )
 
 
 def verify_conflict_without_signal_contract(result):

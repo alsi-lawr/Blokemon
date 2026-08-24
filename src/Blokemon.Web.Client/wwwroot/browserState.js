@@ -7,6 +7,8 @@ const documentGenerations = new Map();
 let documentCacheGeneration = 0;
 let connection = null;
 let broadcastChannel = null;
+let nextInvalidationSubscription = 1;
+const invalidationSubscriptions = new Map();
 
 function failure(error) {
     const name = error?.name ?? "UnknownError";
@@ -72,6 +74,9 @@ function currentBroadcastChannel() {
         current.onmessage = (event) => {
             if (typeof event.data === "string") {
                 invalidateDocument(event.data);
+                for (const receiver of invalidationSubscriptions.values()) {
+                    receiver.invokeMethodAsync("Invalidated", event.data).catch(() => {});
+                }
             }
         };
         broadcastChannel = current;
@@ -288,8 +293,20 @@ export async function update(key, expectedRevision, json) {
     }
 }
 
+export function subscribeInvalidation(receiver) {
+    const id = nextInvalidationSubscription++;
+    invalidationSubscriptions.set(id, receiver);
+    currentBroadcastChannel();
+    return id;
+}
+
+export function unsubscribeInvalidation(id) {
+    invalidationSubscriptions.delete(id);
+}
+
 globalThis.addEventListener?.("pagehide", () => {
     clearDocuments();
+    invalidationSubscriptions.clear();
     if (connection) {
         invalidateConnection(connection, true);
     }
