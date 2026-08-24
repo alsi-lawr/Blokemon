@@ -327,6 +327,93 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
+    public async Task BrowserAuthorityMigration_CommittedThenCancelledRecoversAndReplaysPersistedPack()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var historical = await CreateHistoricalProfile(
+            Application(catalogue, documents, new ServerHandler(null)),
+            documents
+        );
+        using var cancellation = new CancellationTokenSource();
+        var cancellingDocuments = new CommitThenCancelDocumentStore(documents, cancellation);
+
+        var exception = await Should.ThrowAsync<OperationCanceledException>(() =>
+            Application(catalogue, cancellingDocuments, new ServerHandler(null))
+                .State(cancellation.Token)
+        );
+
+        exception.CancellationToken.ShouldBe(cancellation.Token);
+        cancellation.IsCancellationRequested.ShouldBeTrue();
+        var migrated = (await documents.Read("profile"))!;
+        migrated.Revision.ShouldBe(historical.Revision + 1);
+        JsonNode
+            .DeepEquals(
+                JsonNode.Parse(migrated.Json),
+                ExpectedVersionOnlyProfile(historical, catalogue.Mechanics.ManifestVersion)
+            )
+            .ShouldBeTrue();
+
+        var restarted = Application(catalogue, cancellingDocuments, new ServerHandler(null));
+        var restored = Value(await restarted.State());
+        var persistedPackCommand = Guid.Parse("c1222222-2222-2222-2222-222222222222");
+
+        cancellingDocuments.ProfileUpdateAttempts.ShouldBe(1);
+        restored.LastPack!.Id.ShouldBe(persistedPackCommand);
+        (await documents.Read("profile")).ShouldBe(migrated);
+
+        var replayed = Value(await restarted.OpenPack(new(persistedPackCommand)));
+
+        replayed.LastPack!.Id.ShouldBe(persistedPackCommand);
+        replayed.LastPack.Sequence.ShouldBe(restored.LastPack.Sequence);
+        replayed
+            .LastPack.Cards.Select(static card => card.Id)
+            .ShouldBe(restored.LastPack.Cards.Select(static card => card.Id));
+        replayed.Profile!.RemainingPacks.ShouldBe(restored.Profile!.RemainingPacks);
+        Ownership(replayed).ShouldBe(Ownership(restored));
+        cancellingDocuments.ProfileUpdateAttempts.ShouldBe(1);
+        (await documents.Read("profile")).ShouldBe(migrated);
+    }
+
+    [Test]
+    public async Task BrowserAuthorityMigration_ConcurrentClientsUseCasAndReturnOneConflict()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var historical = await CreateHistoricalProfile(
+            Application(catalogue, documents, new ServerHandler(null)),
+            documents
+        );
+        var racingDocuments = new ConcurrentMigrationDocumentStore(documents, 2);
+        var first = Application(catalogue, racingDocuments, new ServerHandler(null));
+        var second = Application(catalogue, racingDocuments, new ServerHandler(null));
+
+        var responses = await Task.WhenAll(first.State(), second.State());
+
+        responses.Count(static response => response.Succeeded).ShouldBe(1);
+        Value(responses.Single(static response => response.Succeeded)).Profile.ShouldNotBeNull();
+        var conflict = responses.Single(static response => !response.Succeeded);
+        conflict.Error!.Code.ShouldBe("state.conflict");
+        racingDocuments.MigrationUpdateAttempts.ShouldBe(2);
+        racingDocuments.MigrationExpectedRevisions.ShouldBe([
+            historical.Revision,
+            historical.Revision,
+        ]);
+        var migrated = (await documents.Read("profile"))!;
+        migrated.Revision.ShouldBe(historical.Revision + 1);
+        JsonNode
+            .DeepEquals(
+                JsonNode.Parse(migrated.Json),
+                ExpectedVersionOnlyProfile(historical, catalogue.Mechanics.ManifestVersion)
+            )
+            .ShouldBeTrue();
+
+        Value(await Application(catalogue, racingDocuments, new ServerHandler(null)).State());
+        racingDocuments.MigrationUpdateAttempts.ShouldBe(2);
+        (await documents.Read("profile")).ShouldBe(migrated);
+    }
+
+    [Test]
     public async Task BrowserAuthorityMigration_DoesNotBypassMatchAuthorityMismatch()
     {
         var catalogue = Catalogue();
@@ -1460,7 +1547,7 @@ public sealed class BrowserLocalApplicationTests
 
     private static PlayModeApplication Application(
         BlokemonCatalogue catalogue,
-        MemoryDocumentStore documents,
+        IStateDocumentStore documents,
         ServerHandler handler,
         bool serverBackedAvailable = true,
         EconomyRules? economy = null
@@ -1477,7 +1564,7 @@ public sealed class BrowserLocalApplicationTests
 
     private static LocalApplicationService Local(
         BlokemonCatalogue catalogue,
-        MemoryDocumentStore documents,
+        IStateDocumentStore documents,
         EconomyRules economy
     ) =>
         new(
@@ -1697,6 +1784,119 @@ public sealed class BrowserLocalApplicationTests
             }
             FailNextWrite = null;
             throw new DocumentStorageException(failure, "Simulated browser storage failure.");
+        }
+    }
+
+    private abstract class DelegatingDocumentStore(IStateDocumentStore inner) : IStateDocumentStore
+    {
+        public virtual Task<StoredDocument?> Read(
+            string key,
+            CancellationToken cancellationToken = default
+        ) => inner.Read(key, cancellationToken);
+
+        public virtual Task<DocumentWriteResult> Create(
+            string key,
+            string json,
+            CancellationToken cancellationToken = default
+        ) => inner.Create(key, json, cancellationToken);
+
+        public virtual Task<DocumentWriteResult> Update(
+            string key,
+            long expectedRevision,
+            string json,
+            CancellationToken cancellationToken = default
+        ) => inner.Update(key, expectedRevision, json, cancellationToken);
+
+        public virtual Task Delete(string key, CancellationToken cancellationToken = default) =>
+            inner.Delete(key, cancellationToken);
+    }
+
+    private sealed class CommitThenCancelDocumentStore(
+        IStateDocumentStore inner,
+        CancellationTokenSource cancellation
+    ) : DelegatingDocumentStore(inner)
+    {
+        private int _profileUpdateAttempts;
+
+        public int ProfileUpdateAttempts => Volatile.Read(ref _profileUpdateAttempts);
+
+        public override async Task<DocumentWriteResult> Update(
+            string key,
+            long expectedRevision,
+            string json,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (key != "profile")
+            {
+                return await base.Update(key, expectedRevision, json, cancellationToken);
+            }
+
+            var attempt = Interlocked.Increment(ref _profileUpdateAttempts);
+            var result = await base.Update(key, expectedRevision, json, cancellationToken);
+
+            if (attempt == 1 && result is DocumentWriteResult.Written)
+            {
+                cancellation.Cancel();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            return result;
+        }
+    }
+
+    private sealed class ConcurrentMigrationDocumentStore(
+        IStateDocumentStore inner,
+        int participants
+    ) : DelegatingDocumentStore(inner)
+    {
+        private readonly object _lock = new();
+        private readonly List<long> _migrationExpectedRevisions = [];
+        private readonly TaskCompletionSource _migrationUpdatesReady = new(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        private int _migrationUpdateAttempts;
+
+        public int MigrationUpdateAttempts => Volatile.Read(ref _migrationUpdateAttempts);
+
+        public long[] MigrationExpectedRevisions
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return [.. _migrationExpectedRevisions];
+                }
+            }
+        }
+
+        public override async Task<DocumentWriteResult> Update(
+            string key,
+            long expectedRevision,
+            string json,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (key != "profile")
+            {
+                return await base.Update(key, expectedRevision, json, cancellationToken);
+            }
+
+            lock (_lock)
+            {
+                _migrationExpectedRevisions.Add(expectedRevision);
+            }
+
+            if (Interlocked.Increment(ref _migrationUpdateAttempts) == participants)
+            {
+                _migrationUpdatesReady.SetResult();
+            }
+
+            await _migrationUpdatesReady.Task.WaitAsync(
+                TimeSpan.FromSeconds(10),
+                cancellationToken
+            );
+            return await base.Update(key, expectedRevision, json, cancellationToken);
         }
     }
 
