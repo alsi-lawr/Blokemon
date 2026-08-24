@@ -165,7 +165,7 @@
             {
                 // The press became a view, so the release that ends it is not also a tap.
                 _suppressTap = true;
-                return Host().Hold(Card);
+                return Host().Hold(Card, _press);
             }
         );
     }

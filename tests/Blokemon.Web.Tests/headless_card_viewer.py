@@ -556,8 +556,20 @@ class ViewerEvidence:
         """
         require(self.devtools.evaluate(expression), f"captured the unchanged source face in {scope}")
 
-    def require_geometry(self, width, height):
+    def require_geometry(self, width, height, context, verify_card_geometry=False):
+        label = f"{context} at {width}x{height}"
         time.sleep(0.25)
+        self.devtools.wait_for(
+            """
+            (() => {
+              const source = window.__sourceFace?.querySelector('.art-viewport img');
+              const expanded = document.querySelector('.card-viewer .art-viewport img');
+              return source?.complete && source.naturalWidth > 0 && source.naturalHeight > 0
+                && expanded?.complete && expanded.naturalWidth > 0 && expanded.naturalHeight > 0;
+            })()
+            """,
+            "source and expanded artwork to load",
+        )
         geometry = self.devtools.evaluate(
             """
             (() => {
@@ -567,6 +579,58 @@ class ViewerEvidence:
               if (!source?.isConnected || !face) return null;
               const sourceRect = source.getBoundingClientRect();
               const faceRect = face.getBoundingClientRect();
+              const normalized = (rect, cardRect) => [
+                (rect.left - cardRect.left) / cardRect.width,
+                (rect.top - cardRect.top) / cardRect.height,
+                rect.width / cardRect.width,
+                rect.height / cardRect.height
+              ];
+              const difference = (before, after) => Math.max(
+                ...before.map((value, index) => Math.abs(value - after[index]))
+              );
+              const titleState = (card, cardRect) => {
+                const title = card.querySelector('.card-name');
+                const titleRect = title.getBoundingClientRect();
+                const text = document.createRange();
+                text.selectNodeContents(title);
+                const textRect = text.getBoundingClientRect();
+                return {
+                  alignment: getComputedStyle(title).textAlign,
+                  box: normalized(titleRect, cardRect),
+                  text: normalized(textRect, cardRect),
+                  startInset: (textRect.left - titleRect.left) / (cardRect.width / 750)
+                };
+              };
+              const artworkState = (card, cardRect) => {
+                const artwork = card.querySelector('.art-viewport img');
+                const rect = artwork.getBoundingClientRect();
+                const style = getComputedStyle(artwork);
+                return {
+                  src: artwork.src,
+                  currentSrc: artwork.currentSrc,
+                  complete: artwork.complete,
+                  naturalWidth: artwork.naturalWidth,
+                  naturalHeight: artwork.naturalHeight,
+                  rendered: artwork.checkVisibility({
+                    checkOpacity: true,
+                    checkVisibilityCSS: true
+                  })
+                    && style.display !== 'none'
+                    && style.visibility === 'visible'
+                    && Number.parseFloat(style.opacity) > 0
+                    && rect.width > 0
+                    && rect.height > 0
+                    && rect.right > 0
+                    && rect.bottom > 0
+                    && rect.left < innerWidth
+                    && rect.top < innerHeight,
+                  geometry: normalized(rect, cardRect)
+                };
+              };
+              const sourceTitle = titleState(source, sourceRect);
+              const expandedTitle = titleState(face, faceRect);
+              const sourceArtwork = artworkState(source, sourceRect);
+              const expandedArtwork = artworkState(face, faceRect);
               const geometrySelector = [
                 '.blokemon-gym-card',
                 '[data-region]',
@@ -618,6 +682,24 @@ class ViewerEvidence:
                 sameNodes: sourceNodes.length === faceNodes.length,
                 compared,
                 maximumDelta,
+                titleAlignment: [sourceTitle.alignment, expandedTitle.alignment],
+                titleStartInset: [sourceTitle.startInset, expandedTitle.startInset],
+                titleGeometryDelta: Math.max(
+                  difference(sourceTitle.box, expandedTitle.box),
+                  difference(sourceTitle.text, expandedTitle.text)
+                ),
+                artworkSource: [sourceArtwork.src, expandedArtwork.src],
+                artworkCurrentSource: [sourceArtwork.currentSrc, expandedArtwork.currentSrc],
+                artworkComplete: [sourceArtwork.complete, expandedArtwork.complete],
+                artworkNaturalSize: [
+                  [sourceArtwork.naturalWidth, sourceArtwork.naturalHeight],
+                  [expandedArtwork.naturalWidth, expandedArtwork.naturalHeight]
+                ],
+                artworkRendered: [sourceArtwork.rendered, expandedArtwork.rendered],
+                artworkGeometryDelta: difference(
+                  sourceArtwork.geometry,
+                  expandedArtwork.geometry
+                ),
                 scaleDelta: Math.abs(faceRect.width / sourceRect.width - faceRect.height / sourceRect.height),
                 contained: margins.every(margin => margin >= 19.5),
                 bound: Math.min(...margins.map(margin => Math.abs(margin - 20))) <= 0.75,
@@ -627,23 +709,48 @@ class ViewerEvidence:
             })()
             """
         )
-        require(geometry is not None, f"measured viewer geometry at {width}x{height}")
-        print(f"INFO {width}x{height} geometry {json.dumps(geometry, sort_keys=True)}")
+        require(geometry is not None, f"measured {label} viewer geometry")
+        print(f"INFO {label} geometry {json.dumps(geometry, sort_keys=True)}")
         require(
             geometry["htmlEqual"] and geometry["sameNodes"] and geometry["compared"] > 8,
-            f"{width}x{height} viewer reuses unchanged card markup and content",
+            f"{label} viewer reuses unchanged card markup and content",
+        )
+        if verify_card_geometry:
+            require(
+                geometry["maximumDelta"] < 0.003 and geometry["scaleDelta"] < 0.002,
+                f"{label} card regions, rules, and spacing change only by uniform scale",
+            )
+        require(
+            geometry["titleAlignment"] == ["left", "left"]
+            and max(abs(value) for value in geometry["titleStartInset"]) < 2
+            and geometry["titleGeometryDelta"] < 0.003,
+            f"{label} compact and expanded titles stay left-aligned with unchanged geometry",
         )
         require(
-            geometry["maximumDelta"] < 0.003 and geometry["scaleDelta"] < 0.002,
-            f"{width}x{height} card title, art, rules, spacing, and alignment change only by uniform scale",
+            geometry["artworkSource"][0] == geometry["artworkSource"][1]
+            and geometry["artworkCurrentSource"][0] == geometry["artworkCurrentSource"][1],
+            f"{label} expansion retains the compact artwork source",
+        )
+        require(
+            all(geometry["artworkComplete"])
+            and all(
+                natural_width > 0 and natural_height > 0
+                for natural_width, natural_height in geometry["artworkNaturalSize"]
+            ),
+            f"{label} compact and expanded artwork loads with intrinsic dimensions",
+        )
+        require(
+            all(geometry["artworkRendered"])
+            and geometry["artworkGeometryDelta"] < 0.003,
+            f"{label} compact and expanded artwork remains rendered at unchanged geometry",
         )
         require(
             geometry["contained"] and geometry["bound"],
-            f"{width}x{height} viewer keeps the enlarged face within the 20px viewport margin",
+            f"{label} viewer keeps the enlarged face within the 20px viewport margin",
         )
         require(
             geometry["oneFace"] and geometry["cardOnly"],
-            f"{width}x{height} viewer contains only the one canonical card face",
+            f"{label} viewer contains only the one canonical card face",
         )
 
     def require_tab_guard(self):
@@ -947,7 +1054,7 @@ def collection_lifecycle(devtools, origin, viewer):
     devtools.wait_for(f"document.querySelector({json.dumps(scope + ' ' + control)}) !== null", "Collection card")
     viewer.capture_source_face(scope)
     viewer.open_control(scope, control)
-    viewer.require_geometry(1440, 900)
+    viewer.require_geometry(1440, 900, "Collection", verify_card_geometry=True)
     viewer.require_tab_guard()
     viewer.close_with_key("Enter")
 
@@ -964,13 +1071,12 @@ def collection_lifecycle(devtools, origin, viewer):
     devtools.wait_for(f"document.querySelector({json.dumps(scope + ' ' + control)}) !== null", "mobile Collection card")
     viewer.capture_source_face(scope)
     viewer.open_control(scope, control, touch=True)
-    viewer.require_geometry(390, 844)
+    viewer.require_geometry(390, 844, "Collection", verify_card_geometry=True)
     viewer.close_with_pointer(touch=True)
     viewer.touch_hold(scope, control)
 
 
 def reduced_motion_representatives(devtools, origin, viewer):
-    devtools.set_viewport(1440, 900)
     devtools.set_reduced_motion(True)
     representatives = [
         ("Collection", "/collection", ".card-grid .card-tile"),
@@ -978,27 +1084,40 @@ def reduced_motion_representatives(devtools, origin, viewer):
         ("Packs", "/packs", ".recent-pack-cards > div"),
         ("Decks", "/decks", ".catalogue-card"),
     ]
-    for name, path, scope in representatives:
-        devtools.navigate(origin, path)
-        selector = scope + " .card-press-surface"
-        devtools.wait_for(
-            f"document.querySelector({json.dumps(selector)}) !== null",
-            f"{name} reading representative",
-        )
-        before = None
-        if name == "Decks":
-            before = devtools.evaluate(
-                "document.querySelector('.catalogue-card output')?.textContent.trim()"
+    for width, height, touch in [(1440, 900, False), (390, 844, True)]:
+        devtools.set_viewport(width, height, touch=touch)
+        for name, path, scope in representatives:
+            devtools.navigate(origin, path)
+            selector = scope + " .card-press-surface"
+            devtools.wait_for(
+                f"document.querySelector({json.dumps(selector)}) !== null",
+                f"{name} reading representative at {width}x{height}",
             )
-        viewer.open_control(scope, ".card-press-surface")
-        viewer.require_reduced_motion(name)
-        viewer.close_with_key("Escape")
-        if name == "Decks":
-            after = devtools.evaluate(
-                "document.querySelector('.catalogue-card output')?.textContent.trim()"
+            before = None
+            if name == "Decks":
+                before = devtools.evaluate(
+                    "document.querySelector('.catalogue-card output')?.textContent.trim()"
+                )
+            viewer.capture_source_face(scope)
+            viewer.open_control(scope, ".card-press-surface")
+            viewer.require_geometry(
+                width,
+                height,
+                name,
+                verify_card_geometry=name in ("Collection", "Decks"),
             )
-            require(before == after, "reading a Decks card does not operate its quantity stepper")
+            viewer.require_reduced_motion(name)
+            viewer.close_with_key("Escape")
+            if name == "Decks":
+                after = devtools.evaluate(
+                    "document.querySelector('.catalogue-card output')?.textContent.trim()"
+                )
+                require(
+                    before == after,
+                    f"reading a Decks card at {width}x{height} does not operate its quantity stepper",
+                )
 
+    devtools.set_viewport(1440, 900)
     devtools.navigate(origin, "/match")
     devtools.wait_for(
         "document.querySelector('.battle-screen') !== null || "
@@ -1024,7 +1143,7 @@ def reduced_motion_representatives(devtools, origin, viewer):
     devtools.wait_for("document.querySelector('.battle-screen') !== null", "Match table", timeout=30)
     deadline = time.monotonic() + 30
     while time.monotonic() < deadline and not devtools.evaluate(
-        "document.querySelector('.battle-screen .card-press:has(.card-read)') !== null"
+        "document.querySelector('.battle-screen .card-press:has(.battle-card-shell):has(.card-read)') !== null"
     ):
         devtools.evaluate(
             """
@@ -1046,24 +1165,35 @@ def reduced_motion_representatives(devtools, origin, viewer):
         time.sleep(0.1)
     require(
         devtools.evaluate(
-            "document.querySelector('.battle-screen .card-press:has(.card-read)') !== null"
+            "document.querySelector('.battle-screen .card-press:has(.battle-card-shell):has(.card-read)') !== null"
         ),
-        "Match exposes a stable sibling reader after its opening presentation",
+        "Match exposes a stable Battle-card sibling reader after its opening presentation",
     )
-    scope = ".battle-screen .card-press:has(.card-read)"
+    scope = ".battle-screen .card-press:has(.battle-card-shell):has(.card-read)"
     viewer.require_sibling_dom(scope)
     state = devtools.evaluate(
         """
         (() => {
-          const surface = document.querySelector('.battle-screen .card-press:has(.card-read) > .card-press-surface');
+          const surface = document.querySelector(
+            '.battle-screen .card-press:has(.battle-card-shell):has(.card-read) > .card-press-surface'
+          );
           window.__matchActionSurface = surface;
           return { pressed: surface.getAttribute('aria-pressed'), label: surface.getAttribute('aria-label') };
         })()
         """
     )
-    viewer.open_control(scope, ".card-read")
-    viewer.require_reduced_motion("Match")
-    viewer.close_with_key("Escape")
+    for width, height, touch in [(1440, 900, False), (390, 844, True)]:
+        devtools.set_viewport(width, height, touch=touch)
+        viewer.capture_source_face(scope)
+        viewer.open_control(scope, ".card-read")
+        viewer.require_geometry(
+            width,
+            height,
+            "Match Battle",
+            verify_card_geometry=True,
+        )
+        viewer.require_reduced_motion("Match")
+        viewer.close_with_key("Escape")
     require(
         devtools.evaluate(
             """

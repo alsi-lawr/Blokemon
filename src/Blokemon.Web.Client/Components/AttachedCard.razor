@@ -13,6 +13,7 @@
 
 <span class="attached-card @(_hold.Pressing ? "is-holding" : null)"
       style="--fan-depth: @Attachment.Depth"
+      @ref="_face"
       @onpointerdown="Down"
       @onpointerdown:stopPropagation="true"
       @onpointermove="Move"
@@ -26,6 +27,7 @@
 
 @code {
     private readonly CardHold _hold = new();
+    private ElementReference _face;
     private bool _parametersChanged;
     private bool _shownPressing;
 
@@ -53,7 +55,7 @@
     }
 
     private void Down(PointerEventArgs eventArgs) =>
-        _hold.Down(eventArgs, () => Host().Hold(Attachment.Card));
+        _hold.Down(eventArgs, () => Host().Hold(Attachment.Card, _face));
 
     private void Move(PointerEventArgs eventArgs) => _ = _hold.Travelled(eventArgs);
 

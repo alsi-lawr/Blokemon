@@ -131,6 +131,7 @@
 
 .card-viewer .card-face-host {
   --blokemon-card-scale: var(--viewer-scale, 0.5);
+  --blokemon-artwork-scale: var(--viewer-artwork-scale, var(--blokemon-card-scale));
   filter: drop-shadow(0 12px 22px #000c);
   animation: viewer-in 0.2s cubic-bezier(0.2, 0.75, 0.25, 1) both;
 }

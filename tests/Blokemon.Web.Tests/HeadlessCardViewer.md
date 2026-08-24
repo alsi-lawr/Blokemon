@@ -16,6 +16,9 @@ The executable evidence covers:
 - actual reading-control activation and non-nested sibling controls;
 - unchanged card markup and uniformly scaled internal geometry at 1440x900 and 390x844, within the 20px viewer
   margin;
+- browser-computed left title alignment, unchanged rendered title geometry, and the same responsive artwork source
+  before and after expansion across Collection, Home, Packs, Decks, and Match/Battle representatives;
+- completed artwork with nonzero intrinsic dimensions and a visible rendered box in compact and expanded states;
 - focus transfer, guarded Tab, Escape, Enter, Space, mouse, touch, and hold lifecycle with exact focus return;
 - pack identity and reader gating before face-up, with reading isolated from reveal advancement;
 - revealed cue reading isolated from acknowledgement;

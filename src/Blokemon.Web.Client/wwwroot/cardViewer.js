@@ -62,6 +62,22 @@ export function viewerScale() {
   return viewerScaleFor(window.innerWidth, window.innerHeight);
 }
 
+// Responsive card artwork is laid out at the face's rendered scale so sizes="auto" selects the
+// source that face needs. A viewer grows the print without asking the browser to replace that
+// already loaded source, so it carries the originating face's artwork scale into the enlarged copy.
+export function artworkScale(source, cardId) {
+  const sourceScope =
+    source?.closest(".attached-card") ?? source?.closest(".card-press") ?? source;
+  const card = [...(sourceScope?.querySelectorAll("[data-canonical-id]") ?? [])].find(
+    (candidate) => candidate.dataset.canonicalId === cardId,
+  );
+  const face = card?.closest(".card-face-host");
+  const scale = Number.parseFloat(
+    getComputedStyle(face).getPropertyValue("--blokemon-card-scale"),
+  );
+  return Number.isFinite(scale) && scale > 0 ? scale : viewerScale();
+}
+
 // A viewer open across a rotation or resize is rescaled in the browser rather than through a
 // round trip, so the margin holds without re-rendering the card.
 window.addEventListener("resize", () => {

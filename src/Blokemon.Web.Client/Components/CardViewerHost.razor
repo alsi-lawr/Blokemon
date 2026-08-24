@@ -22,6 +22,7 @@
     private ElementReference? _returnFocusTo;
     private ElementReference? _restoreFocusTo;
     private double _scale = 0.5;
+    private double _artworkScale = 0.5;
     private bool _armViewer;
     private bool _pinned;
     private bool _takeFocus;
@@ -68,9 +69,9 @@
         }
     }
 
-    internal async Task Hold(CardView card)
+    internal async Task Hold(CardView card, ElementReference source)
     {
-        await MeasureScale();
+        await MeasureScale(card, source);
         _armViewer = true;
         _pinned = false;
         _takeFocus = false;
@@ -81,7 +82,7 @@
 
     internal async Task Pin(CardView card, ElementReference returnFocusTo)
     {
-        await MeasureScale();
+        await MeasureScale(card, returnFocusTo);
         _armViewer = true;
         _pinned = true;
         _takeFocus = true;
@@ -92,11 +93,12 @@
 
     internal Task Close() => InvokeAsync(DismissAndRestoreFocus);
 
-    private async Task MeasureScale()
+    private async Task MeasureScale(CardView card, ElementReference source)
     {
         if (_module is not null)
         {
             _scale = await _module.InvokeAsync<double>("viewerScale");
+            _artworkScale = await _module.InvokeAsync<double>("artworkScale", source, card.Id);
         }
     }
 
@@ -152,7 +154,8 @@
     }
 
     private string ViewerStyle() =>
-        $"--viewer-scale: {_scale.ToString("0.####", CultureInfo.InvariantCulture)}";
+        $"--viewer-scale: {_scale.ToString("0.####", CultureInfo.InvariantCulture)}; "
+        + $"--viewer-artwork-scale: {_artworkScale.ToString("0.####", CultureInfo.InvariantCulture)}";
 
     private void RouteChanged(object? sender, LocationChangedEventArgs eventArgs) =>
         _ = InvokeAsync(DismissForNavigation);
