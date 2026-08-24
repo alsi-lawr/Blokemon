@@ -42,8 +42,6 @@ type LocalApplicationService
 
     member internal _.ProjectionHooks = projectionHooks
 
-    member internal _.ProjectionLastChangePlan = projections.LastChangePlan
-
     member internal _.ProjectionIdentityBuildCount = projections.ProfileIdentityBuildCount
 
     /// Everything the client draws: the profile, its cards, decks and the saved battle.

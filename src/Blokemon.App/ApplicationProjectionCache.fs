@@ -13,7 +13,6 @@ type internal ApplicationProjectionCache
     let counts = Array.zeroCreate<int64> 8
     let mutable cached: CachedApplicationProjection option = None
     let mutable publishedGeneration = Int64.MinValue
-    let mutable lastChangePlan: ApplicationProjectionChangePlan = null
 
     let mutable profileIdentities: (int64 * string * ProfileProjectionIdentities) option =
         None
@@ -23,18 +22,11 @@ type internal ApplicationProjectionCache
     let changed (left: string) (right: string) =
         not (String.Equals(left, right, StringComparison.Ordinal))
 
-    let observes dependency (dependencies: ApplicationProjectionDependency) =
-        dependencies &&& dependency <> ApplicationProjectionDependency.None
-
-    let sourceChangesWithin
-        (dependencies: ApplicationProjectionDependency)
-        (left: ApplicationProjectionKeys)
-        (right: ApplicationProjectionKeys)
-        =
+    let observedChanges (left: ApplicationProjectionKeys) (right: ApplicationProjectionKeys) =
         let mutable changes = ApplicationProjectionDependency.None
 
         let observe dependency leftIdentity rightIdentity =
-            if observes dependency dependencies && changed leftIdentity rightIdentity then
+            if changed leftIdentity rightIdentity then
                 changes <- changes ||| dependency
 
         observe ApplicationProjectionDependency.Catalogue left.Catalogue right.Catalogue
@@ -61,31 +53,15 @@ type internal ApplicationProjectionCache
 
         changes
 
-    let changePlan request previous keys =
-        let operation = ApplicationProjectionMatrix.operation request.Operation
-
+    let invalidatedDependencies previous keys =
         match previous with
-        | None ->
-            ApplicationProjectionChangePlan(
-                request.Operation,
-                ApplicationProjectionDependency.None,
-                ApplicationProjectionDependency.All,
-                ApplicationProjectionDependency.All
-            )
-        | Some current ->
-            let owned = sourceChangesWithin operation.OwnedChanges current.Keys keys
+        | None -> ApplicationProjectionDependency.All
+        | Some current -> observedChanges current.Keys keys
 
-            let externalDependencies =
-                ApplicationProjectionDependency.All ^^^ operation.OwnedChanges
+    let invalidates segment changedDependencies =
+        let fieldDependencies = ApplicationProjectionMatrix.dependencies segment
 
-            let external = sourceChangesWithin externalDependencies current.Keys keys
-
-            ApplicationProjectionChangePlan(request.Operation, owned, external, owned ||| external)
-
-    let invalidates segment (plan: ApplicationProjectionChangePlan) =
-        let dependencies = ApplicationProjectionMatrix.dependencies segment
-
-        dependencies &&& plan.InvalidatedDependencies
+        fieldDependencies &&& changedDependencies
         <> ApplicationProjectionDependency.None
 
     let invoke (callback: Action | null) =
@@ -96,8 +72,6 @@ type internal ApplicationProjectionCache
     member _.CatalogueIdentity = catalogueIdentity
 
     member _.Hooks = hooks
-
-    member _.LastChangePlan = lastChangePlan
 
     member _.ProfileIdentityBuildCount = Volatile.Read(&profileIdentityBuilds)
 
@@ -158,11 +132,11 @@ type internal ApplicationProjectionCache
                 cancellationToken.ThrowIfCancellationRequested()
 
                 let previous = cached
-                let plan = changePlan request previous keys
+                let invalidated = invalidatedDependencies previous keys
 
                 let select segment previousValue build =
                     match previous with
-                    | Some _ when not (invalidates segment plan) -> previousValue ()
+                    | Some _ when not (invalidates segment invalidated) -> previousValue ()
                     | _ ->
                         Interlocked.Increment(&counts[int segment]) |> ignore
                         let value = build ()
@@ -226,8 +200,7 @@ type internal ApplicationProjectionCache
                         | ClearProfileProjectionIdentities -> profileIdentities <- None
 
                         cached <- Some { Keys = keys; View = template }
-                        publishedGeneration <- request.Generation
-                        lastChangePlan <- plan)
+                        publishedGeneration <- request.Generation)
 
                 return ApplicationViewIsolation.application template
             finally

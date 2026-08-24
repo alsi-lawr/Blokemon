@@ -1,10 +1,9 @@
 # Complete application projection invalidation matrix
 
-The executable authority is `ApplicationProjectionMatrix.fields` and
-`ApplicationProjectionMatrix.operations` in `ApplicationProjectionModel.fs`. The tables below use
-those exact enum and flag names; they are the review view of the same rows, not another production
-configuration. Focused integration tests execute every application operation and each observable
-external-change class against the change plan produced from those rows.
+The executable invalidation authority is `ApplicationProjectionMatrix.fields` in
+`ApplicationProjectionModel.fs`. `ApplicationProjectionCache` compares every source identity in its
+complete key and applies those field rows to each observed difference. The first table uses the exact
+enum and flag names and is enumerated by the focused integration test.
 
 | `ApplicationView` field | Executable source dependencies | Rebuilt when |
 | --- | --- | --- |
@@ -17,27 +16,26 @@ external-change class against the change plan produced from those rows.
 | `Match` | `Catalogue`, `MatchProfile`, `MatchDocument` | The catalogue, profile match identity/display name/authority, saved match document revision/content, or match error changes. |
 | `MatchError` | `Catalogue`, `MatchProfile`, `MatchDocument` | The same match sources change, including an error appearing, changing, or clearing. |
 
-`ApplicationProjectionCache.changePlan` uses the selected operation row's `OwnedChanges` to choose
-the source identities evaluated as operation-owned, then evaluates the complementary identities as
-external. It combines only identities whose content actually differs into
-`InvalidatedDependencies`, which selects cached templates or rebuilds them. Operation domains are
-therefore executable inputs to source evaluation, while observed identities remain the final
-conservative invalidation authority.
+Operation names do not participate in cache invalidation. The second table records the expected
+source differences exercised by the counter/equality tests, including content-dependent differences
+that may stay unchanged. It is review evidence, not a second runtime authority. The only executable
+operation mapping is `MatchSource`, which decides whether view assembly loads the saved match, uses
+the committed match result, or projects no match; the focused test enumerates all nine rows.
 
-| Application path | Owned source changes after a successful commit | Match source |
+| Application path | Expected observed source differences | Match source |
 | --- | --- | --- |
-| `State` | None; it can observe external catalogue, profile, or match changes | Load saved match |
+| `State` | None without an external write; the external rows below cover changed sources | Load saved match |
 | `CreateProfile` | `ProfileSummary`, `CardUniverseAndOwnership`, `StarterClaimsAndOwnership`, `MatchProfile` | Load saved match |
-| `OpenPack` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership`, `StarterClaimsAndOwnership`, `PackHistoryAndOwnership` | Load saved match |
-| `ClaimStarterDeck` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership`, `StarterClaimsAndOwnership`, `PackHistoryAndOwnership` | Load saved match |
-| `SaveDeck` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership` | Load saved match |
-| `DeleteDeck` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership` | Load saved match |
+| `OpenPack` | `ProfileSummary`, `CardUniverseAndOwnership`, `PackHistoryAndOwnership`; also `SavedDecksAndOwnership` or `StarterClaimsAndOwnership` when the sampled ownership affects those views | Load saved match |
+| `ClaimStarterDeck` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership`, `StarterClaimsAndOwnership`; also `PackHistoryAndOwnership` when an existing latest receipt contains a newly owned card | Load saved match |
+| `SaveDeck` | `ProfileSummary`, `SavedDecksAndOwnership`; also `CardUniverseAndOwnership` when a historical-only card id enters or leaves the saved-deck universe | Load saved match |
+| `DeleteDeck` | `ProfileSummary`, `SavedDecksAndOwnership`; also `CardUniverseAndOwnership` when a historical-only card id leaves the saved-deck universe | Load saved match |
 | `StartMatch` | `MatchDocument` | Use the committed match result |
 | `ApplyMatchAction` | `MatchDocument` | Use the committed match result |
 | `PurgeData` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership`, `StarterClaimsAndOwnership`, `PackHistoryAndOwnership`, `MatchProfile`, `MatchDocument` | No match |
 | External profile revision/content | Exactly the profile-derived identities whose content changed | Load saved match |
 | External match revision/content | `MatchDocument` and therefore `Match`/`MatchError` | Load saved match |
-| Catalogue/authority replacement | Every field carrying a `Catalogue` dependency; compatible profile migration separately changes `ProfileSummary` | Service restart supplies the replacement catalogue |
+| Catalogue/authority replacement | A fresh service performs one cold build of every field; compatible profile migration is compared against that cold reference | Service restart supplies the replacement catalogue |
 | Failed, cancelled, CAS-conflicted, or idempotent operation | None unless a complete successful projection observes a real external source change | No partial cache publication |
 
 The cache retains private templates only. Every public `ApplicationView` and public

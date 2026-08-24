@@ -48,7 +48,6 @@ type internal ApplicationProjectionFieldRow =
 
 type internal ApplicationProjectionOperationRow =
     { Operation: ApplicationProjectionOperation
-      OwnedChanges: ApplicationProjectionDependency
       MatchSource: MatchProjectionSource }
 
 module internal ApplicationProjectionMatrix =
@@ -87,58 +86,22 @@ module internal ApplicationProjectionMatrix =
 
     let operations =
         [| { Operation = ApplicationProjectionOperation.State
-             OwnedChanges = ApplicationProjectionDependency.None
              MatchSource = MatchProjectionSource.LoadSavedMatch }
            { Operation = ApplicationProjectionOperation.CreateProfile
-             OwnedChanges =
-               ApplicationProjectionDependency.ProfileSummary
-               ||| ApplicationProjectionDependency.CardUniverseAndOwnership
-               ||| ApplicationProjectionDependency.StarterClaimsAndOwnership
-               ||| ApplicationProjectionDependency.MatchProfile
              MatchSource = MatchProjectionSource.LoadSavedMatch }
            { Operation = ApplicationProjectionOperation.OpenPack
-             OwnedChanges =
-               ApplicationProjectionDependency.ProfileSummary
-               ||| ApplicationProjectionDependency.CardUniverseAndOwnership
-               ||| ApplicationProjectionDependency.SavedDecksAndOwnership
-               ||| ApplicationProjectionDependency.StarterClaimsAndOwnership
-               ||| ApplicationProjectionDependency.PackHistoryAndOwnership
              MatchSource = MatchProjectionSource.LoadSavedMatch }
            { Operation = ApplicationProjectionOperation.ClaimStarterDeck
-             OwnedChanges =
-               ApplicationProjectionDependency.ProfileSummary
-               ||| ApplicationProjectionDependency.CardUniverseAndOwnership
-               ||| ApplicationProjectionDependency.SavedDecksAndOwnership
-               ||| ApplicationProjectionDependency.StarterClaimsAndOwnership
-               ||| ApplicationProjectionDependency.PackHistoryAndOwnership
              MatchSource = MatchProjectionSource.LoadSavedMatch }
            { Operation = ApplicationProjectionOperation.SaveDeck
-             OwnedChanges =
-               ApplicationProjectionDependency.ProfileSummary
-               ||| ApplicationProjectionDependency.CardUniverseAndOwnership
-               ||| ApplicationProjectionDependency.SavedDecksAndOwnership
              MatchSource = MatchProjectionSource.LoadSavedMatch }
            { Operation = ApplicationProjectionOperation.DeleteDeck
-             OwnedChanges =
-               ApplicationProjectionDependency.ProfileSummary
-               ||| ApplicationProjectionDependency.CardUniverseAndOwnership
-               ||| ApplicationProjectionDependency.SavedDecksAndOwnership
              MatchSource = MatchProjectionSource.LoadSavedMatch }
            { Operation = ApplicationProjectionOperation.StartMatch
-             OwnedChanges = ApplicationProjectionDependency.MatchDocument
              MatchSource = MatchProjectionSource.UseCommittedMatch }
            { Operation = ApplicationProjectionOperation.ApplyMatchAction
-             OwnedChanges = ApplicationProjectionDependency.MatchDocument
              MatchSource = MatchProjectionSource.UseCommittedMatch }
            { Operation = ApplicationProjectionOperation.PurgeData
-             OwnedChanges =
-               ApplicationProjectionDependency.ProfileSummary
-               ||| ApplicationProjectionDependency.CardUniverseAndOwnership
-               ||| ApplicationProjectionDependency.SavedDecksAndOwnership
-               ||| ApplicationProjectionDependency.StarterClaimsAndOwnership
-               ||| ApplicationProjectionDependency.PackHistoryAndOwnership
-               ||| ApplicationProjectionDependency.MatchProfile
-               ||| ApplicationProjectionDependency.MatchDocument
              MatchSource = MatchProjectionSource.NoMatch } |]
 
     let dependencies (segment: ApplicationProjectionSegment) = fields[int segment].Dependencies
@@ -207,20 +170,6 @@ type internal ApplicationProjectionBuildCounts
     member _.LastPack = lastPack
     member _.Match = matchView
     member _.MatchError = matchError
-
-[<Sealed; AllowNullLiteral>]
-type internal ApplicationProjectionChangePlan
-    (
-        operation: ApplicationProjectionOperation,
-        ownedChanges: ApplicationProjectionDependency,
-        externalChanges: ApplicationProjectionDependency,
-        invalidatedDependencies: ApplicationProjectionDependency
-    ) =
-
-    member _.Operation = operation
-    member _.OwnedChanges = ownedChanges
-    member _.ExternalChanges = externalChanges
-    member _.InvalidatedDependencies = invalidatedDependencies
 
 [<Sealed>]
 type internal ApplicationProjectionHooks() =
