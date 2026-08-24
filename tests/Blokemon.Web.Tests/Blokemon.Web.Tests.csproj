@@ -10,4 +10,11 @@
     <PackageReference Include="Shouldly" />
     <PackageReference Include="TUnit" />
   </ItemGroup>
+  <ItemGroup>
+    <Content
+      Include="../../src/Blokemon.Web.Client/wwwroot/content/catalogue.json"
+      Link="content/catalogue.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
 </Project>

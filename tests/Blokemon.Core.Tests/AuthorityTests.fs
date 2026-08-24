@@ -23,6 +23,75 @@ module private Authorities =
 type AuthorityTests() =
 
     [<Test>]
+    [<Arguments(BlokemonMechanicalType.Grass, BlokemonApprovedMechanicalLabel.Blazed)>]
+    [<Arguments(BlokemonMechanicalType.Fire, BlokemonApprovedMechanicalLabel.Curry)>]
+    [<Arguments(BlokemonMechanicalType.Water, BlokemonApprovedMechanicalLabel.Sober)>]
+    [<Arguments(BlokemonMechanicalType.Lightning, BlokemonApprovedMechanicalLabel.Beer)>]
+    [<Arguments(BlokemonMechanicalType.Psychic, BlokemonApprovedMechanicalLabel.Geeked)>]
+    [<Arguments(BlokemonMechanicalType.Fighting, BlokemonApprovedMechanicalLabel.Lairy)>]
+    [<Arguments(BlokemonMechanicalType.Darkness, BlokemonApprovedMechanicalLabel.Dodgy)>]
+    [<Arguments(BlokemonMechanicalType.Colorless, BlokemonApprovedMechanicalLabel.Local)>]
+    [<Arguments(BlokemonMechanicalType.Dragon, BlokemonApprovedMechanicalLabel.Legend)>]
+    [<Arguments(BlokemonMechanicalType.Metal, BlokemonApprovedMechanicalLabel.Roadie)>]
+    member _.``a mechanical type should resolve to its approved player-facing label``
+        (mechanicalType: BlokemonMechanicalType, expected: BlokemonApprovedMechanicalLabel)
+        =
+        BlokemonMechanicalDisplay.ApprovedLabel Authorities.mechanics.Value mechanicalType
+        |> should equal expected
+
+    [<Test>]
+    member _.``runtime validation should reject a duplicated mechanical display mapping``() =
+        let mappings = Array.copy Authorities.mechanics.Value.ApprovedMechanicalDisplayMap
+        mappings[mappings.Length - 1] <- mappings[0]
+
+        let result =
+            BlokemonSetValidator.ValidateRuntime(
+                { Authorities.mechanics.Value with
+                    ApprovedMechanicalDisplayMap = mappings }
+            )
+
+        result.IsValid |> should be False
+
+        result.Issues
+        |> Array.exists (fun issue -> issue.Code = "runtime.mechanical-display-map")
+        |> should be True
+
+    [<Test>]
+    member _.``runtime validation should reject an incomplete mechanical display mapping``() =
+        let result =
+            BlokemonSetValidator.ValidateRuntime(
+                { Authorities.mechanics.Value with
+                    ApprovedMechanicalDisplayMap =
+                        Authorities.mechanics.Value.ApprovedMechanicalDisplayMap |> Array.take 9 }
+            )
+
+        result.IsValid |> should be False
+
+        result.Issues
+        |> Array.exists (fun issue -> issue.Code = "runtime.mechanical-display-map")
+        |> should be True
+
+    [<Test>]
+    member _.``an unmapped mechanical type should fail with the requested type``() =
+        let incomplete =
+            { Authorities.mechanics.Value with
+                ApprovedMechanicalDisplayMap =
+                    Authorities.mechanics.Value.ApprovedMechanicalDisplayMap
+                    |> Array.filter (fun mapping ->
+                        mapping.MechanicalType <> BlokemonMechanicalType.Grass) }
+
+        let failure =
+            try
+                BlokemonMechanicalDisplay.ApprovedLabel incomplete BlokemonMechanicalType.Grass
+                |> ignore
+
+                failwith "The incomplete display map was accepted."
+            with :? InvalidDataException as invalid ->
+                invalid
+
+        failure.Message |> should contain "Grass"
+
+    [<Test>]
     member _.``current authorities should pass owned validation``() =
         BlokemonSetValidator.ValidateRuntime(Authorities.mechanics.Value).IsValid
         |> should be True

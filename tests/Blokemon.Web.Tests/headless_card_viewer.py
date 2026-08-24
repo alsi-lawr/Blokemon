@@ -22,6 +22,39 @@ from static_host import static_server
 
 ROOT = Path(__file__).resolve().parents[2]
 TEST_ROOT = Path(__file__).resolve().parent
+APPROVED_ENERGY_TYPES = [
+    "Blazed",
+    "Curry",
+    "Sober",
+    "Beer",
+    "Geeked",
+    "Lairy",
+    "Dodgy",
+    "Local",
+    "Legend",
+    "Roadie",
+]
+MECHANICAL_ENERGY_TYPES = [
+    "Grass",
+    "Fire",
+    "Water",
+    "Lightning",
+    "Psychic",
+    "Fighting",
+    "Darkness",
+    "Colorless",
+    "Dragon",
+    "Metal",
+]
+BASIC_ENERGY_NAMES = [
+    "Dutch Courage",
+    "Front",
+    "Haze",
+    "Heat",
+    "Resolve",
+    "Rush",
+    "Side Hustle",
+]
 
 
 class EvidenceFailure(RuntimeError):
@@ -872,6 +905,153 @@ def setup_player(devtools, origin, viewer):
     )
 
 
+def energy_catalogue_surfaces(devtools, origin):
+    def names(selector):
+        return devtools.evaluate(
+            f"[...document.querySelectorAll({json.dumps(selector)})].map(card => card.querySelector('b')?.textContent.trim())"
+        )
+
+    def search(input_selector, card_selector, query, expected_count, description):
+        devtools.set_value(input_selector, query)
+        selector = json.dumps(card_selector)
+        devtools.wait_for(
+            f"document.querySelectorAll({selector}).length === {expected_count}"
+            if expected_count is not None
+            else f"document.querySelectorAll({selector}).length > 0",
+            description,
+        )
+        return names(card_selector)
+
+    devtools.set_viewport(1440, 900)
+    devtools.navigate(origin, "/collection")
+    collection_cards = ".collection-grid .card-tile"
+    devtools.wait_for(
+        f"document.querySelectorAll({json.dumps(collection_cards)}).length > 0",
+        "Collection catalogue",
+    )
+    collection_energy = devtools.evaluate(
+        """
+        [...document.querySelectorAll('.collection-grid .card-tile')]
+          .filter(card => card.querySelector(':scope > span:last-child')?.textContent.trim().startsWith('Basic Energy · '))
+          .map(card => ({
+            name: card.querySelector(':scope > b')?.textContent.trim(),
+            metadata: card.querySelector(':scope > span:last-child')?.textContent.trim(),
+            rendered: card.querySelector('.card-face-host')?.checkVisibility() === true
+          }))
+        """
+    )
+    require(
+        sorted(item["name"] for item in collection_energy) == BASIC_ENERGY_NAMES
+        and all(item["rendered"] for item in collection_energy),
+        "Collection renders all seven Basic Energy card faces",
+    )
+    require(
+        next(item for item in collection_energy if item["name"] == "Dutch Courage")["metadata"]
+        == "Basic Energy · Beer",
+        "Collection visibly names Dutch Courage as Basic Energy · Beer",
+    )
+
+    beer_matches = search(
+        "#collection-search",
+        collection_cards,
+        "Beer",
+        None,
+        "Collection Beer search results",
+    )
+    require("Dutch Courage" in beer_matches, "Collection search independently matches the visible Beer type")
+    basic_matches = search(
+        "#collection-search",
+        collection_cards,
+        "Basic Energy",
+        7,
+        "Collection Basic Energy search results",
+    )
+    require(
+        sorted(basic_matches) == BASIC_ENERGY_NAMES,
+        "Collection search independently matches the public Basic Energy category",
+    )
+    search(
+        "#collection-search",
+        collection_cards,
+        "Beer Energy",
+        0,
+        "Collection synthetic Beer Energy search",
+    )
+    require(True, "Collection does not synthesize Beer Energy phrase matching across fields")
+
+    devtools.navigate(origin, "/decks")
+    deck_cards = ".catalogue-grid .catalogue-card"
+    devtools.wait_for(
+        f"document.querySelectorAll({json.dumps(deck_cards)}).length > 0",
+        "Decks catalogue",
+    )
+    deck_energy = devtools.evaluate(
+        """
+        [...document.querySelectorAll('.catalogue-grid .catalogue-card')]
+          .filter(card => card.querySelector('.catalogue-card-name small')?.textContent.trim().startsWith('Basic Energy · '))
+          .map(card => ({
+            name: card.querySelector('.catalogue-card-name b')?.textContent.trim(),
+            metadata: card.querySelector('.catalogue-card-name small')?.textContent.trim()
+          }))
+        """
+    )
+    require(
+        sorted(item["name"] for item in deck_energy) == BASIC_ENERGY_NAMES,
+        "Decks renders all seven Basic Energy catalogue cards",
+    )
+    require(
+        next(item for item in deck_energy if item["name"] == "Dutch Courage")["metadata"]
+        == "Basic Energy · Beer",
+        "Decks visibly names Dutch Courage as Basic Energy · Beer",
+    )
+    beer_matches = search("#deck-search", deck_cards, "Beer", None, "Decks Beer search results")
+    require("Dutch Courage" in beer_matches, "Decks search independently matches the visible Beer type")
+    basic_matches = search(
+        "#deck-search",
+        deck_cards,
+        "Basic Energy",
+        7,
+        "Decks Basic Energy search results",
+    )
+    require(
+        sorted(basic_matches) == BASIC_ENERGY_NAMES,
+        "Decks search independently matches the public Basic Energy category",
+    )
+    search("#deck-search", deck_cards, "Beer Energy", 0, "Decks synthetic Beer Energy search")
+    require(True, "Decks does not synthesize Beer Energy phrase matching across fields")
+    devtools.set_value("#deck-search", "")
+    filtered = devtools.evaluate(
+        """
+        (() => {
+          const button = [...document.querySelectorAll('.filters button')]
+            .find(candidate => candidate.textContent.trim().startsWith('Basic Energy'));
+          if (!button) return false;
+          button.click();
+          return true;
+        })()
+        """
+    )
+    require(filtered, "activated the Decks Basic Energy filter")
+    devtools.wait_for(
+        "document.querySelectorAll('.catalogue-grid .catalogue-card').length === 7",
+        "Decks Basic Energy filter results",
+    )
+    require(True, "Decks Basic Energy filter presents exactly the seven public Energy cards")
+
+
+def home_detail_surface(devtools, origin):
+    devtools.navigate(origin, "/")
+    devtools.wait_for("document.querySelectorAll('.activity-row small').length > 0", "Home recent card details")
+    details = devtools.evaluate(
+        "[...document.querySelectorAll('.activity-row small')].map(detail => detail.textContent.trim())"
+    )
+    prohibited = ["Basic Vim", *MECHANICAL_ENERGY_TYPES]
+    require(
+        details and all(not any(term in detail for term in prohibited) for detail in details),
+        "Home renders public card detail metadata without mechanical Energy names",
+    )
+
+
 def require_reveal_face_up(devtools, viewport, activation):
     time.sleep(0.85)
     state = devtools.evaluate(
@@ -1210,6 +1390,63 @@ def reduced_motion_representatives(devtools, origin, viewer):
     )
 
 
+def energy_component_fixture(devtools, origin):
+    devtools.set_viewport(1440, 900)
+    devtools.set_reduced_motion(True)
+    devtools.navigate(origin, "/?fixture=energy-projection", ready_selector="#energy-projection-fixture")
+    dock = devtools.evaluate(
+        """
+        (() => {
+          const read = selector => {
+            const cost = document.querySelector(selector);
+            return {
+              aria: cost?.getAttribute('aria-label'),
+              initials: [...(cost?.querySelectorAll('i') ?? [])].map(item => item.textContent.trim()),
+              titles: [...(cost?.querySelectorAll('i') ?? [])].map(item => item.getAttribute('title'))
+            };
+          };
+          return {
+            printed: read('.selected-card-rules .energy-cost'),
+            live: read('.attack-list .energy-cost')
+          };
+        })()
+        """
+    )
+    require(
+        dock["printed"]
+        == {
+            "aria": "Beer Energy, Local Energy",
+            "initials": ["B", "L"],
+            "titles": ["Beer Energy", "Local Energy"],
+        },
+        "action dock visibly renders approved printed costs with matching title and aria labels",
+    )
+    require(
+        dock["live"]
+        == {
+            "aria": "Blazed Energy, Local Energy",
+            "initials": ["B", "L"],
+            "titles": ["Blazed Energy", "Local Energy"],
+        },
+        "action dock visibly renders approved live costs with matching title and aria labels",
+    )
+    choices = devtools.evaluate(
+        """
+        [...document.querySelectorAll('#mechanical-type-choice .sheet-options button')]
+          .map(button => ({ label: button.textContent.trim(), pressed: button.getAttribute('aria-pressed') }))
+        """
+    )
+    require(
+        [choice["label"] for choice in choices] == APPROVED_ENERGY_TYPES,
+        "mechanical-type choice buttons render all ten approved labels",
+    )
+    require(
+        next(choice for choice in choices if choice["label"] == "Local")["pressed"] == "true"
+        and all(choice["label"] != "Colorless" for choice in choices),
+        "the raw Colorless mechanical choice is visibly labelled Local",
+    )
+
+
 def cue_isolation(devtools, origin, viewer):
     devtools.set_viewport(1440, 900)
     devtools.set_reduced_motion(True)
@@ -1286,7 +1523,10 @@ def main():
             try:
                 viewer = ViewerEvidence(chrome.devtools)
                 setup_player(chrome.devtools, game.origin, viewer)
+                energy_component_fixture(chrome.devtools, cue.origin)
+                energy_catalogue_surfaces(chrome.devtools, game.origin)
                 pack_gating(chrome.devtools, game.origin, viewer)
+                home_detail_surface(chrome.devtools, game.origin)
                 collection_lifecycle(chrome.devtools, game.origin, viewer)
                 reduced_motion_representatives(chrome.devtools, game.origin, viewer)
                 cue_isolation(chrome.devtools, cue.origin, viewer)

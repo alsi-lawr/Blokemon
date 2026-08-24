@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="MatchScenario.fs" />
+    <Compile Include="EnergyProjectionTests.fs" />
     <Compile Include="OpeningTests.fs" />
     <Compile Include="CommandBoundaryTests.fs" />
     <Compile Include="DeterminismAndReplayTests.fs" />

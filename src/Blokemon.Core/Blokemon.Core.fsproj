@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="SetDesign/BlokemonAttackSemantics.fs" />
+    <Compile Include="SetDesign/BlokemonMechanicalDisplay.fs" />
     <Compile Include="SetDesign/BlokemonSetValidator.fs" />
     <Compile Include="SetDesign/BlokemonSetJson.fs" />
     <Compile Include="SetDesign/BlokemonPackSampler.fs" />

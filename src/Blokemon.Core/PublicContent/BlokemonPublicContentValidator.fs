@@ -442,9 +442,8 @@ module BlokemonPublicContentValidator =
             let mechanical = mechanics.BasicVim[index]
 
             let approvedLabel =
-                mechanics.ApprovedMechanicalDisplayMap
-                    .Single(fun mapping -> mapping.MechanicalType = mechanical.MechanicalType)
-                    .ApprovedLabel.ToString()
+                BlokemonMechanicalDisplay.ApprovedLabel mechanics mechanical.MechanicalType
+                |> _.ToString()
 
             check
                 (content.Id = $"ENERGY-{approvedLabel.ToUpperInvariant()}")

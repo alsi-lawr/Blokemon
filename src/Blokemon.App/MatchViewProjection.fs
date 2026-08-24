@@ -22,6 +22,7 @@ module internal MatchViewProjection =
         (requirement: ChoiceRequirement)
         =
         let cardInstance = cardInstance catalogue
+        let energyLabel = energyLabel catalogue
 
         // A candidate is offered to the chooser precisely because the effect entitles them to see
         // it: an effect that asks you to pick a card from your opponent's hand reveals that hand
@@ -54,10 +55,7 @@ module internal MatchViewProjection =
             (if exposeOptions then
                  requirement.EligibleMechanicalTypes
                  |> Seq.map (fun cardType ->
-                     MatchMechanicalTypeOptionView(
-                         cardType.ToString(),
-                         humanize (cardType.ToString())
-                     ))
+                     MatchMechanicalTypeOptionView(cardType.ToString(), energyLabel cardType))
                  |> Seq.toArray
              else
                  Array.empty),
@@ -81,9 +79,7 @@ module internal MatchViewProjection =
                  |> Seq.map (fun card ->
                      MatchCardTypesView(
                          card.Card.Value,
-                         card.Types
-                         |> Seq.map (fun cardType -> humanize (cardType.ToString()))
-                         |> Seq.toArray
+                         card.Types |> Seq.map energyLabel |> Seq.toArray
                      ))
                  |> Seq.toArray
              else

@@ -80,7 +80,7 @@ public static class BlokemonCatalogueBuilder
                     presentation.ApprovedType.ToString(),
                     $"{mechanical.ProductBucket} · {mechanical.Rank}",
                     cardDocument.BuildMarkup(printedCards[mechanical.Id]),
-                    CollectibleRules(mechanical, presentation),
+                    CollectibleRules(mechanics, mechanical, presentation),
                     0,
                     false
                 )
@@ -98,7 +98,7 @@ public static class BlokemonCatalogueBuilder
                     "Kit",
                     mechanical.Kind.ToString(),
                     cardDocument.BuildMarkup(printedCards[mechanical.Id]),
-                    KitRules(mechanical, presentation),
+                    KitRules(mechanics, mechanical, presentation),
                     0,
                     mechanical.FreelyAvailable
                 )
@@ -113,8 +113,10 @@ public static class BlokemonCatalogueBuilder
                     mechanical.Id,
                     presentation.Name,
                     CardKindView.BasicVim,
-                    mechanical.MechanicalType.ToString(),
-                    "Basic Vim",
+                    BlokemonMechanicalDisplay
+                        .ApprovedLabel(mechanics, mechanical.MechanicalType)
+                        .ToString(),
+                    "Basic Energy",
                     cardDocument.BuildMarkup(printedCards[mechanical.Id]),
                     [
                         new(
@@ -148,6 +150,7 @@ public static class BlokemonCatalogueBuilder
     }
 
     private static CardRuleView[] CollectibleRules(
+        BlokemonRuntimeManifest mechanics,
         BlokemonCollectible mechanical,
         BlokemonPublicCollectible presentation
     )
@@ -162,7 +165,7 @@ public static class BlokemonCatalogueBuilder
                 PublicRule(CardRuleKindView.Ability, effect)
             ),
             .. presentation.Attacks.Select(effect =>
-                AttackRule(effect, attacks[effect.MechanicalId])
+                AttackRule(mechanics, effect, attacks[effect.MechanicalId])
             ),
             .. presentation.Rules.Select(static effect =>
                 PublicRule(CardRuleKindView.Rule, effect)
@@ -171,6 +174,7 @@ public static class BlokemonCatalogueBuilder
     }
 
     private static CardRuleView[] KitRules(
+        BlokemonRuntimeManifest mechanics,
         BlokemonKit mechanical,
         BlokemonPublicSupport presentation
     )
@@ -194,7 +198,7 @@ public static class BlokemonCatalogueBuilder
                 }
                 if (attacks.TryGetValue(effect.MechanicalId, out var attack))
                 {
-                    return AttackRule(effect, attack);
+                    return AttackRule(mechanics, effect, attack);
                 }
                 if (rules.Contains(effect.MechanicalId))
                 {
@@ -210,12 +214,20 @@ public static class BlokemonCatalogueBuilder
     private static CardRuleView PublicRule(CardRuleKindView kind, BlokemonPublicEffect effect) =>
         new(kind, effect.Name, effect.EffectText, [], null);
 
-    private static CardRuleView AttackRule(BlokemonPublicEffect effect, BlokemonAttack attack) =>
+    private static CardRuleView AttackRule(
+        BlokemonRuntimeManifest mechanics,
+        BlokemonPublicEffect effect,
+        BlokemonAttack attack
+    ) =>
         new(
             CardRuleKindView.Attack,
             effect.Name,
             effect.EffectText,
-            attack.VimCost.Select(static cost => cost.ToString()).ToArray(),
+            attack
+                .VimCost.Select(cost =>
+                    BlokemonMechanicalDisplay.ApprovedLabel(mechanics, cost).ToString()
+                )
+                .ToArray(),
             attack.PrintedDamage == 0 ? null : attack.PrintedDamage
         );
 

@@ -148,15 +148,20 @@ module SetAuthority =
         | BlokemonRank.Landlord -> Stage.StageTwo
         | _ -> raise (ArgumentOutOfRangeException(nameof rank))
 
+    let private toPrintedType mechanics mechanicalType =
+        Enum.Parse<BlokemonType>(
+            BlokemonMechanicalDisplay.ApprovedLabel mechanics mechanicalType |> _.ToString()
+        )
+
     let private toAffinity
+        (mechanics: BlokemonRuntimeManifest)
         (affinities: BlokemonMechanicalTypeModifier[])
-        (label: ImmutableDictionary<BlokemonMechanicalType, BlokemonType>)
         =
         if affinities.Length = 0 then
             None
         else
             Some
-                { Type = label[affinities[0].MechanicalType]
+                { Type = toPrintedType mechanics affinities[0].MechanicalType
                   Modifier = affinities[0].Modifier }
 
     let private toPrevious promotesFromId (art: ArtIndex) names supportNames =
@@ -179,9 +184,9 @@ module SetAuthority =
         Option.ofObj text |> Option.defaultValue ""
 
     let private toEntries
+        (mechanics: BlokemonRuntimeManifest)
         (published: BlokemonPublicCollectible)
         (mechanical: BlokemonCollectible)
-        (label: ImmutableDictionary<BlokemonMechanicalType, BlokemonType>)
         =
         let costs =
             mechanical.Attacks
@@ -198,7 +203,7 @@ module SetAuthority =
         let attacks =
             [ for attack in published.Attacks ->
                   let cost = costs[attack.MechanicalId]
-                  let energy = cost.VimCost |> Seq.map (fun vim -> label[vim])
+                  let energy = cost.VimCost |> Seq.map (toPrintedType mechanics)
 
                   CardEntry.attack
                       (MechanicalId.create attack.MechanicalId)
@@ -225,7 +230,7 @@ module SetAuthority =
     let private toBlokemon
         (published: BlokemonPublicCollectible)
         (mechanical: BlokemonCollectible)
-        label
+        mechanics
         (art: ArtIndex)
         names
         supportNames
@@ -257,10 +262,10 @@ module SetAuthority =
                   IllustrationPlacement.Framed
               )
               CardRegion.IdentityStrip(profile.PrintedIdentity())
-              CardRegion.Mechanics(toEntries published mechanical label)
+              CardRegion.Mechanics(toEntries mechanics published mechanical)
               CardRegion.Affinities(
-                  toAffinity mechanical.SoftSpots label,
-                  toAffinity mechanical.StubbornStreaks label,
+                  toAffinity mechanics mechanical.SoftSpots,
+                  toAffinity mechanics mechanical.StubbornStreaks,
                   RetreatCost.create mechanical.TaxiFare
               )
               CardRegion.Colophon(
@@ -345,12 +350,6 @@ module SetAuthority =
         let content = BlokemonPublicContentJson.Manifest(File.ReadAllText publicContentPath)
         let mechanics = BlokemonSetJson.RuntimeManifest(File.ReadAllText mechanicsPath)
 
-        let label =
-            mechanics.ApprovedMechanicalDisplayMap
-            |> Seq.map (fun entry ->
-                entry.MechanicalType, Enum.Parse<BlokemonType>(entry.ApprovedLabel.ToString()))
-            |> indexed
-
         let art = ArtIndex.Scan artDirectory
 
         let mechanical =
@@ -392,7 +391,7 @@ module SetAuthority =
                       toBlokemon
                           card
                           mechanical[card.Id]
-                          label
+                          mechanics
                           art
                           names
                           supportNames

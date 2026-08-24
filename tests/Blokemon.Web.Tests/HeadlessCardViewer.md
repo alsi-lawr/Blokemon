@@ -23,6 +23,11 @@ The executable evidence covers:
 - pack identity and reader gating before face-up, with reading isolated from reveal advancement;
 - revealed cue reading isolated from acknowledgement;
 - action isolation in Home, Decks, Packs, and Match representatives; and
+- all seven Basic Energy faces plus independent Collection and Decks searches by approved type and
+  public category;
+- Home card-detail metadata, selected and live Match costs, cost tooltips and accessibility labels;
+- all approved mechanical-choice button labels, including the raw `Colorless` value rendered as
+  `Local`; and
 - reduced-motion viewer behavior in Collection, Home, Packs, Decks, and Match.
 
 Published files, browser profiles, and logs are transient and are removed when the check exits.

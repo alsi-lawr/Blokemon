@@ -41,12 +41,8 @@ module internal MatchCardProjection =
         | deck -> deck.Name
 
     let energyLabel (catalogue: BlokemonCatalogue) (cardType: BlokemonMechanicalType) =
-        match
-            catalogue.Mechanics.ApprovedMechanicalDisplayMap
-            |> Array.tryFind (fun entry -> entry.MechanicalType = cardType)
-        with
-        | Some entry -> entry.ApprovedLabel.ToString()
-        | None -> humanize (cardType.ToString())
+        BlokemonMechanicalDisplay.ApprovedLabel catalogue.Mechanics cardType
+        |> _.ToString()
 
     let cardName (catalogue: BlokemonCatalogue) (state: MatchState) (card: CardInstanceId) =
         catalogue.Card((state.Card card).MechanicalId.Value).Name
