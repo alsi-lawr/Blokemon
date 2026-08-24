@@ -115,7 +115,10 @@ async function openDatabase(current) {
         clearDocuments();
         invalidateConnection(current, true);
     };
-    database.onclose = () => invalidateConnection(current, false);
+    database.onclose = () => {
+        clearDocuments();
+        invalidateConnection(current, false);
+    };
 
     if (connection !== current) {
         database.close();

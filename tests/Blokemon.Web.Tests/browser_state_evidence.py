@@ -438,6 +438,114 @@ def failure_scenario(devtools):
     )
 
 
+def caller_cancellation_scenario(devtools):
+    return devtools.evaluate(
+        """
+        (async () => {
+          const realIndexedDB = globalThis.indexedDB;
+          const counts = { transactions: 0 };
+          let holdNextWriteCompletion = false;
+          let releaseWriteCompletion;
+          let writeTransactionCreated;
+          let writeTransactionCompleted;
+          const writeCreated = new Promise((resolve) => {
+            writeTransactionCreated = resolve;
+          });
+          const writeCompleted = new Promise((resolve) => {
+            writeTransactionCompleted = resolve;
+          });
+          const originalTransaction = IDBDatabase.prototype.transaction;
+          IDBDatabase.prototype.transaction = function (...arguments_) {
+            const transaction = originalTransaction.apply(this, arguments_);
+            counts.transactions++;
+            if (holdNextWriteCompletion && arguments_[1] === "readwrite") {
+              holdNextWriteCompletion = false;
+              transaction.addEventListener("complete", writeTransactionCompleted);
+              Object.defineProperty(transaction, "oncomplete", {
+                configurable: true,
+                set(handler) {
+                  releaseWriteCompletion = handler;
+                }
+              });
+              writeTransactionCreated();
+            }
+            return transaction;
+          };
+
+          function waitAsCaller(operation, signal) {
+            const cancellation = new Promise((_, reject) => {
+              signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+            });
+            return Promise.race([operation, cancellation]);
+          }
+
+          const state = await import("/browserState.js?caller-cancellation");
+          await state.create("caller-cancelled-update", '{"stage":"before"}');
+          const before = await state.read("caller-cancelled-update");
+          const beforeOperationTransactions = counts.transactions;
+
+          holdNextWriteCompletion = true;
+          const operation = state.update(
+            "caller-cancelled-update",
+            before.revision,
+            '{"stage":"after"}'
+          );
+          const controller = new AbortController();
+          const caller = waitAsCaller(operation, controller.signal);
+          await writeCreated;
+          controller.abort(new DOMException("Caller stopped waiting", "AbortError"));
+
+          let callerCancellation = null;
+          try {
+            await caller;
+          } catch (error) {
+            callerCancellation = `${error.name}: ${error.message}`;
+          }
+
+          await writeCompleted;
+          const rawOpen = realIndexedDB.open("blokemon-browser-local-v1", 1);
+          const rawDatabase = await new Promise((resolve, reject) => {
+            rawOpen.onsuccess = () => resolve(rawOpen.result);
+            rawOpen.onerror = () => reject(rawOpen.error);
+          });
+          const rawTransaction = originalTransaction.call(rawDatabase, "documents", "readonly");
+          const rawRequest = rawTransaction.objectStore("documents").get("caller-cancelled-update");
+          const durableAfterCancellation = await new Promise((resolve, reject) => {
+            rawRequest.onsuccess = () => resolve(rawRequest.result);
+            rawRequest.onerror = () => reject(rawRequest.error);
+          });
+          await new Promise((resolve, reject) => {
+            rawTransaction.oncomplete = resolve;
+            rawTransaction.onabort = reject;
+            rawTransaction.onerror = reject;
+          });
+          rawDatabase.close();
+
+          const beforeCompletionDelivery = await state.read("caller-cancelled-update");
+          releaseWriteCompletion();
+          const operationResult = await operation;
+          const beforeFinalRead = counts.transactions;
+          const finalRead = await state.read("caller-cancelled-update");
+
+          return {
+            before,
+            callerCancellation,
+            durableAfterCancellation: {
+              revision: durableAfterCancellation.revision,
+              json: durableAfterCancellation.json
+            },
+            beforeCompletionDelivery,
+            operationResult,
+            finalRead,
+            operationTransactions: counts.transactions - beforeOperationTransactions,
+            finalReadTransactions: counts.transactions - beforeFinalRead,
+            total: { ...counts }
+          };
+        })()
+        """
+    )
+
+
 def lifecycle_scenario(devtools):
     return devtools.evaluate(
         """
@@ -511,8 +619,10 @@ def lifecycle_scenario(devtools):
           const closed = openedDatabases.at(-1);
           closed.close();
           closed.dispatchEvent(new Event("close"));
-          const afterClose = await state.read("after-close");
+          const afterClose = await state.read("lifecycle-document");
           const afterClosure = { ...counts };
+          const closeReadTransactions =
+            afterClosure.transactions - afterVersionChange.transactions;
 
           globalThis.dispatchEvent(new PageTransitionEvent("pagehide"));
           const afterPageHide = await state.read("lifecycle-document");
@@ -546,6 +656,7 @@ def lifecycle_scenario(devtools):
             afterVersionChange,
             afterClose,
             afterClosure,
+            closeReadTransactions,
             afterPageHide,
             afterDisposal,
             openFailure,
@@ -677,6 +788,28 @@ def verify_failure_contract(result):
     require(result["deleteAbortReloads"] == 1, "an aborted delete invalidates before one reload")
 
 
+def verify_caller_cancellation_contract(result):
+    before = {"revision": 1, "json": '{"stage":"before"}'}
+    after = {"revision": 2, "json": '{"stage":"after"}'}
+    require(result["before"] == before, "the cancellation fixture begins with a committed document")
+    require(
+        result["callerCancellation"] == "AbortError: Caller stopped waiting",
+        "caller cancellation wins while JavaScript is still awaiting durable completion",
+    )
+    require(
+        result["durableAfterCancellation"] == after,
+        "the IndexedDB transaction can durably complete after caller cancellation",
+    )
+    require(
+        result["beforeCompletionDelivery"] == before,
+        "caller cancellation cannot publish the replacement before completion reaches JavaScript",
+    )
+    require(result["operationResult"] == 2, "the continuing operation reports its durable revision")
+    require(result["finalRead"] == after, "only the durably committed replacement becomes hot")
+    require(result["operationTransactions"] == 1, "the cancelled caller initiated one write transaction")
+    require(result["finalReadTransactions"] == 0, "the durable replacement is written through once complete")
+
+
 def verify_lifecycle_contract(result):
     require(
         result["afterConcurrentFirstUse"] == {"openAttempts": 1, "opens": 1, "transactions": 3},
@@ -686,7 +819,11 @@ def verify_lifecycle_contract(result):
         result["afterVersionChange"] == {"openAttempts": 2, "opens": 2, "transactions": 4},
         "version change closes the old handle and the next operation reopens once",
     )
-    require(result["afterClose"] is None, "close-event recovery completes a cold read")
+    require(
+        result["afterClose"] == {"revision": 1, "json": '{"stage":"versionchange"}'},
+        "unexpected close invalidation reloads the cached key's durable value",
+    )
+    require(result["closeReadTransactions"] == 1, "the cached key reread uses one transaction after close")
     require(
         result["afterClosure"] == {"openAttempts": 3, "opens": 3, "transactions": 5},
         "database closure invalidates the cached handle and reopens once",
@@ -777,6 +914,12 @@ def main():
                     failures = failure_scenario(chrome.devtools)
                     print(f"FAILURES {json.dumps(failures, sort_keys=True)}")
                     verify_failure_contract(failures)
+
+                    chrome.devtools.command("Page.reload", {"ignoreCache": True})
+                    chrome.devtools.wait_for("document.readyState === 'complete'", "fresh cancellation evidence page")
+                    cancellation = caller_cancellation_scenario(chrome.devtools)
+                    print(f"CANCELLATION {json.dumps(cancellation, sort_keys=True)}")
+                    verify_caller_cancellation_contract(cancellation)
 
                     chrome.devtools.command("Page.reload", {"ignoreCache": True})
                     chrome.devtools.wait_for("document.readyState === 'complete'", "fresh lifecycle evidence page")
