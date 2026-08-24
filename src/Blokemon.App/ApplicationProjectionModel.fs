@@ -1,7 +1,6 @@
 namespace Blokemon.App
 
 open System
-open System.Threading
 open Blokemon.App.Contracts
 
 [<Flags>]
@@ -15,6 +14,7 @@ type internal ApplicationProjectionDependency =
     | PackHistoryAndOwnership = 32
     | MatchProfile = 64
     | MatchDocument = 128
+    | All = 255
 
 type internal ApplicationProjectionSegment =
     | Profile = 0
@@ -157,6 +157,15 @@ type internal ProfileProjectionIdentities =
       LastPack: string
       MatchProfile: string }
 
+type internal ProfileProjectionIdentityPublication =
+    | RetainProfileProjectionIdentities
+    | ReplaceProfileProjectionIdentities of int64 * string * ProfileProjectionIdentities
+    | ClearProfileProjectionIdentities
+
+type internal ProfileProjectionIdentityResult =
+    { Identities: ProfileProjectionIdentities
+      Publication: ProfileProjectionIdentityPublication }
+
 type internal ApplicationProjectionKeys =
     { Catalogue: string
       ProfileSummary: string
@@ -199,145 +208,33 @@ type internal ApplicationProjectionBuildCounts
     member _.Match = matchView
     member _.MatchError = matchError
 
-type private CachedApplicationProjection =
-    { Keys: ApplicationProjectionKeys
-      View: ApplicationView }
+[<Sealed; AllowNullLiteral>]
+type internal ApplicationProjectionChangePlan
+    (
+        operation: ApplicationProjectionOperation,
+        ownedChanges: ApplicationProjectionDependency,
+        externalChanges: ApplicationProjectionDependency,
+        invalidatedDependencies: ApplicationProjectionDependency
+    ) =
+
+    member _.Operation = operation
+    member _.OwnedChanges = ownedChanges
+    member _.ExternalChanges = externalChanges
+    member _.InvalidatedDependencies = invalidatedDependencies
 
 [<Sealed>]
-type internal ApplicationProjectionCache(catalogueIdentity: string) =
-    let gate = new SemaphoreSlim(1, 1)
-    let identityLock = obj ()
-    let counts = Array.zeroCreate<int64> 8
-    let mutable cached: CachedApplicationProjection option = None
-    let mutable publishedGeneration = Int64.MinValue
+type internal ApplicationProjectionHooks() =
+    member val AfterGateAcquired: Action | null = null with get, set
 
-    let mutable profileIdentities: (int64 * string * ProfileProjectionIdentities) option =
-        None
+    member val AfterProfileIdentityConstruction: Action | null = null with get, set
 
-    let mutable profileIdentityGeneration = Int64.MinValue
+    member val AfterSegmentConstruction: Action<ApplicationProjectionSegment> | null =
+        null with get, set
 
-    let uses dependency value = value &&& dependency = dependency
+    member val AfterTemplateConstruction: Action | null = null with get, set
 
-    let sameSources segment (left: ApplicationProjectionKeys) (right: ApplicationProjectionKeys) =
-        let dependencies = ApplicationProjectionMatrix.dependencies segment
+    member val BeforeTemplatePublication: Action | null = null with get, set
 
-        (not (uses ApplicationProjectionDependency.Catalogue dependencies)
-         || String.Equals(left.Catalogue, right.Catalogue, StringComparison.Ordinal))
-        && (not (uses ApplicationProjectionDependency.ProfileSummary dependencies)
-            || String.Equals(left.ProfileSummary, right.ProfileSummary, StringComparison.Ordinal))
-        && (not (uses ApplicationProjectionDependency.CardUniverseAndOwnership dependencies)
-            || String.Equals(left.Cards, right.Cards, StringComparison.Ordinal))
-        && (not (uses ApplicationProjectionDependency.SavedDecksAndOwnership dependencies)
-            || String.Equals(left.Decks, right.Decks, StringComparison.Ordinal))
-        && (not (uses ApplicationProjectionDependency.StarterClaimsAndOwnership dependencies)
-            || String.Equals(left.StarterDecks, right.StarterDecks, StringComparison.Ordinal))
-        && (not (uses ApplicationProjectionDependency.PackHistoryAndOwnership dependencies)
-            || String.Equals(left.LastPack, right.LastPack, StringComparison.Ordinal))
-        && (not (uses ApplicationProjectionDependency.MatchProfile dependencies)
-            || String.Equals(left.MatchProfile, right.MatchProfile, StringComparison.Ordinal))
-        && (not (uses ApplicationProjectionDependency.MatchDocument dependencies)
-            || String.Equals(left.MatchDocument, right.MatchDocument, StringComparison.Ordinal))
-
-    member _.CatalogueIdentity = catalogueIdentity
-
-    member _.ProfileIdentities
-        (
-            request: ApplicationProjectionRequest,
-            revision: int64,
-            contentIdentity: string,
-            build: unit -> ProfileProjectionIdentities
-        ) =
-        lock identityLock (fun () ->
-            match profileIdentities with
-            | Some(cachedRevision, identity, identities) when
-                cachedRevision = revision
-                && String.Equals(identity, contentIdentity, StringComparison.Ordinal)
-                ->
-                identities
-            | _ ->
-                let identities = build ()
-
-                if request.Generation >= profileIdentityGeneration then
-                    profileIdentities <- Some(revision, contentIdentity, identities)
-                    profileIdentityGeneration <- request.Generation
-
-                identities)
-
-    member _.BuildCounts =
-        ApplicationProjectionBuildCounts(
-            Volatile.Read(&counts[int ApplicationProjectionSegment.Profile]),
-            Volatile.Read(&counts[int ApplicationProjectionSegment.Cards]),
-            Volatile.Read(&counts[int ApplicationProjectionSegment.Decks]),
-            Volatile.Read(&counts[int ApplicationProjectionSegment.StarterDecks]),
-            Volatile.Read(&counts[int ApplicationProjectionSegment.PackPresentation]),
-            Volatile.Read(&counts[int ApplicationProjectionSegment.LastPack]),
-            Volatile.Read(&counts[int ApplicationProjectionSegment.Match]),
-            Volatile.Read(&counts[int ApplicationProjectionSegment.MatchError])
-        )
-
-    member _.Assemble
-        (
-            request: ApplicationProjectionRequest,
-            keys: ApplicationProjectionKeys,
-            builders: ApplicationProjectionBuilders,
-            cancellationToken: CancellationToken
-        ) =
-        task {
-            do! gate.WaitAsync cancellationToken
-
-            try
-                cancellationToken.ThrowIfCancellationRequested()
-
-                let previous = cached
-
-                let select segment previousValue build =
-                    match previous with
-                    | Some existing when sameSources segment existing.Keys keys -> previousValue ()
-                    | _ ->
-                        Interlocked.Increment(&counts[int segment]) |> ignore
-                        build ()
-
-                let view =
-                    ApplicationView(
-                        select
-                            ApplicationProjectionSegment.Profile
-                            (fun () -> previous.Value.View.Profile)
-                            builders.Profile,
-                        select
-                            ApplicationProjectionSegment.Cards
-                            (fun () -> previous.Value.View.Cards)
-                            builders.Cards,
-                        select
-                            ApplicationProjectionSegment.Decks
-                            (fun () -> previous.Value.View.Decks)
-                            builders.Decks,
-                        select
-                            ApplicationProjectionSegment.StarterDecks
-                            (fun () -> previous.Value.View.StarterDecks)
-                            builders.StarterDecks,
-                        select
-                            ApplicationProjectionSegment.PackPresentation
-                            (fun () -> previous.Value.View.PackPresentation)
-                            builders.PackPresentation,
-                        select
-                            ApplicationProjectionSegment.LastPack
-                            (fun () -> previous.Value.View.LastPack)
-                            builders.LastPack,
-                        select
-                            ApplicationProjectionSegment.Match
-                            (fun () -> previous.Value.View.Match)
-                            builders.Match,
-                        select
-                            ApplicationProjectionSegment.MatchError
-                            (fun () -> previous.Value.View.MatchError)
-                            builders.MatchError
-                    )
-
-                if request.Generation >= publishedGeneration then
-                    cached <- Some { Keys = keys; View = view }
-                    publishedGeneration <- request.Generation
-
-                return view
-            finally
-                gate.Release() |> ignore
-        }
+type internal CachedApplicationProjection =
+    { Keys: ApplicationProjectionKeys
+      View: ApplicationView }

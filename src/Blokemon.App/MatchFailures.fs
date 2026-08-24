@@ -19,12 +19,19 @@ module internal MatchFailures =
 
     let cpuPlayer = PlayerId cpuPlayerId
 
-    let failed code message : MatchServiceResult =
+    let noDocumentProjection =
+        { Revision = Nullable()
+          ContentIdentity = null }
+
+    let documentProjection (loaded: LoadedMatch) =
+        { Revision = Nullable loaded.DocumentRevision
+          ContentIdentity = loaded.DocumentContentIdentity }
+
+    let failed code message : MatchProjectionResult =
         { View = null
           Error = ApiError(code, message)
           Presentation = null
-          DocumentRevision = Nullable()
-          DocumentContentIdentity = null }
+          DocumentIdentity = noDocumentProjection }
 
     let stateConflict () =
         failed "state.conflict" "The saved battle changed. Select the action again."

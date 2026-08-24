@@ -51,8 +51,7 @@ module internal MatchStartFlow =
                         { View = null
                           Error = loaded.Error
                           Presentation = null
-                          DocumentRevision = Nullable()
-                          DocumentContentIdentity = null }
+                          DocumentIdentity = noDocumentProjection }
                 else
 
                     let requestFingerprint = startFingerprint request
@@ -75,8 +74,7 @@ module internal MatchStartFlow =
                                         { View = toView existing displayName
                                           Error = null
                                           Presentation = null
-                                          DocumentRevision = Nullable existing.DocumentRevision
-                                          DocumentContentIdentity = existing.DocumentContentIdentity }
+                                          DocumentIdentity = documentProjection existing }
                                 else
                                     Some(
                                         failed
@@ -185,8 +183,7 @@ module internal MatchStartFlow =
                                             { View = null
                                               Error = advanced.Error
                                               Presentation = null
-                                              DocumentRevision = Nullable()
-                                              DocumentContentIdentity = null }
+                                              DocumentIdentity = noDocumentProjection }
                                     else
 
                                         let document =
@@ -223,8 +220,7 @@ module internal MatchStartFlow =
                                                 { View = null
                                                   Error = error
                                                   Presentation = null
-                                                  DocumentRevision = Nullable()
-                                                  DocumentContentIdentity = null }
+                                                  DocumentIdentity = noDocumentProjection }
                                         | None ->
 
                                             let json =
@@ -269,10 +265,8 @@ module internal MatchStartFlow =
                                                             document
                                                             displayName
                                                             presentation
-                                                      DocumentRevision =
-                                                        Nullable committed.DocumentRevision
-                                                      DocumentContentIdentity =
-                                                        committed.DocumentContentIdentity }
+                                                      DocumentIdentity =
+                                                        documentProjection committed }
                                             | _ ->
                                                 return!
                                                     reconcileStartConflict

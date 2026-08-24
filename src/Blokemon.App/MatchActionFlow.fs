@@ -60,8 +60,7 @@ module internal MatchActionFlow =
                         { View = null
                           Error = loaded.Error
                           Presentation = null
-                          DocumentRevision = Nullable()
-                          DocumentContentIdentity = null }
+                          DocumentIdentity = noDocumentProjection }
                 else
 
                     match loaded.Match with
@@ -96,8 +95,7 @@ module internal MatchActionFlow =
                                         { View = toView current displayName
                                           Error = null
                                           Presentation = null
-                                          DocumentRevision = Nullable current.DocumentRevision
-                                          DocumentContentIdentity = current.DocumentContentIdentity }
+                                          DocumentIdentity = documentProjection current }
                                 else
                                     return
                                         failed
@@ -173,8 +171,7 @@ module internal MatchActionFlow =
                                                     { View = null
                                                       Error = materialized.Error
                                                       Presentation = null
-                                                      DocumentRevision = Nullable()
-                                                      DocumentContentIdentity = null }
+                                                      DocumentIdentity = noDocumentProjection }
                                             else
 
                                                 match materialized.Command with
@@ -191,8 +188,8 @@ module internal MatchActionFlow =
                                                             { View = null
                                                               Error = rejection rejected.Code
                                                               Presentation = null
-                                                              DocumentRevision = Nullable()
-                                                              DocumentContentIdentity = null }
+                                                              DocumentIdentity =
+                                                                noDocumentProjection }
                                                     | CommandOutcome.Applied(appliedState,
                                                                              appliedEvents) ->
 
@@ -226,8 +223,8 @@ module internal MatchActionFlow =
                                                                 { View = null
                                                                   Error = advanced.Error
                                                                   Presentation = null
-                                                                  DocumentRevision = Nullable()
-                                                                  DocumentContentIdentity = null }
+                                                                  DocumentIdentity =
+                                                                    noDocumentProjection }
                                                         else
 
                                                             let clientCommands =
@@ -292,11 +289,8 @@ module internal MatchActionFlow =
                                                                             document
                                                                             displayName
                                                                             presentation
-                                                                      DocumentRevision =
-                                                                        Nullable
-                                                                            committed.DocumentRevision
-                                                                      DocumentContentIdentity =
-                                                                        committed.DocumentContentIdentity }
+                                                                      DocumentIdentity =
+                                                                        documentProjection committed }
                                                             | _ ->
                                                                 return!
                                                                     reconcileActionConflict

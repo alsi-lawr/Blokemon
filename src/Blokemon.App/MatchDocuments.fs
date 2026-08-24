@@ -14,9 +14,7 @@ type internal GameCommandId = Blokemon.Game.CommandId
 type MatchServiceResult =
     { View: MatchView | null
       Error: ApiError | null
-      Presentation: MatchPresentationView | null
-      DocumentRevision: Nullable<int64>
-      DocumentContentIdentity: string | null }
+      Presentation: MatchPresentationView | null }
 
     // The C# sealed record this replaces carried compiler-generated structural operators, and an
     // F# record emits none: a C# `==` against it would silently fall back to reference equality.
@@ -25,6 +23,16 @@ type MatchServiceResult =
 
     static member op_Inequality(left: MatchServiceResult, right: MatchServiceResult) =
         not (left.Equals right)
+
+type internal MatchDocumentProjectionIdentity =
+    { Revision: Nullable<int64>
+      ContentIdentity: string | null }
+
+type internal MatchProjectionResult =
+    { View: MatchView | null
+      Error: ApiError | null
+      Presentation: MatchPresentationView | null
+      DocumentIdentity: MatchDocumentProjectionIdentity }
 
 // The persisted battle documents. [<CLIMutable>] is what lets these fields carry
 // [<property: JsonRequired>]: System.Text.Json refuses a required property with no setter, and an

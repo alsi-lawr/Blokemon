@@ -17,8 +17,13 @@ type LocalApplicationService
         profileAuthorityPolicy: ProfileAuthorityPolicy
     ) =
 
+    let projectionHooks = ApplicationProjectionHooks()
+
     let projections =
-        ApplicationProjectionCache(ApplicationProjectionIdentity.catalogue catalogue)
+        ApplicationProjectionCache(
+            ApplicationProjectionIdentity.catalogue catalogue,
+            projectionHooks
+        )
 
     let mutable projectionGeneration = 0L
 
@@ -34,6 +39,12 @@ type LocalApplicationService
               Operation = operation } }
 
     member internal _.ProjectionBuildCounts = projections.BuildCounts
+
+    member internal _.ProjectionHooks = projectionHooks
+
+    member internal _.ProjectionLastChangePlan = projections.LastChangePlan
+
+    member internal _.ProjectionIdentityBuildCount = projections.ProfileIdentityBuildCount
 
     /// Everything the client draws: the profile, its cards, decks and the saved battle.
     member _.State([<Optional>] cancellationToken: CancellationToken) =

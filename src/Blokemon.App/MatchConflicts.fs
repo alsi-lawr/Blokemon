@@ -31,8 +31,7 @@ module internal MatchConflicts =
                     { View = null
                       Error = reloaded.Error
                       Presentation = null
-                      DocumentRevision = Nullable()
-                      DocumentContentIdentity = null }
+                      DocumentIdentity = noDocumentProjection }
             else
                 match reloaded.Match with
                 | null -> return stateConflict ()
@@ -49,8 +48,7 @@ module internal MatchConflicts =
                                 { View = toView loaded displayName
                                   Error = null
                                   Presentation = null
-                                  DocumentRevision = Nullable loaded.DocumentRevision
-                                  DocumentContentIdentity = loaded.DocumentContentIdentity }
+                                  DocumentIdentity = documentProjection loaded }
                         else
                             return
                                 failed
@@ -87,8 +85,7 @@ module internal MatchConflicts =
                     { View = null
                       Error = reloaded.Error
                       Presentation = null
-                      DocumentRevision = Nullable()
-                      DocumentContentIdentity = null }
+                      DocumentIdentity = noDocumentProjection }
             else
                 match reloaded.Match with
                 | null -> return stateConflict ()
@@ -116,8 +113,7 @@ module internal MatchConflicts =
                                     { View = toView loaded displayName
                                       Error = null
                                       Presentation = null
-                                      DocumentRevision = Nullable loaded.DocumentRevision
-                                      DocumentContentIdentity = loaded.DocumentContentIdentity }
+                                      DocumentIdentity = documentProjection loaded }
                             else
                                 return
                                     failed

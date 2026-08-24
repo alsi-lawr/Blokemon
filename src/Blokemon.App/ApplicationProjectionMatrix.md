@@ -1,9 +1,10 @@
 # Complete application projection invalidation matrix
 
-The projection cache always returns one complete `ApplicationView`. Reuse is decided from the
-source identities below, not from an operation name. This means an idempotent operation reuses
-unchanged segments, while an external write seen during any operation invalidates every segment
-whose actual source identity changed.
+The executable authority is `ApplicationProjectionMatrix.fields` and
+`ApplicationProjectionMatrix.operations` in `ApplicationProjectionModel.fs`. The tables below use
+those exact enum and flag names; they are the review view of the same rows, not another production
+configuration. Focused integration tests execute every application operation and each observable
+external-change class against the change plan produced from those rows.
 
 | `ApplicationView` field | Executable source dependencies | Rebuilt when |
 | --- | --- | --- |
@@ -16,26 +17,32 @@ whose actual source identity changed.
 | `Match` | `Catalogue`, `MatchProfile`, `MatchDocument` | The catalogue, profile match identity/display name/authority, saved match document revision/content, or match error changes. |
 | `MatchError` | `Catalogue`, `MatchProfile`, `MatchDocument` | The same match sources change, including an error appearing, changing, or clearing. |
 
-`ApplicationProjectionMatrix.fields` is the table used by
-`ApplicationProjectionCache.sameSources`; it is the executable authority for field reuse.
+`ApplicationProjectionCache.changePlan` uses the selected operation row's `OwnedChanges` to choose
+the source identities evaluated as operation-owned, then evaluates the complementary identities as
+external. It combines only identities whose content actually differs into
+`InvalidatedDependencies`, which selects cached templates or rebuilds them. Operation domains are
+therefore executable inputs to source evaluation, while observed identities remain the final
+conservative invalidation authority.
 
 | Application path | Owned source changes after a successful commit | Match source |
 | --- | --- | --- |
 | `State` | None; it can observe external catalogue, profile, or match changes | Load saved match |
-| `CreateProfile` | `ProfileSummary`; the new profile also changes the profile-derived source identities from `none` | Load saved match |
-| `OpenPack` | `ProfileSummary`, collection ownership/universe, deck legality ownership, starter-leader ownership, latest-pack history/ownership | Load saved match |
-| `ClaimStarterDeck` | `ProfileSummary`, collection ownership/universe, saved decks/legality, starter claims/leader ownership, and an existing latest pack's sampled-card ownership | Load saved match |
-| `SaveDeck` | `ProfileSummary`, saved decks/legality, and collection card universe when historical-only ids enter or leave | Load saved match |
-| `DeleteDeck` | `ProfileSummary`, saved decks/legality, and collection card universe when historical-only ids leave | Load saved match |
+| `CreateProfile` | `ProfileSummary`, `CardUniverseAndOwnership`, `StarterClaimsAndOwnership`, `MatchProfile` | Load saved match |
+| `OpenPack` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership`, `StarterClaimsAndOwnership`, `PackHistoryAndOwnership` | Load saved match |
+| `ClaimStarterDeck` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership`, `StarterClaimsAndOwnership`, `PackHistoryAndOwnership` | Load saved match |
+| `SaveDeck` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership` | Load saved match |
+| `DeleteDeck` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership` | Load saved match |
 | `StartMatch` | `MatchDocument` | Use the committed match result |
 | `ApplyMatchAction` | `MatchDocument` | Use the committed match result |
-| `PurgeData` | All profile and match source identities return to `none`; catalogue presentation remains reusable | No match |
+| `PurgeData` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership`, `StarterClaimsAndOwnership`, `PackHistoryAndOwnership`, `MatchProfile`, `MatchDocument` | No match |
 | External profile revision/content | Exactly the profile-derived identities whose content changed | Load saved match |
 | External match revision/content | `MatchDocument` and therefore `Match`/`MatchError` | Load saved match |
 | Catalogue/authority replacement | Every field carrying a `Catalogue` dependency; compatible profile migration separately changes `ProfileSummary` | Service restart supplies the replacement catalogue |
 | Failed, cancelled, CAS-conflicted, or idempotent operation | None unless a complete successful projection observes a real external source change | No partial cache publication |
 
-`ApplicationProjectionMatrix.operations` supplies the match-source choice used by
-`ApplicationViewAssembly.resolveMatch` and records the owned source domains for each operation.
-Actual source identities remain the final invalidation authority so retries and cross-tab writes are
-both handled without speculative invalidation.
+The cache retains private templates only. Every public `ApplicationView` and public
+`MatchServiceResult` is a newly materialized deep graph, so public array mutation cannot become a
+source identity or corrupt a later response. Cancellation is checked after identity construction,
+after each changed template segment, after complete template construction, and immediately before
+publication. A rebuilt profile-identity candidate remains staged until the same final gate publishes
+it with the complete application template, so cancellation cannot publish either cache alone.

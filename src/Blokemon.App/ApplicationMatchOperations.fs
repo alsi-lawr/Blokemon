@@ -40,7 +40,7 @@ module internal ApplicationMatchOperations =
                 | current ->
 
                     let! played =
-                        matches.Start(
+                        matches.StartProjection(
                             current.Profile,
                             current.Profile.DisplayName.Value,
                             request,
@@ -51,7 +51,14 @@ module internal ApplicationMatchOperations =
                     | NonNull error -> return failed<MatchMutationView> error
                     | Null ->
                         let! view = toView current cancellationToken played
-                        return succeeded (MatchMutationView(view, played.Presentation))
+
+                        return
+                            succeeded (
+                                MatchMutationView(
+                                    view,
+                                    ApplicationViewIsolation.presentation played.Presentation
+                                )
+                            )
         }
 
     let applyMatchAction
@@ -83,7 +90,7 @@ module internal ApplicationMatchOperations =
                 | current ->
 
                     let! played =
-                        matches.Apply(
+                        matches.ApplyProjection(
                             current.Profile,
                             current.Profile.DisplayName.Value,
                             matchId,
@@ -95,5 +102,12 @@ module internal ApplicationMatchOperations =
                     | NonNull error -> return failed<MatchMutationView> error
                     | Null ->
                         let! view = toView current cancellationToken played
-                        return succeeded (MatchMutationView(view, played.Presentation))
+
+                        return
+                            succeeded (
+                                MatchMutationView(
+                                    view,
+                                    ApplicationViewIsolation.presentation played.Presentation
+                                )
+                            )
         }

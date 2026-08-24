@@ -6,6 +6,7 @@ open System.Threading
 open System.Threading.Tasks
 open Blokemon.App.Catalogue
 open Blokemon.App.Contracts
+open Blokemon.App.ApplicationViewIsolation
 open Blokemon.App.MatchFailures
 open Blokemon.App.MatchStore
 open Blokemon.App.MatchViewProjection
@@ -23,12 +24,9 @@ type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentSt
           Cached = null }
 
     /// The saved battle as this player sees it.
-    member _.State
-        (
-            profile: LocalProfile,
-            displayName: string,
-            [<Optional>] cancellationToken: CancellationToken
-        ) =
+    member internal _.StateProjection
+        (profile: LocalProfile, displayName: string, cancellationToken: CancellationToken)
+        =
         task {
             let! loaded = load context profile cancellationToken
 
@@ -37,8 +35,7 @@ type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentSt
                     { View = null
                       Error = loaded.Error
                       Presentation = null
-                      DocumentRevision = Nullable()
-                      DocumentContentIdentity = null }
+                      DocumentIdentity = noDocumentProjection }
             else
                 return
                     { View =
@@ -47,28 +44,61 @@ type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentSt
                         | value -> toView context value displayName
                       Error = null
                       Presentation = null
-                      DocumentRevision =
+                      DocumentIdentity =
                         match loaded.Match with
-                        | null -> Nullable()
-                        | value -> Nullable value.DocumentRevision
-                      DocumentContentIdentity =
-                        match loaded.Match with
-                        | null -> null
-                        | value -> value.DocumentContentIdentity }
+                        | null -> noDocumentProjection
+                        | value -> documentProjection value }
+        }
+
+    /// The saved battle as this player sees it.
+    member this.State
+        (
+            profile: LocalProfile,
+            displayName: string,
+            [<Optional>] cancellationToken: CancellationToken
+        ) =
+        task {
+            let! projection = this.StateProjection(profile, displayName, cancellationToken)
+            return matchResult projection
         }
 
     /// Starts a battle against the computer.
-    member _.Start
+    member internal _.StartProjection
+        (
+            profile: LocalProfile,
+            displayName: string,
+            request: StartMatchRequest,
+            cancellationToken: CancellationToken
+        ) =
+        MatchStartFlow.start context profile displayName request cancellationToken
+
+    /// Starts a battle against the computer.
+    member this.Start
         (
             profile: LocalProfile,
             displayName: string,
             request: StartMatchRequest,
             [<Optional>] cancellationToken: CancellationToken
         ) =
-        MatchStartFlow.start context profile displayName request cancellationToken
+        task {
+            let! projection = this.StartProjection(profile, displayName, request, cancellationToken)
+
+            return matchResult projection
+        }
 
     /// Applies one player move, then lets the computer answer.
-    member _.Apply
+    member internal _.ApplyProjection
+        (
+            profile: LocalProfile,
+            displayName: string,
+            routeMatchId: Guid,
+            request: ApplyMatchActionRequest,
+            cancellationToken: CancellationToken
+        ) =
+        MatchActionFlow.apply context profile displayName routeMatchId request cancellationToken
+
+    /// Applies one player move, then lets the computer answer.
+    member this.Apply
         (
             profile: LocalProfile,
             displayName: string,
@@ -76,7 +106,12 @@ type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentSt
             request: ApplyMatchActionRequest,
             [<Optional>] cancellationToken: CancellationToken
         ) =
-        MatchActionFlow.apply context profile displayName routeMatchId request cancellationToken
+        task {
+            let! projection =
+                this.ApplyProjection(profile, displayName, routeMatchId, request, cancellationToken)
+
+            return matchResult projection
+        }
 
     /// Deletes the saved battle and its history.
     member _.PurgeSavedMatches([<Optional>] cancellationToken: CancellationToken) =

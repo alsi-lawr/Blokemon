@@ -27,8 +27,7 @@ module internal ApplicationViewAssembly =
         { View = null
           Error = null
           Presentation = null
-          DocumentRevision = Nullable()
-          DocumentContentIdentity = null }
+          DocumentIdentity = MatchFailures.noDocumentProjection }
 
     let private compareCardId (left: CardId) (right: CardId) =
         String.CompareOrdinal(left.Value, right.Value)
@@ -154,7 +153,7 @@ module internal ApplicationViewAssembly =
         (context: ApplicationContext)
         (profile: LoadedProfile)
         (cancellationToken: CancellationToken)
-        (knownMatch: MatchServiceResult | null)
+        (knownMatch: MatchProjectionResult | null)
         =
         task {
             let operation =
@@ -165,7 +164,7 @@ module internal ApplicationViewAssembly =
             | MatchProjectionSource.UseCommittedMatch, NonNull known -> return known
             | _ ->
                 return!
-                    context.Matches.State(
+                    context.Matches.StateProjection(
                         profile.Profile,
                         profile.Profile.DisplayName.Value,
                         cancellationToken
@@ -176,7 +175,7 @@ module internal ApplicationViewAssembly =
         (context: ApplicationContext)
         (loaded: LoadedProfile | null)
         (cancellationToken: CancellationToken)
-        (knownMatch: MatchServiceResult | null)
+        (knownMatch: MatchProjectionResult | null)
         =
         let catalogue = context.Catalogue
         let currentCard = currentCard catalogue
@@ -184,16 +183,20 @@ module internal ApplicationViewAssembly =
         let starterViews = starterViews catalogue
 
         task {
-            let identities =
+            let identityResult =
                 match loaded with
-                | null -> noProfile
+                | null ->
+                    { Identities = noProfile
+                      Publication = ClearProfileProjectionIdentities }
                 | profile ->
                     context.Projections.ProfileIdentities(
-                        context.ProjectionRequest,
                         profile.Revision,
                         profile.ContentIdentity,
-                        fun () -> profileIdentities catalogue profile
+                        (fun () -> profileIdentities catalogue profile),
+                        cancellationToken
                     )
+
+            let identities = identityResult.Identities
 
             let! resolvedMatch =
                 match loaded with
@@ -320,6 +323,7 @@ module internal ApplicationViewAssembly =
                     context.ProjectionRequest,
                     keys,
                     builders,
+                    identityResult.Publication,
                     cancellationToken
                 )
         }

@@ -17,6 +17,7 @@
       and the two flows the service surface delegates to.
     -->
     <Compile Include="MatchDocuments.fs" />
+    <Compile Include="ApplicationViewIsolation.fs" />
     <Compile Include="MatchDocumentNormalization.fs" />
     <Compile Include="MatchFailures.fs" />
     <Compile Include="MatchIdentity.fs" />
@@ -40,6 +41,7 @@
     <Compile Include="ProfileFailures.fs" />
     <Compile Include="ProfileProjection.fs" />
     <Compile Include="ApplicationProjectionModel.fs" />
+    <Compile Include="ApplicationProjectionCache.fs" />
     <Compile Include="ApplicationProjectionIdentity.fs" />
     <Compile Include="ApplicationContext.fs" />
     <Compile Include="ApplicationViewAssembly.fs" />

@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Blokemon.App;
@@ -22,25 +23,52 @@ public sealed class ApplicationProjectionCacheTests
 
         var empty = Value(await application.State());
         Snapshot(application).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1));
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.State,
+            ApplicationProjectionDependency.None,
+            ApplicationProjectionDependency.All
+        );
         await ShouldEqualColdReference(empty, catalogue, documents);
 
         var repeatedEmpty = Value(await application.State());
-        AssertSameSegments(empty, repeatedEmpty);
         Snapshot(application).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1));
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.State,
+            ApplicationProjectionDependency.None,
+            ApplicationProjectionDependency.None
+        );
+        JsonValue(repeatedEmpty).ShouldBe(JsonValue(empty));
 
         var created = Value(
             await application.CreateProfile(
                 new(Guid.Parse("10000000-0000-0000-0000-000000000001"), "Projection Player")
             )
         );
-        created.Decks.ShouldBeSameAs(empty.Decks);
-        created.PackPresentation.ShouldBeSameAs(empty.PackPresentation);
-        created.LastPack.ShouldBeSameAs(empty.LastPack);
+        var createSources = Sources(
+            ApplicationProjectionDependency.ProfileSummary,
+            ApplicationProjectionDependency.CardUniverseAndOwnership,
+            ApplicationProjectionDependency.StarterClaimsAndOwnership,
+            ApplicationProjectionDependency.MatchProfile
+        );
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.CreateProfile,
+            createSources,
+            ApplicationProjectionDependency.None
+        );
         await ShouldEqualColdReference(created, catalogue, documents);
 
         await SetProfileId(documents, Guid.Parse("10000000-0000-0000-0000-000000000099"));
         application = Local(catalogue, documents);
         created = Value(await application.State());
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.State,
+            ApplicationProjectionDependency.None,
+            ApplicationProjectionDependency.All
+        );
 
         var identical = (await documents.Read("profile"))!;
         (
@@ -49,9 +77,12 @@ public sealed class ApplicationProjectionCacheTests
         var beforeIdenticalExternalWrite = Snapshot(application);
         var identicalExternalWrite = Value(await application.State());
         AssertDelta(beforeIdenticalExternalWrite, Snapshot(application), 1, 0, 0, 0, 0, 0, 0, 0);
-        identicalExternalWrite.Cards.ShouldBeSameAs(created.Cards);
-        identicalExternalWrite.Decks.ShouldBeSameAs(created.Decks);
-        identicalExternalWrite.StarterDecks.ShouldBeSameAs(created.StarterDecks);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.State,
+            ApplicationProjectionDependency.None,
+            ApplicationProjectionDependency.ProfileSummary
+        );
         created = identicalExternalWrite;
 
         var beforeClaim = Snapshot(application);
@@ -61,9 +92,17 @@ public sealed class ApplicationProjectionCacheTests
             )
         );
         AssertDelta(beforeClaim, Snapshot(application), 1, 1, 1, 1, 0, 0, 0, 0);
-        claimed.PackPresentation.ShouldBeSameAs(created.PackPresentation);
-        claimed.LastPack.ShouldBeSameAs(created.LastPack);
-        claimed.Match.ShouldBeSameAs(created.Match);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.ClaimStarterDeck,
+            Sources(
+                ApplicationProjectionDependency.ProfileSummary,
+                ApplicationProjectionDependency.CardUniverseAndOwnership,
+                ApplicationProjectionDependency.SavedDecksAndOwnership,
+                ApplicationProjectionDependency.StarterClaimsAndOwnership
+            ),
+            ApplicationProjectionDependency.None
+        );
         await ShouldEqualColdReference(claimed, catalogue, documents);
 
         var starterDeck = claimed.Decks.Single();
@@ -75,16 +114,29 @@ public sealed class ApplicationProjectionCacheTests
             )
         );
         AssertDelta(beforeSave, Snapshot(application), 1, 0, 1, 0, 0, 0, 0, 0);
-        saved.Cards.ShouldBeSameAs(claimed.Cards);
-        saved.StarterDecks.ShouldBeSameAs(claimed.StarterDecks);
-        saved.LastPack.ShouldBeSameAs(claimed.LastPack);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.SaveDeck,
+            Sources(
+                ApplicationProjectionDependency.ProfileSummary,
+                ApplicationProjectionDependency.SavedDecksAndOwnership
+            ),
+            ApplicationProjectionDependency.None
+        );
         await ShouldEqualColdReference(saved, catalogue, documents);
 
         var beforeDelete = Snapshot(application);
         var deleted = Value(await application.DeleteDeck(new(Guid.NewGuid(), savedDeckId)));
         AssertDelta(beforeDelete, Snapshot(application), 1, 0, 1, 0, 0, 0, 0, 0);
-        deleted.Cards.ShouldBeSameAs(saved.Cards);
-        deleted.StarterDecks.ShouldBeSameAs(saved.StarterDecks);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.DeleteDeck,
+            Sources(
+                ApplicationProjectionDependency.ProfileSummary,
+                ApplicationProjectionDependency.SavedDecksAndOwnership
+            ),
+            ApplicationProjectionDependency.None
+        );
         await ShouldEqualColdReference(deleted, catalogue, documents);
 
         var packCommand = Guid.Parse("10000000-0000-0000-0000-000000000004");
@@ -110,12 +162,37 @@ public sealed class ApplicationProjectionCacheTests
         afterPack.PackPresentation.ShouldBe(beforePack.PackPresentation);
         afterPack.Match.ShouldBe(beforePack.Match);
         afterPack.MatchError.ShouldBe(beforePack.MatchError);
+        var packSources = Sources(
+            ApplicationProjectionDependency.ProfileSummary,
+            ApplicationProjectionDependency.CardUniverseAndOwnership,
+            ApplicationProjectionDependency.PackHistoryAndOwnership
+        );
+        if (deckOwnershipChanged)
+        {
+            packSources |= ApplicationProjectionDependency.SavedDecksAndOwnership;
+        }
+        if (starterLeaderOwnershipChanged)
+        {
+            packSources |= ApplicationProjectionDependency.StarterClaimsAndOwnership;
+        }
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.OpenPack,
+            packSources,
+            ApplicationProjectionDependency.None
+        );
         await ShouldEqualColdReference(opened, catalogue, documents);
 
         var beforePackRetry = Snapshot(application);
         var packRetry = Value(await application.OpenPack(new(packCommand)));
-        AssertSameSegments(opened, packRetry);
         Snapshot(application).ShouldBe(beforePackRetry);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.OpenPack,
+            ApplicationProjectionDependency.None,
+            ApplicationProjectionDependency.None
+        );
+        JsonValue(packRetry).ShouldBe(JsonValue(opened));
 
         var beforeFailure = Snapshot(application);
         var failed = await application.SaveDeck(
@@ -132,7 +209,14 @@ public sealed class ApplicationProjectionCacheTests
         conflict.Error!.Code.ShouldBe("state.conflict");
         Snapshot(application).ShouldBe(beforeFailure);
         var afterConflict = Value(await application.State());
-        AssertSameSegments(packRetry, afterConflict);
+        Snapshot(application).ShouldBe(beforeFailure);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.State,
+            ApplicationProjectionDependency.None,
+            ApplicationProjectionDependency.None
+        );
+        JsonValue(afterConflict).ShouldBe(JsonValue(packRetry));
 
         using var cancelled = new CancellationTokenSource();
         cancelled.Cancel();
@@ -149,7 +233,12 @@ public sealed class ApplicationProjectionCacheTests
             )
         ).Application;
         AssertDelta(beforeStart, Snapshot(application), 0, 0, 0, 0, 0, 0, 1, 1);
-        AssertProfileSegmentsSame(afterConflict, started);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.StartMatch,
+            ApplicationProjectionDependency.MatchDocument,
+            ApplicationProjectionDependency.None
+        );
         await ShouldEqualColdReference(started, catalogue, documents);
 
         var action = started.Match!.LegalActions.First();
@@ -161,7 +250,12 @@ public sealed class ApplicationProjectionCacheTests
             )
         ).Application;
         AssertDelta(beforeAction, Snapshot(application), 0, 0, 0, 0, 0, 0, 1, 1);
-        AssertProfileSegmentsSame(started, applied);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.ApplyMatchAction,
+            ApplicationProjectionDependency.MatchDocument,
+            ApplicationProjectionDependency.None
+        );
         await ShouldEqualColdReference(applied, catalogue, documents);
 
         var other = Local(catalogue, documents);
@@ -175,7 +269,12 @@ public sealed class ApplicationProjectionCacheTests
         var beforeExternalMatch = Snapshot(application);
         var observedExternalMatch = Value(await application.State());
         AssertDelta(beforeExternalMatch, Snapshot(application), 0, 0, 0, 0, 0, 0, 1, 1);
-        AssertProfileSegmentsSame(applied, observedExternalMatch);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.State,
+            ApplicationProjectionDependency.None,
+            ApplicationProjectionDependency.MatchDocument
+        );
         observedExternalMatch.Match!.Frame.Revision.ShouldBe(
             externallyApplied.Match!.Frame.Revision
         );
@@ -191,22 +290,43 @@ public sealed class ApplicationProjectionCacheTests
         var stale = Value(await staleTask);
         stale.Profile!.Revision.ShouldBeLessThan(newer.Profile!.Revision);
 
+        var afterStaleBuilds = Snapshot(application);
         var afterStaleCompletion = Value(await application.State());
-        afterStaleCompletion.Profile.ShouldBeSameAs(newer.Profile);
-        afterStaleCompletion.Cards.ShouldBeSameAs(newer.Cards);
-        afterStaleCompletion.LastPack.ShouldBeSameAs(newer.LastPack);
+        Snapshot(application).ShouldBe(afterStaleBuilds);
+        JsonValue(afterStaleCompletion).ShouldBe(JsonValue(newer));
         await ShouldEqualColdReference(afterStaleCompletion, catalogue, documents);
 
         var beforePurge = Snapshot(application);
         var purged = Value(await application.PurgeData());
         AssertDelta(beforePurge, Snapshot(application), 1, 1, 1, 1, 0, 1, 1, 1);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.PurgeData,
+            Sources(
+                ApplicationProjectionDependency.ProfileSummary,
+                ApplicationProjectionDependency.CardUniverseAndOwnership,
+                ApplicationProjectionDependency.SavedDecksAndOwnership,
+                ApplicationProjectionDependency.StarterClaimsAndOwnership,
+                ApplicationProjectionDependency.PackHistoryAndOwnership,
+                ApplicationProjectionDependency.MatchProfile,
+                ApplicationProjectionDependency.MatchDocument
+            ),
+            ApplicationProjectionDependency.None
+        );
         purged.Profile.ShouldBeNull();
         purged.Cards.ShouldAllBe(static card => card.OwnedQuantity == 0);
-        purged.PackPresentation.ShouldBeSameAs(afterStaleCompletion.PackPresentation);
         await ShouldEqualColdReference(purged, catalogue, documents);
 
+        var beforeRepeatedPurgeState = Snapshot(application);
         var repeatedPurgeState = Value(await application.State());
-        AssertSameSegments(purged, repeatedPurgeState);
+        Snapshot(application).ShouldBe(beforeRepeatedPurgeState);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.State,
+            ApplicationProjectionDependency.None,
+            ApplicationProjectionDependency.None
+        );
+        JsonValue(repeatedPurgeState).ShouldBe(JsonValue(purged));
     }
 
     [Test]
@@ -232,6 +352,12 @@ public sealed class ApplicationProjectionCacheTests
         var application = Local(catalogue, documents);
         var historical = Value(await application.State());
         historical.Cards.ShouldContain(card => card.Id == historicalId);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.State,
+            ApplicationProjectionDependency.None,
+            ApplicationProjectionDependency.All
+        );
         await ShouldEqualColdReference(historical, catalogue, documents);
 
         var historicalDeck = historical.Decks.Single();
@@ -248,18 +374,47 @@ public sealed class ApplicationProjectionCacheTests
             )
         );
         AssertDelta(beforeRevision, Snapshot(application), 1, 1, 1, 0, 0, 0, 0, 0);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.SaveDeck,
+            Sources(
+                ApplicationProjectionDependency.ProfileSummary,
+                ApplicationProjectionDependency.CardUniverseAndOwnership,
+                ApplicationProjectionDependency.SavedDecksAndOwnership
+            ),
+            ApplicationProjectionDependency.None
+        );
         revised.Cards.ShouldNotContain(card => card.Id == historicalId);
-        revised.StarterDecks.ShouldBeSameAs(historical.StarterDecks);
         await ShouldEqualColdReference(revised, catalogue, documents);
 
         await MakeFirstDeckHistorical(documents, historicalId);
         var externallyChanged = Value(await application.State());
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.State,
+            ApplicationProjectionDependency.None,
+            Sources(
+                ApplicationProjectionDependency.ProfileSummary,
+                ApplicationProjectionDependency.CardUniverseAndOwnership,
+                ApplicationProjectionDependency.SavedDecksAndOwnership
+            )
+        );
         externallyChanged.Cards.ShouldContain(card => card.Id == historicalId);
         var beforeDelete = Snapshot(application);
         var deleted = Value(
             await application.DeleteDeck(new(Guid.NewGuid(), externallyChanged.Decks.Single().Id))
         );
         AssertDelta(beforeDelete, Snapshot(application), 1, 1, 1, 0, 0, 0, 0, 0);
+        AssertPlan(
+            application,
+            ApplicationProjectionOperation.DeleteDeck,
+            Sources(
+                ApplicationProjectionDependency.ProfileSummary,
+                ApplicationProjectionDependency.CardUniverseAndOwnership,
+                ApplicationProjectionDependency.SavedDecksAndOwnership
+            ),
+            ApplicationProjectionDependency.None
+        );
         deleted.Cards.ShouldNotContain(card => card.Id == historicalId);
         await ShouldEqualColdReference(deleted, catalogue, documents);
     }
@@ -314,6 +469,12 @@ public sealed class ApplicationProjectionCacheTests
 
         var migrating = Local(catalogue, documents, ProfileAuthorityPolicy.MigrateCompatible);
         var migrated = Value(await migrating.State());
+        AssertPlan(
+            migrating,
+            ApplicationProjectionOperation.State,
+            ApplicationProjectionDependency.None,
+            ApplicationProjectionDependency.All
+        );
         JsonNode.Parse((await documents.Read("profile"))!.Json)!["profile"]![
             "authorityManifestVersion"
         ]!
@@ -322,9 +483,267 @@ public sealed class ApplicationProjectionCacheTests
         await ShouldEqualColdReference(migrated, catalogue, documents);
 
         var replacement = WithManifestVersion(catalogue, "replacement-authority");
-        var replaced = Value(await Local(replacement, documents).State());
+        var replacementApplication = Local(replacement, documents);
+        var replaced = Value(await replacementApplication.State());
+        AssertPlan(
+            replacementApplication,
+            ApplicationProjectionOperation.State,
+            ApplicationProjectionDependency.None,
+            ApplicationProjectionDependency.All
+        );
         await ShouldEqualColdReference(replaced, replacement, documents);
         JsonSerializer.Serialize(replaced, Json).ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Test]
+    public async Task PublicResults_IsolateEveryMutableArrayFromProjectionTemplates()
+    {
+        typeof(MatchServiceResult)
+            .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+            .Select(static property => property.Name)
+            .ShouldBe(["Error", "Presentation", "View"], ignoreOrder: true);
+        foreach (var methodName in new[] { "Apply", "Start", "State" })
+        {
+            typeof(LocalMatchService)
+                .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                .Single(method => method.Name == methodName)
+                .ReturnType.ShouldBe(typeof(Task<MatchServiceResult>));
+        }
+
+        var catalogue = Catalogue();
+        var documents = new ControllableDocumentStore();
+        var application = Local(catalogue, documents);
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("50000000-0000-0000-0000-000000000001"), "Isolation Player")
+            )
+        );
+        var claimed = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("50000000-0000-0000-0000-000000000002"), "growroom")
+            )
+        );
+        Value(await application.OpenPack(new(Guid.Parse("50000000-0000-0000-0000-000000000003"))));
+        var matchCommand = Guid.Parse("50000000-0000-0000-0000-000000000004");
+        var matchDeck = claimed.Decks.Single().Id;
+        var mutation = Value(await application.StartMatch(new(matchCommand, matchDeck)));
+        var authoritative = Value(await application.State());
+        var authoritativeJson = JsonValue(authoritative);
+        var beforePoisonedState = Snapshot(application);
+
+        var poisonedPaths = PoisonMutableArrays(mutation, "Mutation");
+        poisonedPaths.UnionWith(PoisonMutableArrays(authoritative, "Application"));
+
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Cards"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Rules"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".EnergyCost"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Decks"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Entries"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Errors"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Warnings"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".StarterDecks"));
+        poisonedPaths.ShouldContain(static path => path.Contains(".LastPack.Cards"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Bench"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Hand"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".AttachedEnergy"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".AttachedTools"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".UnderlyingCards"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Conditions"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".LegalActions"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".ChoiceRequirements"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".EligibleCards"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".EligibleTargets"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".EligibleCardTypes"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Attacks"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".RecentEvents"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Steps"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".Events"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".TargetCardInstanceIds"));
+        poisonedPaths.ShouldContain(static path => path.EndsWith(".RevealedCards"));
+
+        var afterPoison = Value(await application.State());
+        Snapshot(application).ShouldBe(beforePoisonedState);
+        JsonValue(afterPoison).ShouldBe(authoritativeJson);
+        ReferenceEquals(afterPoison.Cards, authoritative.Cards).ShouldBeFalse();
+        ReferenceEquals(afterPoison.Match, authoritative.Match).ShouldBeFalse();
+
+        var storedProfile = (await documents.Read("profile"))!;
+        var product = JsonSerializer.Deserialize<ProductDocument>(storedProfile.Json, Json)!;
+        var profile = ProductValue(LocalProfile.Restore(product.Profile, catalogue.Mechanics));
+
+        var noMatchDocuments = new ControllableDocumentStore();
+        var noMatch = await new LocalMatchService(catalogue, noMatchDocuments).State(
+            profile,
+            profile.DisplayName.Value
+        );
+        noMatch.View.ShouldBeNull();
+        noMatch.Error.ShouldBeNull();
+        noMatch.Presentation.ShouldBeNull();
+
+        var damagedMatchDocuments = new ControllableDocumentStore();
+        await damagedMatchDocuments.Create("match", "{broken");
+        var damagedMatch = await new LocalMatchService(catalogue, damagedMatchDocuments).State(
+            profile,
+            profile.DisplayName.Value
+        );
+        damagedMatch.View.ShouldBeNull();
+        damagedMatch.Error!.Code.ShouldBe("match.document_corrupt");
+        damagedMatch.Presentation.ShouldBeNull();
+
+        var publicMatches = new LocalMatchService(catalogue, documents);
+        var publicResult = await publicMatches.State(profile, profile.DisplayName.Value);
+        var publicJson = JsonValue(publicResult.View);
+        PoisonMutableArrays(publicResult, "PublicMatch");
+
+        var repeatedPublicResult = await publicMatches.State(profile, profile.DisplayName.Value);
+        JsonValue(repeatedPublicResult.View).ShouldBe(publicJson);
+        ReferenceEquals(publicResult.View, repeatedPublicResult.View).ShouldBeFalse();
+
+        var publicStarted = await publicMatches.Start(
+            profile,
+            profile.DisplayName.Value,
+            new(matchCommand, matchDeck)
+        );
+        JsonValue(publicStarted.View).ShouldBe(publicJson);
+        PoisonMutableArrays(publicStarted, "PublicStart");
+        JsonValue((await publicMatches.State(profile, profile.DisplayName.Value)).View)
+            .ShouldBe(publicJson);
+
+        var publicCurrent = await publicMatches.State(profile, profile.DisplayName.Value);
+        var publicAction = publicCurrent.View!.LegalActions.First();
+        var publicApplied = await publicMatches.Apply(
+            profile,
+            profile.DisplayName.Value,
+            publicCurrent.View.Frame.Id,
+            RequestFor(publicCurrent.View, publicAction)
+        );
+        publicApplied.Error.ShouldBeNull();
+        var publicAppliedJson = JsonValue(publicApplied.View);
+        PoisonMutableArrays(publicApplied, "PublicApply");
+        JsonValue((await publicMatches.State(profile, profile.DisplayName.Value)).View)
+            .ShouldBe(publicAppliedJson);
+    }
+
+    [Test]
+    public async Task CancellationDuringIdentityConstructionSegmentsPublicationAndGateWait_DoesNotPublish()
+    {
+        var catalogue = Catalogue();
+        var documents = new ControllableDocumentStore();
+        var application = Local(catalogue, documents);
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("60000000-0000-0000-0000-000000000001"), "Cancel Player")
+            )
+        );
+        var authoritative = Value(await application.State());
+
+        var sameDocument = (await documents.Read("profile"))!;
+        await documents.Update("profile", sameDocument.Revision, sameDocument.Json);
+        var beforeIdentityCancellation = Snapshot(application);
+        var beforeIdentityBuilds = application.ProjectionIdentityBuildCount;
+        var identityPlan = application.ProjectionLastChangePlan;
+        using (var cancellation = new CancellationTokenSource())
+        {
+            application.ProjectionHooks.AfterProfileIdentityConstruction = new Action(
+                cancellation.Cancel
+            );
+            await Should.ThrowAsync<OperationCanceledException>(() =>
+                application.State(cancellation.Token)
+            );
+        }
+        application.ProjectionHooks.AfterProfileIdentityConstruction = null;
+        Snapshot(application).ShouldBe(beforeIdentityCancellation);
+        application.ProjectionIdentityBuildCount.ShouldBe(beforeIdentityBuilds + 1);
+        application.ProjectionLastChangePlan.ShouldBeSameAs(identityPlan);
+
+        var afterIdentityCancellation = Value(await application.State());
+        application.ProjectionIdentityBuildCount.ShouldBe(beforeIdentityBuilds + 2);
+        AssertDelta(beforeIdentityCancellation, Snapshot(application), 1, 0, 0, 0, 0, 0, 0, 0);
+        await ShouldEqualColdReference(afterIdentityCancellation, catalogue, documents);
+
+        var beforeSegmentCancellation = Snapshot(application);
+        var beforeSegmentIdentityBuilds = application.ProjectionIdentityBuildCount;
+        var segmentPlan = application.ProjectionLastChangePlan;
+        using (var cancellation = new CancellationTokenSource())
+        {
+            application.ProjectionHooks.AfterSegmentConstruction =
+                new Action<ApplicationProjectionSegment>(segment =>
+                {
+                    if (segment == ApplicationProjectionSegment.Cards)
+                    {
+                        cancellation.Cancel();
+                    }
+                });
+            await Should.ThrowAsync<OperationCanceledException>(() =>
+                application.OpenPack(
+                    new(Guid.Parse("60000000-0000-0000-0000-000000000002")),
+                    cancellation.Token
+                )
+            );
+        }
+        application.ProjectionHooks.AfterSegmentConstruction = null;
+        AssertDelta(beforeSegmentCancellation, Snapshot(application), 1, 1, 0, 0, 0, 0, 0, 0);
+        application.ProjectionIdentityBuildCount.ShouldBe(beforeSegmentIdentityBuilds + 1);
+        application.ProjectionLastChangePlan.ShouldBeSameAs(segmentPlan);
+
+        var afterSegmentCancellation = Value(await application.State());
+        application.ProjectionIdentityBuildCount.ShouldBe(beforeSegmentIdentityBuilds + 2);
+        afterSegmentCancellation.LastPack.ShouldNotBeNull();
+        await ShouldEqualColdReference(afterSegmentCancellation, catalogue, documents);
+
+        var repeatedDocument = (await documents.Read("profile"))!;
+        await documents.Update("profile", repeatedDocument.Revision, repeatedDocument.Json);
+        var beforePublicationCancellation = Snapshot(application);
+        var beforePublicationIdentityBuilds = application.ProjectionIdentityBuildCount;
+        var publicationPlan = application.ProjectionLastChangePlan;
+        using (var cancellation = new CancellationTokenSource())
+        {
+            application.ProjectionHooks.BeforeTemplatePublication = new Action(cancellation.Cancel);
+            await Should.ThrowAsync<OperationCanceledException>(() =>
+                application.State(cancellation.Token)
+            );
+        }
+        application.ProjectionHooks.BeforeTemplatePublication = null;
+        AssertDelta(beforePublicationCancellation, Snapshot(application), 1, 0, 0, 0, 0, 0, 0, 0);
+        application.ProjectionIdentityBuildCount.ShouldBe(beforePublicationIdentityBuilds + 1);
+        application.ProjectionLastChangePlan.ShouldBeSameAs(publicationPlan);
+
+        var afterPublicationCancellation = Value(await application.State());
+        application.ProjectionIdentityBuildCount.ShouldBe(beforePublicationIdentityBuilds + 2);
+        await ShouldEqualColdReference(afterPublicationCancellation, catalogue, documents);
+
+        var gateEntered = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        using var releaseGate = new ManualResetEventSlim();
+        var blockOnce = 0;
+        application.ProjectionHooks.BeforeTemplatePublication = new Action(() =>
+        {
+            if (Interlocked.CompareExchange(ref blockOnce, 1, 0) == 0)
+            {
+                gateEntered.TrySetResult();
+                releaseGate.Wait(TimeSpan.FromSeconds(10));
+            }
+        });
+
+        var beforeGateIdentityBuilds = application.ProjectionIdentityBuildCount;
+        var gateHolder = Task.Run(async () => await application.State());
+        await gateEntered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        using var gateCancellation = new CancellationTokenSource();
+        var gateWaiter = application.State(gateCancellation.Token);
+        gateCancellation.Cancel();
+        await Should.ThrowAsync<OperationCanceledException>(() => gateWaiter);
+        releaseGate.Set();
+        await gateHolder;
+        application.ProjectionHooks.BeforeTemplatePublication = null;
+        application.ProjectionIdentityBuildCount.ShouldBe(beforeGateIdentityBuilds);
+
+        var afterGateCancellationBuilds = Snapshot(application);
+        var afterGateCancellation = Value(await application.State());
+        Snapshot(application).ShouldBe(afterGateCancellationBuilds);
+        await ShouldEqualColdReference(afterGateCancellation, catalogue, documents);
+        JsonValue(afterGateCancellation).ShouldBe(JsonValue(afterPublicationCancellation));
+        JsonValue(authoritative).ShouldNotBeNullOrWhiteSpace();
     }
 
     private static async Task<ApplicationView> CompleteMatch(
@@ -434,24 +853,96 @@ public sealed class ApplicationProjectionCacheTests
     )
     {
         var expected = Value(await Local(catalogue, documents).State());
-        JsonSerializer.Serialize(actual, Json).ShouldBe(JsonSerializer.Serialize(expected, Json));
+        JsonValue(actual).ShouldBe(JsonValue(expected));
     }
 
-    private static void AssertProfileSegmentsSame(ApplicationView before, ApplicationView after)
+    private static string JsonValue<T>(T value) => JsonSerializer.Serialize(value, Json);
+
+    private static HashSet<string> PoisonMutableArrays(object root, string rootPath)
     {
-        after.Profile.ShouldBeSameAs(before.Profile);
-        after.Cards.ShouldBeSameAs(before.Cards);
-        after.Decks.ShouldBeSameAs(before.Decks);
-        after.StarterDecks.ShouldBeSameAs(before.StarterDecks);
-        after.PackPresentation.ShouldBeSameAs(before.PackPresentation);
-        after.LastPack.ShouldBeSameAs(before.LastPack);
+        var arrays = new HashSet<string>(StringComparer.Ordinal);
+        var visited = new HashSet<object>(ReferenceEqualityComparer.Instance);
+
+        void Visit(object? value, string path)
+        {
+            if (value is null || value is string)
+            {
+                return;
+            }
+
+            var type = value.GetType();
+            if (type.IsValueType)
+            {
+                return;
+            }
+
+            if (value is Array array)
+            {
+                arrays.Add(path);
+                for (var index = 0; index < array.Length; index++)
+                {
+                    Visit(array.GetValue(index), $"{path}[{index}]");
+                }
+
+                if (array.Length > 0)
+                {
+                    var elementType = type.GetElementType()!;
+                    array.SetValue(
+                        elementType == typeof(string) ? "POISON"
+                            : elementType.IsValueType ? Activator.CreateInstance(elementType)
+                            : null,
+                        0
+                    );
+                }
+                return;
+            }
+
+            if (!visited.Add(value))
+            {
+                return;
+            }
+
+            foreach (
+                var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    .Where(static property =>
+                        property.CanRead
+                        && property.GetIndexParameters().Length == 0
+                        && (
+                            property.CanWrite
+                            || property.DeclaringType == typeof(MatchServiceResult)
+                        )
+                    )
+            )
+            {
+                Visit(property.GetValue(value), $"{path}.{property.Name}");
+            }
+        }
+
+        Visit(root, rootPath);
+        return arrays;
     }
 
-    private static void AssertSameSegments(ApplicationView before, ApplicationView after)
+    private static ApplicationProjectionDependency Sources(
+        params ApplicationProjectionDependency[] dependencies
+    ) =>
+        dependencies.Aggregate(
+            ApplicationProjectionDependency.None,
+            static (current, dependency) => current | dependency
+        );
+
+    private static void AssertPlan(
+        LocalApplicationService application,
+        ApplicationProjectionOperation operation,
+        ApplicationProjectionDependency owned,
+        ApplicationProjectionDependency external
+    )
     {
-        AssertProfileSegmentsSame(before, after);
-        after.Match.ShouldBeSameAs(before.Match);
-        after.MatchError.ShouldBeSameAs(before.MatchError);
+        var plan = application.ProjectionLastChangePlan;
+        plan.ShouldNotBeNull();
+        plan.Operation.ShouldBe(operation);
+        plan.OwnedChanges.ShouldBe(owned);
+        plan.ExternalChanges.ShouldBe(external);
+        plan.InvalidatedDependencies.ShouldBe(owned | external);
     }
 
     private static void AssertDelta(
@@ -570,6 +1061,13 @@ public sealed class ApplicationProjectionCacheTests
         response.Succeeded && response.Value is not null
             ? response.Value
             : throw new InvalidOperationException(response.Error?.Message);
+
+    private static TValue ProductValue<TValue, TFailure>(DomainResult<TValue, TFailure> result)
+        where TValue : notnull
+        where TFailure : notnull =>
+        result is DomainResult<TValue, TFailure>.Succeeded succeeded
+            ? succeeded.Value
+            : throw new InvalidOperationException("The product fixture transition failed.");
 
     private sealed class ControllableDocumentStore : IStateDocumentStore
     {

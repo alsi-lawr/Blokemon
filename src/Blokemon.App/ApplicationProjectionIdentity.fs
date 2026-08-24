@@ -28,14 +28,14 @@ module internal ApplicationProjectionIdentity =
     let combine (values: string seq) =
         content (fun target -> values |> Seq.iter (appendString target))
 
-    let matchDocument (result: MatchServiceResult) =
+    let matchDocument (result: MatchProjectionResult) =
         content (fun target ->
-            if result.DocumentRevision.HasValue then
-                appendInt64 target result.DocumentRevision.Value
+            if result.DocumentIdentity.Revision.HasValue then
+                appendInt64 target result.DocumentIdentity.Revision.Value
             else
                 appendString target null
 
-            appendString target result.DocumentContentIdentity
+            appendString target result.DocumentIdentity.ContentIdentity
 
             match result.Error with
             | null -> appendString target null
