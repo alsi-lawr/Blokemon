@@ -29,6 +29,7 @@
     <Compile Include="MatchViewProjection.fs" />
     <Compile Include="MatchCueProjection.fs" />
     <Compile Include="MatchReplay.fs" />
+    <Compile Include="MatchMigrationRegistry.fs" />
     <Compile Include="MatchMigrationJson.fs" />
     <Compile Include="MatchMigration.fs" />
     <Compile Include="MatchStore.fs" />

@@ -414,7 +414,7 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
-    public async Task BrowserAuthorityMigration_RebindsACompatibleProfileAndMatchTogether()
+    public async Task BrowserAuthorityMigration_RebindsARealVersionAndRejectsAnUnknownOne()
     {
         var catalogue = Catalogue();
         var documents = new MemoryDocumentStore();
@@ -429,7 +429,7 @@ public sealed class BrowserLocalApplicationTests
         var historical = await SetProfileAuthorityVersion(documents, "historical-profile-manifest");
         var match = (await documents.Read("match"))!;
         var mismatchedMatch = JsonNode.Parse(match.Json)!.AsObject();
-        mismatchedMatch["authorityVersion"] = "historical-match-manifest";
+        mismatchedMatch["authorityVersion"] = "sv151-candidate.16";
         await documents.Update("match", match.Revision, mismatchedMatch.ToJsonString());
         var preservedMatch = (await documents.Read("match"))!;
 
@@ -449,6 +449,19 @@ public sealed class BrowserLocalApplicationTests
         JsonNode.Parse(migratedMatch.Json)!["authorityVersion"]!
             .GetValue<string>()
             .ShouldBe(catalogue.Mechanics.ManifestVersion);
+
+        var unknownJson = JsonNode.Parse(migratedMatch.Json)!.AsObject();
+        unknownJson["authorityVersion"] = "arbitrary-authority";
+        await documents.Update("match", migratedMatch.Revision, unknownJson.ToJsonString());
+        var unknown = (await documents.Read("match"))!;
+
+        var rejected = Value(
+            await Application(catalogue, documents, new ServerHandler(null)).State()
+        );
+
+        rejected.Match.ShouldBeNull();
+        rejected.MatchError!.Code.ShouldBe("match.document_version");
+        (await documents.Read("match")).ShouldBe(unknown);
     }
 
     [Test]
