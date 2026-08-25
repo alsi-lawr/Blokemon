@@ -363,6 +363,16 @@ public static class ProjectionEvidenceComposition
             return Decorate(await inner.ApplyMatchAction(matchId, request, cancellationToken));
         }
 
+        public async Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
+            AbandonSavedMatchRequest request,
+            CancellationToken cancellationToken = default
+        ) => Decorate(await inner.AbandonSavedMatch(request, cancellationToken));
+
+        public async Task<ApiResponse<ApplicationView>> DiscardMatchHistory(
+            DiscardMatchHistoryRequest request,
+            CancellationToken cancellationToken = default
+        ) => Decorate(await inner.DiscardMatchHistory(request, cancellationToken));
+
         public async Task<ApiResponse<ApplicationView>> PurgeData(
             CancellationToken cancellationToken = default
         ) => Decorate(await inner.PurgeData(cancellationToken));
@@ -449,6 +459,25 @@ public static class ProjectionEvidenceComposition
         {
             _documents.Remove(key);
             return Task.CompletedTask;
+        }
+
+        public Task<DocumentDeleteResult> DeleteIfUnchanged(
+            string key,
+            long expectedRevision,
+            string expectedJson,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (!_documents.TryGetValue(key, out var current))
+            {
+                return Task.FromResult<DocumentDeleteResult>(new DocumentDeleteResult.Missing());
+            }
+            if (current.Revision != expectedRevision || current.Json != expectedJson)
+            {
+                return Task.FromResult<DocumentDeleteResult>(new DocumentDeleteResult.Conflict());
+            }
+            _documents.Remove(key);
+            return Task.FromResult<DocumentDeleteResult>(new DocumentDeleteResult.Deleted());
         }
     }
 }

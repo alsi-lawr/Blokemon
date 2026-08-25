@@ -85,6 +85,59 @@ public partial class Match
         await CompleteMutation(response, MatchOpening.EmptyTable(response.Value?.Presentation));
     }
 
+    private static bool ActiveRecovery(MatchRecoveryView recovery) =>
+        recovery.Kind
+            is MatchRecoveryKindView.ActiveMatchUnsupportedVersion
+                or MatchRecoveryKindView.ActiveMatchIncompatibleWithCurrentRules;
+
+    private void BeginRecoveryConfirmation()
+    {
+        _operationError = null;
+        _confirmingRecovery = true;
+    }
+
+    private void CancelRecoveryConfirmation()
+    {
+        _operationError = null;
+        _confirmingRecovery = false;
+    }
+
+    private async Task ConfirmRecovery()
+    {
+        if (_view?.MatchRecovery is not { } recovery)
+        {
+            return;
+        }
+
+        _working = true;
+        ApiResponse<ApplicationView> response;
+        if (ActiveRecovery(recovery))
+        {
+            response = await MatchRecoveryOperations.AbandonSavedMatch(
+                new(recovery.Revision, recovery.ContentIdentity)
+            );
+        }
+        else
+        {
+            response = await MatchRecoveryOperations.DiscardMatchHistory(
+                new(recovery.Revision, recovery.ContentIdentity)
+            );
+        }
+
+        _working = false;
+        if (!response.Succeeded || response.Value is null)
+        {
+            _operationError =
+                response.Error?.Message ?? "The saved battle data was not changed. Try again.";
+            return;
+        }
+
+        _view = response.Value;
+        _operationError = null;
+        _confirmingRecovery = false;
+        _selectedDeckId = ReadyDecks().FirstOrDefault()?.Id;
+    }
+
     private bool Busy() => _working || _animating;
 
     public async ValueTask DisposeAsync()

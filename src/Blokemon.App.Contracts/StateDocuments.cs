@@ -11,6 +11,17 @@ public abstract record DocumentWriteResult
     public sealed record Conflict : DocumentWriteResult;
 }
 
+public abstract record DocumentDeleteResult
+{
+    private DocumentDeleteResult() { }
+
+    public sealed record Deleted : DocumentDeleteResult;
+
+    public sealed record Missing : DocumentDeleteResult;
+
+    public sealed record Conflict : DocumentDeleteResult;
+}
+
 public interface IStateDocumentStore
 {
     Task<StoredDocument?> Read(string key, CancellationToken cancellationToken = default);
@@ -29,6 +40,13 @@ public interface IStateDocumentStore
     );
 
     Task Delete(string key, CancellationToken cancellationToken = default);
+
+    Task<DocumentDeleteResult> DeleteIfUnchanged(
+        string key,
+        long expectedRevision,
+        string expectedJson,
+        CancellationToken cancellationToken = default
+    );
 }
 
 public enum DocumentStorageFailure

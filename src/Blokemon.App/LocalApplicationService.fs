@@ -111,6 +111,22 @@ type LocalApplicationService
             request
             cancellationToken
 
+    member _.AbandonSavedMatch
+        (request: AbandonSavedMatchRequest, [<Optional>] cancellationToken: CancellationToken)
+        =
+        ApplicationMatchRecoveryOperations.abandonSavedMatch
+            (context ApplicationProjectionOperation.AbandonSavedMatch)
+            request
+            cancellationToken
+
+    member _.DiscardMatchHistory
+        (request: DiscardMatchHistoryRequest, [<Optional>] cancellationToken: CancellationToken)
+        =
+        ApplicationMatchRecoveryOperations.discardMatchHistory
+            (context ApplicationProjectionOperation.DiscardMatchHistory)
+            request
+            cancellationToken
+
     /// Deletes every saved document this machine holds.
     member _.PurgeData([<Optional>] cancellationToken: CancellationToken) =
         ProfileLifecycle.purgeData
@@ -140,5 +156,11 @@ type LocalApplicationService
 
         member this.ApplyMatchAction(matchId, request, cancellationToken) =
             this.ApplyMatchAction(matchId, request, cancellationToken)
+
+        member this.AbandonSavedMatch(request, cancellationToken) =
+            this.AbandonSavedMatch(request, cancellationToken)
+
+        member this.DiscardMatchHistory(request, cancellationToken) =
+            this.DiscardMatchHistory(request, cancellationToken)
 
         member this.PurgeData cancellationToken = this.PurgeData cancellationToken

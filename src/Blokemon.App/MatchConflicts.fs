@@ -30,6 +30,7 @@ module internal MatchConflicts =
                 return
                     { View = null
                       Error = reloaded.Error
+                      Recovery = null
                       Presentation = null
                       DocumentIdentity = noDocumentProjection }
             else
@@ -47,6 +48,7 @@ module internal MatchConflicts =
                             return
                                 { View = toView loaded displayName
                                   Error = null
+                                  Recovery = null
                                   Presentation = null
                                   DocumentIdentity = documentProjection loaded }
                         else
@@ -84,6 +86,7 @@ module internal MatchConflicts =
                 return
                     { View = null
                       Error = reloaded.Error
+                      Recovery = null
                       Presentation = null
                       DocumentIdentity = noDocumentProjection }
             else
@@ -112,6 +115,7 @@ module internal MatchConflicts =
                                 return
                                     { View = toView loaded displayName
                                       Error = null
+                                      Recovery = null
                                       Presentation = null
                                       DocumentIdentity = documentProjection loaded }
                             else

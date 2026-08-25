@@ -10,7 +10,7 @@ type internal ApplicationProjectionCache
 
     let gate = new SemaphoreSlim(1, 1)
     let identityLock = obj ()
-    let counts = Array.zeroCreate<int64> 8
+    let counts = Array.zeroCreate<int64> 9
     let mutable cached: CachedApplicationProjection option = None
     let mutable publishedGeneration = Int64.MinValue
 
@@ -113,7 +113,8 @@ type internal ApplicationProjectionCache
             Volatile.Read(&counts[int ApplicationProjectionSegment.PackPresentation]),
             Volatile.Read(&counts[int ApplicationProjectionSegment.LastPack]),
             Volatile.Read(&counts[int ApplicationProjectionSegment.Match]),
-            Volatile.Read(&counts[int ApplicationProjectionSegment.MatchError])
+            Volatile.Read(&counts[int ApplicationProjectionSegment.MatchError]),
+            Volatile.Read(&counts[int ApplicationProjectionSegment.MatchRecovery])
         )
 
     member _.Assemble
@@ -181,7 +182,11 @@ type internal ApplicationProjectionCache
                         select
                             ApplicationProjectionSegment.MatchError
                             (fun () -> previous.Value.View.MatchError)
-                            builders.MatchError
+                            builders.MatchError,
+                        select
+                            ApplicationProjectionSegment.MatchRecovery
+                            (fun () -> previous.Value.View.MatchRecovery)
+                            builders.MatchRecovery
                     )
 
                 invoke hooks.AfterTemplateConstruction

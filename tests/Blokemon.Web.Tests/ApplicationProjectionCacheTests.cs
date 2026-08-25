@@ -24,11 +24,11 @@ public sealed class ApplicationProjectionCacheTests
         var application = Local(catalogue, documents);
 
         var empty = Value(await application.State());
-        Snapshot(application).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1));
+        Snapshot(application).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1, 1));
         await ShouldEqualColdReference(empty, catalogue, documents);
 
         var repeatedEmpty = Value(await application.State());
-        Snapshot(application).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1));
+        Snapshot(application).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1, 1));
         JsonValue(repeatedEmpty).ShouldBe(JsonValue(empty));
 
         var beforeCreate = Snapshot(application);
@@ -245,7 +245,7 @@ public sealed class ApplicationProjectionCacheTests
 
         var application = Local(catalogue, documents);
         var historical = Value(await application.State());
-        Snapshot(application).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1));
+        Snapshot(application).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1, 1));
         historical.Cards.ShouldContain(card => card.Id == historicalId);
         await ShouldEqualColdReference(historical, catalogue, documents);
 
@@ -332,7 +332,7 @@ public sealed class ApplicationProjectionCacheTests
 
         var migrating = Local(catalogue, documents, ProfileAuthorityPolicy.MigrateCompatible);
         var migrated = Value(await migrating.State());
-        Snapshot(migrating).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1));
+        Snapshot(migrating).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1, 1));
         JsonNode.Parse((await documents.Read("profile"))!.Json)!["profile"]![
             "authorityManifestVersion"
         ]!
@@ -343,7 +343,7 @@ public sealed class ApplicationProjectionCacheTests
         var replacement = WithManifestVersion(catalogue, "replacement-authority");
         var replacementApplication = Local(replacement, documents);
         var replaced = Value(await replacementApplication.State());
-        Snapshot(replacementApplication).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1));
+        Snapshot(replacementApplication).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1, 1));
         await ShouldEqualColdReference(replaced, replacement, documents);
         JsonSerializer.Serialize(replaced, Json).ShouldNotBeNullOrWhiteSpace();
     }
@@ -846,6 +846,7 @@ public sealed class ApplicationProjectionCacheTests
         );
         Field(ApplicationProjectionSegment.Match).ShouldBe(matchDependencies);
         Field(ApplicationProjectionSegment.MatchError).ShouldBe(matchDependencies);
+        Field(ApplicationProjectionSegment.MatchRecovery).ShouldBe(matchDependencies);
 
         foreach (
             var operation in new[]
@@ -856,6 +857,8 @@ public sealed class ApplicationProjectionCacheTests
                 ApplicationProjectionOperation.ClaimStarterDeck,
                 ApplicationProjectionOperation.SaveDeck,
                 ApplicationProjectionOperation.DeleteDeck,
+                ApplicationProjectionOperation.AbandonSavedMatch,
+                ApplicationProjectionOperation.DiscardMatchHistory,
             }
         )
         {
@@ -887,7 +890,8 @@ public sealed class ApplicationProjectionCacheTests
         long packPresentation,
         long lastPack,
         long match,
-        long matchError
+        long matchError,
+        long? matchRecovery = null
     ) =>
         after.ShouldBe(
             new(
@@ -898,7 +902,8 @@ public sealed class ApplicationProjectionCacheTests
                 before.PackPresentation + packPresentation,
                 before.LastPack + lastPack,
                 before.Match + match,
-                before.MatchError + matchError
+                before.MatchError + matchError,
+                before.MatchRecovery + (matchRecovery ?? matchError)
             )
         );
 
@@ -913,7 +918,8 @@ public sealed class ApplicationProjectionCacheTests
             counts.PackPresentation,
             counts.LastPack,
             counts.Match,
-            counts.MatchError
+            counts.MatchError,
+            counts.MatchRecovery
         );
     }
 
@@ -1099,6 +1105,32 @@ public sealed class ApplicationProjectionCacheTests
             }
         }
 
+        public Task<DocumentDeleteResult> DeleteIfUnchanged(
+            string key,
+            long expectedRevision,
+            string expectedJson,
+            CancellationToken cancellationToken = default
+        )
+        {
+            lock (_lock)
+            {
+                if (!_documents.TryGetValue(key, out var current))
+                {
+                    return Task.FromResult<DocumentDeleteResult>(
+                        new DocumentDeleteResult.Missing()
+                    );
+                }
+                if (current.Revision != expectedRevision || current.Json != expectedJson)
+                {
+                    return Task.FromResult<DocumentDeleteResult>(
+                        new DocumentDeleteResult.Conflict()
+                    );
+                }
+                _documents.Remove(key);
+                return Task.FromResult<DocumentDeleteResult>(new DocumentDeleteResult.Deleted());
+            }
+        }
+
         private static TaskCompletionSource NewSignal() =>
             new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
@@ -1111,6 +1143,7 @@ public sealed class ApplicationProjectionCacheTests
         long PackPresentation,
         long LastPack,
         long Match,
-        long MatchError
+        long MatchError,
+        long MatchRecovery
     );
 }

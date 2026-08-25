@@ -50,6 +50,10 @@ module internal MatchStartFlow =
                     return
                         { View = null
                           Error = loaded.Error
+                          Recovery =
+                            match loaded.Recovery with
+                            | None -> null
+                            | Some requirement -> MatchMigration.recoveryView requirement
                           Presentation = null
                           DocumentIdentity = noDocumentProjection }
                 else
@@ -73,6 +77,7 @@ module internal MatchStartFlow =
                                     Some
                                         { View = toView existing displayName
                                           Error = null
+                                          Recovery = null
                                           Presentation = null
                                           DocumentIdentity = documentProjection existing }
                                 else
@@ -182,6 +187,7 @@ module internal MatchStartFlow =
                                         return
                                             { View = null
                                               Error = advanced.Error
+                                              Recovery = null
                                               Presentation = null
                                               DocumentIdentity = noDocumentProjection }
                                     else
@@ -211,17 +217,33 @@ module internal MatchStartFlow =
                                                             profile
                                                             completed
                                                             cancellationToken
-                                                | _ -> return None
+                                                | _ -> return MatchArchiveOutcome.Ready
                                             }
 
                                         match historyError with
-                                        | Some error ->
+                                        | MatchArchiveOutcome.RecoveryRequired requirement ->
+                                            return
+                                                { View =
+                                                    loaded.Match
+                                                    |> Option.ofObj
+                                                    |> Option.map (fun value ->
+                                                        toView value displayName)
+                                                    |> Option.toObj
+                                                  Error = MatchMigration.recoveryError requirement
+                                                  Recovery = MatchMigration.recoveryView requirement
+                                                  Presentation = null
+                                                  DocumentIdentity =
+                                                    match loaded.Match with
+                                                    | null -> noDocumentProjection
+                                                    | value -> documentProjection value }
+                                        | MatchArchiveOutcome.Failed error ->
                                             return
                                                 { View = null
                                                   Error = error
+                                                  Recovery = null
                                                   Presentation = null
                                                   DocumentIdentity = noDocumentProjection }
-                                        | None ->
+                                        | MatchArchiveOutcome.Ready ->
 
                                             let json =
                                                 JsonSerializer.Serialize(
@@ -260,6 +282,7 @@ module internal MatchStartFlow =
                                                 return
                                                     { View = toView committed displayName
                                                       Error = null
+                                                      Recovery = null
                                                       Presentation =
                                                         toPresentation
                                                             document

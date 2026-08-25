@@ -41,4 +41,11 @@ module internal ApplicationProjectionIdentity =
             | null -> appendString target null
             | error ->
                 appendString target error.Code
-                appendString target error.Message)
+                appendString target error.Message
+
+            match result.Recovery with
+            | null -> appendString target null
+            | recovery ->
+                appendInt target (int recovery.Kind)
+                appendInt64 target recovery.Revision
+                appendString target recovery.ContentIdentity)

@@ -274,6 +274,20 @@ public sealed record MatchPresentationStepView(MatchFrameView Frame, MatchEventC
 
 public sealed record MatchPresentationView(MatchPresentationStepView[] Steps);
 
+public enum MatchRecoveryKindView
+{
+    ActiveMatchUnsupportedVersion = 0,
+    ActiveMatchIncompatibleWithCurrentRules = 1,
+    MatchHistoryUnsupportedVersion = 2,
+    MatchHistoryIncompatibleWithCurrentRules = 3,
+}
+
+public sealed record MatchRecoveryView(
+    MatchRecoveryKindView Kind,
+    long Revision,
+    string ContentIdentity
+);
+
 public sealed record ApplicationView(
     ProfileView? Profile,
     CardView[] Cards,
@@ -282,12 +296,20 @@ public sealed record ApplicationView(
     PackPresentationView PackPresentation,
     PackReceiptView? LastPack,
     MatchView? Match,
-    ApiError? MatchError
+    ApiError? MatchError,
+    MatchRecoveryView? MatchRecovery = null
 );
+
+public enum MatchMutationOutcomeView
+{
+    Applied = 0,
+    RecoveryRequired = 1,
+}
 
 public sealed record MatchMutationView(
     ApplicationView Application,
-    MatchPresentationView? Presentation
+    MatchPresentationView? Presentation,
+    MatchMutationOutcomeView Outcome = MatchMutationOutcomeView.Applied
 );
 
 public sealed record CreateProfileRequest(Guid CommandId, string DisplayName);
@@ -314,6 +336,10 @@ public sealed record ApplyMatchActionRequest(
     string ActionId,
     MatchChoiceSelectionRequest[] Choices
 );
+
+public sealed record AbandonSavedMatchRequest(long ExpectedRevision, string ContentIdentity);
+
+public sealed record DiscardMatchHistoryRequest(long ExpectedRevision, string ContentIdentity);
 
 public sealed record MatchDamageAllocationRequest(string CardInstanceId, int Counters);
 
@@ -368,6 +394,16 @@ public interface IBlokemonApplication
     Task<ApiResponse<MatchMutationView>> ApplyMatchAction(
         Guid matchId,
         ApplyMatchActionRequest request,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
+        AbandonSavedMatchRequest request,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<ApiResponse<ApplicationView>> DiscardMatchHistory(
+        DiscardMatchHistoryRequest request,
         CancellationToken cancellationToken = default
     );
 

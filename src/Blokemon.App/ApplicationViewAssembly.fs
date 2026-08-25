@@ -26,6 +26,7 @@ module internal ApplicationViewAssembly =
     let private emptyMatch =
         { View = null
           Error = null
+          Recovery = null
           Presentation = null
           DocumentIdentity = MatchFailures.noDocumentProjection }
 
@@ -226,7 +227,8 @@ module internal ApplicationViewAssembly =
                       PackPresentation = fun () -> catalogue.PackPresentation
                       LastPack = fun () -> null
                       Match = fun () -> null
-                      MatchError = fun () -> null }
+                      MatchError = fun () -> null
+                      MatchRecovery = fun () -> null }
                 | profile ->
                     let ownership =
                         lazy
@@ -316,7 +318,8 @@ module internal ApplicationViewAssembly =
                                     ))
                                 .FirstOrDefault()
                       Match = fun () -> resolvedMatch.View
-                      MatchError = fun () -> resolvedMatch.Error }
+                      MatchError = fun () -> resolvedMatch.Error
+                      MatchRecovery = fun () -> resolvedMatch.Recovery }
 
             return!
                 context.Projections.Assemble(

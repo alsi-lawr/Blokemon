@@ -32,6 +32,7 @@ public sealed class MatchCardReadingTests
         await using var services = new ServiceCollection()
             .AddSingleton<IApplicationStateReader>(table)
             .AddSingleton<IMatchOperations>(table)
+            .AddSingleton<IMatchRecoveryOperations>(table)
             .AddSingleton<IJSRuntime>(browser)
             .AddSingleton<NavigationManager>(new BrowserNavigation())
             .AddSingleton<SoundBoard>()
@@ -78,6 +79,63 @@ public sealed class MatchCardReadingTests
         browser
             .Focused.Select(static element => element.Id)
             .ShouldBe([viewer.Element.Id, openerId]);
+    }
+
+    [Test]
+    public async Task ActiveMatchRecovery_RequiresConfirmationAndAppliesTheReturnedCompleteView()
+    {
+        var browser = new Browser();
+        var table = new RecoveryTable();
+        await using var services = new ServiceCollection()
+            .AddSingleton<IApplicationStateReader>(table)
+            .AddSingleton<IMatchOperations>(table)
+            .AddSingleton<IMatchRecoveryOperations>(table)
+            .AddSingleton<IJSRuntime>(browser)
+            .AddSingleton<NavigationManager>(new BrowserNavigation())
+            .AddSingleton<SoundBoard>()
+            .BuildServiceProvider();
+        await using var harness = ComponentHarness.For(services);
+
+        await harness.Show<CardViewerHost>(HostParameters(Page<Match>()));
+        await harness.ActivateButton("Abandon saved battle");
+        await harness.ActivateButton("Keep saved battle");
+        table.AbandonRequests.ShouldBeEmpty();
+
+        await harness.ActivateButton("Abandon saved battle");
+        await harness.ActivateButton("Abandon saved battle");
+
+        table
+            .AbandonRequests.ShouldHaveSingleItem()
+            .ShouldBe(new AbandonSavedMatchRequest(7, "saved-match-identity"));
+    }
+
+    [Test]
+    public async Task HistoryRecovery_UsesItsOwnConfirmationAndCapability()
+    {
+        var browser = new Browser();
+        var table = new RecoveryTable(history: true);
+        await using var services = new ServiceCollection()
+            .AddSingleton<IApplicationStateReader>(table)
+            .AddSingleton<IMatchOperations>(table)
+            .AddSingleton<IMatchRecoveryOperations>(table)
+            .AddSingleton<IJSRuntime>(browser)
+            .AddSingleton<NavigationManager>(new BrowserNavigation())
+            .AddSingleton<SoundBoard>()
+            .BuildServiceProvider();
+        await using var harness = ComponentHarness.For(services);
+
+        await harness.Show<CardViewerHost>(HostParameters(Page<Match>()));
+        await harness.ActivateButton("Discard completed battle history");
+        await harness.ActivateButton("Keep battle history");
+        table.DiscardRequests.ShouldBeEmpty();
+
+        await harness.ActivateButton("Discard completed battle history");
+        await harness.ActivateButton("Discard completed battle history");
+
+        table
+            .DiscardRequests.ShouldHaveSingleItem()
+            .ShouldBe(new DiscardMatchHistoryRequest(8, "saved-history-identity"));
+        table.AbandonRequests.ShouldBeEmpty();
     }
 
     private const string Mine = "you-active";
@@ -158,7 +216,10 @@ public sealed class MatchCardReadingTests
 
     // A table with one battle on it and nothing waiting to be decided, which is every card in the
     // game sitting where a player can reach it.
-    private sealed class OneTable : IApplicationStateReader, IMatchOperations
+    private sealed class OneTable
+        : IApplicationStateReader,
+            IMatchOperations,
+            IMatchRecoveryOperations
     {
         public Task<ApiResponse<ApplicationView>> State(
             CancellationToken cancellationToken = default
@@ -198,6 +259,96 @@ public sealed class MatchCardReadingTests
             ApplyMatchActionRequest request,
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
+
+        public Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
+            AbandonSavedMatchRequest request,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
+        public Task<ApiResponse<ApplicationView>> DiscardMatchHistory(
+            DiscardMatchHistoryRequest request,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+    }
+
+    private sealed class RecoveryTable
+        : IApplicationStateReader,
+            IMatchOperations,
+            IMatchRecoveryOperations
+    {
+        private readonly ApplicationView _gated;
+
+        public RecoveryTable(bool history = false) =>
+            _gated = RecoveryState(
+                history
+                    ? new(
+                        MatchRecoveryKindView.MatchHistoryUnsupportedVersion,
+                        8,
+                        "saved-history-identity"
+                    )
+                    : new(
+                        MatchRecoveryKindView.ActiveMatchUnsupportedVersion,
+                        7,
+                        "saved-match-identity"
+                    )
+            );
+
+        public List<AbandonSavedMatchRequest> AbandonRequests { get; } = [];
+
+        public List<DiscardMatchHistoryRequest> DiscardRequests { get; } = [];
+
+        public Task<ApiResponse<ApplicationView>> State(
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(new ApiResponse<ApplicationView>(true, _gated, null));
+
+        public Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
+            AbandonSavedMatchRequest request,
+            CancellationToken cancellationToken = default
+        )
+        {
+            AbandonRequests.Add(request);
+            return Task.FromResult(
+                new ApiResponse<ApplicationView>(true, RecoveryState(null), null)
+            );
+        }
+
+        public Task<ApiResponse<ApplicationView>> DiscardMatchHistory(
+            DiscardMatchHistoryRequest request,
+            CancellationToken cancellationToken = default
+        )
+        {
+            DiscardRequests.Add(request);
+            return Task.FromResult(
+                new ApiResponse<ApplicationView>(true, RecoveryState(null), null)
+            );
+        }
+
+        public Task<ApiResponse<MatchMutationView>> StartMatch(
+            StartMatchRequest request,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
+        public Task<ApiResponse<MatchMutationView>> ApplyMatchAction(
+            Guid matchId,
+            ApplyMatchActionRequest request,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
+        private static ApplicationView RecoveryState(MatchRecoveryView? recovery) =>
+            new(
+                new(Guid.Parse("0f000000-0000-0000-0000-000000000043"), "You", 1, "starter-beer"),
+                [],
+                [],
+                [],
+                new(
+                    new(string.Empty, string.Empty, string.Empty),
+                    new(string.Empty, string.Empty, string.Empty)
+                ),
+                null,
+                null,
+                recovery is null ? null : new("match.document_version", "Unavailable"),
+                recovery
+            );
     }
 
     // A browser that answers what a table asks of one and writes down every element it is told to

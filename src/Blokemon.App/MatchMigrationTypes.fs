@@ -18,7 +18,8 @@ type internal MatchRecoveryReason =
 type internal MatchRecoveryRequirement =
     { Document: MatchRecoveryDocument
       Key: string
-      Reason: MatchRecoveryReason }
+      Reason: MatchRecoveryReason
+      Stored: StoredDocument }
 
 type internal MatchMigrationReady<'Document> =
     { Stored: StoredDocument
@@ -35,6 +36,12 @@ type internal MatchMigrationCandidate<'Document> =
       Json: string
       Identity: string
       ReboundAuthority: bool }
+
+[<RequireQualifiedAccess>]
+type internal MatchArchiveOutcome =
+    | Ready
+    | RecoveryRequired of MatchRecoveryRequirement
+    | Failed of ApiError
 
 [<RequireQualifiedAccess>]
 type internal MatchMigrationPreparation<'Document> =

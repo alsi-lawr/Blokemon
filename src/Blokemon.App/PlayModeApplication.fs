@@ -249,7 +249,7 @@ type PlayModeApplication
                                 )
         }
 
-    // The nine IBlokemonApplication members are duplicated as concrete members because both
+    // The eleven IBlokemonApplication members are duplicated as concrete members because both
     // hosts inject and call this type through its concrete form.
     member _.State([<Optional>] cancellationToken: CancellationToken) =
         invoke (fun application token -> application.State token) cancellationToken
@@ -294,6 +294,20 @@ type PlayModeApplication
             (fun application token -> application.ApplyMatchAction(matchId, request, token))
             cancellationToken
 
+    member _.AbandonSavedMatch
+        (request: AbandonSavedMatchRequest, [<Optional>] cancellationToken: CancellationToken)
+        =
+        invoke
+            (fun application token -> application.AbandonSavedMatch(request, token))
+            cancellationToken
+
+    member _.DiscardMatchHistory
+        (request: DiscardMatchHistoryRequest, [<Optional>] cancellationToken: CancellationToken)
+        =
+        invoke
+            (fun application token -> application.DiscardMatchHistory(request, token))
+            cancellationToken
+
     member _.PurgeData([<Optional>] cancellationToken: CancellationToken) =
         invoke (fun application token -> application.PurgeData token) cancellationToken
 
@@ -320,5 +334,11 @@ type PlayModeApplication
 
         member this.ApplyMatchAction(matchId, request, cancellationToken) =
             this.ApplyMatchAction(matchId, request, cancellationToken)
+
+        member this.AbandonSavedMatch(request, cancellationToken) =
+            this.AbandonSavedMatch(request, cancellationToken)
+
+        member this.DiscardMatchHistory(request, cancellationToken) =
+            this.DiscardMatchHistory(request, cancellationToken)
 
         member this.PurgeData cancellationToken = this.PurgeData cancellationToken

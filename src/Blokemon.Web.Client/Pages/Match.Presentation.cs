@@ -96,6 +96,13 @@ public partial class Match
         CancelFlow();
         _view = response.Value.Application;
 
+        if (response.Value.Outcome == MatchMutationOutcomeView.RecoveryRequired)
+        {
+            _working = false;
+            EnsureCardSelection(selectDefault: false);
+            return;
+        }
+
         if (response.Value.Presentation is { Steps.Length: > 0 } presentation)
         {
             await PlayPresentation(presentation, previousFrame);

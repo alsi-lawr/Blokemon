@@ -65,4 +65,29 @@ public sealed class StateDocumentStore(IDbContextFactory<BlokemonDbContext> cont
             .StateDocuments.Where(row => row.Key == key)
             .ExecuteDeleteAsync(cancellationToken);
     }
+
+    public async Task<DocumentDeleteResult> DeleteIfUnchanged(
+        string key,
+        long expectedRevision,
+        string expectedJson,
+        CancellationToken cancellationToken = default
+    )
+    {
+        await using var context = await contexts.CreateDbContextAsync(cancellationToken);
+        var rows = await context
+            .StateDocuments.Where(row =>
+                row.Key == key && row.Revision == expectedRevision && row.Json == expectedJson
+            )
+            .ExecuteDeleteAsync(cancellationToken);
+        if (rows == 1)
+        {
+            return new DocumentDeleteResult.Deleted();
+        }
+
+        var exists = await context.StateDocuments.AnyAsync(
+            row => row.Key == key,
+            cancellationToken
+        );
+        return exists ? new DocumentDeleteResult.Conflict() : new DocumentDeleteResult.Missing();
+    }
 }

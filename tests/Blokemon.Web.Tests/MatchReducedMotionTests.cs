@@ -28,6 +28,7 @@ public sealed class MatchReducedMotionTests
         await using var services = new ServiceCollection()
             .AddSingleton<IApplicationStateReader>(application)
             .AddSingleton<IMatchOperations>(application)
+            .AddSingleton<IMatchRecoveryOperations>(application)
             .AddSingleton<IJSRuntime>(browser)
             .AddSingleton<SoundBoard>()
             .BuildServiceProvider();
@@ -236,7 +237,7 @@ public sealed class MatchReducedMotionTests
         MatchFrameView before,
         MatchFrameView after,
         MatchPresentationView presentation
-    ) : IApplicationStateReader, IMatchOperations
+    ) : IApplicationStateReader, IMatchOperations, IMatchRecoveryOperations
     {
         public Task<ApiResponse<ApplicationView>> State(
             CancellationToken cancellationToken = default
@@ -263,6 +264,16 @@ public sealed class MatchReducedMotionTests
 
         public Task<ApiResponse<MatchMutationView>> StartMatch(
             StartMatchRequest request,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
+        public Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
+            AbandonSavedMatchRequest request,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
+        public Task<ApiResponse<ApplicationView>> DiscardMatchHistory(
+            DiscardMatchHistoryRequest request,
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
     }

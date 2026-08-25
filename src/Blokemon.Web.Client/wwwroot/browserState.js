@@ -247,6 +247,55 @@ export async function remove(key) {
     }
 }
 
+export async function removeIfUnchanged(key, expectedRevision, expectedJson) {
+    try {
+        const result = await useDatabase(async (database) => {
+            const transaction = database.transaction(storeName, "readwrite");
+            const completion = transactionComplete(transaction);
+            const store = transaction.objectStore(storeName);
+            try {
+                const current = await requestResult(store.get(key));
+                if (!current) {
+                    await completion;
+                    return 2;
+                }
+                if (
+                    current.revision !== expectedRevision ||
+                    current.json !== expectedJson
+                ) {
+                    await completion;
+                    return 0;
+                }
+
+                await requestResult(store.delete(key));
+                await completion;
+                return 1;
+            } catch (error) {
+                try {
+                    await completion;
+                } catch {
+                    throw error;
+                }
+                throw error;
+            }
+        });
+
+        if (result === 0) {
+            invalidateDocument(key);
+            return result;
+        }
+
+        cacheDocument(key, null);
+        if (result === 1) {
+            broadcastInvalidation(key);
+        }
+        return result;
+    } catch (error) {
+        invalidateDocument(key);
+        throw error;
+    }
+}
+
 export async function update(key, expectedRevision, json) {
     try {
         const revision = await useDatabase(async (database) => {

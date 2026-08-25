@@ -49,6 +49,28 @@ public sealed class IndexedDbStateDocumentStore(IJSRuntime js)
     public async Task Delete(string key, CancellationToken cancellationToken = default) =>
         await Invoke<object?>("remove", cancellationToken, key);
 
+    public async Task<DocumentDeleteResult> DeleteIfUnchanged(
+        string key,
+        long expectedRevision,
+        string expectedJson,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await Invoke<int>(
+            "removeIfUnchanged",
+            cancellationToken,
+            key,
+            expectedRevision,
+            expectedJson
+        );
+        return result switch
+        {
+            1 => new DocumentDeleteResult.Deleted(),
+            2 => new DocumentDeleteResult.Missing(),
+            _ => new DocumentDeleteResult.Conflict(),
+        };
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (_module is not null)

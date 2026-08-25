@@ -48,6 +48,19 @@ public interface IMatchOperations
     );
 }
 
+public interface IMatchRecoveryOperations
+{
+    Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
+        AbandonSavedMatchRequest request,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<ApiResponse<ApplicationView>> DiscardMatchHistory(
+        DiscardMatchHistoryRequest request,
+        CancellationToken cancellationToken = default
+    );
+}
+
 public interface IPackOperations
 {
     Task<ApiResponse<ApplicationView>> OpenPack(

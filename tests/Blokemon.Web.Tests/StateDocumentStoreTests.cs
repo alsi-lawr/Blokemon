@@ -346,6 +346,24 @@ public sealed class StateDocumentStoreTests
         stored.ShouldBe(new StoredDocument(1, """{"name":"First"}"""));
     }
 
+    [Test]
+    public async Task RevisionCheckedDelete_RejectsDifferentBytesAndIsIdempotentAfterCommit()
+    {
+        await using var database = await TestDatabase.Create();
+        var store = new StateDocumentStore(database);
+        const string original = """{"battle":"original"}""";
+        await store.Create("match", original);
+
+        var stale = await store.DeleteIfUnchanged("match", 1, """{"battle":"replacement"}""");
+        var deleted = await store.DeleteIfUnchanged("match", 1, original);
+        var repeated = await store.DeleteIfUnchanged("match", 1, original);
+
+        stale.ShouldBeOfType<DocumentDeleteResult.Conflict>();
+        deleted.ShouldBeOfType<DocumentDeleteResult.Deleted>();
+        repeated.ShouldBeOfType<DocumentDeleteResult.Missing>();
+        (await store.Read("match")).ShouldBeNull();
+    }
+
     private sealed class TestDatabase : IDbContextFactory<BlokemonDbContext>, IAsyncDisposable
     {
         private readonly string _path;

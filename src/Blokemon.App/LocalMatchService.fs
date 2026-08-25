@@ -8,6 +8,7 @@ open Blokemon.App.Catalogue
 open Blokemon.App.Contracts
 open Blokemon.App.ApplicationViewIsolation
 open Blokemon.App.MatchFailures
+open Blokemon.App.MatchMigration
 open Blokemon.App.MatchStore
 open Blokemon.App.MatchViewProjection
 open Blokemon.Product
@@ -34,20 +35,56 @@ type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentSt
                 return
                     { View = null
                       Error = loaded.Error
-                      Presentation = null
-                      DocumentIdentity = noDocumentProjection }
-            else
-                return
-                    { View =
-                        match loaded.Match with
-                        | null -> null
-                        | value -> toView context value displayName
-                      Error = null
+                      Recovery =
+                        match loaded.Recovery with
+                        | None -> null
+                        | Some requirement -> recoveryView requirement
                       Presentation = null
                       DocumentIdentity =
-                        match loaded.Match with
-                        | null -> noDocumentProjection
-                        | value -> documentProjection value }
+                        match loaded.Recovery with
+                        | None -> noDocumentProjection
+                        | Some requirement ->
+                            { Revision = Nullable requirement.Stored.Revision
+                              ContentIdentity = DocumentIdentity.ofText requirement.Stored.Json } }
+            else
+                let view =
+                    match loaded.Match with
+                    | null -> null
+                    | value -> toView context value displayName
+
+                let identity =
+                    match loaded.Match with
+                    | null -> noDocumentProjection
+                    | value -> documentProjection value
+
+                let! history =
+                    match loaded.Match with
+                    | NonNull value when value.State.Phase = MatchPhase.Complete ->
+                        historyRecovery context profile cancellationToken
+                    | _ -> Task.FromResult(Ok None)
+
+                match history with
+                | Error error ->
+                    return
+                        { View = view
+                          Error = error
+                          Recovery = null
+                          Presentation = null
+                          DocumentIdentity = identity }
+                | Ok(Some requirement) ->
+                    return
+                        { View = view
+                          Error = recoveryError requirement
+                          Recovery = recoveryView requirement
+                          Presentation = null
+                          DocumentIdentity = identity }
+                | Ok None ->
+                    return
+                        { View = view
+                          Error = null
+                          Recovery = null
+                          Presentation = null
+                          DocumentIdentity = identity }
         }
 
     /// The saved battle as this player sees it.
@@ -112,6 +149,22 @@ type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentSt
 
             return matchResult projection
         }
+
+    member internal _.AbandonSavedMatch
+        (
+            profile: LocalProfile,
+            request: AbandonSavedMatchRequest,
+            cancellationToken: CancellationToken
+        ) =
+        MatchRecovery.abandonSavedMatch context profile request cancellationToken
+
+    member internal _.DiscardMatchHistory
+        (
+            profile: LocalProfile,
+            request: DiscardMatchHistoryRequest,
+            cancellationToken: CancellationToken
+        ) =
+        MatchRecovery.discardMatchHistory context profile request cancellationToken
 
     /// Deletes the saved battle and its history.
     member _.PurgeSavedMatches([<Optional>] cancellationToken: CancellationToken) =

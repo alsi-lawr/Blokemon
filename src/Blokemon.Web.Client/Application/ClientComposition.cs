@@ -73,6 +73,9 @@ public static class ClientComposition
         services.AddScoped<IMatchOperations>(static provider =>
             provider.GetRequiredService<ApplicationSnapshotCoordinator>()
         );
+        services.AddScoped<IMatchRecoveryOperations>(static provider =>
+            provider.GetRequiredService<ApplicationSnapshotCoordinator>()
+        );
         services.AddScoped<IPackOperations>(static provider =>
             provider.GetRequiredService<ApplicationSnapshotCoordinator>()
         );

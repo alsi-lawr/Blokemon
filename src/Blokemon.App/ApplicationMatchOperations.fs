@@ -48,6 +48,17 @@ module internal ApplicationMatchOperations =
                         )
 
                     match played.Error with
+                    | NonNull _ when not (isNull (box played.Recovery)) ->
+                        let! view = toView current cancellationToken played
+
+                        return
+                            succeeded (
+                                MatchMutationView(
+                                    view,
+                                    null,
+                                    MatchMutationOutcomeView.RecoveryRequired
+                                )
+                            )
                     | NonNull error -> return failed<MatchMutationView> error
                     | Null ->
                         let! view = toView current cancellationToken played

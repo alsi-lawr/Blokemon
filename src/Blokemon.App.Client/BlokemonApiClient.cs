@@ -56,6 +56,26 @@ public sealed class BlokemonApiClient(HttpClient http) : IBlokemonApplication
             cancellationToken
         );
 
+    public Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
+        AbandonSavedMatchRequest request,
+        CancellationToken cancellationToken = default
+    ) =>
+        Post<AbandonSavedMatchRequest, ApplicationView>(
+            "api/matches/abandon",
+            request,
+            cancellationToken
+        );
+
+    public Task<ApiResponse<ApplicationView>> DiscardMatchHistory(
+        DiscardMatchHistoryRequest request,
+        CancellationToken cancellationToken = default
+    ) =>
+        Post<DiscardMatchHistoryRequest, ApplicationView>(
+            "api/matches/history/discard",
+            request,
+            cancellationToken
+        );
+
     public Task<ApiResponse<ApplicationView>> PurgeData(
         CancellationToken cancellationToken = default
     ) => Post<object, ApplicationView>("api/purge", new(), cancellationToken);

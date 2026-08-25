@@ -673,6 +673,22 @@ module internal FuzzHarness =
                 documents.Remove key |> ignore
                 Task.CompletedTask
 
+            member _.DeleteIfUnchanged(key, expectedRevision, expectedJson, cancellationToken) =
+                cancellationToken.ThrowIfCancellationRequested()
+
+                let result: DocumentDeleteResult =
+                    match documents.TryGetValue key with
+                    | false, _ -> DocumentDeleteResult.Missing()
+                    | true, current when
+                        current.Revision = expectedRevision
+                        && String.Equals(current.Json, expectedJson, StringComparison.Ordinal)
+                        ->
+                        documents.Remove key |> ignore
+                        DocumentDeleteResult.Deleted()
+                    | _ -> DocumentDeleteResult.Conflict()
+
+                Task.FromResult result
+
     type PendingRoundAction =
         { Kind: LegalActionKind
           ActivePlayer: PlayerId

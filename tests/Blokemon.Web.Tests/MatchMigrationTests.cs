@@ -160,7 +160,8 @@ public sealed class MatchMigrationTests
             new(Guid.Parse("30000000-0000-0000-0000-000000000004"), _firstDeck)
         );
 
-        completed.Error.ShouldBeNull();
+        completed.Error!.Code.ShouldBe("match.history_authority_changed");
+        completed.View!.Frame.IsComplete.ShouldBeTrue();
         rejected.Error!.Code.ShouldBe("match.history_authority_changed");
         (await fixture.Store.Read("match-history")).ShouldBe(historySource);
         (await fixture.Store.Read(BackupKey("match-history", historySource))).ShouldBeNull();
@@ -182,13 +183,17 @@ public sealed class MatchMigrationTests
         await documents.Create("match", Fixture("pre-d3-active-match.json"));
         var source = (await documents.Read("match"))!;
 
-        var restored = await new LocalMatchService(catalogue, documents).State(
+        var restored = await new LocalMatchService(catalogue, documents).StateProjection(
             profile,
-            profile.DisplayName.Value
+            profile.DisplayName.Value,
+            CancellationToken.None
         );
 
         restored.View.ShouldBeNull();
         restored.Error!.Code.ShouldBe("match.authority_changed");
+        restored.Recovery!.Kind.ShouldBe(
+            MatchRecoveryKindView.ActiveMatchIncompatibleWithCurrentRules
+        );
         (await documents.Read("match")).ShouldBe(source);
         (await documents.Read(BackupKey("match", source))).ShouldBeNull();
     }
@@ -366,7 +371,8 @@ public sealed class MatchMigrationTests
             new(Guid.Parse("30000000-0000-0000-0000-000000000005"), _firstDeck)
         );
 
-        completed.Error.ShouldBeNull();
+        completed.Error!.Code.ShouldBe("match.history_version");
+        completed.View!.Frame.IsComplete.ShouldBeTrue();
         rejected.Error!.Code.ShouldBe("match.history_version");
         (await fixture.Store.Read("match-history")).ShouldBe(historySource);
         (await fixture.Store.Read(BackupKey("match-history", historySource))).ShouldBeNull();
@@ -385,13 +391,17 @@ public sealed class MatchMigrationTests
         await fixture.Store.Create("match", corrupt.ToJsonString());
         var source = (await fixture.Store.Read("match"))!;
 
-        var restored = await new LocalMatchService(catalogue, fixture.Store).State(
+        var service = new LocalMatchService(catalogue, fixture.Store);
+        var restored = await service.State(profile, profile.DisplayName.Value);
+        var projection = await service.StateProjection(
             profile,
-            profile.DisplayName.Value
+            profile.DisplayName.Value,
+            CancellationToken.None
         );
 
         restored.View.ShouldBeNull();
         restored.Error!.Code.ShouldBe("match.document_corrupt");
+        projection.Recovery.ShouldBeNull();
         (await fixture.Store.Read("match")).ShouldBe(source);
         (await fixture.Store.Read(BackupKey("match", source))).ShouldBeNull();
     }
@@ -412,15 +422,17 @@ public sealed class MatchMigrationTests
         var externalJson = source.Json + " ";
         var documents = new DivergentMatchUpdateStore(inner, externalJson);
 
-        var restored = await new LocalMatchService(catalogue, documents).State(
+        var restored = await new LocalMatchService(catalogue, documents).StateProjection(
             profile,
-            profile.DisplayName.Value
+            profile.DisplayName.Value,
+            CancellationToken.None
         );
         var primary = (await inner.Read("match"))!;
         var backup = (await inner.Read(BackupKey("match", source)))!;
 
         restored.View.ShouldBeNull();
         restored.Error!.Code.ShouldBe("state.conflict");
+        restored.Recovery.ShouldBeNull();
         primary.Revision.ShouldBe(source.Revision + 1);
         primary.Json.ShouldBe(externalJson);
         AssertBackup(
@@ -457,6 +469,232 @@ public sealed class MatchMigrationTests
         (await fixture.Store.Read("match")).ShouldBe(source);
         (await fixture.Store.Read(BackupKey("match", source))).ShouldBe(backup);
         backup.Json.ShouldBe(conflictingBackup);
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task AbandonUnsupportedActiveMatch_DeletesOnlyTheConfirmedPrimaryForEachProvider(
+        bool sqlite
+    )
+    {
+        await using var fixture = await DocumentStoreFixture.Create(sqlite);
+        var catalogue = Catalogue();
+        await fixture.Store.Create(
+            "profile",
+            CurrentProfileDocument(catalogue, "pre-d3-profile.json")
+        );
+        await fixture.Store.Create("match", MatchAtVersion(2, "arbitrary-authority"));
+        await fixture.Store.Create("match-history", "history-sentinel");
+        await fixture.Store.Create("match-migration-backup/sentinel", "backup-sentinel");
+        var source = (await fixture.Store.Read("match"))!;
+        var profile = (await fixture.Store.Read("profile"))!;
+        var history = (await fixture.Store.Read("match-history"))!;
+        var backup = (await fixture.Store.Read("match-migration-backup/sentinel"))!;
+        var documents = new RecordingDeleteStore(fixture.Store);
+        var application = Application(catalogue, documents);
+
+        var gated = Value(await application.State());
+        var recovery = gated.MatchRecovery!;
+        var abandoned = Value(
+            await application.AbandonSavedMatch(new(recovery.Revision, recovery.ContentIdentity))
+        );
+        var repeated = Value(
+            await application.AbandonSavedMatch(new(recovery.Revision, recovery.ContentIdentity))
+        );
+
+        recovery.Kind.ShouldBe(MatchRecoveryKindView.ActiveMatchUnsupportedVersion);
+        recovery.Revision.ShouldBe(source.Revision);
+        abandoned.Match.ShouldBeNull();
+        abandoned.MatchError.ShouldBeNull();
+        abandoned.MatchRecovery.ShouldBeNull();
+        repeated.MatchRecovery.ShouldBeNull();
+        (await fixture.Store.Read("match")).ShouldBeNull();
+        (await fixture.Store.Read("match-history")).ShouldBe(history);
+        (await fixture.Store.Read("profile")).ShouldBe(profile);
+        (await fixture.Store.Read("match-migration-backup/sentinel")).ShouldBe(backup);
+        documents.UnconditionalDeletes.ShouldBeEmpty();
+        documents.CheckedDeletes.ShouldBe(["match"]);
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task StaleActiveMatchConfirmation_PreservesReplacementAndEveryOtherDocument(
+        bool sqlite
+    )
+    {
+        await using var fixture = await DocumentStoreFixture.Create(sqlite);
+        var catalogue = Catalogue();
+        await fixture.Store.Create(
+            "profile",
+            CurrentProfileDocument(catalogue, "pre-d3-profile.json")
+        );
+        await fixture.Store.Create("match", MatchAtVersion(2, "arbitrary-authority"));
+        await fixture.Store.Create("match-history", "history-sentinel");
+        var documents = new RecordingDeleteStore(fixture.Store);
+        var application = Application(catalogue, documents);
+        var recovery = Value(await application.State()).MatchRecovery!;
+        var source = (await fixture.Store.Read("match"))!;
+        await fixture.Store.Delete("match");
+        await fixture.Store.Create("match", source.Json + " ");
+        var replacement = (await fixture.Store.Read("match"))!;
+        var history = (await fixture.Store.Read("match-history"))!;
+        var profile = (await fixture.Store.Read("profile"))!;
+
+        var stale = await application.AbandonSavedMatch(
+            new(recovery.Revision, recovery.ContentIdentity)
+        );
+
+        stale.Succeeded.ShouldBeFalse();
+        stale.Error!.Code.ShouldBe("match.recovery_stale");
+        (await fixture.Store.Read("match")).ShouldBe(replacement);
+        (await fixture.Store.Read("match-history")).ShouldBe(history);
+        (await fixture.Store.Read("profile")).ShouldBe(profile);
+        documents.UnconditionalDeletes.ShouldBeEmpty();
+        documents.CheckedDeletes.ShouldBeEmpty();
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task ConcurrentActiveRecoveryRequests_ConvergeWithoutTouchingOtherKeys(bool sqlite)
+    {
+        await using var fixture = await DocumentStoreFixture.Create(sqlite);
+        var catalogue = Catalogue();
+        await fixture.Store.Create(
+            "profile",
+            CurrentProfileDocument(catalogue, "pre-d3-profile.json")
+        );
+        await fixture.Store.Create("match", MatchAtVersion(2, "arbitrary-authority"));
+        await fixture.Store.Create("match-history", "history-sentinel");
+        var first = Application(catalogue, fixture.Store);
+        var second = Application(catalogue, fixture.Store);
+        var recovery = Value(await first.State()).MatchRecovery!;
+        var request = new AbandonSavedMatchRequest(recovery.Revision, recovery.ContentIdentity);
+        var profile = (await fixture.Store.Read("profile"))!;
+        var history = (await fixture.Store.Read("match-history"))!;
+
+        var responses = await Task.WhenAll(
+            first.AbandonSavedMatch(request),
+            second.AbandonSavedMatch(request)
+        );
+
+        responses.ShouldAllBe(static response => response.Succeeded);
+        responses.ShouldAllBe(static response => response.Value!.MatchRecovery == null);
+        (await fixture.Store.Read("match")).ShouldBeNull();
+        (await fixture.Store.Read("profile")).ShouldBe(profile);
+        (await fixture.Store.Read("match-history")).ShouldBe(history);
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task CancelledActiveRecovery_PreservesTheGateAndEveryDocument(bool sqlite)
+    {
+        await using var fixture = await DocumentStoreFixture.Create(sqlite);
+        var catalogue = Catalogue();
+        await fixture.Store.Create(
+            "profile",
+            CurrentProfileDocument(catalogue, "pre-d3-profile.json")
+        );
+        await fixture.Store.Create("match", MatchAtVersion(2, "arbitrary-authority"));
+        await fixture.Store.Create("match-history", "history-sentinel");
+        var documents = new RecordingDeleteStore(fixture.Store);
+        var application = Application(catalogue, documents);
+        var recovery = Value(await application.State()).MatchRecovery!;
+        var source = (await fixture.Store.Read("match"))!;
+        var profile = (await fixture.Store.Read("profile"))!;
+        var history = (await fixture.Store.Read("match-history"))!;
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Should.ThrowAsync<OperationCanceledException>(() =>
+            application.AbandonSavedMatch(
+                new(recovery.Revision, recovery.ContentIdentity),
+                cancellation.Token
+            )
+        );
+
+        (await fixture.Store.Read("match")).ShouldBe(source);
+        (await fixture.Store.Read("profile")).ShouldBe(profile);
+        (await fixture.Store.Read("match-history")).ShouldBe(history);
+        Value(await application.State()).MatchRecovery.ShouldBe(recovery);
+        documents.UnconditionalDeletes.ShouldBeEmpty();
+        documents.CheckedDeletes.ShouldBeEmpty();
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task DiscardUnsupportedHistory_AloneRemovesTheTypedStartGateForEachProvider(
+        bool sqlite
+    )
+    {
+        await using var fixture = await DocumentStoreFixture.Create(sqlite);
+        var catalogue = Catalogue();
+        await fixture.Store.Create(
+            "profile",
+            CurrentProfileDocument(catalogue, "history-profile.json")
+        );
+        await fixture.Store.Create("match", Fixture("schema-one-completed-match.json"));
+        await fixture.Store.Create("match-history", HistoryAtVersion(2, "arbitrary-authority"));
+        await fixture.Store.Create("match-migration-backup/sentinel", "backup-sentinel");
+        var documents = new RecordingDeleteStore(fixture.Store);
+        var application = Application(catalogue, documents);
+        var gated = Value(await application.State());
+        var recovery = gated.MatchRecovery!;
+        var active = (await fixture.Store.Read("match"))!;
+        var activeBackup = (
+            await fixture.Store.Read(
+                BackupKey("match", new(1, Fixture("schema-one-completed-match.json")))
+            )
+        )!;
+        var profile = (await fixture.Store.Read("profile"))!;
+        var backup = (await fixture.Store.Read("match-migration-backup/sentinel"))!;
+
+        var blockedStart = Value(
+            await application.StartMatch(
+                new(Guid.Parse("30000000-0000-0000-0000-000000000008"), _firstDeck)
+            )
+        );
+
+        blockedStart.Outcome.ShouldBe(MatchMutationOutcomeView.RecoveryRequired);
+        blockedStart.Application.MatchRecovery.ShouldBe(recovery);
+        (await fixture.Store.Read("match")).ShouldBe(active);
+
+        var discarded = Value(
+            await application.DiscardMatchHistory(new(recovery.Revision, recovery.ContentIdentity))
+        );
+        var repeated = Value(
+            await application.DiscardMatchHistory(new(recovery.Revision, recovery.ContentIdentity))
+        );
+
+        discarded.Match.ShouldNotBeNull();
+        discarded.MatchError.ShouldBeNull();
+        discarded.MatchRecovery.ShouldBeNull();
+        repeated.MatchRecovery.ShouldBeNull();
+        (await fixture.Store.Read("match-history")).ShouldBeNull();
+        (await fixture.Store.Read("match")).ShouldBe(active);
+        (await fixture.Store.Read("profile")).ShouldBe(profile);
+        (
+            await fixture.Store.Read(
+                BackupKey("match", new(1, Fixture("schema-one-completed-match.json")))
+            )
+        ).ShouldBe(activeBackup);
+        (await fixture.Store.Read("match-migration-backup/sentinel")).ShouldBe(backup);
+        documents.UnconditionalDeletes.ShouldBeEmpty();
+        documents.CheckedDeletes.ShouldBe(["match-history"]);
+
+        var started = Value(
+            await application.StartMatch(
+                new(Guid.Parse("30000000-0000-0000-0000-000000000009"), _firstDeck)
+            )
+        );
+        started.Outcome.ShouldBe(MatchMutationOutcomeView.Applied);
+        started.Application.Match!.Frame.Id.ShouldBe(
+            Guid.Parse("30000000-0000-0000-0000-000000000009")
+        );
     }
 
     private static void AssertBackup(
@@ -534,6 +772,25 @@ public sealed class MatchMigrationTests
     private static string Fixture(string name) =>
         File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "match-migrations", name));
 
+    private static string CurrentProfileDocument(BlokemonCatalogue catalogue, string fixture)
+    {
+        var document = JsonNode.Parse(Fixture(fixture))!.AsObject();
+        document["profile"]!["authorityManifestVersion"] = catalogue.Mechanics.ManifestVersion;
+        return document.ToJsonString();
+    }
+
+    private static LocalApplicationService Application(
+        BlokemonCatalogue catalogue,
+        IStateDocumentStore documents
+    ) =>
+        new(
+            catalogue,
+            documents,
+            new LocalMatchService(catalogue, documents),
+            EconomyRules.Unlimited,
+            ProfileAuthorityPolicy.Preserve
+        );
+
     private static BlokemonCatalogue Catalogue() =>
         BlokemonCatalogueBuilder.Load(Path.Combine(AppContext.BaseDirectory, "content"));
 
@@ -557,6 +814,12 @@ public sealed class MatchMigrationTests
         result is DomainResult<TValue, TFailure>.Succeeded succeeded
             ? succeeded.Value
             : throw new InvalidOperationException("The historical profile is not valid now.");
+
+    private static T Value<T>(ApiResponse<T> response)
+        where T : class =>
+        response.Succeeded && response.Value is not null
+            ? response.Value
+            : throw new InvalidOperationException(response.Error?.Message);
 
     private sealed class MemoryDocumentStore : IStateDocumentStore
     {
@@ -622,6 +885,32 @@ public sealed class MatchMigrationTests
                 return Task.CompletedTask;
             }
         }
+
+        public Task<DocumentDeleteResult> DeleteIfUnchanged(
+            string key,
+            long expectedRevision,
+            string expectedJson,
+            CancellationToken cancellationToken = default
+        )
+        {
+            lock (_lock)
+            {
+                if (!_documents.TryGetValue(key, out var current))
+                {
+                    return Task.FromResult<DocumentDeleteResult>(
+                        new DocumentDeleteResult.Missing()
+                    );
+                }
+                if (current.Revision != expectedRevision || current.Json != expectedJson)
+                {
+                    return Task.FromResult<DocumentDeleteResult>(
+                        new DocumentDeleteResult.Conflict()
+                    );
+                }
+                _documents.Remove(key);
+                return Task.FromResult<DocumentDeleteResult>(new DocumentDeleteResult.Deleted());
+            }
+        }
     }
 
     private abstract class DelegatingDocumentStore(IStateDocumentStore inner) : IStateDocumentStore
@@ -646,6 +935,43 @@ public sealed class MatchMigrationTests
 
         public virtual Task Delete(string key, CancellationToken cancellationToken = default) =>
             inner.Delete(key, cancellationToken);
+
+        public virtual Task<DocumentDeleteResult> DeleteIfUnchanged(
+            string key,
+            long expectedRevision,
+            string expectedJson,
+            CancellationToken cancellationToken = default
+        ) => inner.DeleteIfUnchanged(key, expectedRevision, expectedJson, cancellationToken);
+    }
+
+    private sealed class RecordingDeleteStore(IStateDocumentStore inner)
+        : DelegatingDocumentStore(inner)
+    {
+        public List<string> UnconditionalDeletes { get; } = [];
+
+        public List<string> CheckedDeletes { get; } = [];
+
+        public override async Task Delete(string key, CancellationToken cancellationToken = default)
+        {
+            UnconditionalDeletes.Add(key);
+            await base.Delete(key, cancellationToken);
+        }
+
+        public override async Task<DocumentDeleteResult> DeleteIfUnchanged(
+            string key,
+            long expectedRevision,
+            string expectedJson,
+            CancellationToken cancellationToken = default
+        )
+        {
+            CheckedDeletes.Add(key);
+            return await base.DeleteIfUnchanged(
+                key,
+                expectedRevision,
+                expectedJson,
+                cancellationToken
+            );
+        }
     }
 
     private sealed class DivergentMatchUpdateStore(IStateDocumentStore inner, string externalJson)

@@ -226,7 +226,10 @@ module internal ApplicationViewIsolation =
             packPresentation value.PackPresentation,
             lastPack value.LastPack,
             matchView value.Match,
-            error value.MatchError
+            error value.MatchError,
+            (match value.MatchRecovery with
+             | null -> null
+             | current -> MatchRecoveryView(current.Kind, current.Revision, current.ContentIdentity))
         )
 
     let matchResult (value: MatchProjectionResult) : MatchServiceResult =

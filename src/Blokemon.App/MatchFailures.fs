@@ -30,6 +30,7 @@ module internal MatchFailures =
     let failed code message : MatchProjectionResult =
         { View = null
           Error = ApiError(code, message)
+          Recovery = null
           Presentation = null
           DocumentIdentity = noDocumentProjection }
 
@@ -61,14 +62,16 @@ module internal MatchFailures =
 
     let invalidDocument code message : MatchLoad =
         { Match = null
-          Error = ApiError(code, message) }
+          Error = ApiError(code, message)
+          Recovery = None }
 
     let invalidReplayError () =
         ApiError("match.replay_invalid", "The saved battle is damaged. No data changed.")
 
     let invalidReplay () : MatchLoad =
         { Match = null
-          Error = invalidReplayError () }
+          Error = invalidReplayError ()
+          Recovery = None }
 
     let historyCorrupt () =
         ApiError("match.history_corrupt", "The saved battle history is damaged. No data changed.")

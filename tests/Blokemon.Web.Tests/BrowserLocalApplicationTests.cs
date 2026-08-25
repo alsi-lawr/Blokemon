@@ -66,6 +66,31 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
+    public async Task ServerMode_ForwardsTheTwoRecoveryCapabilitiesToTheirSeparateRoutes()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var returned = new ApplicationView(
+            null,
+            [],
+            [],
+            [],
+            catalogue.PackPresentation,
+            null,
+            null,
+            null
+        );
+        var server = new ServerHandler(returned);
+        var application = Application(catalogue, documents, server);
+        Value(await application.SelectMode(PlayMode.ServerBacked));
+
+        Value(await application.AbandonSavedMatch(new(3, "active-identity")));
+        Value(await application.DiscardMatchHistory(new(4, "history-identity")));
+
+        server.Requests.ShouldBe(["POST api/matches/abandon", "POST api/matches/history/discard"]);
+    }
+
+    [Test]
     public async Task BrowserDocumentWrites_RejectDuplicateAndStaleChangesWithoutOverwriting()
     {
         var documents = new MemoryDocumentStore();
@@ -80,6 +105,22 @@ public sealed class BrowserLocalApplicationTests
         updated.ShouldBe(new DocumentWriteResult.Written(2));
         stale.ShouldBeOfType<DocumentWriteResult.Conflict>();
         (await documents.Read("profile")).ShouldBe(new StoredDocument(2, "committed"));
+    }
+
+    [Test]
+    public async Task BrowserRevisionCheckedDelete_RejectsDifferentBytesAndIsIdempotentAfterCommit()
+    {
+        var documents = new MemoryDocumentStore();
+        await documents.Create("match", "original");
+
+        var stale = await documents.DeleteIfUnchanged("match", 1, "replacement");
+        var deleted = await documents.DeleteIfUnchanged("match", 1, "original");
+        var repeated = await documents.DeleteIfUnchanged("match", 1, "original");
+
+        stale.ShouldBeOfType<DocumentDeleteResult.Conflict>();
+        deleted.ShouldBeOfType<DocumentDeleteResult.Deleted>();
+        repeated.ShouldBeOfType<DocumentDeleteResult.Missing>();
+        (await documents.Read("match")).ShouldBeNull();
     }
 
     [Test]
@@ -111,6 +152,48 @@ public sealed class BrowserLocalApplicationTests
         response.Error!.Code.ShouldBe(errorCode);
         response.Error.Message.ShouldContain("last saved game is unchanged", Case.Sensitive);
         (await documents.Read("profile")).ShouldBe(before);
+    }
+
+    [Test]
+    public async Task BrowserRecoveryStorageFailure_PreservesEveryDocumentAndTheTypedGate()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Application(catalogue, documents, new ServerHandler(null));
+        Value(await application.SelectMode(PlayMode.BrowserLocal));
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("94511111-1111-1111-1111-111111111111"), "Browser Player")
+            )
+        );
+        var claimed = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("94522222-2222-2222-2222-222222222222"), "growroom")
+            )
+        );
+        Value(
+            await application.StartMatch(
+                new(Guid.Parse("94533333-3333-3333-3333-333333333333"), claimed.Decks.Single().Id)
+            )
+        );
+        var current = (await documents.Read("match"))!;
+        var incompatible = JsonNode.Parse(current.Json)!.AsObject();
+        incompatible["authorityVersion"] = "arbitrary-authority";
+        await documents.Update("match", current.Revision, incompatible.ToJsonString());
+        var source = (await documents.Read("match"))!;
+        var profile = (await documents.Read("profile"))!;
+        var recovery = Value(await application.State()).MatchRecovery!;
+        documents.FailNextWrite = DocumentStorageFailure.Full;
+
+        var failed = await application.AbandonSavedMatch(
+            new(recovery.Revision, recovery.ContentIdentity)
+        );
+
+        failed.Succeeded.ShouldBeFalse();
+        failed.Error!.Code.ShouldBe("storage.full");
+        (await documents.Read("match")).ShouldBe(source);
+        (await documents.Read("profile")).ShouldBe(profile);
+        Value(await application.State()).MatchRecovery.ShouldBe(recovery);
     }
 
     [Test]
@@ -1376,6 +1459,80 @@ public sealed class BrowserLocalApplicationTests
         }
     }
 
+    [Test]
+    public async Task ServerRecoveryEndpoint_UsesTheSameTypedIdentityGateAndKeyIsolation()
+    {
+        var dataDirectory = Path.Combine(
+            AppContext.BaseDirectory,
+            $"match-recovery-{Guid.NewGuid():N}"
+        );
+        try
+        {
+            using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Production");
+                builder.UseSetting("Blokemon:DataDirectory", dataDirectory);
+            });
+            using var client = factory.CreateClient();
+            var created = await client.PostAsJsonAsync(
+                "/api/profile",
+                new CreateProfileRequest(Guid.NewGuid(), "Server Player")
+            );
+            created.EnsureSuccessStatusCode();
+            var claimedResponse = await client.PostAsJsonAsync(
+                "/api/starter-decks/claim",
+                new ClaimStarterDeckRequest(Guid.NewGuid(), "growroom")
+            );
+            var claimed = (
+                await claimedResponse.Content.ReadFromJsonAsync<ApiResponse<ApplicationView>>()
+            )!.Value!;
+            var startResponse = await client.PostAsJsonAsync(
+                "/api/matches",
+                new StartMatchRequest(Guid.NewGuid(), claimed.Decks.Single().Id)
+            );
+            startResponse.EnsureSuccessStatusCode();
+
+            using var scope = factory.Services.CreateScope();
+            var store = scope.ServiceProvider.GetRequiredService<StateDocumentStore>();
+            var current = (await store.Read("match"))!;
+            var incompatible = JsonNode.Parse(current.Json)!.AsObject();
+            incompatible["authorityVersion"] = "arbitrary-authority";
+            await store.Update("match", current.Revision, incompatible.ToJsonString());
+            await store.Create("match-history", "history-sentinel");
+            await store.Create("match-migration-backup/sentinel", "backup-sentinel");
+            var profile = (await store.Read("profile"))!;
+            var history = (await store.Read("match-history"))!;
+            var backup = (await store.Read("match-migration-backup/sentinel"))!;
+
+            var gated = (
+                await client.GetFromJsonAsync<ApiResponse<ApplicationView>>("/api/state")
+            )!.Value!;
+            var recovery = gated.MatchRecovery!;
+            var abandonedResponse = await client.PostAsJsonAsync(
+                "/api/matches/abandon",
+                new AbandonSavedMatchRequest(recovery.Revision, recovery.ContentIdentity)
+            );
+            var abandoned = (
+                await abandonedResponse.Content.ReadFromJsonAsync<ApiResponse<ApplicationView>>()
+            )!;
+
+            recovery.Kind.ShouldBe(MatchRecoveryKindView.ActiveMatchUnsupportedVersion);
+            abandoned.Succeeded.ShouldBeTrue();
+            abandoned.Value!.MatchRecovery.ShouldBeNull();
+            (await store.Read("match")).ShouldBeNull();
+            (await store.Read("profile")).ShouldBe(profile);
+            (await store.Read("match-history")).ShouldBe(history);
+            (await store.Read("match-migration-backup/sentinel")).ShouldBe(backup);
+        }
+        finally
+        {
+            if (Directory.Exists(dataDirectory))
+            {
+                Directory.Delete(dataDirectory, recursive: true);
+            }
+        }
+    }
+
     private static IConfiguration Configuration(KeyValuePair<string, string?>[] settings) =>
         new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
 
@@ -1763,6 +1920,33 @@ public sealed class BrowserLocalApplicationTests
             }
         }
 
+        public Task<DocumentDeleteResult> DeleteIfUnchanged(
+            string key,
+            long expectedRevision,
+            string expectedJson,
+            CancellationToken cancellationToken = default
+        )
+        {
+            lock (_lock)
+            {
+                ThrowIfWriteFails();
+                if (!_documents.TryGetValue(key, out var current))
+                {
+                    return Task.FromResult<DocumentDeleteResult>(
+                        new DocumentDeleteResult.Missing()
+                    );
+                }
+                if (current.Revision != expectedRevision || current.Json != expectedJson)
+                {
+                    return Task.FromResult<DocumentDeleteResult>(
+                        new DocumentDeleteResult.Conflict()
+                    );
+                }
+                _documents.Remove(key);
+                return Task.FromResult<DocumentDeleteResult>(new DocumentDeleteResult.Deleted());
+            }
+        }
+
         public Task<DocumentWriteResult> Update(
             string key,
             long expectedRevision,
@@ -1826,6 +2010,13 @@ public sealed class BrowserLocalApplicationTests
 
         public virtual Task Delete(string key, CancellationToken cancellationToken = default) =>
             inner.Delete(key, cancellationToken);
+
+        public virtual Task<DocumentDeleteResult> DeleteIfUnchanged(
+            string key,
+            long expectedRevision,
+            string expectedJson,
+            CancellationToken cancellationToken = default
+        ) => inner.DeleteIfUnchanged(key, expectedRevision, expectedJson, cancellationToken);
     }
 
     private sealed class CommitThenCancelDocumentStore(

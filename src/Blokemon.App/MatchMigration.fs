@@ -112,11 +112,13 @@ module internal MatchMigration =
         (document: MatchRecoveryDocument)
         (key: string)
         (reason: MatchRecoveryReason)
+        (stored: StoredDocument)
         =
         MatchMigrationOutcome.RecoveryRequired
             { Document = document
               Key = key
-              Reason = reason }
+              Reason = reason
+              Stored = stored }
 
     let recoveryError (requirement: MatchRecoveryRequirement) =
         match requirement.Document, requirement.Reason with
@@ -137,6 +139,28 @@ module internal MatchMigration =
             historyVersion ()
         | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.IncompatibleWithCurrentRules ->
             historyAuthorityChanged ()
+
+    let recoveryView (requirement: MatchRecoveryRequirement) =
+        let kind =
+            match requirement.Document, requirement.Reason with
+            | MatchRecoveryDocument.ActiveMatch, MatchRecoveryReason.UnsupportedVersion ->
+                Some MatchRecoveryKindView.ActiveMatchUnsupportedVersion
+            | MatchRecoveryDocument.ActiveMatch, MatchRecoveryReason.IncompatibleWithCurrentRules ->
+                Some MatchRecoveryKindView.ActiveMatchIncompatibleWithCurrentRules
+            | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.UnsupportedVersion ->
+                Some MatchRecoveryKindView.MatchHistoryUnsupportedVersion
+            | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.IncompatibleWithCurrentRules ->
+                Some MatchRecoveryKindView.MatchHistoryIncompatibleWithCurrentRules
+            | _, MatchRecoveryReason.Corrupt -> None
+
+        kind
+        |> Option.map (fun value ->
+            MatchRecoveryView(
+                value,
+                requirement.Stored.Revision,
+                DocumentIdentity.ofText requirement.Stored.Json
+            ))
+        |> Option.toObj
 
     let private persist
         (documentKind: MatchRecoveryDocument)
@@ -217,7 +241,7 @@ module internal MatchMigration =
             | MatchMigrationPreparation.Current document ->
                 return MatchMigrationOutcome.Ready { Stored = source; Document = document }
             | MatchMigrationPreparation.RecoveryRequired reason ->
-                return recovery MatchRecoveryDocument.ActiveMatch matchKey reason
+                return recovery MatchRecoveryDocument.ActiveMatch matchKey reason source
             | MatchMigrationPreparation.Candidate candidate ->
                 cancellationToken.ThrowIfCancellationRequested()
 
@@ -232,6 +256,7 @@ module internal MatchMigration =
                                  MatchRecoveryReason.IncompatibleWithCurrentRules
                              else
                                  MatchRecoveryReason.Corrupt)
+                            source
                 else
                     return!
                         persist
@@ -256,7 +281,7 @@ module internal MatchMigration =
             | MatchMigrationPreparation.Current document ->
                 return MatchMigrationOutcome.Ready { Stored = source; Document = document }
             | MatchMigrationPreparation.RecoveryRequired reason ->
-                return recovery MatchRecoveryDocument.MatchHistory matchHistoryKey reason
+                return recovery MatchRecoveryDocument.MatchHistory matchHistoryKey reason source
             | MatchMigrationPreparation.Candidate candidate ->
                 cancellationToken.ThrowIfCancellationRequested()
 
@@ -269,6 +294,7 @@ module internal MatchMigration =
                                  MatchRecoveryReason.IncompatibleWithCurrentRules
                              else
                                  MatchRecoveryReason.Corrupt)
+                            source
                 else
                     return!
                         persist

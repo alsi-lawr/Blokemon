@@ -31,6 +31,7 @@ type internal MatchDocumentProjectionIdentity =
 type internal MatchProjectionResult =
     { View: MatchView | null
       Error: ApiError | null
+      Recovery: MatchRecoveryView | null
       Presentation: MatchPresentationView | null
       DocumentIdentity: MatchDocumentProjectionIdentity }
 
@@ -111,7 +112,8 @@ type internal LoadedMatch =
 
 type internal MatchLoad =
     { Match: LoadedMatch | null
-      Error: ApiError | null }
+      Error: ApiError | null
+      Recovery: MatchRecoveryRequirement option }
 
 type internal CpuAdvance =
     { State: MatchState

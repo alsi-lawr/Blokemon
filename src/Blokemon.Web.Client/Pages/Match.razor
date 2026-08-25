@@ -2,6 +2,7 @@
 @implements IAsyncDisposable
 @inject IApplicationStateReader ApplicationState
 @inject IMatchOperations MatchOperations
+@inject IMatchRecoveryOperations MatchRecoveryOperations
 @inject IJSRuntime Js
 @inject SoundBoard Sound
 @using static Blokemon.Web.Client.Components.MatchText
@@ -23,8 +24,59 @@ else if (_view!.Profile is null)
 else if (_view.MatchError is not null)
 {
     <header class="topline"><div><span class="eyebrow">Battle paused</span><h1>This battle could not be loaded.</h1></div></header>
+    @if (_operationError is not null)
+    {
+        <FailurePanel Message="@_operationError" />
+    }
     <FailurePanel Title="Your saved battle is unavailable." Message="@_view.MatchError.Message" />
-    <div class="panel"><p>Your profile, collection, and decks are safe.</p></div>
+    @if (_view.MatchRecovery is not { } recovery)
+    {
+        <div class="panel"><p>Your profile, collection, and decks are safe.</p></div>
+    }
+    else if (!_confirmingRecovery)
+    {
+        <div class="panel hero">
+            <div class="hero-copy">
+                @if (ActiveRecovery(recovery))
+                {
+                    <h2>Leave this saved battle behind.</h2>
+                    <p>Your completed battle history, profile, collection, and decks will stay safe.</p>
+                    <div class="actions"><button type="button" class="primary" aria-label="Abandon saved battle" @ref="_recoveryAction" @onclick="BeginRecoveryConfirmation">Abandon saved battle</button></div>
+                }
+                else
+                {
+                    <h2>Remove the unavailable battle history.</h2>
+                    <p>Your current saved battle, profile, collection, and decks will stay safe.</p>
+                    <div class="actions"><button type="button" class="primary" aria-label="Discard completed battle history" @ref="_recoveryAction" @onclick="BeginRecoveryConfirmation">Discard completed battle history</button></div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="panel hero" role="alert">
+            <div class="hero-copy">
+                @if (ActiveRecovery(recovery))
+                {
+                    <h2>Abandon this saved battle?</h2>
+                    <p>This deletes only the unavailable saved battle. Your completed battle history, profile, collection, decks, and cards stay safe.</p>
+                    <div class="actions">
+                        <button type="button" class="primary" aria-label="Abandon saved battle" @ref="_recoveryAction" @onclick="ConfirmRecovery" disabled="@_working">@(_working ? "Abandoning…" : "Abandon saved battle")</button>
+                        <button type="button" aria-label="Keep saved battle" @ref="_recoveryCancel" @onclick="CancelRecoveryConfirmation" disabled="@_working">Keep saved battle</button>
+                    </div>
+                }
+                else
+                {
+                    <h2>Discard completed battle history?</h2>
+                    <p>This deletes only the completed battle history. Your current saved battle, profile, collection, decks, and cards stay safe.</p>
+                    <div class="actions">
+                        <button type="button" class="primary" aria-label="Discard completed battle history" @ref="_recoveryAction" @onclick="ConfirmRecovery" disabled="@_working">@(_working ? "Discarding…" : "Discard completed battle history")</button>
+                        <button type="button" aria-label="Keep battle history" @ref="_recoveryCancel" @onclick="CancelRecoveryConfirmation" disabled="@_working">Keep battle history</button>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 }
 else if (_view.Profile.StarterDeckId is null)
 {
@@ -221,6 +273,8 @@ else
     private IJSObjectReference? _presentationModule;
     private ElementReference _battleScreen;
     private ElementReference _sheet;
+    private ElementReference _recoveryAction;
+    private ElementReference _recoveryCancel;
     private TaskCompletionSource? _skipSignal;
     private TaskCompletionSource? _revealSignal;
     private Stage _stage;
@@ -246,6 +300,7 @@ else
     private string? _sheetKey;
     private string? _focusedSurfaceKey;
     private bool _dockOpen;
+    private bool _confirmingRecovery;
 
     // Every surface the table can show is one of these, and the stage decides all three of the
     // things a frame is made of: which cards glow, which sheet is open, and where a tap goes.

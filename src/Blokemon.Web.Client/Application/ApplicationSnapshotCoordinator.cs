@@ -13,6 +13,7 @@ internal sealed class ApplicationSnapshotCoordinator(
         IDeckOperations,
         IStarterDeckOperations,
         IMatchOperations,
+        IMatchRecoveryOperations,
         IPackOperations,
         IProfileOperations,
         IPlayModeOperations,
@@ -118,6 +119,24 @@ internal sealed class ApplicationSnapshotCoordinator(
     ) =>
         MutateMatch(
             token => application.ApplyMatchAction(matchId, request, token),
+            cancellationToken
+        );
+
+    public Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
+        AbandonSavedMatchRequest request,
+        CancellationToken cancellationToken = default
+    ) =>
+        MutateApplication(
+            token => application.AbandonSavedMatch(request, token),
+            cancellationToken
+        );
+
+    public Task<ApiResponse<ApplicationView>> DiscardMatchHistory(
+        DiscardMatchHistoryRequest request,
+        CancellationToken cancellationToken = default
+    ) =>
+        MutateApplication(
+            token => application.DiscardMatchHistory(request, token),
             cancellationToken
         );
 

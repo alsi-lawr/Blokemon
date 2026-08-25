@@ -59,6 +59,7 @@ module internal MatchActionFlow =
                     return
                         { View = null
                           Error = loaded.Error
+                          Recovery = null
                           Presentation = null
                           DocumentIdentity = noDocumentProjection }
                 else
@@ -94,6 +95,7 @@ module internal MatchActionFlow =
                                     return
                                         { View = toView current displayName
                                           Error = null
+                                          Recovery = null
                                           Presentation = null
                                           DocumentIdentity = documentProjection current }
                                 else
@@ -170,6 +172,7 @@ module internal MatchActionFlow =
                                                 return
                                                     { View = null
                                                       Error = materialized.Error
+                                                      Recovery = null
                                                       Presentation = null
                                                       DocumentIdentity = noDocumentProjection }
                                             else
@@ -187,6 +190,7 @@ module internal MatchActionFlow =
                                                         return
                                                             { View = null
                                                               Error = rejection rejected.Code
+                                                              Recovery = null
                                                               Presentation = null
                                                               DocumentIdentity =
                                                                 noDocumentProjection }
@@ -222,6 +226,7 @@ module internal MatchActionFlow =
                                                             return
                                                                 { View = null
                                                                   Error = advanced.Error
+                                                                  Recovery = null
                                                                   Presentation = null
                                                                   DocumentIdentity =
                                                                     noDocumentProjection }
@@ -284,6 +289,7 @@ module internal MatchActionFlow =
                                                                     { View =
                                                                         toView committed displayName
                                                                       Error = null
+                                                                      Recovery = null
                                                                       Presentation =
                                                                         toPresentation
                                                                             document

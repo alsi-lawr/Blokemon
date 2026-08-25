@@ -15,6 +15,7 @@ enum and flag names and is enumerated by the focused integration test.
 | `LastPack` | `Catalogue`, `PackHistoryAndOwnership` | The catalogue, latest receipt/id/sequence/order, or ownership of a card in that receipt changes. No receipt does not depend on unrelated ownership. |
 | `Match` | `Catalogue`, `MatchProfile`, `MatchDocument` | The catalogue, profile match identity/display name/authority, saved match document revision/content, or match error changes. |
 | `MatchError` | `Catalogue`, `MatchProfile`, `MatchDocument` | The same match sources change, including an error appearing, changing, or clearing. |
+| `MatchRecovery` | `Catalogue`, `MatchProfile`, `MatchDocument` | The same match sources change, including an eligible active-match or history recovery gate appearing, changing identity, or clearing. |
 
 Operation names do not participate in cache invalidation. The second table records the expected
 source differences exercised by the counter/equality tests, including content-dependent differences
@@ -32,6 +33,8 @@ the committed match result, or projects no match; the focused test enumerates al
 | `DeleteDeck` | `ProfileSummary`, `SavedDecksAndOwnership`; also `CardUniverseAndOwnership` when a historical-only card id leaves the saved-deck universe | Load saved match |
 | `StartMatch` | `MatchDocument` | Use the committed match result |
 | `ApplyMatchAction` | `MatchDocument` | Use the committed match result |
+| `AbandonSavedMatch` | `MatchDocument` | Load the saved match again after the exact active-match primary is deleted. |
+| `DiscardMatchHistory` | `MatchDocument` | Load the saved completed match again after its separate history gate is deleted. |
 | `PurgeData` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership`, `StarterClaimsAndOwnership`, `PackHistoryAndOwnership`, `MatchProfile`, `MatchDocument` | No match |
 | External profile revision/content | Exactly the profile-derived identities whose content changed | Load saved match |
 | External match revision/content | `MatchDocument` and therefore `Match`/`MatchError` | Load saved match |

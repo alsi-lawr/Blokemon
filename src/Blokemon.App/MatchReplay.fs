@@ -278,8 +278,10 @@ module internal MatchReplay =
                                   Document = document
                                   State = state
                                   Events = ImmutableArray.CreateRange events }
-                              Error = null }
+                              Error = null
+                              Recovery = None }
                 | _ -> invalidReplay ()
             | validationError ->
                 { Match = null
-                  Error = validationError }
+                  Error = validationError
+                  Recovery = None }

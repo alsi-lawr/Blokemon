@@ -25,6 +25,7 @@ type internal ApplicationProjectionSegment =
     | LastPack = 5
     | Match = 6
     | MatchError = 7
+    | MatchRecovery = 8
 
 type internal ApplicationProjectionOperation =
     | State = 0
@@ -35,7 +36,9 @@ type internal ApplicationProjectionOperation =
     | DeleteDeck = 5
     | StartMatch = 6
     | ApplyMatchAction = 7
-    | PurgeData = 8
+    | AbandonSavedMatch = 8
+    | DiscardMatchHistory = 9
+    | PurgeData = 10
 
 type internal MatchProjectionSource =
     | LoadSavedMatch = 0
@@ -82,6 +85,11 @@ module internal ApplicationProjectionMatrix =
              Dependencies =
                ApplicationProjectionDependency.Catalogue
                ||| ApplicationProjectionDependency.MatchProfile
+               ||| ApplicationProjectionDependency.MatchDocument }
+           { Segment = ApplicationProjectionSegment.MatchRecovery
+             Dependencies =
+               ApplicationProjectionDependency.Catalogue
+               ||| ApplicationProjectionDependency.MatchProfile
                ||| ApplicationProjectionDependency.MatchDocument } |]
 
     let operations =
@@ -101,6 +109,10 @@ module internal ApplicationProjectionMatrix =
              MatchSource = MatchProjectionSource.UseCommittedMatch }
            { Operation = ApplicationProjectionOperation.ApplyMatchAction
              MatchSource = MatchProjectionSource.UseCommittedMatch }
+           { Operation = ApplicationProjectionOperation.AbandonSavedMatch
+             MatchSource = MatchProjectionSource.LoadSavedMatch }
+           { Operation = ApplicationProjectionOperation.DiscardMatchHistory
+             MatchSource = MatchProjectionSource.LoadSavedMatch }
            { Operation = ApplicationProjectionOperation.PurgeData
              MatchSource = MatchProjectionSource.NoMatch } |]
 
@@ -147,7 +159,8 @@ type internal ApplicationProjectionBuilders =
       PackPresentation: unit -> PackPresentationView
       LastPack: unit -> PackReceiptView | null
       Match: unit -> MatchView | null
-      MatchError: unit -> ApiError | null }
+      MatchError: unit -> ApiError | null
+      MatchRecovery: unit -> MatchRecoveryView | null }
 
 [<Sealed>]
 type internal ApplicationProjectionBuildCounts
@@ -159,7 +172,8 @@ type internal ApplicationProjectionBuildCounts
         packPresentation: int64,
         lastPack: int64,
         matchView: int64,
-        matchError: int64
+        matchError: int64,
+        matchRecovery: int64
     ) =
 
     member _.Profile = profile
@@ -170,6 +184,7 @@ type internal ApplicationProjectionBuildCounts
     member _.LastPack = lastPack
     member _.Match = matchView
     member _.MatchError = matchError
+    member _.MatchRecovery = matchRecovery
 
 [<Sealed>]
 type internal ApplicationProjectionHooks() =

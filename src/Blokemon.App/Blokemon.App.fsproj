@@ -11,6 +11,7 @@
     <Compile Include="MatchJson.fs" />
     <Compile Include="DocumentIdentity.fs" />
     <Compile Include="PlayModeApplication.fs" />
+    <Compile Include="MatchMigrationTypes.fs" />
     <!--
       The saved battle, decomposed by concern. F# compile order is the layering: documents and
       the dependency-free helpers first, then translation and projection, then the persistence
@@ -19,7 +20,6 @@
     <Compile Include="MatchDocuments.fs" />
     <Compile Include="ApplicationViewIsolation.fs" />
     <Compile Include="MatchDocumentNormalization.fs" />
-    <Compile Include="MatchMigrationTypes.fs" />
     <Compile Include="MatchFailures.fs" />
     <Compile Include="MatchIdentity.fs" />
     <Compile Include="MatchLabels.fs" />
@@ -32,6 +32,7 @@
     <Compile Include="MatchMigrationRegistry.fs" />
     <Compile Include="MatchMigrationJson.fs" />
     <Compile Include="MatchMigration.fs" />
+    <Compile Include="MatchRecovery.fs" />
     <Compile Include="MatchStore.fs" />
     <Compile Include="MatchConflicts.fs" />
     <Compile Include="MatchStartFlow.fs" />
@@ -54,6 +55,7 @@
     <Compile Include="PackAndStarterOperations.fs" />
     <Compile Include="DeckOperations.fs" />
     <Compile Include="ApplicationMatchOperations.fs" />
+    <Compile Include="ApplicationMatchRecoveryOperations.fs" />
     <Compile Include="LocalApplicationService.fs" />
   </ItemGroup>
 

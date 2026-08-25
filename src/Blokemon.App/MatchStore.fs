@@ -33,24 +33,62 @@ module internal MatchStore =
             match stored with
             | null ->
                 context.Cached <- null
-                return { Match = null; Error = null }
+
+                return
+                    { Match = null
+                      Error = null
+                      Recovery = None }
             | document ->
                 match context.Cached with
                 | NonNull cached when cached.DocumentRevision = document.Revision ->
-                    return { Match = cached; Error = null }
+                    return
+                        { Match = cached
+                          Error = null
+                          Recovery = None }
                 | _ ->
                     let! resolved = resolveMatch context profile document cancellationToken
 
                     match resolved with
                     | MatchMigrationOutcome.RecoveryRequired requirement ->
                         let error = recoveryError requirement
-                        return { Match = null; Error = error }
-                    | MatchMigrationOutcome.Failed error -> return { Match = null; Error = error }
+
+                        return
+                            { Match = null
+                              Error = error
+                              Recovery = Some requirement }
+                    | MatchMigrationOutcome.Failed error ->
+                        return
+                            { Match = null
+                              Error = error
+                              Recovery = None }
                     | MatchMigrationOutcome.Ready ready ->
                         let replayed = replayDocument profile ready.Stored.Revision ready.Document
 
                         context.Cached <- replayed.Match
-                        return replayed
+
+                        return
+                            { Match = replayed.Match
+                              Error = replayed.Error
+                              Recovery = None }
+        }
+
+    let historyRecovery
+        (context: MatchContext)
+        (profile: LocalProfile)
+        (cancellationToken: CancellationToken)
+        =
+        task {
+            let! stored = context.Documents.Read(matchHistoryKey, cancellationToken)
+
+            match stored with
+            | null -> return Ok None
+            | document ->
+                let! resolved = resolveHistory context profile document cancellationToken
+
+                match resolved with
+                | MatchMigrationOutcome.Ready _ -> return Ok None
+                | MatchMigrationOutcome.RecoveryRequired requirement -> return Ok(Some requirement)
+                | MatchMigrationOutcome.Failed error -> return Error error
         }
 
     let archiveCompletedMatch
@@ -58,9 +96,7 @@ module internal MatchStore =
         (profile: LocalProfile)
         (completed: LoadedMatch)
         (cancellationToken: CancellationToken)
-        // The archive either rejects the saved history with a typed error, or reports nothing;
-        // an F# option carries that better than a null across the whole body.
-        : Task<ApiError option> =
+        : Task<MatchArchiveOutcome> =
         let catalogue = context.Catalogue
         let documents = context.Documents
         let replayDocument = replayDocument context
@@ -86,12 +122,13 @@ module internal MatchStore =
                         | MatchMigrationOutcome.Ready ready ->
                             return Ok(Some ready.Stored, ready.Document)
                         | MatchMigrationOutcome.RecoveryRequired requirement ->
-                            return Error(recoveryError requirement)
-                        | MatchMigrationOutcome.Failed error -> return Error error
+                            return Error(MatchArchiveOutcome.RecoveryRequired requirement)
+                        | MatchMigrationOutcome.Failed error ->
+                            return Error(MatchArchiveOutcome.Failed error)
                 }
 
             match history with
-            | Error failure -> return Some failure
+            | Error failure -> return failure
             | Ok(resolvedStored, document) ->
                 let archiveFailure =
                     document.Matches
@@ -119,14 +156,14 @@ module internal MatchStore =
                                 | NonNull _ -> None)
 
                 match archiveFailure with
-                | Some failure -> return Some failure
+                | Some failure -> return MatchArchiveOutcome.Failed failure
                 | None ->
                     if
                         document.Matches
                         |> Seq.countBy _.Start.MatchId
                         |> Seq.exists (fun (_, count) -> count > 1)
                     then
-                        return Some(historyCorrupt ())
+                        return MatchArchiveOutcome.Failed(historyCorrupt ())
                     else
                         match
                             document.Matches.SingleOrDefault(fun archived ->
@@ -135,9 +172,9 @@ module internal MatchStore =
                         | NonNull duplicate ->
                             return
                                 (if documentsMatch duplicate completed.Document then
-                                     None
+                                     MatchArchiveOutcome.Ready
                                  else
-                                     Some(historyCorrupt ()))
+                                     MatchArchiveOutcome.Failed(historyCorrupt ()))
                         | Null ->
                             let changed =
                                 { document with
@@ -160,6 +197,6 @@ module internal MatchStore =
                                     )
 
                             match write with
-                            | :? DocumentWriteResult.Written -> return None
-                            | _ -> return Some(historyConflictError ())
+                            | :? DocumentWriteResult.Written -> return MatchArchiveOutcome.Ready
+                            | _ -> return MatchArchiveOutcome.Failed(historyConflictError ())
         }

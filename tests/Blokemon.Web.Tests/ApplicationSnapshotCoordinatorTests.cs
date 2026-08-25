@@ -150,7 +150,7 @@ public sealed class ApplicationSnapshotCoordinatorTests
             );
         }
 
-        application.MutationCalls.ShouldBe(9);
+        application.MutationCalls.ShouldBe(11);
         await coordinator.DisposeAsync();
     }
 
@@ -526,6 +526,7 @@ public sealed class ApplicationSnapshotCoordinatorTests
             services.GetRequiredService<IDeckOperations>(),
             services.GetRequiredService<IStarterDeckOperations>(),
             services.GetRequiredService<IMatchOperations>(),
+            services.GetRequiredService<IMatchRecoveryOperations>(),
             services.GetRequiredService<IPackOperations>(),
             services.GetRequiredService<IProfileOperations>(),
             services.GetRequiredService<IPlayModeOperations>(),
@@ -546,6 +547,10 @@ public sealed class ApplicationSnapshotCoordinatorTests
         );
         yield return new(token =>
             coordinator.DeleteDeck(new(Guid.NewGuid(), Guid.NewGuid()), token)
+        );
+        yield return new(token => coordinator.AbandonSavedMatch(new(1, "active-identity"), token));
+        yield return new(token =>
+            coordinator.DiscardMatchHistory(new(1, "history-identity"), token)
         );
     }
 
@@ -576,6 +581,8 @@ public sealed class ApplicationSnapshotCoordinatorTests
         yield return token =>
             coordinator.SaveDeck(new(Guid.NewGuid(), null, null, "Deck", []), token);
         yield return token => coordinator.DeleteDeck(new(Guid.NewGuid(), Guid.NewGuid()), token);
+        yield return token => coordinator.AbandonSavedMatch(new(1, "active-identity"), token);
+        yield return token => coordinator.DiscardMatchHistory(new(1, "history-identity"), token);
         yield return token => coordinator.StartMatch(new(Guid.NewGuid(), Guid.NewGuid()), token);
         yield return token =>
             coordinator.ApplyMatchAction(
@@ -713,6 +720,16 @@ public sealed class ApplicationSnapshotCoordinatorTests
             ApplyMatchActionRequest request,
             CancellationToken cancellationToken = default
         ) => Match(cancellationToken);
+
+        public Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
+            AbandonSavedMatchRequest request,
+            CancellationToken cancellationToken = default
+        ) => Application(cancellationToken);
+
+        public Task<ApiResponse<ApplicationView>> DiscardMatchHistory(
+            DiscardMatchHistoryRequest request,
+            CancellationToken cancellationToken = default
+        ) => Application(cancellationToken);
 
         public Task<ApiResponse<ApplicationView>> PurgeData(
             CancellationToken cancellationToken = default
@@ -858,6 +875,13 @@ public sealed class ApplicationSnapshotCoordinatorTests
         public Task Delete(string key, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
+        public Task<DocumentDeleteResult> DeleteIfUnchanged(
+            string key,
+            long expectedRevision,
+            string expectedJson,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
         public void DeliverCreate() => _delivery.SetResult();
     }
 
@@ -911,6 +935,25 @@ public sealed class ApplicationSnapshotCoordinatorTests
         {
             _documents.Remove(key);
             return Task.CompletedTask;
+        }
+
+        public Task<DocumentDeleteResult> DeleteIfUnchanged(
+            string key,
+            long expectedRevision,
+            string expectedJson,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (!_documents.TryGetValue(key, out var current))
+            {
+                return Task.FromResult<DocumentDeleteResult>(new DocumentDeleteResult.Missing());
+            }
+            if (current.Revision != expectedRevision || current.Json != expectedJson)
+            {
+                return Task.FromResult<DocumentDeleteResult>(new DocumentDeleteResult.Conflict());
+            }
+            _documents.Remove(key);
+            return Task.FromResult<DocumentDeleteResult>(new DocumentDeleteResult.Deleted());
         }
     }
 

@@ -73,6 +73,22 @@ public static class ApplicationEndpoints
             ) => application.ApplyMatchAction(matchId, request, cancellationToken)
         );
         api.MapPost(
+            "/matches/abandon",
+            (
+                AbandonSavedMatchRequest request,
+                LocalApplicationService application,
+                CancellationToken cancellationToken
+            ) => application.AbandonSavedMatch(request, cancellationToken)
+        );
+        api.MapPost(
+            "/matches/history/discard",
+            (
+                DiscardMatchHistoryRequest request,
+                LocalApplicationService application,
+                CancellationToken cancellationToken
+            ) => application.DiscardMatchHistory(request, cancellationToken)
+        );
+        api.MapPost(
             "/purge",
             (LocalApplicationService application, CancellationToken cancellationToken) =>
                 application.PurgeData(cancellationToken)
