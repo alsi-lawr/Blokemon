@@ -17,7 +17,6 @@ type BlokemonPublicTermCategory =
     | Cost = 7
     | Timing = 8
     | Core = 9
-    | BattleTiming = 10
 
 type BlokemonPublicTerm =
     { Id: string

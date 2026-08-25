@@ -4,7 +4,6 @@
     <AssemblyName>Blokemon.Core.Contracts</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="SetDesign/BlokemonTimingContracts.fs" />
     <Compile Include="SetDesign/BlokemonSetContracts.fs" />
     <Compile Include="PublicContent/BlokemonPublicContentContracts.fs" />
   </ItemGroup>

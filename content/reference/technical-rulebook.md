@@ -70,32 +70,3 @@ KIT-001 through KIT-003 may act as Regular Local Blokes with 60 staying power. T
 ## Products
 
 The one-card product is uniform across all 151 collectible identities (1/151 each). The eleven-card product selects one of 49 Rare, three distinct of 49 Uncommon and seven distinct of 53 Common identities. Exact named-identity inclusion odds are 1/49 Rare, 3/49 Uncommon and 7/53 Common. There is no pity; one pack cannot repeat an identity; separate packs may.
-
-## D-216 timing and finalisation rows
-
-The persisted revision/idempotency transition evidence is the 37-case `timing-corpus.json`. The authoritative 20 rows are:
-
-| Row | Event | Clock | Seconds | Terminal | Outcome | Idempotency |
-|---|---|---:|---:|---|---|---|
-| unaccepted-challenge-expiry | ChallengeDeadline | ChallengeEnabledTime | 300 | ChallengeExpired | ChallengeExpiresNoReservation | ChallengeRevisionAndDeadline |
-| accepted-action-clock | RequiredActionAssigned | ActionConnectedEnabledTime | 90 | NonTerminal | ActionClockStartsWithNinetySeconds | BattleRevisionAndActionOwner |
-| participant-disconnect | ParticipantDisconnected | ReconnectEnabledTime | 300 | NonTerminal | ActionClockPausesReconnectGraceStarts | BattleRevisionAndParticipant |
-| timeout-revision-wins | TimeoutRevisionCommittedFirst | ActionConnectedEnabledTime | 0 | ActionTimeoutForfeit | ActionTimeoutForfeitIntent | BattleRevisionAndDeadline |
-| disconnect-revision-wins | DisconnectRevisionCommittedFirst | ReconnectEnabledTime | 300 | NonTerminal | ReconnectGraceControls | BattleRevisionAndParticipant |
-| single-absence-grace-expiry | SingleReconnectGraceDeadline | ReconnectEnabledTime | 300 | ReconnectForfeit | AbsentParticipantForfeitIntent | BattleRevisionAndDeadline |
-| both-absent-earliest-grace | EarliestReconnectGraceDeadlineBothAbsent | ReconnectEnabledTime | 300 | CancelledBothAbsent | BothAbsentCancellationIntent | BattleRevisionAndDeadline |
-| process-restart-pause | ProcessRestarted | None | 0 | NonTerminal | ResumeExactRemainingTime | PauseRevision |
-| feature-disable-pause | FeatureDisabled | None | 0 | NonTerminal | ResumeExactRemainingTime | PauseRevision |
-| recoverable-system-pause | RecoverableSystemPause | None | 0 | NonTerminal | ResumeExactRemainingTime | PauseRevision |
-| rule-win-finalisation | RuleWinDeclared | None | 0 | RuleWin | RuleWinIntent | BattleFinalizationKey |
-| voluntary-forfeit-finalisation | VoluntaryForfeitDeclared | None | 0 | VoluntaryForfeit | VoluntaryForfeitIntent | BattleFinalizationKey |
-| action-timeout-finalisation | ActionTimeoutDeclared | None | 0 | ActionTimeoutForfeit | ActionTimeoutForfeitIntent | BattleFinalizationKey |
-| reconnect-forfeit-finalisation | ReconnectForfeitDeclared | None | 0 | ReconnectForfeit | AbsentParticipantForfeitIntent | BattleFinalizationKey |
-| rule-draw-finalisation | RuleDrawDeclared | None | 0 | RuleDraw | RuleDrawIntent | BattleFinalizationKey |
-| mutual-cancellation-finalisation | MutualCancellationDeclared | None | 0 | CancelledMutual | MutualCancellationIntent | BattleFinalizationKey |
-| both-absent-cancellation-finalisation | BothAbsentCancellationDeclared | None | 0 | CancelledBothAbsent | BothAbsentCancellationIntent | BattleFinalizationKey |
-| viewer-erasure-finalisation | ViewerErasureDeclared | None | 0 | CancelledErasure | ViewerErasureCancellationIntent | BattleFinalizationKey |
-| authorised-recovery-cancellation-finalisation | AuthorisedRecoveryCancellationDeclared | None | 0 | CancelledAuthorizedRecovery | AuthorisedRecoveryCancellationIntent | BattleFinalizationKey |
-| unrecoverable-failure-finalisation | UnrecoverableFailureDeclared | None | 0 | CancelledUnrecoverableFailure | UnrecoverableFailureCancellationIntent | BattleFinalizationKey |
-
-The timing replay is a finite evidence evaluator, not battle persistence or settlement. Product finalisation remains the named owner where the row says so.

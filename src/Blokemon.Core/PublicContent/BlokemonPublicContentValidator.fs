@@ -14,10 +14,10 @@ module BlokemonPublicContentValidator =
     let SchemaVersion = "blokemon-public-content-schema-2.0.0-candidate.5"
 
     [<Literal>]
-    let ContentVersion = "blokemon-public-content-2.0.0-candidate.9"
+    let ContentVersion = "blokemon-public-content-2.0.0-candidate.10"
 
     [<Literal>]
-    let TerminologyVersion = "blokemon-public-terminology-2.0.0-candidate.5"
+    let TerminologyVersion = "blokemon-public-terminology-2.0.0-candidate.6"
 
     [<Literal>]
     let private ArtAuthority = "Blokemon"
@@ -63,9 +63,8 @@ module BlokemonPublicContentValidator =
            BlokemonPublicTermCategory.Choice, 8
            BlokemonPublicTermCategory.Quantity, 11
            BlokemonPublicTermCategory.Cost, 4
-           BlokemonPublicTermCategory.Timing, 17
-           BlokemonPublicTermCategory.Core, 22
-           BlokemonPublicTermCategory.BattleTiming, 20 |]
+           BlokemonPublicTermCategory.Timing, 12
+           BlokemonPublicTermCategory.Core, 22 |]
 
     let private effectTextOf (effect: BlokemonPublicEffect) = Option.ofObj effect.EffectText
 
@@ -87,11 +86,6 @@ module BlokemonPublicContentValidator =
             $@"(?<![A-Za-z]){Regex.Escape(term)}(?:s)?(?![A-Za-z])",
             RegexOptions.IgnoreCase ||| RegexOptions.CultureInvariant
         )
-
-    let private categoryToken (category: BlokemonPublicTermCategory) =
-        match category with
-        | BlokemonPublicTermCategory.BattleTiming -> "BATTLE-TIMING"
-        | _ -> category.ToString().ToUpperInvariant()
 
     let private expectedFrom (mechanicalId: string) program canOmitText canBeUsedFromBench =
         { MechanicalId = mechanicalId
@@ -198,7 +192,7 @@ module BlokemonPublicContentValidator =
                 $"{category} must contain exactly {expectedCount} terms."
                 issues
 
-            let prefix = $"TERM-{categoryToken category}-"
+            let prefix = $"TERM-{category.ToString().ToUpperInvariant()}-"
 
             let expectedIds =
                 [| for index in 1..expectedCount ->
@@ -592,13 +586,13 @@ module BlokemonPublicContentValidator =
         check
             (manifest.ContentVersion = ContentVersion)
             "document.version"
-            "The public content version is not candidate.9."
+            "The public content version is not candidate.10."
             issues
 
         check
             (manifest.TerminologyVersion = TerminologyVersion)
             "document.terminology-version"
-            "The terminology version is not candidate.5."
+            "The terminology version is not candidate.6."
             issues
 
         check
@@ -610,7 +604,7 @@ module BlokemonPublicContentValidator =
         check
             (manifest.HumanApprovalStatus = BlokemonPublicContentApprovalStatus.Accepted)
             "document.approval"
-            "Candidate.9 must carry exact human acceptance."
+            "Candidate.10 must carry exact human acceptance."
             issues
 
         validateTerminology manifest issues

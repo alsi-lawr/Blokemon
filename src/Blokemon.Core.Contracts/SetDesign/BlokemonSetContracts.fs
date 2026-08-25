@@ -536,9 +536,7 @@ type BlokemonBaseRules =
       Win: BlokemonWinRules
       FossilKits: BlokemonFossilKitRules
       BigHitters: BlokemonBigHitterRules
-      OpcodeInventory: BlokemonOpcode array
-      TimingVersion: string
-      TimingRows: BlokemonTimingRule array }
+      OpcodeInventory: BlokemonOpcode array }
 
 type BlokemonRuntimeManifest =
     { ManifestVersion: string

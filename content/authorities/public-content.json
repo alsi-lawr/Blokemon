@@ -1,8 +1,8 @@
 {
   "schemaVersion": "blokemon-public-content-schema-2.0.0-candidate.5",
-  "contentVersion": "blokemon-public-content-2.0.0-candidate.9",
+  "contentVersion": "blokemon-public-content-2.0.0-candidate.10",
   "mechanicalManifestVersion": "sv151-candidate.18",
-  "terminologyVersion": "blokemon-public-terminology-2.0.0-candidate.5",
+  "terminologyVersion": "blokemon-public-terminology-2.0.0-candidate.6",
   "humanApprovalStatus": "Accepted",
   "terminology": [
     {
@@ -524,41 +524,6 @@
       "definition": "The first turn assigned after setup and opening-side selection."
     },
     {
-      "id": "TERM-TIMING-013",
-      "category": "Timing",
-      "singular": "Connected action time",
-      "plural": "Connected action times",
-      "definition": "Counts only while the required participant is connected and the feature is enabled."
-    },
-    {
-      "id": "TERM-TIMING-014",
-      "category": "Timing",
-      "singular": "Reconnect grace",
-      "plural": "Reconnect grace periods",
-      "definition": "Five enabled minutes beginning from the persisted disconnect revision."
-    },
-    {
-      "id": "TERM-TIMING-015",
-      "category": "Timing",
-      "singular": "Challenge window",
-      "plural": "Challenge windows",
-      "definition": "Five enabled minutes before an unaccepted challenge expires."
-    },
-    {
-      "id": "TERM-TIMING-016",
-      "category": "Timing",
-      "singular": "Pause",
-      "plural": "Pauses",
-      "definition": "Consumes no action, challenge or reconnect clock while the governing pause remains."
-    },
-    {
-      "id": "TERM-TIMING-017",
-      "category": "Timing",
-      "singular": "Finalisation",
-      "plural": "Finalisations",
-      "definition": "Apply the recorded terminal intent exactly once through the product finaliser."
-    },
-    {
       "id": "TERM-CORE-001",
       "category": "Core",
       "singular": "HP",
@@ -711,146 +676,6 @@
       "singular": "Two-Prize Blokemon",
       "plural": "Two-Prize Blokemon",
       "definition": "A locked high-impact Blokemon that awards 2 Prize Cards when Knocked Out."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-001",
-      "category": "BattleTiming",
-      "singular": "Challenge expires",
-      "plural": "Challenge expires",
-      "definition": "An unaccepted challenge expires after 5 enabled minutes without reservations or settlement."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-002",
-      "category": "BattleTiming",
-      "singular": "Action clock starts",
-      "plural": "Action clock starts",
-      "definition": "A required action receives 90 connected enabled seconds."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-003",
-      "category": "BattleTiming",
-      "singular": "Disconnect pauses action",
-      "plural": "Disconnect pauses action",
-      "definition": "A persisted disconnect pauses action time and starts 5 enabled minutes of reconnect grace."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-004",
-      "category": "BattleTiming",
-      "singular": "Timeout revision wins",
-      "plural": "Timeout revision wins",
-      "definition": "A timeout committed before a disconnect records a competitive timeout intent."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-005",
-      "category": "BattleTiming",
-      "singular": "Disconnect revision wins",
-      "plural": "Disconnect revision wins",
-      "definition": "A disconnect committed before timeout makes reconnect grace authoritative."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-006",
-      "category": "BattleTiming",
-      "singular": "Single absence expires",
-      "plural": "Single absence expires",
-      "definition": "One absent participant forfeits when that participant\u2019s reconnect grace expires."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-007",
-      "category": "BattleTiming",
-      "singular": "Both absent cancel",
-      "plural": "Both absent cancel",
-      "definition": "If both are absent, the earliest active reconnect deadline cancels without a competitive result."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-008",
-      "category": "BattleTiming",
-      "singular": "Process-recovery pause",
-      "plural": "Process-recovery pause",
-      "definition": "A process recovery preserves every exact remaining clock value."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-009",
-      "category": "BattleTiming",
-      "singular": "Feature pause",
-      "plural": "Feature pause",
-      "definition": "Disabling the feature pauses battle clocks and effects without settlement."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-010",
-      "category": "BattleTiming",
-      "singular": "Recoverable pause",
-      "plural": "Recoverable pause",
-      "definition": "A recoverable system pause preserves state and exact remaining time."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-011",
-      "category": "BattleTiming",
-      "singular": "Rule win",
-      "plural": "Rule win",
-      "definition": "A declared rule win records a winner intent for one-time finalisation."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-012",
-      "category": "BattleTiming",
-      "singular": "Voluntary forfeit",
-      "plural": "Voluntary forfeit",
-      "definition": "A voluntary forfeit records a competitive loss intent."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-013",
-      "category": "BattleTiming",
-      "singular": "Action timeout",
-      "plural": "Action timeout",
-      "definition": "An action timeout records a competitive loss intent for the timed-out participant."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-014",
-      "category": "BattleTiming",
-      "singular": "Reconnect forfeit",
-      "plural": "Reconnect forfeit",
-      "definition": "Expired single-participant reconnect grace records a competitive loss intent."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-015",
-      "category": "BattleTiming",
-      "singular": "Rule draw",
-      "plural": "Rule draw",
-      "definition": "A rule draw records a draw intent and refund outcome."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-016",
-      "category": "BattleTiming",
-      "singular": "Mutual cancellation",
-      "plural": "Mutual cancellation",
-      "definition": "A mutual cancellation records no competitive result and refunds both sides."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-017",
-      "category": "BattleTiming",
-      "singular": "Both-absent cancellation",
-      "plural": "Both-absent cancellation",
-      "definition": "A both-absent cancellation records no competitive result and refunds both sides."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-018",
-      "category": "BattleTiming",
-      "singular": "Erasure cancellation",
-      "plural": "Erasure cancellation",
-      "definition": "Viewer erasure cancels safely without a competitive result."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-019",
-      "category": "BattleTiming",
-      "singular": "Authorised recovery cancellation",
-      "plural": "Authorised recovery cancellation",
-      "definition": "An authorised recovery cancellation releases and refunds without a competitive result."
-    },
-    {
-      "id": "TERM-BATTLE-TIMING-020",
-      "category": "BattleTiming",
-      "singular": "Unrecoverable failure cancellation",
-      "plural": "Unrecoverable failure cancellation",
-      "definition": "An unrecoverable system failure releases and refunds without a competitive result."
     }
   ],
   "collectibles": [
