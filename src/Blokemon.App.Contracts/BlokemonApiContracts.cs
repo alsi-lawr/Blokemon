@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Blokemon.App.Contracts;
 
 public sealed record ApiError(string Code, string Message);
@@ -306,11 +308,17 @@ public enum MatchMutationOutcomeView
     RecoveryRequired = 1,
 }
 
+[method: JsonConstructor]
 public sealed record MatchMutationView(
     ApplicationView Application,
     MatchPresentationView? Presentation,
-    MatchMutationOutcomeView Outcome = MatchMutationOutcomeView.Applied
-);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        MatchMutationOutcomeView Outcome = MatchMutationOutcomeView.Applied
+)
+{
+    public MatchMutationView(ApplicationView application, MatchPresentationView? presentation)
+        : this(application, presentation, MatchMutationOutcomeView.Applied) { }
+}
 
 public sealed record CreateProfileRequest(Guid CommandId, string DisplayName);
 
