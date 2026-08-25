@@ -19,6 +19,7 @@
     <Compile Include="MatchDocuments.fs" />
     <Compile Include="ApplicationViewIsolation.fs" />
     <Compile Include="MatchDocumentNormalization.fs" />
+    <Compile Include="MatchMigrationTypes.fs" />
     <Compile Include="MatchFailures.fs" />
     <Compile Include="MatchIdentity.fs" />
     <Compile Include="MatchLabels.fs" />
@@ -28,6 +29,8 @@
     <Compile Include="MatchViewProjection.fs" />
     <Compile Include="MatchCueProjection.fs" />
     <Compile Include="MatchReplay.fs" />
+    <Compile Include="MatchMigrationJson.fs" />
+    <Compile Include="MatchMigration.fs" />
     <Compile Include="MatchStore.fs" />
     <Compile Include="MatchConflicts.fs" />
     <Compile Include="MatchStartFlow.fs" />

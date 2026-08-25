@@ -9,6 +9,7 @@ open System.Threading.Tasks
 open Blokemon.App.Contracts
 open Blokemon.App.DamagedDocument
 open Blokemon.App.MatchFailures
+open Blokemon.App.MatchMigration
 open Blokemon.App.MatchPayloads
 open Blokemon.App.MatchReplay
 open Blokemon.Product
@@ -38,54 +39,18 @@ module internal MatchStore =
                 | NonNull cached when cached.DocumentRevision = document.Revision ->
                     return { Match = cached; Error = null }
                 | _ ->
-                    let schemaVersion = readSchemaVersion document.Json
+                    let! resolved = resolveMatch context profile document cancellationToken
 
-                    if not schemaVersion.HasValue then
-                        return
-                            invalidDocument
-                                "match.document_corrupt"
-                                "The saved battle is damaged. No data changed."
-                    elif schemaVersion.Value <> matchSchemaVersion then
-                        return
-                            invalidDocument
-                                "match.document_version"
-                                "This saved battle uses an unsupported version. No data changed."
-                    else
-                        let parsed =
-                            try
-                                Ok(
-                                    JsonSerializer.Deserialize<MatchDocument>(
-                                        document.Json,
-                                        MatchJson.Options
-                                    )
-                                )
-                            with
-                            | :? JsonException -> Error()
-                            | :? NotSupportedException -> Error()
+                    match resolved with
+                    | MatchMigrationOutcome.RecoveryRequired requirement ->
+                        let error = recoveryError requirement
+                        return { Match = null; Error = error }
+                    | MatchMigrationOutcome.Failed error -> return { Match = null; Error = error }
+                    | MatchMigrationOutcome.Ready ready ->
+                        let replayed = replayDocument profile ready.Stored.Revision ready.Document
 
-                        match parsed with
-                        | Error() ->
-                            return
-                                invalidDocument
-                                    "match.document_corrupt"
-                                    "The saved battle is damaged. No data changed."
-                        | Ok Null ->
-                            return
-                                invalidDocument
-                                    "match.document_corrupt"
-                                    "The saved battle is damaged. No data changed."
-                        | Ok(NonNull stored) ->
-                            let value = MatchDocumentNormalization.matchDocument stored
-
-                            if isMissing value.StartCommand || isMissing value.Start then
-                                return
-                                    invalidDocument
-                                        "match.document_corrupt"
-                                        "The saved battle is damaged. No data changed."
-                            else
-                                let replayed = replayDocument profile document.Revision value
-                                context.Cached <- replayed.Match
-                                return replayed
+                        context.Cached <- replayed.Match
+                        return replayed
         }
 
     let archiveCompletedMatch
@@ -103,49 +68,31 @@ module internal MatchStore =
         task {
             let! stored = documents.Read(matchHistoryKey, cancellationToken)
 
-            let history =
-                match stored with
-                | null ->
-                    Ok
-                        { SchemaVersion = matchHistorySchemaVersion
-                          AuthorityVersion = catalogue.Mechanics.ManifestVersion
-                          Matches = ImmutableArray<MatchDocument>.Empty }
-                | document ->
-                    let parsed =
-                        try
-                            match
-                                JsonSerializer.Deserialize<MatchHistoryDocument>(
-                                    document.Json,
-                                    MatchJson.Options
-                                )
-                            with
-                            | null -> Error(historyCorrupt ())
-                            | value -> Ok(MatchDocumentNormalization.historyDocument value)
-                        with
-                        | :? JsonException -> Error(historyCorrupt ())
-                        | :? NotSupportedException -> Error(historyCorrupt ())
-
-                    match parsed with
-                    | Error failure -> Error failure
-                    | Ok value ->
-                        if value.SchemaVersion <> matchHistorySchemaVersion then
-                            Error(historyVersion ())
-                        elif
-                            not (
-                                String.Equals(
-                                    value.AuthorityVersion,
-                                    catalogue.Mechanics.ManifestVersion,
-                                    StringComparison.Ordinal
-                                )
+            let! history =
+                task {
+                    match stored with
+                    | null ->
+                        return
+                            Ok(
+                                None,
+                                { SchemaVersion = matchHistorySchemaVersion
+                                  AuthorityVersion = catalogue.Mechanics.ManifestVersion
+                                  Matches = ImmutableArray<MatchDocument>.Empty }
                             )
-                        then
-                            Error(historyAuthorityChanged ())
-                        else
-                            Ok value
+                    | document ->
+                        let! resolved = resolveHistory context profile document cancellationToken
+
+                        match resolved with
+                        | MatchMigrationOutcome.Ready ready ->
+                            return Ok(Some ready.Stored, ready.Document)
+                        | MatchMigrationOutcome.RecoveryRequired requirement ->
+                            return Error(recoveryError requirement)
+                        | MatchMigrationOutcome.Failed error -> return Error error
+                }
 
             match history with
             | Error failure -> return Some failure
-            | Ok document ->
+            | Ok(resolvedStored, document) ->
                 let archiveFailure =
                     document.Matches
                     |> Seq.tryPick (fun archived ->
@@ -202,9 +149,9 @@ module internal MatchStore =
                             let json = JsonSerializer.Serialize(changed, MatchJson.Options)
 
                             let! write =
-                                match stored with
-                                | null -> documents.Create(matchHistoryKey, json, cancellationToken)
-                                | existing ->
+                                match resolvedStored with
+                                | None -> documents.Create(matchHistoryKey, json, cancellationToken)
+                                | Some existing ->
                                     documents.Update(
                                         matchHistoryKey,
                                         existing.Revision,
@@ -214,12 +161,5 @@ module internal MatchStore =
 
                             match write with
                             | :? DocumentWriteResult.Written -> return None
-                            | _ ->
-                                return
-                                    Some(
-                                        ApiError(
-                                            "state.conflict",
-                                            "The saved battle history changed in another tab. Start the battle again."
-                                        )
-                                    )
+                            | _ -> return Some(historyConflictError ())
         }

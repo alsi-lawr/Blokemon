@@ -33,8 +33,23 @@ module internal MatchFailures =
           Presentation = null
           DocumentIdentity = noDocumentProjection }
 
+    let stateConflictError () =
+        ApiError("state.conflict", "The saved battle changed. Select the action again.")
+
+    let historyConflictError () =
+        ApiError(
+            "state.conflict",
+            "The saved battle history changed in another tab. Start the battle again."
+        )
+
+    let stateConflictErrorFor document =
+        match document with
+        | MatchRecoveryDocument.ActiveMatch -> stateConflictError ()
+        | MatchRecoveryDocument.MatchHistory -> historyConflictError ()
+
     let stateConflict () =
-        failed "state.conflict" "The saved battle changed. Select the action again."
+        let error = stateConflictError ()
+        failed error.Code error.Message
 
     let invalidChoice message : CommandMaterialization =
         { Command = null
@@ -66,7 +81,7 @@ module internal MatchFailures =
 
     let historyAuthorityChanged () =
         ApiError(
-            "match.authority_changed",
+            "match.history_authority_changed",
             "The card rules changed after these battles were saved. No data changed."
         )
 

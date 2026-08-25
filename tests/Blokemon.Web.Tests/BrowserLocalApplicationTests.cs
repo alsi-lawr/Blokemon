@@ -414,7 +414,7 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
-    public async Task BrowserAuthorityMigration_DoesNotBypassMatchAuthorityMismatch()
+    public async Task BrowserAuthorityMigration_RebindsACompatibleProfileAndMatchTogether()
     {
         var catalogue = Catalogue();
         var documents = new MemoryDocumentStore();
@@ -435,16 +435,20 @@ public sealed class BrowserLocalApplicationTests
 
         var state = Value(await Application(catalogue, documents, new ServerHandler(null)).State());
         var migrated = (await documents.Read("profile"))!;
+        var migratedMatch = (await documents.Read("match"))!;
 
-        state.Match.ShouldBeNull();
-        state.MatchError!.Code.ShouldBe("match.authority_changed");
+        state.Match.ShouldNotBeNull();
+        state.MatchError.ShouldBeNull();
         JsonNode
             .DeepEquals(
                 JsonNode.Parse(migrated.Json),
                 ExpectedVersionOnlyProfile(historical, catalogue.Mechanics.ManifestVersion)
             )
             .ShouldBeTrue();
-        (await documents.Read("match")).ShouldBe(preservedMatch);
+        migratedMatch.Revision.ShouldBe(preservedMatch.Revision + 1);
+        JsonNode.Parse(migratedMatch.Json)!["authorityVersion"]!
+            .GetValue<string>()
+            .ShouldBe(catalogue.Mechanics.ManifestVersion);
     }
 
     [Test]

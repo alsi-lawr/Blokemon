@@ -16,5 +16,10 @@
       Link="content/catalogue.json"
       CopyToOutputDirectory="PreserveNewest"
     />
+    <Content
+      Include="Fixtures/match-migrations/*.json"
+      Link="match-migrations/%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+    />
   </ItemGroup>
 </Project>

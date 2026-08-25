@@ -31,22 +31,6 @@ module internal MatchPayloads =
         | :? JsonException -> null
         | :? NotSupportedException -> null
 
-    let readSchemaVersion (json: string) =
-        try
-            use document = JsonDocument.Parse json
-
-            if document.RootElement.ValueKind = JsonValueKind.Object then
-                match document.RootElement.TryGetProperty "schemaVersion" with
-                | true, version ->
-                    match version.TryGetInt32() with
-                    | true, value -> Nullable value
-                    | _ -> Nullable()
-                | _ -> Nullable()
-            else
-                Nullable()
-        with :? JsonException ->
-            Nullable()
-
     let documentsMatch (left: MatchDocument) (right: MatchDocument) =
         String.Equals(
             JsonSerializer.Serialize(left, MatchJson.Options),
