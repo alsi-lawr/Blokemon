@@ -888,7 +888,7 @@ public sealed class LocalMatchTests
     // where the opponent still holds a Blokemon when the Kit becomes playable.
     [Test]
     [Arguments("KIT-011", "30000000-0000-0000-0000-000000000002")]
-    [Arguments("KIT-009", "30000000-0000-0000-0000-000000000004")]
+    [Arguments("KIT-009", "30000000-0000-0000-0000-000000000038")]
     public async Task RevealedOpponentHandChoice_OffersItsCandidatesAndResolves(
         string kitId,
         string startCommand

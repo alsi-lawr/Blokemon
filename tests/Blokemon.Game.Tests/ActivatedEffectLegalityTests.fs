@@ -23,6 +23,8 @@ type ActivatedEffectLegalityTests() =
 
     let Mate = "KIT-010" // the Mate kit Golf Club Gary looks for
     let BarKit = "KIT-012" // the Bar Kit Big Dave takes back
+    let RingRoad = "KIT-006"
+    let RingRoadTrade = "KIT-006-R01"
 
     let First = MatchScenario.FirstPlayer
 
@@ -117,6 +119,26 @@ type ActivatedEffectLegalityTests() =
             RoundUsage =
                 { state.RoundUsage with
                     EffectsUsed = ImmutableArray.Create(EffectId effect) } }
+
+    let RingRoadTable (withBasicVim: bool) =
+        let state = Posed "BLK-001" "BLK-001"
+
+        let cards =
+            [ MatchScenario.PlainCard "ring-road" RingRoad First CardZone.Local -1
+
+              if withBasicVim then
+                  MatchScenario.PlainCard "ring-road-vim" "VIM-BLAZED" First CardZone.Mitt -1 ]
+
+        MatchScenario.WithCards state cards
+
+    let RingRoadActions (state: MatchState) =
+        MatchScenario.Engine().GetLegalActions(state, First)
+        |> Seq.filter (fun action ->
+            match action.Command.Action with
+            | MatchAction.UsePartyTrick(source, effect) ->
+                source = CardInstanceId "ring-road" && effect = EffectId RingRoadTrade
+            | _ -> false)
+        |> Seq.toList
 
     /// Doing something means the table moved, or hidden cards were shown: a reveal is information
     /// rather than table state, and Balaclava's trick is nothing but a reveal.
@@ -243,6 +265,63 @@ type ActivatedEffectLegalityTests() =
         // The conditions pass here: what is missing is anything for the heal to work on, which is
         // the second half of the gate rather than the first.
         Offered(HowardTable CardZone.Oche 0) |> should not' (contain "BLK-003-T01")
+
+    [<Test>]
+    member _.``the Ring Road should reject its trade when no Basic Vim can be discarded``() =
+        let engine = MatchScenario.Engine()
+        let payable = RingRoadTable true
+        let unpayable = RingRoadTable false
+        let payableCommand = (RingRoadActions payable |> List.exactlyOne).Command
+
+        RingRoadActions unpayable |> should be Empty
+
+        let unchanged, rejection =
+            MatchScenario.Rejected(engine.Apply(unpayable, payableCommand))
+
+        rejection.Code |> should equal CommandRejectionCode.EffectUnavailable
+        unchanged |> should equal unpayable
+
+    [<Test>]
+    member _.``the Ring Road should discard the chosen Basic Vim before drawing one card``() =
+        let engine = MatchScenario.Engine()
+        let state = RingRoadTable true
+        let action = RingRoadActions state |> List.exactlyOne
+        let pending = MatchScenario.Applied(engine.Apply(state, action.Command))
+        let requirement = pending.PendingEffect.Value.Requirements |> Seq.exactlyOne
+        let stackBefore = state.CardsIn(First, CardZone.Stack) |> Seq.length
+        let mittBefore = state.CardsIn(First, CardZone.Mitt) |> Seq.length
+        let emptiesBefore = state.CardsIn(First, CardZone.EmptiesTray) |> Seq.length
+
+        let resolved =
+            MatchScenario.Applied(
+                engine.Apply(
+                    pending,
+                    MatchScenario.ResolveEffectChoiceCommand
+                        pending
+                        (ImmutableArray.Create(
+                            EffectChoice.Cards(
+                                requirement.Id,
+                                ImmutableArray.Create(CardInstanceId "ring-road-vim")
+                            )
+                        ))
+                )
+            )
+
+        (resolved.Card(CardInstanceId "ring-road-vim")).Zone
+        |> should equal CardZone.EmptiesTray
+
+        (resolved.Card(CardInstanceId "first-draw")).Zone |> should equal CardZone.Mitt
+
+        (resolved.CardsIn(First, CardZone.Stack) |> Seq.length)
+        |> should equal (stackBefore - 1)
+
+        (resolved.CardsIn(First, CardZone.Mitt) |> Seq.length)
+        |> should equal mittBefore
+
+        (resolved.CardsIn(First, CardZone.EmptiesTray) |> Seq.length)
+        |> should equal (emptiesBefore + 1)
+
+        resolved.RoundUsage.EffectsUsed |> should contain (EffectId RingRoadTrade)
 
     [<Test>]
     member _.``taking cards back out of the empties tray should not be offered while the tray holds none of them``

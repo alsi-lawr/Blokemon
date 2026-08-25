@@ -130,12 +130,19 @@ module internal EffectVimOperations =
             |> Seq.truncate instruction.Amount
             |> Seq.toArray
 
-        for vim in selected do
-            let prevented =
-                match vim.AttachedTo with
-                | ValueSome attachedTo ->
-                    effectIsPrevented runtime (runtime.Builder.Card attachedTo)
-                | ValueNone -> false
+        if
+            hasDeclaredSources instruction
+            && instruction.Selection = BlokemonSelection.Chosen
+            && selected.Length < instruction.TargetCount
+        then
+            runtime.Rejection <- ValueSome CommandRejectionCode.EffectUnavailable
+        else
+            for vim in selected do
+                let prevented =
+                    match vim.AttachedTo with
+                    | ValueSome attachedTo ->
+                        effectIsPrevented runtime (runtime.Builder.Card attachedTo)
+                    | ValueNone -> false
 
-            if not prevented then
-                runtime.Builder.DetachTo(vim.Id, CardZone.EmptiesTray)
+                if not prevented then
+                    runtime.Builder.DetachTo(vim.Id, CardZone.EmptiesTray)

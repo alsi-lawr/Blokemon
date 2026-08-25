@@ -41,7 +41,8 @@ module internal MatchMigrationRegistry =
           schemaOneCandidate14
           current "sv151-candidate.14"
           current "sv151-candidate.15"
-          current "sv151-candidate.16" ]
+          current "sv151-candidate.16"
+          current "sv151-candidate.17" ]
 
     let ordered schemaTransition authorityTransition authority =
         [ schemaTransition schemaOneCandidate12
@@ -49,4 +50,5 @@ module internal MatchMigrationRegistry =
           authorityTransition authority (current "sv151-candidate.12")
           authorityTransition authority (current "sv151-candidate.14")
           authorityTransition authority (current "sv151-candidate.15")
-          authorityTransition authority (current "sv151-candidate.16") ]
+          authorityTransition authority (current "sv151-candidate.16")
+          authorityTransition authority (current "sv151-candidate.17") ]

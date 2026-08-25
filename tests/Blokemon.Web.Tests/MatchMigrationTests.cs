@@ -28,6 +28,8 @@ public sealed class MatchMigrationTests
     [Arguments(true, 2, "sv151-candidate.15")]
     [Arguments(false, 2, "sv151-candidate.16")]
     [Arguments(true, 2, "sv151-candidate.16")]
+    [Arguments(false, 2, "sv151-candidate.17")]
+    [Arguments(true, 2, "sv151-candidate.17")]
     public async Task SupportedActiveMatchVersion_MigratesThroughBackupAndColdReplayForEachProvider(
         bool sqlite,
         int sourceSchema,
@@ -89,6 +91,8 @@ public sealed class MatchMigrationTests
     [Arguments(true, 2, "sv151-candidate.15")]
     [Arguments(false, 2, "sv151-candidate.16")]
     [Arguments(true, 2, "sv151-candidate.16")]
+    [Arguments(false, 2, "sv151-candidate.17")]
+    [Arguments(true, 2, "sv151-candidate.17")]
     public async Task SupportedHistoryVersion_MigratesAllMatchesBeforeReplacementForEachProvider(
         bool sqlite,
         int sourceSchema,
@@ -169,6 +173,40 @@ public sealed class MatchMigrationTests
             "30000000-0000-0000-0000-000000000001",
             Case.Sensitive
         );
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task UnpaidRingRoadHistory_IsIncompatibleAndPreservedForEachProvider(bool sqlite)
+    {
+        await using var fixture = await DocumentStoreFixture.Create(sqlite);
+        var catalogue = Catalogue();
+        var profile = Profile(catalogue, "history-profile.json");
+        await fixture.Store.Create("match", Fixture("schema-one-completed-match.json"));
+        await fixture.Store.Create(
+            "match-history",
+            HistoryFixtureAtVersion(
+                "schema-two-unpaid-ring-road-match-history.json",
+                2,
+                "sv151-candidate.17"
+            )
+        );
+        var historySource = (await fixture.Store.Read("match-history"))!;
+        var service = new LocalMatchService(catalogue, fixture.Store);
+
+        var completed = await service.State(profile, profile.DisplayName.Value);
+        var rejected = await service.Start(
+            profile,
+            profile.DisplayName.Value,
+            new(Guid.Parse("30000000-0000-0000-0000-000000000006"), _firstDeck)
+        );
+
+        completed.Error!.Code.ShouldBe("match.history_authority_changed");
+        completed.View!.Frame.IsComplete.ShouldBeTrue();
+        rejected.Error!.Code.ShouldBe("match.history_authority_changed");
+        (await fixture.Store.Read("match-history")).ShouldBe(historySource);
+        (await fixture.Store.Read(BackupKey("match-history", historySource))).ShouldBeNull();
     }
 
     [Test]
@@ -1023,15 +1061,16 @@ public sealed class MatchMigrationTests
             authority
         );
 
-    private static string HistoryAtVersion(int schema, string authority)
+    private static string HistoryAtVersion(int schema, string authority) =>
+        HistoryFixtureAtVersion(
+            schema == 1 ? "schema-one-match-history.json" : "schema-two-match-history.json",
+            schema,
+            authority
+        );
+
+    private static string HistoryFixtureAtVersion(string fixture, int schema, string authority)
     {
-        var document = JsonNode
-            .Parse(
-                Fixture(
-                    schema == 1 ? "schema-one-match-history.json" : "schema-two-match-history.json"
-                )
-            )!
-            .AsObject();
+        var document = JsonNode.Parse(Fixture(fixture))!.AsObject();
         document["schemaVersion"] = schema;
         document["authorityVersion"] = authority;
         foreach (var archived in document["matches"]!.AsArray())

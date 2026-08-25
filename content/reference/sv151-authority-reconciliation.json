@@ -1,6 +1,6 @@
 {
   "reconciliationVersion": "blokemon-sv151-authority-reconciliation-1.0.0",
-  "authorityVersion": "sv151-candidate.17",
+  "authorityVersion": "sv151-candidate.18",
   "canonicalCandidate": "blokemon-sv151-parody-1.0.0-candidate.6",
   "canonicalReferenceCommit": "718be3f2",
   "canonicalSourceExceptions": {
