@@ -59,6 +59,7 @@ type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentSt
 
                 let! history =
                     match loaded.Match with
+                    | Null -> historyRecovery context profile cancellationToken
                     | NonNull value when value.State.Phase = MatchPhase.Complete ->
                         historyRecovery context profile cancellationToken
                     | _ -> Task.FromResult(Ok None)

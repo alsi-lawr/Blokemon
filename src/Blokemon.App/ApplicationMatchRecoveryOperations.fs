@@ -33,8 +33,8 @@ module internal ApplicationMatchRecoveryOperations =
 
                     match recovered with
                     | Error error -> return failed<ApplicationView> error
-                    | Ok() ->
-                        let! view = toView context current cancellationToken null
+                    | Ok viewCancellationToken ->
+                        let! view = toView context current viewCancellationToken null
                         return succeeded view
         }
 

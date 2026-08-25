@@ -217,6 +217,21 @@ module internal MatchStartFlow =
                                                             profile
                                                             completed
                                                             cancellationToken
+                                                | Null ->
+                                                    let! history =
+                                                        historyRecovery
+                                                            context
+                                                            profile
+                                                            cancellationToken
+
+                                                    return
+                                                        match history with
+                                                        | Ok None -> MatchArchiveOutcome.Ready
+                                                        | Ok(Some requirement) ->
+                                                            MatchArchiveOutcome.RecoveryRequired
+                                                                requirement
+                                                        | Error error ->
+                                                            MatchArchiveOutcome.Failed error
                                                 | _ -> return MatchArchiveOutcome.Ready
                                             }
 
