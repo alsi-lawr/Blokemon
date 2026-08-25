@@ -13,6 +13,7 @@
     <Compile Include="ModifierDurationTests.fs" />
     <Compile Include="TopStackDistributionTests.fs" />
     <Compile Include="DamageAndRoughStateTests.fs" />
+    <Compile Include="ResolutionAuthorityTests.fs" />
     <Compile Include="DeferredChoiceTests.fs" />
     <Compile Include="CardFlowTests.fs" />
     <Compile Include="InterpreterBranchingTests.fs" />

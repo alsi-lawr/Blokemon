@@ -14,8 +14,13 @@ open Blokemon.Game.EffectExecution
 /// that do not fit, then applies the instructions in order.
 type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
     let catalog = AuthorityCatalog authority
+    let mutable resolutionTrace = ResolutionTrace.none
 
     member internal _.Catalog = catalog
+
+    member internal _.ResolutionTrace
+        with get () = resolutionTrace
+        and set trace = resolutionTrace <- trace
 
     member _.AuditAuthority() = AuthorityAudit.auditAuthority catalog
 
@@ -81,7 +86,9 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             isHouseRule: bool,
             copyStack: HashSet<EffectId> voption,
             beerMatResults: ImmutableArray<bool>,
-            triggerContext: TriggerContext voption
+            triggerContext: TriggerContext voption,
+            ?deferAttackDamage: bool,
+            ?resolutionTraceOverride: ResolutionTrace
         ) =
         let requirements =
             inspectChoices catalog builder actor source effect program triggerContext
@@ -118,7 +125,8 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
                      | ValueSome stack -> stack
                      | ValueNone -> HashSet<EffectId>()),
                     beerMatResults,
-                    triggerContext
+                    triggerContext,
+                    defaultArg resolutionTraceOverride resolutionTrace
                 )
 
             runtime.Use requirements
@@ -139,7 +147,16 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
                 { InterpreterExecution.rejected CommandRejectionCode.InvalidChoice requirements with
                     BeerMatResults = runtime.BeerMatResults }
             else
-                resolveDamage catalog runtime
+                let completeAttackDamage () =
+                    resolveDamage catalog runtime
+
+                    ImmutableArray.CreateRange(runtime.AttackDamageTargets |> Seq.sort)
+
+                let attackDamageTargets, completion =
+                    if defaultArg deferAttackDamage false then
+                        ImmutableArray<_>.Empty, ValueSome completeAttackDamage
+                    else
+                        completeAttackDamage (), ValueNone
 
                 { IsApplied = true
                   Rejection = ValueNone
@@ -147,9 +164,9 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
                   ForcedSendHome = ImmutableArray.CreateRange(runtime.ForcedSendHome |> Seq.sort)
                   SourceChucked = runtime.SourceChucked
                   BeerMatResults = runtime.BeerMatResults
-                  AttackDamageTargets =
-                    ImmutableArray.CreateRange(runtime.AttackDamageTargets |> Seq.sort)
-                  DeferredAttackKnockoutBarChits = runtime.DeferredAttackKnockoutBarChits }
+                  AttackDamageTargets = attackDamageTargets
+                  DeferredAttackKnockoutBarChits = runtime.DeferredAttackKnockoutBarChits
+                  CompleteAttackDamage = completion }
 
     member internal this.Execute
         (
@@ -225,7 +242,8 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             isHouseRule,
             ValueNone,
             beerMatResults,
-            triggerContext
+            triggerContext,
+            resolutionTraceOverride = ResolutionTrace.none
         )
 
     member internal this.Plan

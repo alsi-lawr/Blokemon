@@ -86,22 +86,20 @@ module internal EffectDamage =
         then
             0
         else
-            max
-                0
-                (damage
-                 - (targetEffects
-                    |> Array.filter (fun effect -> effect.Kind = TemporaryEffectKind.ReduceDamage)
-                    |> Array.sumBy (fun effect -> effect.Amount)))
+            damage
+            - (targetEffects
+               |> Array.filter (fun effect -> effect.Kind = TemporaryEffectKind.ReduceDamage)
+               |> Array.sumBy (fun effect -> effect.Amount))
 
-    let applyAttackDamageOrder
+    let private applySoftSpot
         (catalog: AuthorityCatalog)
         (runtime: EffectRuntime)
         (target: CardState)
         (damage: int)
         =
-        let mutable damage = applyOutgoingAttackDamage runtime damage
-
-        if not runtime.IgnoreSoftSpot && target.Kind = CardKind.Bloke then
+        if runtime.IgnoreSoftSpot || target.Kind <> CardKind.Bloke then
+            damage
+        else
             let attackerTypes = catalog.MechanicalTypes(runtime.Builder.Card runtime.Source.Id)
 
             let softSpotEffects =
@@ -133,14 +131,23 @@ module internal EffectDamage =
                         )
 
             if effectiveSoftSpots |> Seq.exists (fun value -> Seq.contains value attackerTypes) then
-                damage <-
-                    damage
-                    * (if softSpotEffects |> Array.exists (fun effect -> effect.Amount = 4) then
-                           4
-                       else
-                           2)
+                damage
+                * (if softSpotEffects |> Array.exists (fun effect -> effect.Amount = 4) then
+                       4
+                   else
+                       2)
+            else
+                damage
 
-        if not runtime.IgnoreStubbornStreak && target.Kind = CardKind.Bloke then
+    let private applyStubbornStreak
+        (catalog: AuthorityCatalog)
+        (runtime: EffectRuntime)
+        (target: CardState)
+        (damage: int)
+        =
+        if runtime.IgnoreStubbornStreak || target.Kind <> CardKind.Bloke then
+            damage
+        else
             let attackerTypes = catalog.MechanicalTypes(runtime.Builder.Card runtime.Source.Id)
             let stubborn = (catalog.Bloke target.MechanicalId).StubbornStreaks
 
@@ -148,9 +155,48 @@ module internal EffectDamage =
                 stubborn
                 |> Array.exists (fun streak -> Seq.contains streak.MechanicalType attackerTypes)
             then
-                damage <- damage - 30
+                damage - 30
+            else
+                damage
 
-        applyAttackProtection catalog runtime target damage
+    let applyAttackDamageOrder
+        (catalog: AuthorityCatalog)
+        (runtime: EffectRuntime)
+        (target: CardState)
+        (kind: DamageKind)
+        (damage: int)
+        (placeResolved: (int -> unit) voption)
+        =
+        let mutable resolved = damage
+
+        for step in catalog.Manifest.BaseRules.DamageOrder do
+            runtime.ResolutionTrace(DamageStep step)
+
+            resolved <-
+                match step with
+                | BlokemonDamageResolutionStep.PrintedOrProgramBaseDamage -> resolved
+                | BlokemonDamageResolutionStep.EffectsOnAttackingBlokeBeforeSoftSpotAndStubbornStreak ->
+                    applyOutgoingAttackDamage runtime resolved
+                | BlokemonDamageResolutionStep.SoftSpot when kind = DamageKind.Attack ->
+                    applySoftSpot catalog runtime target resolved
+                | BlokemonDamageResolutionStep.SoftSpot -> resolved
+                | BlokemonDamageResolutionStep.StubbornStreak when kind = DamageKind.Attack ->
+                    applyStubbornStreak catalog runtime target resolved
+                | BlokemonDamageResolutionStep.StubbornStreak -> resolved
+                | BlokemonDamageResolutionStep.EffectsOnDefendingBlokeAfterSoftSpotAndStubbornStreak ->
+                    applyAttackProtection catalog runtime target resolved
+                | BlokemonDamageResolutionStep.ClampAtZeroAndPlaceCounters ->
+                    let clamped = max 0 resolved
+
+                    match placeResolved with
+                    | ValueSome place -> place clamped
+                    | ValueNone -> ()
+
+                    clamped
+                | unsupported ->
+                    invalidOp $"Unsupported validated damage-resolution step {unsupported}."
+
+        resolved
 
     let private addReflectedDamage (runtime: EffectRuntime) (target: CardState) (damage: int) =
         if
@@ -173,7 +219,21 @@ module internal EffectDamage =
 
             let damage =
                 if pending.Kind = DamageKind.Attack then
-                    applyAttackDamageOrder catalog runtime target pending.Amount
+                    applyAttackDamageOrder
+                        catalog
+                        runtime
+                        target
+                        pending.Kind
+                        pending.Amount
+                        ValueNone
+                elif pending.Kind = DamageKind.BoothAttack then
+                    applyAttackDamageOrder
+                        catalog
+                        runtime
+                        target
+                        pending.Kind
+                        pending.Amount
+                        ValueNone
                 else
                     pending.Amount
 
@@ -233,7 +293,6 @@ module internal EffectDamage =
         (damage: int)
         =
         let target = runtime.Builder.Card pending.Target
-        let damage = max 0 damage
 
         runtime.Builder.PlaceDamage(
             runtime.Actor,
@@ -251,18 +310,18 @@ module internal EffectDamage =
         for pending in runtime.PendingAttackDamage |> Seq.toArray do
             let target = runtime.Builder.Card pending.Target
 
-            let damage =
-                match pending.Kind with
-                | DamageKind.Attack -> applyAttackDamageOrder catalog runtime target pending.Amount
-                | DamageKind.BoothAttack ->
-                    applyAttackProtection
-                        catalog
-                        runtime
-                        target
-                        (applyOutgoingAttackDamage runtime pending.Amount)
-                | _ -> pending.Amount
-
-            place catalog runtime pending damage
+            match pending.Kind with
+            | DamageKind.Attack
+            | DamageKind.BoothAttack ->
+                applyAttackDamageOrder
+                    catalog
+                    runtime
+                    target
+                    pending.Kind
+                    pending.Amount
+                    (ValueSome(place catalog runtime pending))
+                |> ignore
+            | _ -> place catalog runtime pending pending.Amount
 
         for pending in runtime.PendingOtherDamage |> Seq.toArray do
             runtime.Builder.PlaceDamage(
@@ -284,14 +343,19 @@ module internal EffectDamage =
             |> Seq.toArray do
             let target = runtime.Builder.Card pending.Target
 
-            let damage =
-                match pending.Kind with
-                | DamageKind.Attack -> applyAttackDamageOrder catalog runtime target pending.Amount
-                | DamageKind.BoothAttack ->
-                    applyAttackProtection catalog runtime target pending.Amount
-                | _ -> pending.Amount
+            match pending.Kind with
+            | DamageKind.Attack
+            | DamageKind.BoothAttack ->
+                applyAttackDamageOrder
+                    catalog
+                    runtime
+                    target
+                    pending.Kind
+                    pending.Amount
+                    (ValueSome(place catalog runtime pending))
+                |> ignore
+            | _ -> place catalog runtime pending pending.Amount
 
-            place catalog runtime pending damage
             runtime.PendingAttackDamage.Remove pending |> ignore
 
         for pending in

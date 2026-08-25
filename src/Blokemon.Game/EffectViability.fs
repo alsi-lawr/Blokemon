@@ -39,7 +39,8 @@ module internal EffectViability =
             isHouseRule,
             HashSet<EffectId>(),
             ImmutableArray<bool>.Empty,
-            ValueNone
+            ValueNone,
+            ResolutionTrace.none
         )
 
     let private candidates

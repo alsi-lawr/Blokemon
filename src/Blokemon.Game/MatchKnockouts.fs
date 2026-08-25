@@ -169,13 +169,28 @@ module internal MatchKnockouts =
 
                     true
 
+    let findSendHomeCandidates
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (forcedSendHome: ImmutableArray<CardInstanceId>)
+        =
+        ImmutableArray.CreateRange(
+            builder.Cards
+            |> Seq.filter isInPlay
+            |> Seq.filter (fun card ->
+                Seq.contains card.Id forcedSendHome
+                || card.Damage >= effectiveStayingPower catalog card)
+            |> Seq.sortBy (fun card -> card.Owner, card.Id)
+            |> Seq.map (fun card -> card.Id)
+        )
+
     /// Returns false when a trigger parked the match: the caller must stop and wait for the answer
     /// rather than carrying on with the rest of the command.
-    let resolveSendHome
+    let resolveIdentifiedSendHome
         (catalog: AuthorityCatalog)
         (interpreter: BlokemonInterpreter)
         (builder: MatchBuilder)
-        (forcedSendHome: ImmutableArray<CardInstanceId>)
+        (identified: ImmutableArray<CardInstanceId>)
         (attackingCard: CardInstanceId voption)
         (finishRoundAfterResolution: bool)
         (attackDamageTargets: ImmutableArray<CardInstanceId>)
@@ -188,12 +203,11 @@ module internal MatchKnockouts =
         // being worked through.
         let candidates =
             ResizeArray<CardState>(
-                builder.Cards
-                |> Seq.filter isInPlay
-                |> Seq.filter (fun card ->
-                    Seq.contains card.Id forcedSendHome
-                    || card.Damage >= effectiveStayingPower catalog card)
-                |> Seq.sortBy (fun card -> card.Owner, card.Id)
+                identified
+                |> Seq.choose (fun cardId ->
+                    match builder.FindCard cardId with
+                    | ValueSome card when isInPlay card -> Some card
+                    | _ -> None)
             )
 
         let mutable index = 0
@@ -284,6 +298,26 @@ module internal MatchKnockouts =
                 false
             else
                 true
+
+    let resolveSendHome
+        (catalog: AuthorityCatalog)
+        (interpreter: BlokemonInterpreter)
+        (builder: MatchBuilder)
+        (forcedSendHome: ImmutableArray<CardInstanceId>)
+        (attackingCard: CardInstanceId voption)
+        (finishRoundAfterResolution: bool)
+        (attackDamageTargets: ImmutableArray<CardInstanceId>)
+        (extraBarChits: int)
+        =
+        resolveIdentifiedSendHome
+            catalog
+            interpreter
+            builder
+            (findSendHomeCandidates catalog builder forcedSendHome)
+            attackingCard
+            finishRoundAfterResolution
+            attackDamageTargets
+            extraBarChits
 
     let resolveReactiveAttackTriggers
         (catalog: AuthorityCatalog)

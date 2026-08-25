@@ -241,7 +241,7 @@ module internal MatchTriggerHandlers =
                             0
 
                     if completed && pending.FinishRoundAfterResolution then
-                        finishOrPendRound catalog interpreter builder
+                        finishAttackResolution catalog interpreter builder
 
                     HandlerResult.accepted
 
@@ -318,6 +318,6 @@ module internal MatchTriggerHandlers =
                         builder.Phase <- MatchPhase.Playing
 
                         if pending.FinishRoundAfterResolution then
-                            finishOrPendRound catalog interpreter builder
+                            finishAttackResolution catalog interpreter builder
 
                         HandlerResult.accepted

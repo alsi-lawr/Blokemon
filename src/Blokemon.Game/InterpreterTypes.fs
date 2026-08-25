@@ -33,7 +33,8 @@ type internal InterpreterExecution =
       SourceChucked: bool
       BeerMatResults: ImmutableArray<bool>
       AttackDamageTargets: ImmutableArray<CardInstanceId>
-      DeferredAttackKnockoutBarChits: int }
+      DeferredAttackKnockoutBarChits: int
+      CompleteAttackDamage: (unit -> ImmutableArray<CardInstanceId>) voption }
 
 [<RequireQualifiedAccess>]
 module internal InterpreterExecution =
@@ -49,7 +50,8 @@ module internal InterpreterExecution =
           SourceChucked = false
           BeerMatResults = ImmutableArray<_>.Empty
           AttackDamageTargets = ImmutableArray<_>.Empty
-          DeferredAttackKnockoutBarChits = 0 }
+          DeferredAttackKnockoutBarChits = 0
+          CompleteAttackDamage = ValueNone }
 
 /// Everything one effect's execution accumulates: the staged damage, the choices it consumed, the
 /// beer-mat results it must be able to replay, and the outcome flags the engine reads back.
@@ -65,7 +67,8 @@ type internal EffectRuntime
         isHouseRule: bool,
         copyStack: HashSet<EffectId>,
         beerMatResults: ImmutableArray<bool>,
-        triggerContext: TriggerContext voption
+        triggerContext: TriggerContext voption,
+        resolutionTrace: ResolutionTrace
     ) =
     let recordedBeerMats = ResizeArray<bool> beerMatResults
     let usedChoiceIds = HashSet<EffectChoiceId>()
@@ -86,6 +89,7 @@ type internal EffectRuntime
     member _.IsHouseRule = isHouseRule
     member _.CopyStack = copyStack
     member _.TriggerContext = triggerContext
+    member _.ResolutionTrace = resolutionTrace
 
     member val DeferredRequirements: ImmutableArray<ChoiceRequirement> =
         ImmutableArray<_>.Empty with get, set

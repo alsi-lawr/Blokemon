@@ -104,6 +104,96 @@ type AuthorityTests() =
         publicValidation.IsValid |> should be True
 
     [<Test>]
+    member _.``runtime validation should diagnose omitted resolution steps``() =
+        let authority = Authorities.mechanics.Value
+
+        let changed =
+            { authority with
+                BaseRules =
+                    { authority.BaseRules with
+                        AttackOrder = authority.BaseRules.AttackOrder |> Array.skip 1
+                        DamageOrder = authority.BaseRules.DamageOrder |> Array.skip 1 } }
+
+        let codes =
+            BlokemonSetValidator.ValidateRuntime(changed).Issues
+            |> Array.map (fun issue -> issue.Code)
+
+        codes |> should contain "runtime.attack-order-omission"
+        codes |> should contain "runtime.damage-order-omission"
+
+    [<Test>]
+    member _.``runtime validation should diagnose duplicated resolution steps``() =
+        let authority = Authorities.mechanics.Value
+        let attackOrder = Array.copy authority.BaseRules.AttackOrder
+        let damageOrder = Array.copy authority.BaseRules.DamageOrder
+        attackOrder[1] <- attackOrder[0]
+        damageOrder[1] <- damageOrder[0]
+
+        let changed =
+            { authority with
+                BaseRules =
+                    { authority.BaseRules with
+                        AttackOrder = attackOrder
+                        DamageOrder = damageOrder } }
+
+        let codes =
+            BlokemonSetValidator.ValidateRuntime(changed).Issues
+            |> Array.map (fun issue -> issue.Code)
+
+        codes |> should contain "runtime.attack-order-duplicate"
+        codes |> should contain "runtime.damage-order-duplicate"
+
+    [<Test>]
+    member _.``runtime validation should diagnose unknown resolution steps``() =
+        let authority = Authorities.mechanics.Value
+        let attackOrder = Array.copy authority.BaseRules.AttackOrder
+        let damageOrder = Array.copy authority.BaseRules.DamageOrder
+        attackOrder[0] <- enum<BlokemonAttackResolutionStep> 99
+        damageOrder[0] <- enum<BlokemonDamageResolutionStep> 99
+
+        let changed =
+            { authority with
+                BaseRules =
+                    { authority.BaseRules with
+                        AttackOrder = attackOrder
+                        DamageOrder = damageOrder } }
+
+        let codes =
+            BlokemonSetValidator.ValidateRuntime(changed).Issues
+            |> Array.map (fun issue -> issue.Code)
+
+        codes |> should contain "runtime.attack-order-unknown"
+        codes |> should contain "runtime.damage-order-unknown"
+
+    [<Test>]
+    member _.``runtime validation should reject behaviorally significant adjacent order changes``
+        ()
+        =
+        let authority = Authorities.mechanics.Value
+        let attackOrder = Array.copy authority.BaseRules.AttackOrder
+        let damageOrder = Array.copy authority.BaseRules.DamageOrder
+        let attackSecond = attackOrder[1]
+        attackOrder[1] <- attackOrder[2]
+        attackOrder[2] <- attackSecond
+        let damageThird = damageOrder[2]
+        damageOrder[2] <- damageOrder[3]
+        damageOrder[3] <- damageThird
+
+        let changed =
+            { authority with
+                BaseRules =
+                    { authority.BaseRules with
+                        AttackOrder = attackOrder
+                        DamageOrder = damageOrder } }
+
+        let codes =
+            BlokemonSetValidator.ValidateRuntime(changed).Issues
+            |> Array.map (fun issue -> issue.Code)
+
+        codes |> should contain "runtime.attack-order-unsupported-order"
+        codes |> should contain "runtime.damage-order-unsupported-order"
+
+    [<Test>]
     member _.``karaoke queen should publish the exact Jungle Wigglytuff authority``() =
         let instruction opcode amount valueSource targets roughStates =
             { Opcode = opcode

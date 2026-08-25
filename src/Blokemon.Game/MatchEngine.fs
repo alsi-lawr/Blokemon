@@ -106,6 +106,9 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
         BlokemonSetValidator.ValidateRuntime(authority).IsValid
         && interpreter.AuditAuthority().IsInventoryComplete
 
+    member internal _.ResolutionTrace
+        with set trace = interpreter.ResolutionTrace <- trace
+
     member _.Start(request: MatchStartRequest) =
         let issues = validateStart catalog authorityIsValid request
 

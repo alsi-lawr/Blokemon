@@ -17,6 +17,7 @@
     <Compile Include="MatchEvents.fs" />
     <Compile Include="DeterministicRandom.fs" />
     <Compile Include="AuthorityCatalog.fs" />
+    <Compile Include="ResolutionTrace.fs" />
     <Compile Include="MatchBuilder.fs" />
     <Compile Include="InterpreterTypes.fs" />
     <Compile Include="EffectTargeting.fs" />
@@ -58,6 +59,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Blokemon.Game.Tests" />
   </ItemGroup>
   <ItemGroup>
     <!--

@@ -12,9 +12,7 @@ open Blokemon.Game.MatchPending
 /// reactions and knockouts that follow it.
 module internal MatchAttackHandlers =
 
-    /// Everything the declaration itself has to survive before the attack program runs: the gate
-    /// beer mats, and the Muddled toss that can cancel the attack outright.
-    let private declareAttack
+    let private cancelAttack
         (catalog: AuthorityCatalog)
         (interpreter: BlokemonInterpreter)
         (builder: MatchBuilder)
@@ -23,9 +21,12 @@ module internal MatchAttackHandlers =
         (attackId: EffectId)
         =
         builder.Events.Add
-            { PendingMatchEvent.forCard MatchEventKind.AttackDeclared actor attacker.Id with
+            { PendingMatchEvent.forCard MatchEventKind.AttackCancelled actor attacker.Id with
                 Effect = ValueSome attackId }
 
+        finishOrPendRound catalog interpreter builder
+
+    let private attackGateAllows (builder: MatchBuilder) (actor: PlayerId) (attacker: CardState) =
         let attackGate =
             builder.Effects
             |> Seq.filter (fun effect ->
@@ -34,32 +35,32 @@ module internal MatchAttackHandlers =
                 && effect.AppliesFromRound <= builder.RoundNumber)
             |> Seq.tryLast
 
-        let gateAllowed =
-            match attackGate with
-            | None -> true
-            | Some gate ->
-                let mutable attackAllowed = true
+        match attackGate with
+        | None -> true
+        | Some gate ->
+            let mutable attackAllowed = true
 
-                for _ in 1 .. gate.Amount do
-                    let badge = builder.TossBeerMat actor
+            for _ in 1 .. gate.Amount do
+                let badge = builder.TossBeerMat actor
 
-                    builder.Events.Add
-                        { PendingMatchEvent.forCard MatchEventKind.BeerMatTossed actor attacker.Id with
-                            Effect = ValueSome gate.SourceEffect
-                            BadgeSide = ValueSome badge }
+                builder.Events.Add
+                    { PendingMatchEvent.forCard MatchEventKind.BeerMatTossed actor attacker.Id with
+                        Effect = ValueSome gate.SourceEffect
+                        BadgeSide = ValueSome badge }
 
-                    attackAllowed <- attackAllowed && badge
+                attackAllowed <- attackAllowed && badge
 
-                attackAllowed
+            attackAllowed
 
-        if not gateAllowed then
-            builder.Events.Add
-                { PendingMatchEvent.forCard MatchEventKind.AttackCancelled actor attacker.Id with
-                    Effect = ValueSome attackId }
-
-            finishOrPendRound catalog interpreter builder
-            false
-        elif
+    let private muddledCheckAllows
+        (catalog: AuthorityCatalog)
+        (interpreter: BlokemonInterpreter)
+        (builder: MatchBuilder)
+        (actor: PlayerId)
+        (attacker: CardState)
+        (attackId: EffectId)
+        =
+        if
             attacker.RoughStates
             |> Seq.exists (fun entry -> entry.State = BlokemonRoughState.Muddled)
         then
@@ -100,6 +101,58 @@ module internal MatchAttackHandlers =
                 false
         else
             true
+
+    let private deferOpponentChoices
+        (builder: MatchBuilder)
+        (command: MatchCommand)
+        (attacker: CardState)
+        (attackId: EffectId)
+        (requirements: ImmutableArray<ChoiceRequirement>)
+        (beerMatResults: ImmutableArray<bool>)
+        =
+        let deferred =
+            requirements
+            |> Seq.filter (fun requirement -> requirement.Chooser <> command.Actor)
+            |> Seq.toArray
+
+        if deferred.Length = 0 then
+            ValueNone
+        else
+            let chooser = deferred[0].Chooser
+
+            if deferred |> Array.exists (fun requirement -> requirement.Chooser <> chooser) then
+                ValueSome(HandlerResult.rejectWith CommandRejectionCode.InvalidChoice requirements)
+            else
+                builder.PendingEffect <-
+                    ValueSome
+                        { Command = command
+                          Source = attacker.Id
+                          Effect = attackId
+                          Chooser = chooser
+                          Requirements = ImmutableArray.CreateRange deferred
+                          BeerMatResults = beerMatResults
+                          AttackStarted = true }
+
+                builder.Phase <- MatchPhase.AwaitingEffectChoice
+
+                builder.Events.Add
+                    { PendingMatchEvent.forCard
+                          MatchEventKind.EffectChoiceRequested
+                          chooser
+                          attacker.Id with
+                        Effect = ValueSome attackId }
+
+                ValueSome HandlerResult.accepted
+
+    let finishAttackResolution
+        (catalog: AuthorityCatalog)
+        (interpreter: BlokemonInterpreter)
+        (builder: MatchBuilder)
+        =
+        for step in catalog.Manifest.BaseRules.AttackOrder do
+            if step = BlokemonAttackResolutionStep.EndRound then
+                interpreter.ResolutionTrace(AttackStep step)
+                finishOrPendRound catalog interpreter builder
 
     let attack
         (catalog: AuthorityCatalog)
@@ -144,135 +197,140 @@ module internal MatchAttackHandlers =
                 elif not (canPayAttack catalog builder attacker attack) then
                     HandlerResult.reject CommandRejectionCode.InsufficientVim
                 else
+                    let defendingCard = builder.Oche(builder.Other command.Actor)
 
-                    let requirements =
-                        interpreter.InspectChoices(
-                            builder,
-                            command.Actor,
-                            attacker,
-                            attackId,
-                            attack.Program
-                        )
+                    let defendingDamageBefore =
+                        match defendingCard with
+                        | ValueSome card -> card.Damage
+                        | ValueNone -> 0
 
-                    // A requirement the opponent has to answer parks the attack before it is declared, so the
-                    // declaration events only ever fire once the answers are in.
-                    let deferral =
-                        if isResuming then
-                            ValueNone
+                    let firstStep =
+                        if isResuming && attackStarted then
+                            BlokemonAttackResolutionStep.PayOrPerformUseRequirements
                         else
-                            match
-                                interpreter.ValidateChoiceSubmission(
-                                    command.Choices,
-                                    requirements,
-                                    command.Actor
-                                )
-                            with
-                            | ValueSome rejection ->
-                                ValueSome(HandlerResult.rejectWith rejection requirements)
-                            | ValueNone ->
-                                let deferred =
-                                    requirements
-                                    |> Seq.filter (fun requirement ->
-                                        requirement.Chooser <> command.Actor)
-                                    |> Seq.toArray
+                            BlokemonAttackResolutionStep.ValidateDeclaredAttackAndVim
 
-                                if deferred.Length = 0 then
-                                    ValueNone
-                                else
-                                    let chooser = deferred[0].Chooser
+                    let mutable reachedFirstStep = false
+                    let mutable continueResolution = true
+                    let mutable result = HandlerResult.accepted
+                    let mutable execution = ValueNone
+                    let mutable attackDamageTargets = ImmutableArray<_>.Empty
+                    let mutable sendHomeCandidates = ImmutableArray<_>.Empty
+                    let mutable sendHomeResolved = true
 
-                                    if
-                                        deferred
-                                        |> Array.exists (fun requirement ->
-                                            requirement.Chooser <> chooser)
-                                    then
-                                        ValueSome(
-                                            HandlerResult.rejectWith
-                                                CommandRejectionCode.InvalidChoice
-                                                requirements
-                                        )
-                                    else
-                                        builder.PendingEffect <-
-                                            ValueSome
-                                                { Command = command
-                                                  Source = attacker.Id
-                                                  Effect = attackId
-                                                  Chooser = chooser
-                                                  Requirements = ImmutableArray.CreateRange deferred
-                                                  BeerMatResults = beerMatResults
-                                                  AttackStarted = false }
+                    for step in catalog.Manifest.BaseRules.AttackOrder do
+                        if step = firstStep then
+                            reachedFirstStep <- true
 
-                                        builder.Phase <- MatchPhase.AwaitingEffectChoice
+                        if reachedFirstStep && continueResolution then
+                            interpreter.ResolutionTrace(AttackStep step)
 
-                                        builder.Events.Add
-                                            { PendingMatchEvent.forCard
-                                                  MatchEventKind.EffectChoiceRequested
-                                                  chooser
-                                                  attacker.Id with
-                                                Effect = ValueSome attackId }
-
-                                        ValueSome HandlerResult.accepted
-
-                    match deferral with
-                    | ValueSome result -> result
-                    | ValueNone ->
-
-                        let defendingCard = builder.Oche(builder.Other command.Actor)
-
-                        let defendingDamageBefore =
-                            match defendingCard with
-                            | ValueSome card -> card.Damage
-                            | ValueNone -> 0
-
-                        if
-                            not attackStarted
-                            && not (
-                                declareAttack
-                                    catalog
-                                    interpreter
-                                    builder
-                                    command.Actor
-                                    attacker
-                                    attackId
-                            )
-                        then
-                            HandlerResult.accepted
-                        else
-
-                            let plan =
-                                interpreter.Plan(
-                                    builder,
-                                    command.Actor,
-                                    attacker,
-                                    attackId,
-                                    attack.Program,
-                                    command.Choices,
-                                    true,
-                                    false,
-                                    beerMatResults
-                                )
-
-                            if not plan.IsApplied then
-                                if
-                                    plan.Rejection <> ValueSome CommandRejectionCode.ChoiceRequired
-                                then
-                                    HandlerResult.rejectWith
-                                        (plan.Rejection
-                                         |> ValueOption.defaultValue
-                                             CommandRejectionCode.InvalidChoice)
-                                        plan.Requirements
-                                else
-                                    pendEffect
+                            match step with
+                            | BlokemonAttackResolutionStep.ValidateDeclaredAttackAndVim ->
+                                builder.Events.Add
+                                    { PendingMatchEvent.forCard
+                                          MatchEventKind.AttackDeclared
+                                          command.Actor
+                                          attacker.Id with
+                                        Effect = ValueSome attackId }
+                            | BlokemonAttackResolutionStep.ApplyEffectsThatAlterOrCancelAttack ->
+                                if not (attackGateAllows builder command.Actor attacker) then
+                                    cancelAttack
+                                        catalog
+                                        interpreter
                                         builder
-                                        command
-                                        attacker.Id
+                                        command.Actor
+                                        attacker
                                         attackId
-                                        plan.Requirements
+
+                                    continueResolution <- false
+                            | BlokemonAttackResolutionStep.ResolveMuddledCheck ->
+                                if
+                                    not (
+                                        muddledCheckAllows
+                                            catalog
+                                            interpreter
+                                            builder
+                                            command.Actor
+                                            attacker
+                                            attackId
+                                    )
+                                then
+                                    continueResolution <- false
+                            | BlokemonAttackResolutionStep.MakeRequiredChoices ->
+                                let requirements =
+                                    interpreter.InspectChoices(
+                                        builder,
+                                        command.Actor,
+                                        attacker,
+                                        attackId,
+                                        attack.Program
+                                    )
+
+                                match
+                                    interpreter.ValidateChoiceSubmission(
+                                        command.Choices,
+                                        requirements,
+                                        command.Actor
+                                    )
+                                with
+                                | ValueSome rejection ->
+                                    result <- HandlerResult.rejectWith rejection requirements
+                                    continueResolution <- false
+                                | ValueNone ->
+                                    match
+                                        deferOpponentChoices
+                                            builder
+                                            command
+                                            attacker
+                                            attackId
+                                            requirements
+                                            beerMatResults
+                                    with
+                                    | ValueSome deferred ->
+                                        result <- deferred
+                                        continueResolution <- false
+                                    | ValueNone -> ()
+                            | BlokemonAttackResolutionStep.PayOrPerformUseRequirements ->
+                                let plan =
+                                    interpreter.Plan(
+                                        builder,
+                                        command.Actor,
+                                        attacker,
+                                        attackId,
+                                        attack.Program,
+                                        command.Choices,
+                                        true,
+                                        false,
                                         beerMatResults
-                                        plan.BeerMatResults
-                                        true
-                            else
-                                let execution =
+                                    )
+
+                                if not plan.IsApplied then
+                                    if
+                                        plan.Rejection
+                                        <> ValueSome CommandRejectionCode.ChoiceRequired
+                                    then
+                                        result <-
+                                            HandlerResult.rejectWith
+                                                (plan.Rejection
+                                                 |> ValueOption.defaultValue
+                                                     CommandRejectionCode.InvalidChoice)
+                                                plan.Requirements
+                                    else
+                                        result <-
+                                            pendEffect
+                                                builder
+                                                command
+                                                attacker.Id
+                                                attackId
+                                                plan.Requirements
+                                                beerMatResults
+                                                plan.BeerMatResults
+                                                true
+
+                                    continueResolution <- false
+                            | BlokemonAttackResolutionStep.ApplyBeforeDamageEffects ->
+                                let prepared =
                                     interpreter.Execute(
                                         builder,
                                         command.Actor,
@@ -284,36 +342,78 @@ module internal MatchAttackHandlers =
                                         false,
                                         ValueNone,
                                         beerMatResults,
-                                        ValueNone
+                                        ValueNone,
+                                        deferAttackDamage = true
                                     )
 
-                                if not execution.IsApplied then
-                                    HandlerResult.rejectWith
-                                        (execution.Rejection
-                                         |> ValueOption.defaultValue
-                                             CommandRejectionCode.InvalidChoice)
-                                        execution.Requirements
+                                if prepared.IsApplied then
+                                    execution <- ValueSome prepared
                                 else
-                                    resolveReactiveAttackTriggers
-                                        catalog
-                                        interpreter
-                                        builder
-                                        attacker
-                                        defendingCard
-                                        defendingDamageBefore
-                                        execution.AttackDamageTargets
+                                    result <-
+                                        HandlerResult.rejectWith
+                                            (prepared.Rejection
+                                             |> ValueOption.defaultValue
+                                                 CommandRejectionCode.InvalidChoice)
+                                            prepared.Requirements
 
-                                    if
-                                        resolveSendHome
+                                    continueResolution <- false
+                            | BlokemonAttackResolutionStep.CalculateAndPlaceDamage ->
+                                match execution with
+                                | ValueSome prepared ->
+                                    attackDamageTargets <- prepared.CompleteAttackDamage.Value()
+                                | ValueNone ->
+                                    result <-
+                                        HandlerResult.reject CommandRejectionCode.AuthorityMismatch
+
+                                    continueResolution <- false
+                            | BlokemonAttackResolutionStep.ResolveOtherEffects ->
+                                resolveReactiveAttackTriggers
+                                    catalog
+                                    interpreter
+                                    builder
+                                    attacker
+                                    defendingCard
+                                    defendingDamageBefore
+                                    attackDamageTargets
+                            | BlokemonAttackResolutionStep.CheckAllSentHome ->
+                                match execution with
+                                | ValueSome prepared ->
+                                    sendHomeCandidates <-
+                                        findSendHomeCandidates
+                                            catalog
+                                            builder
+                                            prepared.ForcedSendHome
+                                | ValueNone ->
+                                    result <-
+                                        HandlerResult.reject CommandRejectionCode.AuthorityMismatch
+
+                                    continueResolution <- false
+                            | BlokemonAttackResolutionStep.TakeBarChitsAndPromote ->
+                                match execution with
+                                | ValueSome prepared ->
+                                    sendHomeResolved <-
+                                        resolveIdentifiedSendHome
                                             catalog
                                             interpreter
                                             builder
-                                            execution.ForcedSendHome
+                                            sendHomeCandidates
                                             (ValueSome attacker.Id)
                                             true
-                                            execution.AttackDamageTargets
-                                            execution.DeferredAttackKnockoutBarChits
-                                    then
-                                        finishOrPendRound catalog interpreter builder
+                                            attackDamageTargets
+                                            prepared.DeferredAttackKnockoutBarChits
 
-                                    HandlerResult.accepted
+                                    if not sendHomeResolved then
+                                        continueResolution <- false
+                                | ValueNone ->
+                                    result <-
+                                        HandlerResult.reject CommandRejectionCode.AuthorityMismatch
+
+                                    continueResolution <- false
+                            | BlokemonAttackResolutionStep.EndRound ->
+                                if sendHomeResolved then
+                                    finishOrPendRound catalog interpreter builder
+                            | unsupported ->
+                                invalidOp
+                                    $"Unsupported validated attack-resolution step {unsupported}."
+
+                    result
