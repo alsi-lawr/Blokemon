@@ -7,7 +7,7 @@ open Blokemon.Core.SetDesign
 open FsUnit
 open TUnit.Core
 
-module private BaseRuleObligations =
+module internal BaseRuleObligations =
 
     type Row =
         { Pointer: string

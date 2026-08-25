@@ -55,13 +55,16 @@ type ConformanceCensusTests() =
     [<Test>]
     member _.``nontrivial programs should match the fixture partition``() =
         let fixture = ConformanceFixture.load ()
-        let expectedStructuralPrograms = fixture.Authority.StructuralPrograms
+        let expectedDisposition = fixture.StructuralDisposition
 
-        let actualStructuralPrograms =
-            (ConformanceFixture.authorityFacts ()).StructuralPrograms
+        let actualDisposition =
+            (ConformanceFixture.derive fixture.CompositionHashes).StructuralDisposition
 
         let expectedStructuralIds =
-            expectedStructuralPrograms |> Seq.map _.MechanicalId |> Set.ofSeq
+            expectedDisposition
+            |> Seq.filter (fun row -> row.Disposition = "StructuralNontrivial")
+            |> Seq.map _.MechanicalId
+            |> Set.ofSeq
 
         let expectedExecutableIds =
             fixture.CompositionHashes |> Seq.map _.MechanicalId |> Set.ofSeq
@@ -81,7 +84,7 @@ type ConformanceCensusTests() =
             |> Seq.map (fun (row, _) -> row.MechanicalId)
             |> Set.ofSeq
 
-        actualStructuralPrograms |> should equal expectedStructuralPrograms
+        actualDisposition |> should equal expectedDisposition
         structuralIds |> should equal expectedStructuralIds
         executableIds |> should equal expectedExecutableIds
 
@@ -90,9 +93,15 @@ type ConformanceCensusTests() =
          recursiveNontrivialPrograms.Length)
         |> should
             equal
-            (fixture.Authority.Totals.StructuralNontrivialPrograms,
-             fixture.Authority.Totals.ExecutableNontrivialPrograms,
-             fixture.Authority.Totals.RecursiveNontrivialPrograms)
+            (expectedDisposition
+             |> Array.filter (fun row -> row.Disposition = "StructuralNontrivial")
+             |> Array.length,
+             expectedDisposition
+             |> Array.filter (fun row -> row.Disposition = "ExecutableNontrivial")
+             |> Array.length,
+             expectedDisposition
+             |> Array.filter (fun row -> row.RecursiveInstructions > 1)
+             |> Array.length)
 
         Set.intersect structuralIds executableIds |> should be Empty
         Set.union structuralIds executableIds |> should equal allNontrivialIds

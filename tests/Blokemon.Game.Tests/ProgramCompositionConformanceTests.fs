@@ -112,13 +112,17 @@ type ProgramCompositionConformanceTests() =
         let fixture = ConformanceFixture.load ()
         let expected = fixture.CompositionHashes
 
+        let expectedExecutableCount =
+            fixture.StructuralDisposition
+            |> Array.filter (fun row -> row.Disposition = "ExecutableNontrivial")
+            |> Array.length
+
         let executableIds =
             executableNontrivialPrograms
             |> Seq.map (fun (row, _) -> row.MechanicalId)
             |> Set.ofSeq
 
-        expected.Length
-        |> should equal fixture.Authority.Totals.ExecutableNontrivialPrograms
+        expected.Length |> should equal expectedExecutableCount
 
         expected |> Seq.map _.MechanicalId |> Set.ofSeq |> should equal executableIds
         currentCompositionHashes () |> should equal expected
