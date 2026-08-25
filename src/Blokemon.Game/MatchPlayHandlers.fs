@@ -47,6 +47,7 @@ module internal MatchPlayHandlers =
 
                 let player = builder.Player command.Actor
                 let firstRoundPromotionAllowed = allowsFirstRoundPromotion catalog builder target
+                let rules = catalog.Manifest.BaseRules.Promotion
 
                 if
                     promotion.Owner <> command.Actor
@@ -55,11 +56,13 @@ module internal MatchPlayHandlers =
                     || promotion.Zone <> CardZone.Mitt
                     || not (isInPlay target)
                     || (not firstRoundPromotionAllowed
-                        && (player.RoundsStarted <= 1
-                            || target.EnteredAtOwnerRound = player.RoundsStarted))
-                    || target.LastPromotedRound = builder.RoundNumber
-                    || (catalog.Bloke promotion.MechanicalId).PromotesFromId
-                       <> target.MechanicalId.Value
+                        && ((rules.NotOnEitherFirstRound && player.RoundsStarted <= 1)
+                            || (rules.NotFirstRoundInPlay
+                                && target.EnteredAtOwnerRound = player.RoundsStarted)))
+                    || (rules.NotTwiceInRound && target.LastPromotedRound = builder.RoundNumber)
+                    || (rules.ExactMechanicalEdgeRequired
+                        && (catalog.Bloke promotion.MechanicalId).PromotesFromId
+                           <> target.MechanicalId.Value)
                 then
                     HandlerResult.reject CommandRejectionCode.IneligiblePromotion
                 else
@@ -79,22 +82,40 @@ module internal MatchPlayHandlers =
                         { promotion with
                             Zone = zone
                             StackPosition = target.StackPosition
-                            Damage = target.Damage
-                            Attachments = target.Attachments
+                            Damage =
+                                if rules.RetainDamageAndAttachedCards then
+                                    target.Damage
+                                else
+                                    0
+                            Attachments =
+                                if rules.RetainDamageAndAttachedCards then
+                                    target.Attachments
+                                else
+                                    ImmutableArray<_>.Empty
                             UnderlyingCards =
                                 ImmutableArray.CreateRange(
                                     Seq.append target.UnderlyingCards [ target.Id ]
                                 )
-                            RoughStates = ImmutableArray<_>.Empty
+                            RoughStates =
+                                if rules.ClearRoughStatesAndAttackEffects then
+                                    ImmutableArray<_>.Empty
+                                else
+                                    target.RoughStates
                             EnteredAtOwnerRound = target.EnteredAtOwnerRound
                             LastPromotedRound = builder.RoundNumber }
 
                     for attachmentId in target.Attachments do
-                        builder.SetCard
-                            { builder.Card attachmentId with
-                                AttachedTo = ValueSome promotion.Id }
+                        if rules.RetainDamageAndAttachedCards then
+                            builder.SetCard
+                                { builder.Card attachmentId with
+                                    AttachedTo = ValueSome promotion.Id }
+                        else
+                            builder.DetachTo(attachmentId, CardZone.EmptiesTray)
 
-                    builder.RemoveEffectsFor target.Id
+                    if rules.ClearRoughStatesAndAttackEffects then
+                        builder.RemoveEffectsFor target.Id
+                    else
+                        builder.RetargetEffects(target.Id, promotion.Id)
 
                     let mutable rejected = ValueNone
 
@@ -161,10 +182,10 @@ module internal MatchPlayHandlers =
                 elif
                     builder.RoundUsage.TaxisUsed >= catalog.Manifest.BaseRules.Taxi.PerRound
                     || outgoing.RoughStates
-                       |> Seq.exists (fun entry ->
-                           entry.State = BlokemonRoughState.NoddedOff
-                           || entry.State = BlokemonRoughState.Legless)
-                    || (outgoing.Kind = CardKind.Kit && catalog.IsFossil outgoing.MechanicalId)
+                       |> Seq.exists (fun entry -> (catalog.RoughState entry.State).PreventsTaxi)
+                    || (outgoing.Kind = CardKind.Kit
+                        && catalog.IsFossil outgoing.MechanicalId
+                        && catalog.Manifest.BaseRules.FossilKits.CannotTaxi)
                     || builder.Effects
                        |> Seq.exists (fun effect ->
                            effect.TargetCard = ValueSome outgoing.Id
@@ -189,12 +210,28 @@ module internal MatchPlayHandlers =
                     then
                         HandlerResult.reject CommandRejectionCode.InvalidTaxiFare
                     else
-                        for vim in vimToChuck do
-                            builder.DetachTo(vim, CardZone.EmptiesTray)
+                        if catalog.Manifest.BaseRules.Taxi.ChuckVimPerFareSymbol then
+                            for vim in vimToChuck do
+                                builder.DetachTo(vim, CardZone.EmptiesTray)
 
                         builder.MoveCard(outgoing.Id, CardZone.Booth)
-                        builder.ClearRoughStates(actor, outgoing.Id)
-                        builder.RemoveEffectsFor(outgoing.Id, true)
+
+                        if
+                            catalog.Manifest.BaseRules.Taxi.MovingToBoothClearsRoughStatesAndAttackEffects
+                        then
+                            builder.ClearRoughStates(actor, outgoing.Id)
+                            builder.RemoveEffectsFor(outgoing.Id, true)
+
+                        if not catalog.Manifest.BaseRules.Taxi.AttachedCardsAndDamageRemain then
+                            let moved = builder.Card outgoing.Id
+
+                            for attachment in moved.Attachments do
+                                builder.DetachTo(attachment, CardZone.EmptiesTray)
+
+                            builder.SetCard
+                                { builder.Card outgoing.Id with
+                                    Damage = 0 }
+
                         builder.MoveCard(incoming.Id, CardZone.Oche)
 
                         builder.RoundUsage <-

@@ -60,10 +60,14 @@ module internal MatchAttackHandlers =
         (attacker: CardState)
         (attackId: EffectId)
         =
-        if
+        let beforeAttack =
             attacker.RoughStates
-            |> Seq.exists (fun entry -> entry.State = BlokemonRoughState.Muddled)
-        then
+            |> Seq.map (fun entry -> catalog.RoughState entry.State)
+            |> Seq.tryFind (fun rule ->
+                rule.BeforeAttackBeerMat.HasValue && rule.BeforeAttackBeerMat.Value)
+
+        match beforeAttack with
+        | Some rule ->
             let badge = builder.TossBeerMat actor
 
             builder.Events.Add
@@ -77,7 +81,7 @@ module internal MatchAttackHandlers =
                 builder.PlaceDamage(
                     actor,
                     attacker.Id,
-                    30,
+                    rule.BlankSideCancelsAndSelfDamageCounters.GetValueOrDefault() * 10,
                     DamageKind.PlacedCounter,
                     ValueSome attacker.Id
                 )
@@ -99,8 +103,7 @@ module internal MatchAttackHandlers =
 
                 finishOrPendRound catalog interpreter builder
                 false
-        else
-            true
+        | None -> true
 
     let private deferOpponentChoices
         (builder: MatchBuilder)
@@ -182,12 +185,11 @@ module internal MatchAttackHandlers =
                     )
                     || (attacker.Zone <> CardZone.Oche
                         && not (attacker.Zone = CardZone.Booth && attack.CanBeUsedFromBench))
-                    || (command.Actor = builder.OpeningPlayer
+                    || (not catalog.Manifest.BaseRules.Opening.OpeningParticipantMayAttack
+                        && command.Actor = builder.OpeningPlayer
                         && (builder.Player command.Actor).RoundsStarted = 1)
                     || attacker.RoughStates
-                       |> Seq.exists (fun entry ->
-                           entry.State = BlokemonRoughState.NoddedOff
-                           || entry.State = BlokemonRoughState.Legless)
+                       |> Seq.exists (fun entry -> (catalog.RoughState entry.State).PreventsAttack)
                     || builder.Effects
                        |> Seq.exists (fun effect ->
                            effect.TargetCard = ValueSome attacker.Id
@@ -410,7 +412,10 @@ module internal MatchAttackHandlers =
 
                                     continueResolution <- false
                             | BlokemonAttackResolutionStep.EndRound ->
-                                if sendHomeResolved then
+                                if
+                                    sendHomeResolved
+                                    && catalog.Manifest.BaseRules.Round.AttackEndsRound
+                                then
                                     finishOrPendRound catalog interpreter builder
                             | unsupported ->
                                 invalidOp

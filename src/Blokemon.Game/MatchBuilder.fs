@@ -106,6 +106,23 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
 
     member this.RemoveEffectsFor(card: CardInstanceId) = this.RemoveEffectsFor(card, false)
 
+    member _.RetargetEffects(fromCard: CardInstanceId, toCard: CardInstanceId) =
+        for index in 0 .. effects.Count - 1 do
+            let effect = effects[index]
+
+            effects[index] <-
+                { effect with
+                    SourceCard =
+                        if effect.SourceCard = fromCard then
+                            toCard
+                        else
+                            effect.SourceCard
+                    TargetCard =
+                        if effect.TargetCard = ValueSome fromCard then
+                            ValueSome toCard
+                        else
+                            effect.TargetCard }
+
     member this.AddEffect(effect: TemporaryEffect) =
         effects.Add effect
 
@@ -403,10 +420,15 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
             source: CardInstanceId voption
         ) =
         let target = this.Card targetId
+        let rule = catalog.RoughState state
 
         if
-            target.Zone = CardZone.Oche
-            && not (target.Kind = CardKind.Kit && catalog.IsFossil target.MechanicalId)
+            (not rule.OcheOnly || target.Zone = CardZone.Oche)
+            && not (
+                target.Kind = CardKind.Kit
+                && catalog.IsFossil target.MechanicalId
+                && catalog.Manifest.BaseRules.FossilKits.CannotHaveRoughStates
+            )
         then
             let rotated = catalog.Manifest.BaseRules.RoughStateCoexistence.RotatedGroup
 
@@ -415,7 +437,10 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
                     target.RoughStates |> Seq.filter (fun entry -> entry.State <> state)
                 )
 
-            if Array.contains state rotated then
+            if
+                catalog.Manifest.BaseRules.RoughStateCoexistence.LatestRotatedStateReplacesPrevious
+                && Array.contains state rotated
+            then
                 states.RemoveAll(fun entry -> Array.contains entry.State rotated) |> ignore
 
             states.Add

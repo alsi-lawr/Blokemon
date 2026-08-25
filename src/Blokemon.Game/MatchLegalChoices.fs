@@ -78,6 +78,8 @@ module internal MatchLegalChoices =
         (promotion: CardState)
         (target: CardState)
         =
+        let rules = catalog.Manifest.BaseRules.Promotion
+
         let promotedCards =
             state.Cards
             |> Seq.map (fun card ->
@@ -91,24 +93,62 @@ module internal MatchLegalChoices =
                     { card with
                         Zone = target.Zone
                         StackPosition = target.StackPosition
-                        Damage = target.Damage
-                        Attachments = target.Attachments
+                        Damage =
+                            if rules.RetainDamageAndAttachedCards then
+                                target.Damage
+                            else
+                                0
+                        Attachments =
+                            if rules.RetainDamageAndAttachedCards then
+                                target.Attachments
+                            else
+                                ImmutableArray<_>.Empty
                         UnderlyingCards =
                             ImmutableArray.CreateRange(
                                 Seq.append target.UnderlyingCards [ target.Id ]
                             )
-                        RoughStates = ImmutableArray<_>.Empty
+                        RoughStates =
+                            if rules.ClearRoughStatesAndAttackEffects then
+                                ImmutableArray<_>.Empty
+                            else
+                                target.RoughStates
                         EnteredAtOwnerRound = target.EnteredAtOwnerRound
                         LastPromotedRound = state.RoundNumber }
                 elif Seq.contains card.Id target.Attachments then
-                    { card with
-                        AttachedTo = ValueSome promotion.Id }
+                    if rules.RetainDamageAndAttachedCards then
+                        { card with
+                            AttachedTo = ValueSome promotion.Id }
+                    else
+                        { card with
+                            Zone = CardZone.EmptiesTray
+                            AttachedTo = ValueNone }
                 else
                     card)
 
+        let promotedEffects =
+            if rules.ClearRoughStatesAndAttackEffects then
+                state.Effects
+            else
+                ImmutableArray.CreateRange(
+                    state.Effects
+                    |> Seq.map (fun effect ->
+                        { effect with
+                            SourceCard =
+                                if effect.SourceCard = target.Id then
+                                    promotion.Id
+                                else
+                                    effect.SourceCard
+                            TargetCard =
+                                if effect.TargetCard = ValueSome target.Id then
+                                    ValueSome promotion.Id
+                                else
+                                    effect.TargetCard })
+                )
+
         let promotedState =
             { state with
-                Cards = ImmutableArray.CreateRange promotedCards }
+                Cards = ImmutableArray.CreateRange promotedCards
+                Effects = promotedEffects }
 
         ImmutableArray.CreateRange(
             catalog.PartyTricks promotion

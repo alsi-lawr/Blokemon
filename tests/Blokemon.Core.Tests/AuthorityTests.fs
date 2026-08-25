@@ -20,6 +20,40 @@ module private Authorities =
     let publicContent =
         lazy (BlokemonPublicContentJson.Manifest(read "public-content.json"))
 
+    let withBaseRuleValue (pointer: string) (jsonValue: string) =
+        let document =
+            match JsonNode.Parse(read "mechanics.json") with
+            | null -> failwith "The mechanical authority did not parse as JSON."
+            | parsed -> parsed
+
+        let segments = pointer.Split('/', StringSplitOptions.RemoveEmptyEntries)
+
+        let mutable current =
+            match document["baseRules"] with
+            | null -> failwith "The mechanical authority omits baseRules."
+            | baseRules -> baseRules
+
+        for segment in segments |> Array.take (segments.Length - 1) do
+            let next =
+                match current with
+                | :? JsonArray as array -> array[int segment]
+                | _ -> current[segment]
+
+            current <-
+                match next with
+                | null -> failwith $"The BaseRules path {pointer} crosses a null value."
+                | node -> node
+
+        let value = JsonNode.Parse jsonValue
+        let final = segments[segments.Length - 1]
+
+        match current with
+        | :? JsonArray as array -> array[int final] <- value
+        | :? JsonObject as objectNode -> objectNode[final] <- value
+        | _ -> failwith $"Cannot replace the BaseRules leaf {pointer}."
+
+        BlokemonSetJson.RuntimeManifest(document.ToJsonString())
+
 type AuthorityTests() =
 
     [<Test>]
@@ -102,6 +136,191 @@ type AuthorityTests() =
                 Authorities.mechanics.Value
 
         publicValidation.IsValid |> should be True
+
+    [<Test>]
+    [<Arguments("/rulesVersion", "\"unsupported\"", "runtime.rules-version")>]
+    [<Arguments("/stack/cardCount", "0", "runtime.stack-range")>]
+    [<Arguments("/stack/mechanicalCopyLimit", "0", "runtime.stack-range")>]
+    [<Arguments("/stack/requiresRegularBloke", "false", "runtime.stack-regular-required")>]
+    [<Arguments("/opening/openingParticipantSampledBeforeShuffle",
+                "false",
+                "runtime.opening-participant-sampling")>]
+    [<Arguments("/opening/ocheRegularCount", "2", "runtime.opening-oche-count")>]
+    [<Arguments("/opening/mulligans", "\"Once\"", "runtime.opening-mulligan-mode")>]
+    [<Arguments("/opening/bothMulliganNoBonus", "false", "runtime.opening-both-mulligan-bonus")>]
+    [<Arguments("/opening/otherSideBonusPerExtraMulligan",
+                "false",
+                "runtime.opening-extra-mulligan-bonus")>]
+    [<Arguments("/opening/otherSideBonusOptional",
+                "false",
+                "runtime.opening-mulligan-bonus-optional")>]
+    [<Arguments("/round/partyTricksAreNotAttacks", "false", "runtime.round-party-tricks")>]
+    [<Arguments("/vim/costNotChuckedUnlessSpecified", "false", "runtime.vim-cost-retention")>]
+    [<Arguments("/vim/localSatisfiedByAnyVim", "false", "runtime.vim-local-cost")>]
+    [<Arguments("/kit/barBitsPerRound", "\"One\"", "runtime.kit-bar-bits-per-round")>]
+    [<Arguments("/kit/barKitsPerRound", "\"One\"", "runtime.kit-bar-kits-per-round")>]
+    [<Arguments("/taxi/requiresBooth", "false", "runtime.taxi-source")>]
+    [<Arguments("/damage/boothDamageUsesSoftSpotOrStubbornStreak",
+                "true",
+                "runtime.damage-booth-modifiers")>]
+    [<Arguments("/damage/placedCountersUseDamageModifiers",
+                "true",
+                "runtime.damage-placed-counter-modifiers")>]
+    [<Arguments("/selectionRules/upToCount", "\"Anything\"", "runtime.selection-up-to-count")>]
+    [<Arguments("/selectionRules/anyAmountOrNumber",
+                "\"AtLeastOne\"",
+                "runtime.selection-any-amount")>]
+    [<Arguments("/selectionRules/optional", "\"Required\"", "runtime.selection-optional")>]
+    [<Arguments("/effectDrawFromShortStack", "99", "runtime.effect-draw-short-stack")>]
+    [<Arguments("/requiredRoundDrawFromEmptyStack", "99", "runtime.required-round-draw")>]
+    [<Arguments("/checkup/roughStateOrder/0", "\"Singed\"", "runtime.checkup-order")>]
+    [<Arguments("/checkup/roughStateOrder/1", "\"DodgyPint\"", "runtime.checkup-order")>]
+    [<Arguments("/checkup/roughStateOrder/2", "\"Legless\"", "runtime.checkup-order")>]
+    [<Arguments("/checkup/roughStateOrder/3", "\"NoddedOff\"", "runtime.checkup-order")>]
+    [<Arguments("/checkup/otherEffectsOutsideWholeBlock",
+                "false",
+                "runtime.checkup-other-effects-boundary")>]
+    [<Arguments("/checkup/cannotInterleave", "false", "runtime.checkup-no-interleave")>]
+    [<Arguments("/checkup/sendHomeAfterBothChecks", "false", "runtime.checkup-send-home-order")>]
+    [<Arguments("/roughStates/0/state", "\"Singed\"", "runtime.rough-state-order")>]
+    [<Arguments("/roughStates/1/state", "\"DodgyPint\"", "runtime.rough-state-order")>]
+    [<Arguments("/roughStates/2/state", "\"Legless\"", "runtime.rough-state-order")>]
+    [<Arguments("/roughStates/3/state", "\"Muddled\"", "runtime.rough-state-order")>]
+    [<Arguments("/roughStates/4/state", "\"NoddedOff\"", "runtime.rough-state-order")>]
+    [<Arguments("/roughStates/0/ocheOnly", "false", "runtime.rough-state-location")>]
+    [<Arguments("/roughStates/1/ocheOnly", "false", "runtime.rough-state-location")>]
+    [<Arguments("/roughStates/2/ocheOnly", "false", "runtime.rough-state-location")>]
+    [<Arguments("/roughStates/3/ocheOnly", "false", "runtime.rough-state-location")>]
+    [<Arguments("/roughStates/4/ocheOnly", "false", "runtime.rough-state-location")>]
+    [<Arguments("/roughStates/0/checkupDamageCounters",
+                "-1",
+                "runtime.rough-state-checkup-damage-range")>]
+    [<Arguments("/roughStates/4/checkupDamageCounters",
+                "1",
+                "runtime.rough-state-muddled-checkup-damage")>]
+    [<Arguments("/roughStates/4/checkupBeerMat",
+                "true",
+                "runtime.rough-state-muddled-checkup-beer-mat")>]
+    [<Arguments("/roughStates/4/badgeSideRecovers",
+                "true",
+                "runtime.rough-state-muddled-badge-recovery")>]
+    [<Arguments("/roughStates/4/recoversAfterOwnersNextRound",
+                "true",
+                "runtime.rough-state-muddled-round-recovery")>]
+    [<Arguments("/roughStates/0/badgeSideRecovers",
+                "true",
+                "runtime.rough-state-badge-requires-beer-mat")>]
+    [<Arguments("/roughStates/0/recoversAfterOwnersNextRound",
+                "false",
+                "runtime.rough-state-round-recovery-value")>]
+    [<Arguments("/roughStates/0/beforeAttackBeerMat",
+                "false",
+                "runtime.rough-state-before-attack-value")>]
+    [<Arguments("/roughStates/0/beforeAttackBeerMat",
+                "true",
+                "runtime.rough-state-before-attack-pair")>]
+    [<Arguments("/roughStates/4/blankSideCancelsAndSelfDamageCounters",
+                "0",
+                "runtime.rough-state-self-damage-range")>]
+    [<Arguments("/roughStateCoexistence/rotatedGroup/0",
+                "\"Muddled\"",
+                "runtime.rough-state-rotated-group")>]
+    [<Arguments("/roughStateCoexistence/rotatedGroup/1",
+                "\"NoddedOff\"",
+                "runtime.rough-state-rotated-group")>]
+    [<Arguments("/roughStateCoexistence/rotatedGroup/2",
+                "\"Muddled\"",
+                "runtime.rough-state-rotated-group")>]
+    [<Arguments("/roughStateCoexistence/markerGroup/0",
+                "\"Legless\"",
+                "runtime.rough-state-marker-group")>]
+    [<Arguments("/roughStateCoexistence/markerGroup/1",
+                "\"Singed\"",
+                "runtime.rough-state-marker-group")>]
+    [<Arguments("/roughStateCoexistence/markersCoexistWithEachOtherAndRotatedGroup",
+                "false",
+                "runtime.rough-state-marker-coexistence")>]
+    [<Arguments("/sendHome/damageAtLeastStayingPower", "false", "runtime.send-home-threshold")>]
+    [<Arguments("/sendHome/chuckBlokeAndAttachedCards", "false", "runtime.send-home-chuck-pile")>]
+    [<Arguments("/sendHome/ownerPromotesFromBooth", "false", "runtime.send-home-replacement")>]
+    [<Arguments("/win/conditions/0", "\"Unknown\"", "runtime.win-conditions")>]
+    [<Arguments("/win/conditions/1", "\"Unknown\"", "runtime.win-conditions")>]
+    [<Arguments("/win/conditions/2", "\"Unknown\"", "runtime.win-conditions")>]
+    [<Arguments("/win/oneMethodEach", "\"Immediate\"", "runtime.win-one-method-each")>]
+    [<Arguments("/win/moreMethodsWins", "\"SuddenDeath\"", "runtime.win-more-methods")>]
+    [<Arguments("/win/repeatUntilWinner", "false", "runtime.win-repeat-sudden-death")>]
+    [<Arguments("/fossilKits/kitIds/0", "\"KIT-004\"", "runtime.fossil-kit-ids")>]
+    [<Arguments("/fossilKits/kitIds/1", "\"KIT-004\"", "runtime.fossil-kit-ids")>]
+    [<Arguments("/fossilKits/kitIds/2", "\"KIT-004\"", "runtime.fossil-kit-ids")>]
+    [<Arguments("/fossilKits/cannotTaxi", "false", "runtime.fossil-taxi")>]
+    [<Arguments("/opcodeInventory/0", "\"AdjustDamage\"", "runtime.opcode-inventory")>]
+    [<Arguments("/bigHitters/blokeIds/0", "\"BLK-004\"", "runtime.big-hitter-ids-unknown")>]
+    [<Arguments("/bigHitters/blokeIds/1", "\"BLK-004\"", "runtime.big-hitter-ids-unknown")>]
+    [<Arguments("/bigHitters/blokeIds/2", "\"BLK-004\"", "runtime.big-hitter-ids-unknown")>]
+    [<Arguments("/bigHitters/blokeIds/3", "\"BLK-004\"", "runtime.big-hitter-ids-unknown")>]
+    [<Arguments("/bigHitters/blokeIds/4", "\"BLK-004\"", "runtime.big-hitter-ids-unknown")>]
+    [<Arguments("/bigHitters/blokeIds/5", "\"BLK-004\"", "runtime.big-hitter-ids-unknown")>]
+    [<Arguments("/bigHitters/blokeIds/6", "\"BLK-004\"", "runtime.big-hitter-ids-unknown")>]
+    [<Arguments("/bigHitters/blokeIds/7", "\"BLK-004\"", "runtime.big-hitter-ids-unknown")>]
+    [<Arguments("/bigHitters/blokeIds/8", "\"BLK-004\"", "runtime.big-hitter-ids-unknown")>]
+    [<Arguments("/bigHitters/blokeIds/9", "\"BLK-004\"", "runtime.big-hitter-ids-unknown")>]
+    [<Arguments("/bigHitters/blokeIds/10", "\"BLK-004\"", "runtime.big-hitter-ids-unknown")>]
+    member _.``unsupported base rule mutations should have specific load diagnostics``
+        (pointer: string, jsonValue: string, expectedCode: string)
+        =
+        let result =
+            Authorities.withBaseRuleValue pointer jsonValue
+            |> BlokemonSetValidator.ValidateRuntime
+
+        result.Issues |> Seq.map _.Code |> should contain expectedCode
+
+    [<Test>]
+    member _.``Big Hitter inventory mutations should diagnose every structural failure``() =
+        let authority = Authorities.mechanics.Value
+
+        let expected =
+            [| "BLK-003"
+               "BLK-006"
+               "BLK-009"
+               "BLK-024"
+               "BLK-038"
+               "BLK-065"
+               "BLK-076"
+               "BLK-115"
+               "BLK-124"
+               "BLK-145"
+               "BLK-151" |]
+
+        let codes ids =
+            BlokemonSetValidator
+                .ValidateRuntime(
+                    { authority with
+                        BaseRules =
+                            { authority.BaseRules with
+                                BigHitters =
+                                    { authority.BaseRules.BigHitters with
+                                        BlokeIds = ids } } }
+                )
+                .Issues
+            |> Seq.map _.Code
+
+        codes (expected |> Array.skip 1)
+        |> should contain "runtime.big-hitter-ids-omission"
+
+        let duplicated = Array.copy expected
+        duplicated[1] <- duplicated[0]
+
+        codes duplicated |> should contain "runtime.big-hitter-ids-duplicate"
+
+        codes (Array.append expected [| "BLK-004" |])
+        |> should contain "runtime.big-hitter-ids-unknown"
+
+        let reordered = Array.copy expected
+        let first = reordered[0]
+        reordered[0] <- reordered[1]
+        reordered[1] <- first
+
+        codes reordered |> should contain "runtime.big-hitter-ids-unsupported-order"
 
     [<Test>]
     member _.``runtime validation should diagnose omitted resolution steps``() =

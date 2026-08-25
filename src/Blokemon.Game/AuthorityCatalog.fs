@@ -74,6 +74,9 @@ type internal AuthorityCatalog(manifest: BlokemonRuntimeManifest) =
     member _.IsFossil(id: MechanicalCardId) =
         manifest.BaseRules.FossilKits.KitIds.Contains(id.Value, StringComparer.Ordinal)
 
+    member _.RoughState(state: BlokemonRoughState) =
+        manifest.BaseRules.RoughStates.Single(fun rule -> rule.State = state)
+
     member _.Bloke(id: MechanicalCardId) = collectibles[id.Value]
 
     member _.Kit(id: MechanicalCardId) = kits[id.Value]
@@ -100,7 +103,15 @@ type internal AuthorityCatalog(manifest: BlokemonRuntimeManifest) =
 
     member this.BarChits(card: CardState) =
         if card.Kind = CardKind.Bloke then
-            this.Bloke(card.MechanicalId).BarChitsWhenSentHome
+            if
+                manifest.BaseRules.BigHitters.BlokeIds.Contains(
+                    card.MechanicalId.Value,
+                    StringComparer.Ordinal
+                )
+            then
+                manifest.BaseRules.SendHome.BigHitterBarChits
+            else
+                manifest.BaseRules.SendHome.NormalBarChits
         elif manifest.BaseRules.FossilKits.SentHomeAwardsOneBarChit then
             1
         else

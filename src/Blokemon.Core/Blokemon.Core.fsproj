@@ -4,8 +4,13 @@
     <AssemblyName>Blokemon.Core</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="SetDesign/BlokemonValidation.fs" />
     <Compile Include="SetDesign/BlokemonAttackSemantics.fs" />
     <Compile Include="SetDesign/BlokemonMechanicalDisplay.fs" />
+    <Compile Include="SetDesign/BlokemonSetContentValidator.fs" />
+    <Compile Include="SetDesign/BlokemonRoughRulesValidator.fs" />
+    <Compile Include="SetDesign/BlokemonRuleInventoryValidator.fs" />
+    <Compile Include="SetDesign/BlokemonBaseRulesValidator.fs" />
     <Compile Include="SetDesign/BlokemonSetValidator.fs" />
     <Compile Include="SetDesign/BlokemonSetJson.fs" />
     <Compile Include="SetDesign/BlokemonPackSampler.fs" />

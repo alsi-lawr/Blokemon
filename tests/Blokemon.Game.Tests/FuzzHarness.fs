@@ -911,7 +911,20 @@ module internal FuzzHarness =
         |> Set.ofSeq
 
     let private fossilIds = authority.BaseRules.FossilKits.KitIds |> Set.ofArray
-    let private bigHitterIds = authority.BaseRules.BigHitters.BlokeIds |> Set.ofArray
+
+    let private bigHitterIds =
+        set
+            [ "BLK-003"
+              "BLK-006"
+              "BLK-009"
+              "BLK-024"
+              "BLK-038"
+              "BLK-065"
+              "BLK-076"
+              "BLK-115"
+              "BLK-124"
+              "BLK-145"
+              "BLK-151" ]
 
     let private isInPlay (card: CardState) =
         card.Zone = CardZone.Oche || card.Zone = CardZone.Booth
@@ -1811,7 +1824,7 @@ module internal FuzzHarness =
 
     let private expectedBarChits (card: CardState) =
         if bigHitterIds.Contains card.MechanicalId.Value then
-            authority.BaseRules.BigHitters.SentHomeBarChits
+            authority.BaseRules.SendHome.BigHitterBarChits
         else
             authority.BaseRules.SendHome.NormalBarChits
 

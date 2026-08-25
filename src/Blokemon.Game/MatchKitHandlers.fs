@@ -135,12 +135,15 @@ module internal MatchKitHandlers =
                             | BlokemonKitKind.Local, _ ->
                                 let current =
                                     builder.Cards
-                                    |> Seq.filter (fun card -> card.Zone = CardZone.Local)
+                                    |> Seq.filter (fun card ->
+                                        card.Owner = command.Actor && card.Zone = CardZone.Local)
                                     |> Seq.toArray
                                     |> Array.tryExactlyOne
 
                                 match current with
-                                | Some card -> builder.MoveCard(card.Id, CardZone.EmptiesTray)
+                                | Some card when catalog.Manifest.BaseRules.Kit.NewLocalChucksOld ->
+                                    builder.MoveCard(card.Id, CardZone.EmptiesTray)
+                                | Some _ -> ()
                                 | None -> ()
 
                                 builder.MoveCard(kitCard.Id, CardZone.Local)

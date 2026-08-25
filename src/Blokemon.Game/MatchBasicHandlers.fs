@@ -273,6 +273,7 @@ module internal MatchBasicHandlers =
                 && fossil.Kind = CardKind.Kit
                 && catalog.IsFossil fossil.MechanicalId
                 && isInPlay fossil
+                && catalog.Manifest.BaseRules.FossilKits.MayChuckFromPlayDuringOwnersRound
                 ->
                 builder.ChuckBloke fossil.Id |> ignore
 

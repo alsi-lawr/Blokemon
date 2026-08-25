@@ -11,12 +11,6 @@ open Blokemon.Core.SetDesign
 // DeckValidator hands the rules a profile's lookup.
 module internal DeckRules =
 
-    [<Literal>]
-    let RequiredCardCount = 60
-
-    [<Literal>]
-    let MechanicalCopyLimit = 4
-
     let private byId (cards: 'card array) (identify: 'card -> string) =
         let index = Dictionary<string, 'card>(StringComparer.Ordinal)
 
@@ -30,8 +24,9 @@ module internal DeckRules =
         (cardId: CardId)
         (quantity: int64)
         (cardCopyLimit: int)
+        (mechanicalCopyLimit: int)
         =
-        let allowed = min cardCopyLimit MechanicalCopyLimit
+        let allowed = min cardCopyLimit mechanicalCopyLimit
 
         if quantity > int64 allowed then
             issues.Add(DeckValidationIssue.MechanicalCopyLimitExceeded(cardId, quantity, allowed))
@@ -62,8 +57,10 @@ module internal DeckRules =
 
         let cardCount = Seq.sum quantities.Values
 
-        if cardCount <> int64 RequiredCardCount then
-            issues.Add(DeckValidationIssue.WrongCardCount(cardCount, RequiredCardCount))
+        let rules = authority.BaseRules.Stack
+
+        if cardCount <> int64 rules.CardCount then
+            issues.Add(DeckValidationIssue.WrongCardCount(cardCount, rules.CardCount))
 
         let collectibles = byId authority.Collectibles (fun card -> card.Id)
         let kits = byId authority.Kits (fun card -> card.Id)
@@ -81,7 +78,14 @@ module internal DeckRules =
             with
             | (true, collectible), _, _ ->
                 includesRegular <- includesRegular || collectible.Rank = BlokemonRank.Regular
-                checkCopyLimit issues cardId quantity collectible.StackCopyLimit
+
+                checkCopyLimit
+                    issues
+                    cardId
+                    quantity
+                    collectible.StackCopyLimit
+                    rules.MechanicalCopyLimit
+
                 let owned = ownedQuantity cardId
 
                 if quantity > int64 owned then
@@ -92,13 +96,21 @@ module internal DeckRules =
                 if not kit.FreelyAvailable then
                     issues.Add(DeckValidationIssue.CatalogueCardNotFree cardId)
 
-                checkCopyLimit issues cardId quantity kit.StackCopyLimit
+                checkCopyLimit issues cardId quantity kit.StackCopyLimit rules.MechanicalCopyLimit
             | _, _, (true, vim) ->
                 if not vim.FreelyAvailable then
                     issues.Add(DeckValidationIssue.CatalogueCardNotFree cardId)
+
+                if not rules.BasicVimExempt then
+                    checkCopyLimit
+                        issues
+                        cardId
+                        quantity
+                        vim.StackCopyLimit
+                        rules.MechanicalCopyLimit
             | _ -> issues.Add(DeckValidationIssue.UnknownCard cardId)
 
-        if not includesRegular then
+        if rules.RequiresRegularBloke && not includesRegular then
             issues.Add DeckValidationIssue.RegularCollectibleRequired
 
         if issues.Count > 0 then

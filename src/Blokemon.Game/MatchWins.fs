@@ -83,7 +83,10 @@ module internal MatchWins =
         builder.Phase <- MatchPhase.Playing
         builder.Events.Add(PendingMatchEvent.forActor MatchEventKind.RoundStarted player)
 
-        if builder.CardsIn(player, CardZone.Stack) |> Seq.isEmpty then
+        if
+            catalog.Manifest.BaseRules.Round.RequiredOpeningDraw
+            && builder.CardsIn(player, CardZone.Stack) |> Seq.isEmpty
+        then
             resolveWins catalog builder (ValueSome player)
-        else
+        elif catalog.Manifest.BaseRules.Round.RequiredOpeningDraw then
             builder.Draw(player, 1, DrawReason.RequiredRoundDraw) |> ignore

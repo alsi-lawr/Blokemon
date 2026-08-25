@@ -6,6 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="MatchScenario.fs" />
+    <Compile Include="BaseRuleObligationTests.fs" />
+    <Compile Include="BaseRuleBehaviorTests.fs" />
     <Compile Include="EnergyProjectionTests.fs" />
     <Compile Include="OpeningTests.fs" />
     <Compile Include="CommandBoundaryTests.fs" />
@@ -58,6 +60,11 @@
     <Content
       Include="Fixtures/conformance.json"
       Link="Fixtures/conformance.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <Content
+      Include="Fixtures/base-rule-obligations.json"
+      Link="Fixtures/base-rule-obligations.json"
       CopyToOutputDirectory="PreserveNewest"
     />
     <Content

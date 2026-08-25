@@ -422,8 +422,6 @@ type BlokemonTaxiRules =
     { PerRound: int
       ChuckVimPerFareSymbol: bool
       RequiresBooth: bool
-      NoddedOffCannotTaxi: bool
-      LeglessCannotTaxi: bool
       MovingToBoothClearsRoughStatesAndAttackEffects: bool
       AttachedCardsAndDamageRemain: bool }
 
@@ -485,8 +483,7 @@ type BlokemonRoughStateCoexistenceRules =
     { RotatedGroup: BlokemonRoughState array
       LatestRotatedStateReplacesPrevious: bool
       MarkerGroup: BlokemonRoughState array
-      MarkersCoexistWithEachOtherAndRotatedGroup: bool
-      PromotionOrMoveToBoothClearsAll: bool }
+      MarkersCoexistWithEachOtherAndRotatedGroup: bool }
 
 type BlokemonSendHomeRules =
     { DamageAtLeastStayingPower: bool
@@ -510,9 +507,7 @@ type BlokemonFossilKitRules =
       MayChuckFromPlayDuringOwnersRound: bool
       SentHomeAwardsOneBarChit: bool }
 
-type BlokemonBigHitterRules =
-    { BlokeIds: string array
-      SentHomeBarChits: int }
+type BlokemonBigHitterRules = { BlokeIds: string array }
 
 type BlokemonBaseRules =
     { RulesVersion: string

@@ -35,11 +35,21 @@ type KnockoutResolutionTests() =
         |> Seq.toList
 
     [<Test>]
-    member _.``each listed big hitter should award two bar chits when attack damage sends it home``
-        ()
-        =
-        let bigHitters = MatchScenario.Authority.BaseRules.BigHitters.BlokeIds
-        bigHitters.Length |> should equal 11
+    member _.``each fixed Big Hitter identity should award two Bar Chits when sent home``() =
+        let bigHitters =
+            [| "BLK-003"
+               "BLK-006"
+               "BLK-009"
+               "BLK-024"
+               "BLK-038"
+               "BLK-065"
+               "BLK-076"
+               "BLK-115"
+               "BLK-124"
+               "BLK-145"
+               "BLK-151" |]
+
+        MatchScenario.Authority.BaseRules.BigHitters.BlokeIds |> should equal bigHitters
 
         for bigHitterId in bigHitters do
             let state =
@@ -49,13 +59,9 @@ type KnockoutResolutionTests() =
                     [ "VIM-BLAZED"; "VIM-BLAZED"; "VIM-SOBER" ]
                     29UL
 
-            let mechanical =
-                MatchScenario.Authority.Collectibles
-                |> Array.find (fun card -> card.Id = bigHitterId)
-
             let defender =
                 { state.Card(CardInstanceId "defender") with
-                    Damage = mechanical.StayingPower - 1 }
+                    Damage = Lethal }
 
             let barChits =
                 [ for index in 0..5 ->

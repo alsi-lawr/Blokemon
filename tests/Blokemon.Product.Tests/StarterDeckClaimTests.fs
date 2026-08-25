@@ -109,7 +109,7 @@ module private StarterDeckClaimFixtures =
             authority.Value.Collectibles
             |> Array.filter (fun card ->
                 card.Id <> profile.GuaranteedRegularCollectibleId.Value
-                && min card.StackCopyLimit DeckValidator.MechanicalCopyLimit >= 2)
+                && min card.StackCopyLimit authority.Value.BaseRules.Stack.MechanicalCopyLimit >= 2)
             |> Array.sortWith (fun left right -> String.CompareOrdinal(left.Id, right.Id))
             |> Array.head
 
@@ -120,7 +120,7 @@ module private StarterDeckClaimFixtures =
             authority.Value.Kits
             |> Array.filter (fun card ->
                 card.FreelyAvailable
-                && min card.StackCopyLimit DeckValidator.MechanicalCopyLimit >= 1)
+                && min card.StackCopyLimit authority.Value.BaseRules.Stack.MechanicalCopyLimit >= 1)
             |> Array.sortWith (fun left right -> String.CompareOrdinal(left.Id, right.Id))
             |> Array.head
 

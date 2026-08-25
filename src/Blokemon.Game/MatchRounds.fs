@@ -32,18 +32,23 @@ module internal MatchRounds =
                     if
                         current.RoughStates |> Seq.exists (fun entry -> entry.State = roughState)
                     then
-                        match roughState with
-                        | BlokemonRoughState.DodgyPint ->
-                            builder.PlaceDamage(player, current.Id, 10, DamageKind.RoughState)
-                        | BlokemonRoughState.Singed ->
-                            builder.PlaceDamage(player, current.Id, 20, DamageKind.RoughState)
+                        let rule = catalog.RoughState roughState
 
-                            if tossCheckup builder player current.Id then
+                        if rule.CheckupDamageCounters > 0 then
+                            builder.PlaceDamage(
+                                player,
+                                current.Id,
+                                rule.CheckupDamageCounters * 10,
+                                DamageKind.RoughState
+                            )
+
+                        if rule.CheckupBeerMat then
+                            if rule.BadgeSideRecovers && tossCheckup builder player current.Id then
                                 builder.ClearRoughStates(player, current.Id, ValueSome roughState)
-                        | BlokemonRoughState.NoddedOff ->
-                            if tossCheckup builder player current.Id then
-                                builder.ClearRoughStates(player, current.Id, ValueSome roughState)
-                        | BlokemonRoughState.Legless ->
+                        elif
+                            rule.RecoversAfterOwnersNextRound.HasValue
+                            && rule.RecoversAfterOwnersNextRound.Value
+                        then
                             let entry =
                                 current.RoughStates
                                 |> Seq.find (fun value -> value.State = roughState)
@@ -52,7 +57,6 @@ module internal MatchRounds =
                                 (builder.Player player).RoundsStarted > entry.AppliedAtOwnerRound
                             then
                                 builder.ClearRoughStates(player, current.Id, ValueSome roughState)
-                        | _ -> ()
 
         for effect in
             builder.Effects

@@ -13,6 +13,7 @@ module internal MatchKitRules =
     let private validateLocal
         (catalog: AuthorityCatalog)
         (builder: MatchBuilder)
+        (actor: PlayerId)
         (kit: BlokemonKit)
         =
         if builder.RoundUsage.LocalsPlayed >= catalog.Manifest.BaseRules.Kit.LocalsPerRound then
@@ -20,12 +21,20 @@ module internal MatchKitRules =
         else
             let current =
                 builder.Cards
-                |> Seq.filter (fun card -> card.Zone = CardZone.Local)
+                |> Seq.filter (fun card -> card.Owner = actor && card.Zone = CardZone.Local)
                 |> Seq.toArray
                 |> Array.tryExactlyOne
 
             match current with
-            | Some card when card.MechanicalId.Value = kit.Id ->
+            | Some card when
+                catalog.Manifest.BaseRules.Kit.SameMechanicalLocalCannotReplace
+                && card.MechanicalId.Value = kit.Id
+                ->
+                ValueSome CommandRejectionCode.RuleLimitReached
+            | Some _ when
+                catalog.Manifest.BaseRules.Kit.OneLocalInPlay
+                && not catalog.Manifest.BaseRules.Kit.NewLocalChucksOld
+                ->
                 ValueSome CommandRejectionCode.RuleLimitReached
             | _ -> ValueNone
 
@@ -44,11 +53,13 @@ module internal MatchKitRules =
                 ValueSome CommandRejectionCode.CardNotOwned
             | ValueSome target ->
                 if
-                    target.Attachments
-                    |> Seq.map builder.Card
-                    |> Seq.exists (fun card ->
-                        card.Kind = CardKind.Kit
-                        && (catalog.Kit card.MechanicalId).Kind = BlokemonKitKind.BarKit)
+                    (target.Attachments
+                     |> Seq.map builder.Card
+                     |> Seq.filter (fun card ->
+                         card.Kind = CardKind.Kit
+                         && (catalog.Kit card.MechanicalId).Kind = BlokemonKitKind.BarKit)
+                     |> Seq.length)
+                    >= catalog.Manifest.BaseRules.Kit.BarKitsPerBloke
                 then
                     ValueSome CommandRejectionCode.RuleLimitReached
                 else
@@ -78,11 +89,13 @@ module internal MatchKitRules =
             | BlokemonKitKind.Mate ->
                 if
                     builder.RoundUsage.MatesPlayed >= catalog.Manifest.BaseRules.Kit.MatesPerRound
-                    || (actor = builder.OpeningPlayer && (builder.Player actor).RoundsStarted = 1)
+                    || (not catalog.Manifest.BaseRules.Opening.OpeningParticipantMayPlayMate
+                        && actor = builder.OpeningPlayer
+                        && (builder.Player actor).RoundsStarted = 1)
                 then
                     ValueSome CommandRejectionCode.RuleLimitReached
                 else
                     ValueNone
-            | BlokemonKitKind.Local -> validateLocal catalog builder kit
+            | BlokemonKitKind.Local -> validateLocal catalog builder actor kit
             | BlokemonKitKind.BarKit -> validateBarKit catalog builder actor targetId
             | other -> failwithf "Unhandled kit kind %A." other

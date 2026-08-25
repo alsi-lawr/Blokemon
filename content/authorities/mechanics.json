@@ -1,5 +1,5 @@
 {
-  "manifestVersion": "sv151-candidate.18",
+  "manifestVersion": "sv151-candidate.19",
   "presentationStatus": "Accepted",
   "approvedMechanicalDisplayMap": [
     {
@@ -19506,7 +19506,7 @@
     }
   },
   "baseRules": {
-    "rulesVersion": "blokemon-base-rules-1.0.0-candidate.8",
+    "rulesVersion": "blokemon-base-rules-1.0.0-candidate.9",
     "stack": {
       "cardCount": 60,
       "mechanicalCopyLimit": 4,
@@ -19558,8 +19558,6 @@
       "perRound": 1,
       "chuckVimPerFareSymbol": true,
       "requiresBooth": true,
-      "noddedOffCannotTaxi": true,
-      "leglessCannotTaxi": true,
       "movingToBoothClearsRoughStatesAndAttackEffects": true,
       "attachedCardsAndDamageRemain": true
     },
@@ -19679,8 +19677,7 @@
         "Singed",
         "DodgyPint"
       ],
-      "markersCoexistWithEachOtherAndRotatedGroup": true,
-      "promotionOrMoveToBoothClearsAll": true
+      "markersCoexistWithEachOtherAndRotatedGroup": true
     },
     "sendHome": {
       "damageAtLeastStayingPower": true,
@@ -19725,8 +19722,7 @@
         "BLK-124",
         "BLK-145",
         "BLK-151"
-      ],
-      "sentHomeBarChits": 2
+      ]
     },
     "opcodeInventory": [
       "DealPrintedDamage",

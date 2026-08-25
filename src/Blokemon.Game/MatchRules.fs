@@ -258,7 +258,14 @@ module internal MatchRules =
 
         for group in deck.Cards |> Seq.filter catalog.Contains |> Seq.groupBy id do
             let card, copies = group
-            let limit = catalog.CopyLimit card
+            let stackRules = catalog.Manifest.BaseRules.Stack
+
+            let limit =
+                if stackRules.BasicVimExempt && catalog.Kind card = CardKind.Vim then
+                    Int32.MaxValue
+                else
+                    min (catalog.CopyLimit card) stackRules.MechanicalCopyLimit
+
             let count = Seq.length copies
 
             if count > limit then
@@ -271,7 +278,10 @@ module internal MatchRules =
                         limit
                 )
 
-        if not (deck.Cards |> Seq.filter catalog.Contains |> Seq.exists catalog.IsRegular) then
+        if
+            catalog.Manifest.BaseRules.Stack.RequiresRegularBloke
+            && not (deck.Cards |> Seq.filter catalog.Contains |> Seq.exists catalog.IsRegular)
+        then
             issues.Add(issue DeckIssueCode.MissingRegularBloke (ValueSome deck.Owner) ValueNone 0 1)
 
     let validateStart
