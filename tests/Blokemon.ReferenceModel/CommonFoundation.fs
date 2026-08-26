@@ -187,30 +187,42 @@ module ReferenceCommonFoundation =
                 (ReferenceState.player next source.Owner).RoundsStarted = 1
             | ReferenceCondition.SelfHasVim -> source.Attachments.Length <> 0
             | ReferenceCondition.SelfIsAtOche -> source.Zone = "Oche"
+            | ReferenceCondition.SelfIsInBooth -> source.Zone = "Booth"
             | unsupported ->
                 invalidOp
                     $"The reference continuous support prerequisite cannot evaluate {unsupported}."
 
         let targets (source: CanonicalCard) (instruction: ReferenceInstruction) =
-            if instruction.Targets.Length = 0 then
+            let resolved =
+                if instruction.Targets.Length = 0 then
+                    [| source |]
+                else
+                    instruction.Targets
+                    |> Array.collect (fun location ->
+                        match location with
+                        | ReferenceLocation.Self -> [| source |]
+                        | ReferenceLocation.OtherOche ->
+                            ReferenceState.cardsIn
+                                next
+                                (ReferenceState.otherPlayer next source.Owner)
+                                "Oche"
+                        | ReferenceLocation.OwnBlokesAll ->
+                            next.Cards
+                            |> Array.filter (fun card ->
+                                card.Owner = source.Owner && card.Kind = "Bloke" && isInPlay card)
+                        | unsupported ->
+                            invalidOp
+                                $"The reference continuous support prerequisite cannot target {unsupported}.")
+                |> Array.filter isInPlay
+
+            if resolved.Length <> 0 then
+                resolved
+            elif not (String.IsNullOrEmpty source.AttachedTo) then
+                [| ReferenceState.card next source.AttachedTo |]
+            elif isInPlay source then
                 [| source |]
             else
-                instruction.Targets
-                |> Array.collect (fun location ->
-                    match location with
-                    | ReferenceLocation.Self -> [| source |]
-                    | ReferenceLocation.OtherOche ->
-                        ReferenceState.cardsIn
-                            next
-                            (ReferenceState.otherPlayer next source.Owner)
-                            "Oche"
-                    | ReferenceLocation.OwnBlokesAll ->
-                        next.Cards
-                        |> Array.filter (fun card ->
-                            card.Owner = source.Owner && card.Kind = "Bloke" && isInPlay card)
-                    | unsupported ->
-                        invalidOp
-                            $"The reference continuous support prerequisite cannot target {unsupported}.")
+                [||]
 
         let rec execute source effect (instructions: ReferenceInstruction array) =
             for instruction in instructions do
@@ -251,6 +263,32 @@ module ReferenceCommonFoundation =
                                 || existing.SourceCard <> source.Id) }
 
                 execute source trick.MechanicalId trick.Program
+
+        let rec containsOptional (instructions: ReferenceInstruction array) =
+            instructions
+            |> Array.exists (fun instruction ->
+                (instruction.Predicates
+                 |> Array.exists (fun predicate ->
+                     predicate.Condition = ReferenceCondition.Optional))
+                || containsOptional instruction.Then
+                || containsOptional instruction.Otherwise)
+
+        for source in
+            state.Cards
+            |> Array.filter (fun card -> card.Kind = "Kit" && card.Zone = "Attached")
+            |> Array.sortBy _.Id do
+            for rule in
+                authority.Cards[source.MechanicalId].HouseRules
+                |> Array.filter (fun rule -> not (containsOptional rule.Program)) do
+                next <-
+                    { next with
+                        Effects =
+                            next.Effects
+                            |> Array.filter (fun existing ->
+                                existing.SourceEffect <> rule.MechanicalId
+                                || existing.SourceCard <> source.Id) }
+
+                execute source rule.MechanicalId rule.Program
 
         next, events.ToArray()
 
@@ -866,12 +904,13 @@ module ReferenceCommonFoundation =
         else
             authority.BaseRules.Fossil.PlayAsRegularLocalStayingPower
 
-    let internal resolveKnockouts
+    let internal resolveKnockoutsWithForced
         (authority: ReferenceAuthority)
         (mutation: ReferenceMutation)
         (random: ReferenceRandom)
         (attackingCard: string)
         (attackDamageTargets: string array)
+        (forcedSendHome: string array)
         (extraBarChits: int)
         (state: CanonicalState)
         =
@@ -882,8 +921,9 @@ module ReferenceCommonFoundation =
             state.Cards
             |> Array.filter (fun card ->
                 isInPlay card
-                && authority.BaseRules.SendHome.DamageAtLeastStayingPower
-                && card.Damage >= stayingPower authority card)
+                && (Array.contains card.Id forcedSendHome
+                    || (authority.BaseRules.SendHome.DamageAtLeastStayingPower
+                        && card.Damage >= stayingPower authority card)))
             |> Array.sortBy (fun card -> card.Owner, card.Id)
             |> fun cards ->
                 if mutation = ReverseKnockoutOrder then
@@ -946,6 +986,25 @@ module ReferenceCommonFoundation =
         let won, winEvents = resolveWins authority mutation random "" next
         events.AddRange winEvents
         { won with Random = random.Snapshot }, events.ToArray()
+
+    let internal resolveKnockouts
+        (authority: ReferenceAuthority)
+        (mutation: ReferenceMutation)
+        (random: ReferenceRandom)
+        (attackingCard: string)
+        (attackDamageTargets: string array)
+        (extraBarChits: int)
+        (state: CanonicalState)
+        =
+        resolveKnockoutsWithForced
+            authority
+            mutation
+            random
+            attackingCard
+            attackDamageTargets
+            [||]
+            extraBarChits
+            state
 
     let private expireEffects (completedRound: int) (state: CanonicalState) =
         { state with

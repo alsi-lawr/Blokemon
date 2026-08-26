@@ -340,3 +340,11 @@ module ProductionProjection =
         |> Seq.map legalAction
         |> Seq.filter (fun action -> supported.Contains action.Kind)
         |> Seq.toArray
+
+    let branchingLegalActions values =
+        let supported = Set [ "Attack"; "ResolveEffectChoice" ]
+
+        values
+        |> Seq.map legalAction
+        |> Seq.filter (fun action -> supported.Contains action.Kind)
+        |> Seq.toArray

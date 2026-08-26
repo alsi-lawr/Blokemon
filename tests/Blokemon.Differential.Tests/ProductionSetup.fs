@@ -332,6 +332,7 @@ module ProductionSetup =
         let defenderMechanicalId =
             match setup.Route with
             | "ignore-modifier" when parameters.Length >= 3 -> parameters[2]
+            | "day-two-forced-blank" -> "BLK-001"
             | _ -> knownBlokeId manifest parameters[1..] |> Option.defaultValue "BLK-003"
 
         let mutable cards =
@@ -540,6 +541,289 @@ module ProductionSetup =
             ensureOtherBooth "other-reserve"
         | "trivial-soft-spot" -> ensureOtherBooth "other-reserve"
         | "trivial-swap" -> ensureOtherBooth "a-other-booth"
+        | "dynamic-adjust" ->
+            let units = Int32.Parse parameters[6]
+
+            match parameters[5] with
+            | "OwnBoothCount" ->
+                for index in 0 .. units - 1 do
+                    ensureOwnBooth $"own-count-{index}"
+            | "OtherBoothCount" ->
+                for index in 0 .. units - 1 do
+                    ensureOtherBooth $"other-count-{index}"
+            | "OtherAttachedVim" ->
+                for index in 0 .. units - 1 do
+                    let id = CardInstanceId $"other-count-vim-{index}"
+
+                    add
+                        "second"
+                        id.Value
+                        (basicVimFor manifest BlokemonMechanicalType.Water)
+                        CardZone.Mitt
+                        -1
+
+                    cards <- attachSetupCard id (CardInstanceId "defender") cards
+            | "SelfDamageCounters" ->
+                cards <-
+                    updateSetupCard
+                        (CardInstanceId "attacker")
+                        (fun value -> { value with Damage = units * 10 })
+                        cards
+            | "OtherOcheDamageCounters" ->
+                cards <-
+                    updateSetupCard
+                        (CardInstanceId "defender")
+                        (fun value -> { value with Damage = units * 10 })
+                        cards
+            | "OwnAttachedVim" -> ()
+            | unknown -> invalidOp $"Unknown production dynamic source {unknown}."
+
+            ensureOtherBooth "other-reserve"
+        | "coin-branch" ->
+            add
+                "second"
+                "other-vim-0"
+                (basicVimFor manifest BlokemonMechanicalType.Water)
+                CardZone.Mitt
+                -1
+
+            cards <-
+                attachSetupCard (CardInstanceId "other-vim-0") (CardInstanceId "defender") cards
+
+            ensureOtherBooth "other-reserve"
+        | "conditional-adjust" ->
+            if parameters[6] = "true" then
+                match parameters[5] with
+                | "SelfHasDamage" ->
+                    cards <-
+                        updateSetupCard
+                            (CardInstanceId "attacker")
+                            (fun value -> { value with Damage = 10 })
+                            cards
+                | "OtherOcheHasDamage" ->
+                    cards <-
+                        updateSetupCard
+                            (CardInstanceId "defender")
+                            (fun value -> { value with Damage = 10 })
+                            cards
+                | "NamedBlokeInBooth" ->
+                    add "first" "named-condition" parameters[7] CardZone.Booth -1
+                | _ -> ()
+            elif parameters[5] = "MittCountsAreEqual" || parameters[5] = "OwnMittIsEmpty" then
+                add
+                    "first"
+                    "own-mitt-condition"
+                    (basicVimFor manifest BlokemonMechanicalType.Grass)
+                    CardZone.Mitt
+                    -1
+
+            if parameters[5] <> "OtherBoothExists" || parameters[6] = "true" then
+                ensureOtherBooth "other-reserve"
+        | "conditional-demote" ->
+            add "second" "lower-stage" parameters[3] CardZone.Attached -1
+
+            cards <-
+                cards
+                |> updateSetupCard (CardInstanceId "lower-stage") (fun value ->
+                    { value with
+                        AttachedTo = ValueSome(CardInstanceId "defender") })
+                |> updateSetupCard (CardInstanceId "defender") (fun value ->
+                    { value with
+                        UnderlyingCards = ImmutableArray.Create(CardInstanceId "lower-stage")
+                        LastPromotedRound = 2 })
+        | "conditional-extra-bar" ->
+            cards <-
+                updateSetupCard
+                    (CardInstanceId "defender")
+                    (fun value -> { value with Damage = 20 })
+                    cards
+        | "conditional-rough" ->
+            if parameters[3] = "true" then
+                let id, rough =
+                    if parameters[2] = "self" then
+                        CardInstanceId "attacker", BlokemonRoughState.Muddled
+                    else
+                        CardInstanceId "defender", BlokemonRoughState.NoddedOff
+
+                cards <-
+                    updateSetupCard
+                        id
+                        (fun value ->
+                            { value with
+                                RoughStates =
+                                    ImmutableArray.Create(
+                                        { State = rough
+                                          AppliedAtOwnerRound = 1 }
+                                        : RoughStateEntry
+                                    ) })
+                        cards
+
+            ensureOtherBooth "other-reserve"
+        | "multi-toss-damage"
+        | "repeat-damage"
+        | "coin-effects"
+        | "shirt-off-badge"
+        | "shirt-off-blank"
+        | "still-coming-up-promoted"
+        | "still-coming-up-not-promoted" -> ensureOtherBooth "other-reserve"
+        | "repeat-draw" ->
+            add
+                "first"
+                "effect-draw-1"
+                (basicVimFor manifest BlokemonMechanicalType.Grass)
+                CardZone.Stack
+                1
+
+            ensureOtherBooth "other-reserve"
+        | "coin-swap" -> ensureOtherBooth "a-other-booth"
+        | "full-booth-search" ->
+            for index in 0..4 do
+                add "first" $"full-booth-{index}" "BLK-004" CardZone.Booth index
+
+            add "first" "search-card" parameters[2] CardZone.Stack 0
+        | "booth-search" ->
+            for index in 1 .. Int32.Parse parameters[4] do
+                add "first" $"candidate-{index}" parameters[2] CardZone.Stack index
+        | "coin-search" ->
+            for index in 1 .. Int32.Parse parameters[3] do
+                add
+                    "first"
+                    $"candidate-{index}"
+                    (basicVimFor manifest BlokemonMechanicalType.Water)
+                    CardZone.Stack
+                    index
+
+            ensureOtherBooth "other-reserve"
+        | "optional-zero"
+        | "optional-decline" ->
+            let setupName = parameters[2]
+            let candidate = parameters[3]
+
+            if candidate <> "none" && candidate <> "first-draw" then
+                let mechanicalId, cardZone =
+                    match setupName with
+                    | "recover-water" ->
+                        basicVimFor manifest BlokemonMechanicalType.Water, CardZone.EmptiesTray
+                    | "recover-bloke" -> "BLK-001", CardZone.EmptiesTray
+                    | "recover-barbit" -> "KIT-001", CardZone.EmptiesTray
+                    | "recover-fire" ->
+                        basicVimFor manifest BlokemonMechanicalType.Fire, CardZone.EmptiesTray
+                    | "mitt-water" ->
+                        basicVimFor manifest BlokemonMechanicalType.Water, CardZone.Mitt
+                    | "stack-bloke" -> "BLK-001", CardZone.Stack
+                    | unknown -> invalidOp $"Unknown production optional setup {unknown}."
+
+                add
+                    "first"
+                    candidate
+                    mechanicalId
+                    cardZone
+                    (if cardZone = CardZone.Stack then 1 else -1)
+
+            ensureOtherBooth "other-reserve"
+        | "optional-max" ->
+            let setupName = parameters[2]
+            let count = Int32.Parse parameters[3]
+            let firstIndex = if input.ReviewedProgram.OwnerId = "BLK-022" then 1 else 0
+
+            if input.ReviewedProgram.OwnerId = "BLK-022" then
+                add "first" "first-draw" "BLK-001" CardZone.Stack 0
+
+            let mechanicalId index =
+                match setupName with
+                | "recover-water"
+                | "mitt-water" -> basicVimFor manifest BlokemonMechanicalType.Water
+                | "recover-bloke"
+                | "stack-bloke" -> "BLK-001"
+                | "stack-distinct-bloke" -> [| "BLK-001"; "BLK-004"; "BLK-007" |][index - 1]
+                | "recover-barbit" -> "KIT-001"
+                | "recover-fire" -> basicVimFor manifest BlokemonMechanicalType.Fire
+                | unknown -> invalidOp $"Unknown production optional maximum setup {unknown}."
+
+            let cardZone =
+                match setupName with
+                | "recover-water"
+                | "recover-bloke"
+                | "recover-barbit"
+                | "recover-fire" -> CardZone.EmptiesTray
+                | "mitt-water" -> CardZone.Mitt
+                | "stack-bloke"
+                | "stack-distinct-bloke" -> CardZone.Stack
+                | unknown -> invalidOp $"Unknown production optional maximum zone {unknown}."
+
+            for index in 1 .. count - firstIndex do
+                add
+                    "first"
+                    $"candidate-{index}"
+                    (mechanicalId index)
+                    cardZone
+                    (if cardZone = CardZone.Stack then index else -1)
+
+            ensureOtherBooth "other-reserve"
+        | "optional-invalid-duplicate" ->
+            add "first" "candidate-1" "BLK-001" CardZone.Stack 1
+            add "first" "candidate-2" "BLK-010" CardZone.Stack 2
+            ensureOtherBooth "other-reserve"
+        | "optional-bar-kit" ->
+            add "first" "bar-kit" "KIT-004" CardZone.Attached -1
+            add "first" "own-booth" "BLK-003" CardZone.Booth -1
+            add "first" "bar-kit-2" "KIT-004" CardZone.Attached -1
+
+            cards <-
+                cards
+                |> updateSetupCard (CardInstanceId "bar-kit") (fun value ->
+                    { value with
+                        AttachedTo = ValueSome(CardInstanceId "attacker") })
+                |> updateSetupCard (CardInstanceId "attacker") (fun value ->
+                    { value with
+                        Attachments = value.Attachments.Add(CardInstanceId "bar-kit") })
+                |> updateSetupCard (CardInstanceId "bar-kit-2") (fun value ->
+                    { value with
+                        AttachedTo = ValueSome(CardInstanceId "own-booth") })
+                |> updateSetupCard (CardInstanceId "own-booth") (fun value ->
+                    { value with
+                        Attachments = ImmutableArray.Create(CardInstanceId "bar-kit-2") })
+
+            ensureOtherBooth "other-reserve"
+        | "search-all" ->
+            add "first" parameters[3] parameters[2] CardZone.Stack 1
+            ensureOtherBooth "other-reserve"
+        | "top-qualifying" ->
+            for index in 1..4 do
+                let mechanicalId =
+                    if parameters |> Array.contains "zero" then
+                        basicVimFor manifest BlokemonMechanicalType.Grass
+                    elif index = 1 then
+                        "BLK-001"
+                    else
+                        basicVimFor manifest BlokemonMechanicalType.Grass
+
+                add "first" $"top-{index}" mechanicalId CardZone.Stack index
+
+            ensureOtherBooth "other-reserve"
+        | "gone-smoke" ->
+            ensureOwnBooth "own-booth"
+            ensureOtherBooth "other-booth"
+        | "day-two-forced-blank" ->
+            add
+                "second"
+                "other-vim-0"
+                (basicVimFor manifest BlokemonMechanicalType.Grass)
+                CardZone.Mitt
+                -1
+
+            add
+                "second"
+                "other-vim-1"
+                (basicVimFor manifest BlokemonMechanicalType.Water)
+                CardZone.Mitt
+                -1
+
+            cards <-
+                attachSetupCard (CardInstanceId "other-vim-0") (CardInstanceId "defender") cards
+
+            cards <-
+                attachSetupCard (CardInstanceId "other-vim-1") (CardInstanceId "defender") cards
         | unknown -> invalidOp $"Unowned production deterministic route {unknown}."
 
         for explicitCard in setup.Cards do
@@ -593,6 +877,61 @@ module ProductionSetup =
             |> Seq.map (fun value -> EffectId value.MechanicalId)
             |> ImmutableArray.CreateRange
 
+        let players =
+            if
+                setup.Route = "conditional-adjust"
+                && parameters[5] = "OwnBarChitCountIsGreater"
+                && parameters[6] = "true"
+            then
+                players
+                |> Seq.map (fun value ->
+                    if value.Id = PlayerId "second" then
+                        { value with BarChitsRemaining = 5 }
+                    else
+                        value)
+                |> ImmutableArray.CreateRange
+            else
+                players
+
+        if
+            setup.Route = "still-coming-up-promoted"
+            || setup.Route = "still-coming-up-not-promoted"
+        then
+            add "first" "own-lower-stage" "BLK-079" CardZone.Attached -1
+
+            cards <-
+                cards
+                |> updateSetupCard (CardInstanceId "own-lower-stage") (fun value ->
+                    { value with
+                        AttachedTo = ValueSome(CardInstanceId "attacker") })
+                |> updateSetupCard (CardInstanceId "attacker") (fun value ->
+                    { value with
+                        UnderlyingCards = ImmutableArray.Create(CardInstanceId "own-lower-stage")
+                        LastPromotedRound =
+                            if setup.Route = "still-coming-up-promoted" then 3 else 2 })
+
+        let roundUsage: RoundUsage =
+            if
+                setup.Route = "conditional-adjust"
+                && parameters[5] = "MatePlayedThisRound"
+                && parameters[6] = "true"
+            then
+                { Player = PlayerId "first"
+                  VimAttachments = 0
+                  MatesPlayed = 1
+                  LocalsPlayed = 0
+                  TaxisUsed = 0
+                  EffectsUsed = usedActivatedEffects
+                  KitsPlayed = ImmutableArray.Create(MechanicalCardId parameters[7]) }
+            else
+                { Player = PlayerId "first"
+                  VimAttachments = 0
+                  MatesPlayed = 0
+                  LocalsPlayed = 0
+                  TaxisUsed = 0
+                  EffectsUsed = usedActivatedEffects
+                  KitsPlayed = ImmutableArray<_>.Empty }
+
         { Id = MatchId $"obligation:{setup.Id}"
           AuthorityVersion = manifest.ManifestVersion
           Seed = setup.Seed
@@ -607,14 +946,7 @@ module ProductionSetup =
           Cards = cards |> Array.sortBy _.Id.Value |> ImmutableArray.CreateRange
           Effects = ImmutableArray<_>.Empty
           ProcessedCommands = ImmutableArray<_>.Empty
-          RoundUsage =
-            { Player = PlayerId "first"
-              VimAttachments = 0
-              MatesPlayed = 0
-              LocalsPlayed = 0
-              TaxisUsed = 0
-              EffectsUsed = usedActivatedEffects
-              KitsPlayed = ImmutableArray<_>.Empty }
+          RoundUsage = roundUsage
           PendingEffect = ValueNone
           PendingKnockout = ValueNone
           PendingBarChits = ImmutableArray<_>.Empty
@@ -663,6 +995,41 @@ module ProductionSetup =
             |> ImmutableArray.CreateRange
 
         { input.Command with Choices = choices }
+
+    let resolutionCommand (selected: CanonicalAction) =
+        { Id = CommandId selected.CommandId
+          MatchId = MatchId selected.MatchId
+          Actor = PlayerId selected.Actor
+          ExpectedRevision = MatchRevision selected.ExpectedRevision
+          Choices = selected.Choices |> Seq.map canonicalChoice |> ImmutableArray.CreateRange
+          Action = MatchAction.ResolveEffectChoice }
+
+    let structuredResolutionCommand (selected: CanonicalAction) (input: ProductionActionInput) =
+        let requirements = selected.Requirements |> Array.map _.Id |> Set.ofArray
+
+        let choices =
+            input.Choices
+            |> Array.filter (fun value ->
+                let id =
+                    match value.Choice with
+                    | EffectChoice.Optional(id, _)
+                    | EffectChoice.Amount(id, _)
+                    | EffectChoice.Cards(id, _)
+                    | EffectChoice.MechanicalType(id, _)
+                    | EffectChoice.Attack(id, _)
+                    | EffectChoice.Distribution(id, _)
+                    | EffectChoice.Attachments(id, _) -> id.Value
+
+                requirements.Contains id)
+            |> Seq.map _.Choice
+            |> ImmutableArray.CreateRange
+
+        { Id = CommandId selected.CommandId
+          MatchId = MatchId selected.MatchId
+          Actor = PlayerId selected.Actor
+          ExpectedRevision = MatchRevision selected.ExpectedRevision
+          Choices = choices
+          Action = MatchAction.ResolveEffectChoice }
 
     let private ids (text: string) =
         text.Split(',', StringSplitOptions.RemoveEmptyEntries)

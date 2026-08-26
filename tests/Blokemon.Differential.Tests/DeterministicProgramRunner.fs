@@ -34,7 +34,7 @@ module DeterministicProgramRunner =
               ProductionFact = fact productionFact
               SelectionEvidence = [||] }
 
-    let private stateDifference (reference: CanonicalState) (production: CanonicalState) =
+    let stateDifference (reference: CanonicalState) (production: CanonicalState) =
         let differingFields pairs =
             pairs |> Array.choose (fun (name, same) -> if same then None else Some name)
 

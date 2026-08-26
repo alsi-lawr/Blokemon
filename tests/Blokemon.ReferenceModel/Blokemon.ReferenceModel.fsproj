@@ -11,6 +11,7 @@
     <Compile Include="ReferenceEngine.fs" />
     <Compile Include="CommonFoundation.fs" />
     <Compile Include="DeterministicPrograms.fs" />
+    <Compile Include="BranchingPrograms.fs" />
     <Compile Include="Replay.fs" />
     <Compile Include="DependencyEvidence.fs" />
   </ItemGroup>

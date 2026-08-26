@@ -10,8 +10,10 @@
     <Compile Include="ProductionProjection.fs" />
     <Compile Include="DifferentialRunner.fs" />
     <Compile Include="DeterministicProgramRunner.fs" />
+    <Compile Include="BranchingProgramRunner.fs" />
     <Compile Include="DifferentialTests.fs" />
     <Compile Include="DeterministicProgramTests.fs" />
+    <Compile Include="BranchingProgramTests.fs" />
     <Compile Include="CommonFoundationTests.fs" />
   </ItemGroup>
   <ItemGroup>
