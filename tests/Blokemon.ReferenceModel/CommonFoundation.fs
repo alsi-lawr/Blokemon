@@ -120,7 +120,7 @@ module ReferenceCommonFoundation =
             && hasExtraKnockoutBarChitSibling
         | _ -> false
 
-    let private refreshContinuousEffects (authority: ReferenceAuthority) (state: CanonicalState) =
+    let internal refreshContinuousEffects (authority: ReferenceAuthority) (state: CanonicalState) =
         let mutable next = state
         let events = ResizeArray<CanonicalEvent>()
 
@@ -129,31 +129,24 @@ module ReferenceCommonFoundation =
             (effect: string)
             (kind: string)
             (instruction: ReferenceInstruction)
+            (target: CanonicalCard)
             =
-            if
-                instruction.ValueSource <> ReferenceValueSource.Fixed
-                || instruction.Targets <> [| ReferenceLocation.Self |]
-                || instruction.Selection <> ReferenceSelection.All
-                || instruction.TargetCount <> 1
-                || instruction.Predicates.Length <> 0
-                || instruction.Then.Length <> 0
-                || instruction.Otherwise.Length <> 0
-                || not (hasNoInstructionMetadata instruction)
-            then
-                invalidOp $"The reference continuous support prerequisite cannot execute {effect}."
-
             let registered =
                 { SourceEffect = effect
                   SourceCard = source.Id
                   Owner = source.Owner
-                  TargetCard = source.Id
+                  TargetCard = target.Id
                   Kind = kind
                   Amount = instruction.Amount
-                  MechanicalTypes = [||]
-                  RoughStates = [||]
-                  RelatedCards = [||]
-                  Conditions = [||]
-                  Duration = "WhileSourceInPlay"
+                  MechanicalTypes = instruction.MechanicalTypes |> Array.map string
+                  RoughStates = instruction.RoughStates |> Array.map string
+                  RelatedCards = instruction.RelatedIds
+                  Conditions = instruction.Predicates |> Array.map (_.Condition >> string)
+                  Duration =
+                    if kind = "ContinuousPartyTrick" || kind = "ModifySoftSpot" then
+                        "WhileSourceInPlay"
+                    else
+                        "UntilEndOfOpponentsNextRound"
                   AppliesFromRound = next.RoundNumber
                   ExpiresAfterRound = next.RoundNumber + 2 }
 
@@ -165,9 +158,85 @@ module ReferenceCommonFoundation =
                 { ReferenceEvents.create "EffectRegistered" with
                     Actor = source.Owner
                     SourceCard = source.Id
-                    TargetCards = [| source.Id |]
+                    TargetCards = [| target.Id |]
                     Effect = effect
                     Amount = instruction.Amount }
+
+        let predicate (source: CanonicalCard) (value: ReferencePredicate) =
+            match value.Condition with
+            | ReferenceCondition.AttachedVimCountsAreEqual ->
+                let own = source.Attachments.Length
+
+                let other =
+                    ReferenceState.cardsIn
+                        next
+                        (ReferenceState.otherPlayer next source.Owner)
+                        "Oche"
+                    |> Array.tryHead
+                    |> Option.map _.Attachments.Length
+                    |> Option.defaultValue 0
+
+                own = other
+            | ReferenceCondition.NamedBlokeInPlay ->
+                value.RelatedId
+                |> ValueOption.exists (fun id ->
+                    next.Cards
+                    |> Array.exists (fun card -> card.MechanicalId = id && isInPlay card))
+            | ReferenceCondition.OpenedSecond -> next.OpeningPlayer <> source.Owner
+            | ReferenceCondition.OwnersFirstRound ->
+                (ReferenceState.player next source.Owner).RoundsStarted = 1
+            | ReferenceCondition.SelfHasVim -> source.Attachments.Length <> 0
+            | ReferenceCondition.SelfIsAtOche -> source.Zone = "Oche"
+            | unsupported ->
+                invalidOp
+                    $"The reference continuous support prerequisite cannot evaluate {unsupported}."
+
+        let targets (source: CanonicalCard) (instruction: ReferenceInstruction) =
+            if instruction.Targets.Length = 0 then
+                [| source |]
+            else
+                instruction.Targets
+                |> Array.collect (fun location ->
+                    match location with
+                    | ReferenceLocation.Self -> [| source |]
+                    | ReferenceLocation.OtherOche ->
+                        ReferenceState.cardsIn
+                            next
+                            (ReferenceState.otherPlayer next source.Owner)
+                            "Oche"
+                    | ReferenceLocation.OwnBlokesAll ->
+                        next.Cards
+                        |> Array.filter (fun card ->
+                            card.Owner = source.Owner && card.Kind = "Bloke" && isInPlay card)
+                    | unsupported ->
+                        invalidOp
+                            $"The reference continuous support prerequisite cannot target {unsupported}.")
+
+        let rec execute source effect (instructions: ReferenceInstruction array) =
+            for instruction in instructions do
+                match instruction.Opcode with
+                | ReferenceOpcode.Conditional ->
+                    if instruction.Predicates |> Array.forall (predicate source) then
+                        execute source effect instruction.Then
+                    else
+                        execute source effect instruction.Otherwise
+                | ReferenceOpcode.ContinuousPartyTrick ->
+                    for target in targets source instruction do
+                        register source effect "ContinuousPartyTrick" instruction target
+                | ReferenceOpcode.PreventDamage
+                | ReferenceOpcode.PreventEffects
+                | ReferenceOpcode.ReduceDamage
+                | ReferenceOpcode.ModifyAttackCost
+                | ReferenceOpcode.ModifyTaxiFare
+                | ReferenceOpcode.ModifySoftSpot
+                | ReferenceOpcode.RestrictTaxi
+                | ReferenceOpcode.RestrictEmptiesRecovery ->
+                    for target in targets source instruction do
+                        register source effect (string instruction.Opcode) instruction target
+                | ReferenceOpcode.AttachVim -> ()
+                | unsupported ->
+                    invalidOp
+                        $"The reference continuous support prerequisite does not implement {unsupported}."
 
         for source in state.Cards |> Array.filter isInPlay |> Array.sortBy _.Id do
             for trick in
@@ -181,19 +250,11 @@ module ReferenceCommonFoundation =
                                 existing.SourceEffect <> trick.MechanicalId
                                 || existing.SourceCard <> source.Id) }
 
-                for instruction in trick.Program do
-                    match instruction.Opcode with
-                    | ReferenceOpcode.ContinuousPartyTrick ->
-                        register source trick.MechanicalId "ContinuousPartyTrick" instruction
-                    | ReferenceOpcode.ReduceDamage ->
-                        register source trick.MechanicalId "ReduceDamage" instruction
-                    | unsupported ->
-                        invalidOp
-                            $"The reference continuous support prerequisite does not implement {unsupported}."
+                execute source trick.MechanicalId trick.Program
 
         next, events.ToArray()
 
-    let private attachedVim
+    let internal attachedVim
         (authority: ReferenceAuthority)
         (state: CanonicalState)
         (card: CanonicalCard)
@@ -207,7 +268,7 @@ module ReferenceCommonFoundation =
             |> ValueOption.defaultWith (fun () ->
                 invalidOp $"The reference Vim {attachment.MechanicalId} has no mechanical type."))
 
-    let private canPayAttack
+    let internal canPayAttack
         (authority: ReferenceAuthority)
         (state: CanonicalState)
         (attacker: CanonicalCard)
@@ -256,7 +317,7 @@ module ReferenceCommonFoundation =
             || authority.Cards[promotion.MechanicalId].PromotesFromId = ValueSome
                 target.MechanicalId)
 
-    let private roughPrevents
+    let internal roughPrevents
         (authority: ReferenceAuthority)
         (predicate: ReferenceRoughStateRule -> bool)
         (card: CanonicalCard)
@@ -805,7 +866,7 @@ module ReferenceCommonFoundation =
         else
             authority.BaseRules.Fossil.PlayAsRegularLocalStayingPower
 
-    let private resolveKnockouts
+    let internal resolveKnockouts
         (authority: ReferenceAuthority)
         (mutation: ReferenceMutation)
         (random: ReferenceRandom)
@@ -1037,7 +1098,7 @@ module ReferenceCommonFoundation =
 
         { next with Random = random.Snapshot }, events.ToArray()
 
-    let private reorderRoundStartBeforeCheckup
+    let internal reorderRoundStartBeforeCheckup
         (mutation: ReferenceMutation)
         (events: CanonicalEvent array)
         =
@@ -1111,7 +1172,7 @@ module ReferenceCommonFoundation =
         { next with Random = random.Snapshot },
         events.ToArray() |> reorderRoundStartBeforeCheckup mutation
 
-    let private finishOrPendCommonRound
+    let internal finishOrPendCommonRound
         (authority: ReferenceAuthority)
         (mutation: ReferenceMutation)
         (random: ReferenceRandom)

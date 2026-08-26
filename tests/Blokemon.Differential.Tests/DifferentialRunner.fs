@@ -112,7 +112,7 @@ module DifferentialRunner =
               ProductionFact = fact productionFact
               SelectionEvidence = [||] }
 
-    let private productionAuthority path mutation =
+    let internal productionAuthority path mutation =
         let raw = File.ReadAllText path
 
         let requiredNode name (node: JsonNode | null) =
