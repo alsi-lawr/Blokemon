@@ -53,6 +53,22 @@ type DifferentialBootstrap =
       RouteIdentities: Set<string>
       ProgramRouteAcceptance: Set<string> }
 
+type CommonFoundationSelection = { Actor: string; StableKey: string }
+
+type CommonFoundationStep =
+    { Index: int
+      Actor: string
+      LegalActions: CanonicalAction array
+      SelectedAction: CanonicalAction
+      State: CanonicalState
+      Events: CanonicalEvent array
+      Rejection: CanonicalRejection array }
+
+type CommonFoundationRun =
+    | CommonEquivalent of CommonFoundationStep array * CanonicalState
+    | CommonRejectionEquivalent of CanonicalTransition
+    | CommonDiverged of DifferentialDivergence
+
 [<RequireQualifiedAccess>]
 module DifferentialRunner =
 
@@ -82,6 +98,14 @@ module DifferentialRunner =
 
     let private mismatch traceId stage referenceFact productionFact =
         Diverged
+            { TraceId = traceId
+              Stage = stage
+              ReferenceFact = fact referenceFact
+              ProductionFact = fact productionFact
+              SelectionEvidence = [||] }
+
+    let private commonMismatch traceId stage referenceFact productionFact =
+        CommonDiverged
             { TraceId = traceId
               Stage = stage
               ReferenceFact = fact referenceFact
@@ -757,3 +781,136 @@ module DifferentialRunner =
             match divergence with
             | ValueSome value -> Diverged value
             | ValueNone -> RejectionsEquivalent(comparisons.ToArray())
+
+    let runCommonScenario
+        root
+        traceId
+        (initial: CanonicalState)
+        (selections: CommonFoundationSelection array)
+        (referenceMutation: ReferenceMutation)
+        =
+        let authorityPath = Checkout.rawAuthorityPath root
+        let referenceAuthority = ReferenceAuthority.load authorityPath
+        let engine = MatchEngine(productionAuthority authorityPath NoProductionMutation)
+        let mutable referenceState = initial
+        let mutable productionState = ProductionSetup.commonState initial
+        let steps = ResizeArray<CommonFoundationStep>()
+        let mutable divergence = ValueNone
+        let mutable index = 0
+
+        if ProductionProjection.state productionState <> initial then
+            divergence <-
+                ValueSome
+                    { TraceId = traceId
+                      Stage = "initial-adapter"
+                      ReferenceFact = fact initial
+                      ProductionFact = fact (ProductionProjection.state productionState)
+                      SelectionEvidence = [||] }
+
+        while divergence.IsNone && index < selections.Length do
+            let selection = selections[index]
+
+            let referenceLegal =
+                ReferenceCommonFoundation.legalCommonActions
+                    referenceAuthority
+                    referenceMutation
+                    referenceState
+                    selection.Actor
+
+            let productionLegal =
+                engine.GetLegalActions(productionState, PlayerId selection.Actor)
+                |> ProductionProjection.commonLegalActions
+
+            if referenceLegal <> productionLegal then
+                divergence <-
+                    ValueSome
+                        { TraceId = traceId
+                          Stage = $"legal-actions:{index}"
+                          ReferenceFact = fact referenceLegal
+                          ProductionFact = fact productionLegal
+                          SelectionEvidence = [||] }
+            else
+                match
+                    referenceLegal
+                    |> Array.tryFind (fun action -> action.StableKey = selection.StableKey)
+                with
+                | None ->
+                    divergence <-
+                        ValueSome
+                            { TraceId = traceId
+                              Stage = $"selection:{index}"
+                              ReferenceFact = selection.StableKey
+                              ProductionFact = fact referenceLegal
+                              SelectionEvidence = [||] }
+                | Some selected ->
+                    let referenceTransition =
+                        ReferenceCommonFoundation.applyCommon
+                            referenceAuthority
+                            referenceMutation
+                            referenceState
+                            selected
+
+                    let productionOutcome =
+                        engine.Apply(productionState, ProductionSetup.commonCommand selected)
+
+                    let productionTransition =
+                        productionOutcome |> ProductionProjection.commandOutcome
+
+                    if referenceTransition <> productionTransition then
+                        divergence <-
+                            ValueSome
+                                { TraceId = traceId
+                                  Stage = $"transition:{index}"
+                                  ReferenceFact = fact referenceTransition
+                                  ProductionFact = fact productionTransition
+                                  SelectionEvidence = [||] }
+                    else
+                        match productionOutcome with
+                        | CommandOutcome.Rejected _ ->
+                            invalidOp "A selected common-foundation action was rejected."
+                        | CommandOutcome.Applied(nextProduction, _) ->
+                            steps.Add
+                                { Index = index
+                                  Actor = selection.Actor
+                                  LegalActions = referenceLegal
+                                  SelectedAction = selected
+                                  State = referenceTransition.State
+                                  Events = referenceTransition.Events
+                                  Rejection = referenceTransition.Rejection }
+
+                            referenceState <- referenceTransition.State
+                            productionState <- nextProduction
+                            index <- index + 1
+
+        match divergence with
+        | ValueSome value -> CommonDiverged value
+        | ValueNone -> CommonEquivalent(steps.ToArray(), referenceState)
+
+    let runCommonRejection root traceId (state: CanonicalState) (action: CanonicalAction) =
+        let authorityPath = Checkout.rawAuthorityPath root
+        let referenceAuthority = ReferenceAuthority.load authorityPath
+        let engine = MatchEngine(productionAuthority authorityPath NoProductionMutation)
+        let productionState = ProductionSetup.commonState state
+
+        if ProductionProjection.state productionState <> state then
+            commonMismatch
+                traceId
+                "initial-adapter"
+                state
+                (ProductionProjection.state productionState)
+        else
+            let reference =
+                ReferenceCommonFoundation.applyCommon
+                    referenceAuthority
+                    NoReferenceMutation
+                    state
+                    action
+
+            let production =
+                engine.Apply(productionState, ProductionSetup.commonCommand action)
+                |> ProductionProjection.commandOutcome
+
+            if reference = production then
+                CommonRejectionEquivalent reference
+            else
+                commonMismatch traceId "rejection" reference production

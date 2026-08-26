@@ -217,6 +217,13 @@ type ReferenceMutation =
     | NoReferenceMutation
     | OmitResignFromLegalActions
     | SkipRequiredOpeningDraw
+    | SkipDamageModifiers
+    | ReverseKnockoutOrder
+    | SkipBarChitAward
+    | SkipReplacementAssignment
+    | ForceSuddenDeathForWinner
+    | AllowBaseActionWhilePending
+    | StartNextRoundBeforeCheckup
 
 [<RequireQualifiedAccess>]
 module Canonical =

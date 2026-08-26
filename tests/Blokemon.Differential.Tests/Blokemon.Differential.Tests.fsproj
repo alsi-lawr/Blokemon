@@ -10,6 +10,7 @@
     <Compile Include="ProductionProjection.fs" />
     <Compile Include="DifferentialRunner.fs" />
     <Compile Include="DifferentialTests.fs" />
+    <Compile Include="CommonFoundationTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Blokemon.ReferenceModel/Blokemon.ReferenceModel.fsproj" />

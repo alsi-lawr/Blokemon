@@ -3,7 +3,7 @@ namespace Blokemon.ReferenceModel
 open System
 
 [<RequireQualifiedAccess>]
-module private ReferenceState =
+module internal ReferenceState =
 
     let card (state: CanonicalState) (id: string) : CanonicalCard =
         state.Cards |> Array.find (fun card -> card.Id = id)
@@ -35,7 +35,7 @@ module private ReferenceState =
                 |> Array.map (fun current -> if current.Id = player.Id then player else current) }
 
 [<RequireQualifiedAccess>]
-module private ReferenceEvents =
+module internal ReferenceEvents =
 
     let create (kind: string) : CanonicalEvent =
         { RelativeSequence = 0
@@ -89,7 +89,7 @@ module private ReferenceEvents =
 [<RequireQualifiedAccess>]
 module ReferenceEngine =
 
-    let private actionOrder =
+    let internal actionOrder =
         Map
             [ "ChooseMulliganBonus", 0
               "ChooseOpening", 1
@@ -130,7 +130,7 @@ module ReferenceEngine =
           RequireDifferentMechanicalTypes = false
           EligibleCardTypes = [||] }
 
-    let private action
+    let internal action
         (state: CanonicalState)
         (kind: string)
         (actor: string)
@@ -255,7 +255,7 @@ module ReferenceEngine =
 
         issues.ToArray()
 
-    let private shuffle player (random: ReferenceRandom) (state: CanonicalState) =
+    let internal shuffle player (random: ReferenceRandom) (state: CanonicalState) =
         let stack = ReferenceState.cardsIn state player "Stack" |> Array.sortBy _.Id
 
         for index in stack.Length - 1 .. -1 .. 1 do
@@ -275,7 +275,7 @@ module ReferenceEngine =
                     | Some position -> { card with StackPosition = position }
                     | None -> card) }
 
-    let private moveCard (id: string) (zone: string) (attachedTo: string) (state: CanonicalState) =
+    let internal moveCard (id: string) (zone: string) (attachedTo: string) (state: CanonicalState) =
         let card = ReferenceState.card state id
 
         let boothPosition =
@@ -291,7 +291,7 @@ module ReferenceEngine =
 
         ReferenceState.updateCard moved state, ReferenceEvents.move card
 
-    let private draw (player: string) (count: int) (reason: string) (state: CanonicalState) =
+    let internal draw (player: string) (count: int) (reason: string) (state: CanonicalState) =
         let drawn =
             ReferenceState.cardsIn state player "Stack"
             |> Array.truncate count

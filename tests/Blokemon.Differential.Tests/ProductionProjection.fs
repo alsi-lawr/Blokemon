@@ -322,3 +322,21 @@ module ProductionProjection =
         |> Seq.map legalAction
         |> Seq.filter (fun action -> supported.Contains action.Kind)
         |> Seq.toArray
+
+    let commonLegalActions values =
+        let supported =
+            Set
+                [ "ChooseReplacement"
+                  "AttachVim"
+                  "PlayBloke"
+                  "Promote"
+                  "Attack"
+                  "Taxi"
+                  "ChuckFossil"
+                  "EndRound"
+                  "Resign" ]
+
+        values
+        |> Seq.map legalAction
+        |> Seq.filter (fun action -> supported.Contains action.Kind)
+        |> Seq.toArray

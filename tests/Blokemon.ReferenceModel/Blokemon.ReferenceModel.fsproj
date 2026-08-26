@@ -9,6 +9,7 @@
     <Compile Include="Obligations.fs" />
     <Compile Include="DeterministicRandom.fs" />
     <Compile Include="ReferenceEngine.fs" />
+    <Compile Include="CommonFoundation.fs" />
     <Compile Include="Replay.fs" />
     <Compile Include="DependencyEvidence.fs" />
   </ItemGroup>

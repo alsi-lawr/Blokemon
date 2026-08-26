@@ -322,6 +322,12 @@ type ReferenceRoughStateRule =
       BeforeAttackBeerMat: bool voption
       BlankSideCancelsAndSelfDamageCounters: int voption }
 
+type ReferenceCheckupRules =
+    { RoughStateOrder: ReferenceRoughState array
+      OtherEffectsOutsideWholeBlock: bool
+      CannotInterleave: bool
+      SendHomeAfterBothChecks: bool }
+
 type ReferenceSendHomeRules =
     { DamageAtLeastStayingPower: bool
       ChuckBlokeAndAttachedCards: bool
@@ -357,6 +363,7 @@ type ReferenceBaseRules =
       DamageOrder: string array
       EffectDrawFromShortStack: string
       RequiredRoundDrawFromEmptyStack: string
+      Checkup: ReferenceCheckupRules
       RoughStates: Map<ReferenceRoughState, ReferenceRoughStateRule>
       SendHome: ReferenceSendHomeRules
       Win: ReferenceWinRules
@@ -1052,6 +1059,15 @@ module ReferenceAuthority =
                       "bigHitterBarChits"
                       "ownerPromotesFromBooth" ])
 
+        let checkup =
+            objectOf
+                "checkup"
+                (Set
+                    [ "roughStateOrder"
+                      "otherEffectsOutsideWholeBlock"
+                      "cannotInterleave"
+                      "sendHomeAfterBothChecks" ])
+
         let win =
             objectOf
                 "win"
@@ -1179,6 +1195,14 @@ module ReferenceAuthority =
           EffectDrawFromShortStack = requiredString "baseRules" "effectDrawFromShortStack" rules
           RequiredRoundDrawFromEmptyStack =
             requiredString "baseRules" "requiredRoundDrawFromEmptyStack" rules
+          Checkup =
+            { RoughStateOrder =
+                enumValues<ReferenceRoughState> "baseRules.checkup" "roughStateOrder" checkup
+              OtherEffectsOutsideWholeBlock =
+                requiredBool "baseRules.checkup" "otherEffectsOutsideWholeBlock" checkup
+              CannotInterleave = requiredBool "baseRules.checkup" "cannotInterleave" checkup
+              SendHomeAfterBothChecks =
+                requiredBool "baseRules.checkup" "sendHomeAfterBothChecks" checkup }
           RoughStates = roughStates
           SendHome =
             { DamageAtLeastStayingPower =
