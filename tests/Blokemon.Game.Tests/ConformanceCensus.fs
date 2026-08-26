@@ -15,7 +15,8 @@ module internal ConformanceCensus =
           MechanicalId: string
           Kind: ProgramKind
           Trigger: BlokemonTrigger voption
-          Program: BlokemonEffectInstruction array }
+          Program: BlokemonEffectInstruction array
+          AuthorityPointer: string }
 
     type Totals =
         { ProgramBearingCards: int
@@ -35,48 +36,66 @@ module internal ConformanceCensus =
                 yield! instructions instruction.Otherwise
         }
 
-    let programRows =
+    let programRowsFrom (authority: BlokemonRuntimeManifest) =
         seq {
             let rows
                 ownerId
+                ownerPointer
                 (partyTricks: BlokemonPartyTrick array)
                 (attacks: BlokemonAttack array)
                 (houseRules: BlokemonHouseRule array)
                 =
                 seq {
-                    for trick in partyTricks do
+                    for index, trick in Array.indexed partyTricks do
                         yield
                             { OwnerId = ownerId
                               MechanicalId = trick.MechanicalId
                               Kind = PartyTrick
                               Trigger = ValueSome trick.Trigger
-                              Program = trick.Program }
+                              Program = trick.Program
+                              AuthorityPointer = $"{ownerPointer}/partyTricks/{index}/program" }
 
-                    for attack in attacks do
+                    for index, attack in Array.indexed attacks do
                         yield
                             { OwnerId = ownerId
                               MechanicalId = attack.MechanicalId
                               Kind = Attack
                               Trigger = ValueNone
-                              Program = attack.Program }
+                              Program = attack.Program
+                              AuthorityPointer = $"{ownerPointer}/attacks/{index}/program" }
 
-                    for rule in houseRules do
+                    for index, rule in Array.indexed houseRules do
                         yield
                             { OwnerId = ownerId
                               MechanicalId = rule.MechanicalId
                               Kind = HouseRule
                               Trigger = ValueNone
-                              Program = rule.Program }
+                              Program = rule.Program
+                              AuthorityPointer = $"{ownerPointer}/houseRules/{index}/program" }
                 }
 
-            for card in MatchScenario.Authority.Collectibles do
-                yield! rows card.Id card.PartyTricks card.Attacks card.HouseRules
+            for index, card in Array.indexed authority.Collectibles do
+                yield!
+                    rows
+                        card.Id
+                        $"/authority/collectibles/{index}"
+                        card.PartyTricks
+                        card.Attacks
+                        card.HouseRules
 
-            for card in MatchScenario.Authority.Kits do
-                yield! rows card.Id card.PartyTricks card.Attacks card.HouseRules
+            for index, card in Array.indexed authority.Kits do
+                yield!
+                    rows
+                        card.Id
+                        $"/authority/kits/{index}"
+                        card.PartyTricks
+                        card.Attacks
+                        card.HouseRules
         }
         |> Seq.sortBy _.MechanicalId
         |> Seq.toArray
+
+    let programRows = programRowsFrom MatchScenario.Authority
 
     let private programBearingCards =
         programRows |> Seq.map _.OwnerId |> Set.ofSeq |> Set.count

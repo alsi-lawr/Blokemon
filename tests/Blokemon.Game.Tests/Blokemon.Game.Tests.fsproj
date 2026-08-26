@@ -36,8 +36,11 @@
     <Compile Include="TriggerConformanceTests.fs" />
     <Compile Include="ConformanceCensus.fs" />
     <Compile Include="ConformanceFixture.fs" />
+    <Compile Include="ConformanceObligationCompiler.fs" />
+    <Compile Include="ConformanceObligationFacts.fs" />
     <Compile Include="ProgramCompositionConformanceTests.fs" />
     <Compile Include="ConformanceFixtureTests.fs" />
+    <Compile Include="ConformanceObligationTests.fs" />
     <Compile Include="FuzzHarness.fs" />
     <Compile Include="FuzzHarnessTests.fs" />
     <Compile Include="ConformanceCensusTests.fs" />
@@ -65,6 +68,11 @@
     <Content
       Include="Fixtures/base-rule-obligations.json"
       Link="Fixtures/base-rule-obligations.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <Content
+      Include="Fixtures/conformance-obligations.json"
+      Link="Fixtures/conformance-obligations.json"
       CopyToOutputDirectory="PreserveNewest"
     />
     <Content

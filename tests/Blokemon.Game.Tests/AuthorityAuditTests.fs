@@ -53,6 +53,35 @@ module internal AuthorityAuditFixtures =
                 { instruction with Amount = 2 }
             | _ -> instruction)
 
+    let removeCondition (condition: BlokemonCondition) (program: BlokemonEffectInstruction array) =
+        mutateInstructions program (fun instruction ->
+            { instruction with
+                Predicates =
+                    instruction.Predicates
+                    |> Array.filter (fun predicate -> predicate.Condition <> condition) })
+
+    let mutatePartyTrick
+        (cardId: string)
+        (effectId: string)
+        (mutation: BlokemonPartyTrick -> BlokemonPartyTrick)
+        (authority: BlokemonRuntimeManifest)
+        =
+        { authority with
+            Collectibles =
+                authority.Collectibles
+                |> Array.map (fun card ->
+                    if card.Id <> cardId then
+                        card
+                    else
+                        { card with
+                            PartyTricks =
+                                card.PartyTricks
+                                |> Array.map (fun trick ->
+                                    if trick.MechanicalId = effectId then
+                                        mutation trick
+                                    else
+                                        trick) }) }
+
     let private observeKnockoutVimMove (engine: MatchEngine) =
         let state =
             MatchScenario.BattleState
@@ -232,6 +261,40 @@ module internal AuthorityAuditFixtures =
             raise (ArgumentOutOfRangeException(nameof trigger, $"Unhandled trigger {other}."))
 
 type AuthorityAuditTests() =
+
+    [<Test>]
+    member _.``public start should reject a knockout trigger without its optional protocol``() =
+        let changed =
+            MatchScenario.Authority
+            |> mutatePartyTrick "BLK-026" "BLK-026-T01" (fun trick ->
+                { trick with
+                    Program = removeCondition BlokemonCondition.Optional trick.Program })
+
+        let request = MatchScenario.StartRequest()
+        MatchScenario.Started((MatchScenario.Engine()).Start request) |> ignore
+
+        MatchEngine(changed).Start request
+        |> MatchScenario.StartRejected
+        |> Seq.map _.Code
+        |> Seq.toList
+        |> should equal [ DeckIssueCode.AuthorityInvalid ]
+
+    [<Test>]
+    member _.``public start should reject a Bar Chit trigger without its optional protocol``() =
+        let changed =
+            MatchScenario.Authority
+            |> mutatePartyTrick "BLK-113" "BLK-113-T01" (fun trick ->
+                { trick with
+                    Program = removeCondition BlokemonCondition.Optional trick.Program })
+
+        let request = MatchScenario.StartRequest()
+        MatchScenario.Started((MatchScenario.Engine()).Start request) |> ignore
+
+        MatchEngine(changed).Start request
+        |> MatchScenario.StartRejected
+        |> Seq.map _.Code
+        |> Seq.toList
+        |> should equal [ DeckIssueCode.AuthorityInvalid ]
 
     [<Test>]
     [<Arguments("BLK-026", "BLK-026-T01", BlokemonTrigger.OnOwnBlokeSentHomeByOtherAttackDamage, 1)>]

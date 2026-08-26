@@ -133,11 +133,13 @@ module internal AuthorityAudit =
                 && programContainsCondition
                     trick.Program
                     BlokemonCondition.PromotedFromMittThisRound
-            | BlokemonTrigger.OnOwnBlokeSentHomeByOtherAttackDamage
+            | BlokemonTrigger.OnOwnBlokeSentHomeByOtherAttackDamage ->
+                triggered && programContainsCondition trick.Program BlokemonCondition.Optional
             | BlokemonTrigger.BeforeSelfSentHomeByAttackDamage
             | BlokemonTrigger.AfterSelfDamagedByAttack
-            | BlokemonTrigger.AfterSelfSentHomeByAttackDamage
-            | BlokemonTrigger.OnBarChitTaken -> triggered
+            | BlokemonTrigger.AfterSelfSentHomeByAttackDamage -> triggered
+            | BlokemonTrigger.OnBarChitTaken ->
+                triggered && programContainsCondition trick.Program BlokemonCondition.Optional
             | _ -> false
 
         if not valid then
