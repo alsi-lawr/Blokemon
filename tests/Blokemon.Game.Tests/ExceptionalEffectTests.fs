@@ -309,6 +309,55 @@ type ExceptionalEffectTests() =
         applied.Phase |> should equal MatchPhase.AwaitingReplacement
 
     [<Test>]
+    member _.``a voluntary self-chuck with no remaining bloke should win once for the opponent``() =
+        let engine = MatchScenario.Engine()
+        let state = MatchScenario.BattleState "BLK-121" "BLK-150" [] 421UL
+        let effect = EffectId "BLK-121-T01"
+
+        let _, missing =
+            MatchScenario.Rejected(
+                engine.Apply(state, partyTrick state effect ImmutableArray<_>.Empty)
+            )
+
+        let optional =
+            requirementOfKind ChoiceRequirementKind.Optional missing.ChoiceRequirements
+
+        let requested =
+            MatchScenario.Applied(
+                engine.Apply(
+                    state,
+                    partyTrick
+                        state
+                        effect
+                        (ImmutableArray.Create(EffectChoice.Optional(optional.Id, true)))
+                )
+            )
+
+        let target =
+            requirementOfKind ChoiceRequirementKind.Cards requested.PendingEffect.Value.Requirements
+
+        let command =
+            MatchScenario.ResolveEffectChoiceCommand
+                requested
+                (ImmutableArray.Create(
+                    EffectChoice.Cards(target.Id, ImmutableArray.Create(CardInstanceId "defender"))
+                ))
+
+        let applied, events = MatchScenario.AppliedWith(engine.Apply(requested, command))
+
+        applied.Winner |> should equal (ValueSome MatchScenario.SecondPlayer)
+        applied.Phase |> should equal MatchPhase.Complete
+        (applied.Card(CardInstanceId "defender")).Damage |> should equal 20
+
+        (applied.Card(CardInstanceId "attacker")).Zone
+        |> should equal CardZone.EmptiesTray
+
+        events
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.MatchWon)
+        |> Seq.length
+        |> should equal 1
+
+    [<Test>]
     member _.``a first-round transform should replace its source and discard what was attached to it``
         ()
         =

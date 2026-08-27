@@ -904,10 +904,10 @@ module ReferenceDeterministicPrograms =
 
     let materializeInput authority input = standardState authority input
 
-    let private inPlay (card: CanonicalCard) =
+    let internal inPlay (card: CanonicalCard) =
         card.Zone = "Oche" || card.Zone = "Booth"
 
-    let private targetsFor
+    let internal targetsFor
         (authority: ReferenceAuthority)
         (state: CanonicalState)
         (actor: string)
@@ -949,6 +949,7 @@ module ReferenceDeterministicPrograms =
                 |> Array.collect (fun (value: CanonicalCard) ->
                     value.Attachments |> Array.map (ReferenceState.card state))
                 |> Array.filter (fun (value: CanonicalCard) -> value.Kind = "Vim")
+            | ReferenceLocation.OtherEmptiesTray -> cards other "EmptiesTray"
             | ReferenceLocation.OwnAttachedBarKits ->
                 state.Cards
                 |> Array.filter (fun value -> value.Owner = actor && inPlay value)
@@ -959,8 +960,7 @@ module ReferenceDeterministicPrograms =
                     && authority.Cards[value.MechanicalId].KitKind = ValueSome
                         ReferenceKitKind.BarKit)
             | ReferenceLocation.BarChits -> cards actor "BarChit"
-            | ReferenceLocation.KnockedOutBlokeAttachedVim
-            | ReferenceLocation.OtherEmptiesTray ->
+            | ReferenceLocation.KnockedOutBlokeAttachedVim ->
                 invalidOp $"The deterministic target prerequisite cannot resolve {location}."
             | other ->
                 invalidOp
@@ -978,6 +978,7 @@ module ReferenceDeterministicPrograms =
                 instruction.Opcode <> ReferenceOpcode.ChuckVim
                 && instruction.Opcode <> ReferenceOpcode.MoveVim
                 && instruction.Opcode <> ReferenceOpcode.SearchStack
+                && instruction.Opcode <> ReferenceOpcode.AttachVim
             then
                 true
             elif instruction.MechanicalTypes.Length = 0 then
@@ -1005,7 +1006,12 @@ module ReferenceDeterministicPrograms =
                 && (not filter.BasicVimOnly || definition.Kind = ReferenceCardKind.Vim)
                 && not (Array.contains value.MechanicalId filter.ExcludedRelatedIds)
 
-        values |> Array.filter (fun value -> byMechanicalType value && byFilter value)
+        values
+        |> Array.filter (fun value ->
+            (instruction.RelatedIds.Length = 0
+             || Array.contains value.MechanicalId instruction.RelatedIds)
+            && byMechanicalType value
+            && byFilter value)
 
     let private predicateAllows
         (authority: ReferenceAuthority)
@@ -1039,7 +1045,7 @@ module ReferenceDeterministicPrograms =
         | ReferenceOpcode.ReflectAttackDamage -> true
         | _ -> false
 
-    let private candidatesFor
+    let internal candidatesFor
         (authority: ReferenceAuthority)
         (state: CanonicalState)
         (actor: string)
@@ -1047,20 +1053,90 @@ module ReferenceDeterministicPrograms =
         (instruction: ReferenceInstruction)
         : CanonicalCard array =
         let locations =
-            if instruction.Sources.Length <> 0 then
+            if
+                instruction.Opcode = ReferenceOpcode.AttachVim
+                && instruction.Selection = ReferenceSelection.AnyDistribution
+                && instruction.Sources.Length = 0
+            then
+                [||]
+            elif instruction.Sources.Length <> 0 then
                 instruction.Sources
             else
                 instruction.Targets
 
-        let located = locations |> Array.collect (targetsFor authority state actor attacker)
+        let located =
+            if locations.Length <> 0 then
+                locations |> Array.collect (targetsFor authority state actor attacker)
+            else
+                match instruction.Opcode with
+                | ReferenceOpcode.DealPrintedDamage
+                | ReferenceOpcode.AdjustDamage
+                | ReferenceOpcode.ScaleDamage
+                | ReferenceOpcode.ApplyRoughState
+                | ReferenceOpcode.ModifySoftSpot
+                | ReferenceOpcode.SendHome
+                | ReferenceOpcode.CopyAttack
+                | ReferenceOpcode.Demote ->
+                    targetsFor authority state actor attacker ReferenceLocation.OtherOche
+                | ReferenceOpcode.DealBoothDamage ->
+                    targetsFor authority state actor attacker ReferenceLocation.OtherBoothAll
+                | ReferenceOpcode.PlaceDamageCounters ->
+                    targetsFor authority state actor attacker ReferenceLocation.OtherBlokesAll
+                | ReferenceOpcode.DealSelfDamage
+                | ReferenceOpcode.HealDamage
+                | ReferenceOpcode.ClearRoughState
+                | ReferenceOpcode.PreventDamage
+                | ReferenceOpcode.PreventEffects
+                | ReferenceOpcode.ReduceDamage
+                | ReferenceOpcode.ModifyAttackCost
+                | ReferenceOpcode.ModifyTaxiFare
+                | ReferenceOpcode.RestrictAttack
+                | ReferenceOpcode.RestrictTaxi
+                | ReferenceOpcode.RestrictKit
+                | ReferenceOpcode.RestrictLocal
+                | ReferenceOpcode.RestrictEmptiesRecovery
+                | ReferenceOpcode.ReflectAttackDamage
+                | ReferenceOpcode.RecoverFromSendHome
+                | ReferenceOpcode.PlayAsBloke
+                | ReferenceOpcode.ChuckSelf
+                | ReferenceOpcode.TriggeredPartyTrick
+                | ReferenceOpcode.ContinuousPartyTrick
+                | ReferenceOpcode.OncePerRound
+                | ReferenceOpcode.EndRoundEffect -> [| attacker |]
+                | ReferenceOpcode.DrawFromStack
+                | ReferenceOpcode.ShuffleStack
+                | ReferenceOpcode.SearchStack
+                | ReferenceOpcode.TransformFromStack ->
+                    targetsFor authority state actor attacker ReferenceLocation.OwnStack
+                | ReferenceOpcode.AttachVim ->
+                    if instruction.Selection = ReferenceSelection.AnyDistribution then
+                        targetsFor authority state actor attacker ReferenceLocation.OwnStack
+                        |> Array.truncate instruction.Amount
+                    else
+                        targetsFor authority state actor attacker ReferenceLocation.OwnMitt
+                | ReferenceOpcode.MoveVim ->
+                    state.Cards
+                    |> Array.filter (fun value -> value.Owner = actor && inPlay value)
+                    |> Array.collect (fun value ->
+                        value.Attachments |> Array.map (ReferenceState.card state))
+                    |> Array.filter (fun value -> value.Kind = "Vim")
+                | ReferenceOpcode.ChuckVim ->
+                    attacker.Attachments
+                    |> Array.map (ReferenceState.card state)
+                    |> Array.filter (fun value -> value.Kind = "Vim")
+                | ReferenceOpcode.SwapOche ->
+                    targetsFor authority state actor attacker ReferenceLocation.OtherBoothAll
+                | _ -> [||]
 
         let candidates =
             match instruction.Opcode with
-            | ReferenceOpcode.ChuckVim
-            | ReferenceOpcode.MoveVim ->
+            | ReferenceOpcode.ChuckVim when instruction.Sources.Length = 0 ->
                 located
                 |> Array.collect (fun value ->
-                    value.Attachments |> Array.map (ReferenceState.card state))
+                    if value.Kind = "Vim" then
+                        [| value |]
+                    else
+                        value.Attachments |> Array.map (ReferenceState.card state))
                 |> Array.filter (fun value -> value.Kind = "Vim")
             | _ -> located
 
@@ -1103,7 +1179,7 @@ module ReferenceDeterministicPrograms =
           RequireDifferentMechanicalTypes = false
           EligibleCardTypes = [||] }
 
-    let private instructionRequirements
+    let internal instructionRequirements
         (authority: ReferenceAuthority)
         (state: CanonicalState)
         (actor: string)
@@ -1229,12 +1305,18 @@ module ReferenceDeterministicPrograms =
                 if cardIds.Length = 0 || targets.Length = 0 then
                     [||]
                 else
+                    let required =
+                        if instruction.Sources.Length = 0 then
+                            cardIds.Length
+                        else
+                            min instruction.Amount cardIds.Length
+
                     [| { emptyRequirement
                              (id "attachments")
                              "Attachments"
                              chooser
-                             instruction.Amount
-                             instruction.Amount with
+                             (if instruction.Sources.Length = 0 then 0 else required)
+                             required with
                            EligibleCards = cardIds
                            EligibleTargets = targets } |]
             | _ when
@@ -1278,7 +1360,7 @@ module ReferenceDeterministicPrograms =
 
         Array.append optional selection
 
-    let private requirementsForProgram
+    let internal requirementsForProgram
         (authority: ReferenceAuthority)
         (state: CanonicalState)
         (actor: string)
@@ -1396,7 +1478,7 @@ module ReferenceDeterministicPrograms =
             else
                 String.CompareOrdinal(left.StableKey, right.StableKey))
 
-    let private canonicalChoice (input: ReferenceChoiceInput) =
+    let internal canonicalChoice (input: ReferenceChoiceInput) =
         let values =
             match input.Value with
             | ReferenceChoiceValue.Optional accepted -> [| accepted.ToString().ToLowerInvariant() |]
@@ -1471,6 +1553,7 @@ module ReferenceDeterministicPrograms =
         (actor: string)
         (attacker: CanonicalCard)
         (selected: CanonicalAction)
+        (effect: string)
         (path: string)
         (firstBeerMatIsBlank: bool)
         (pendingAttackDamage: int)
@@ -1481,11 +1564,7 @@ module ReferenceDeterministicPrograms =
 
         match predicate.Condition with
         | ReferenceCondition.Optional ->
-            let payloadParts = selected.Payload.Split(';')
-            let effectId = payloadParts[1].Substring(7)
-
-            optionalChoice $"{effectId}:{path}:optional" selected
-            |> Option.defaultValue false
+            optionalChoice $"{effect}:{path}:optional" selected |> Option.defaultValue false
         | ReferenceCondition.FirstBeerMatIsBlankSide -> firstBeerMatIsBlank
         | ReferenceCondition.SelfIsAtOche -> attacker.Zone = "Oche"
         | ReferenceCondition.SelfIsInBooth -> attacker.Zone = "Booth"
@@ -1563,6 +1642,9 @@ module ReferenceDeterministicPrograms =
                 >= authority.Cards[value.MechanicalId].StayingPower)
         | ReferenceCondition.PromotedFromMittThisRound ->
             attacker.LastPromotedRound = state.RoundNumber
+        | ReferenceCondition.OwnersFirstRound ->
+            (ReferenceState.player state actor).RoundsStarted = 1
+        | ReferenceCondition.OpenedSecond -> state.OpeningPlayer <> actor
         | ReferenceCondition.SourceIsRegular ->
             authority.Cards[attacker.MechanicalId].Rank = ValueSome ReferenceRank.Regular
         | ReferenceCondition.TargetHasDamage -> false
@@ -1643,13 +1725,13 @@ module ReferenceDeterministicPrograms =
         (duration: string)
         (kind: string)
         (instruction: ReferenceInstruction)
-        (target: CanonicalCard)
+        (target: CanonicalCard option)
         =
         let registered =
             { SourceEffect = effect
               SourceCard = attacker.Id
               Owner = actor
-              TargetCard = target.Id
+              TargetCard = target |> Option.map _.Id |> Option.defaultValue ""
               Kind = kind
               Amount = instruction.Amount
               MechanicalTypes = instruction.MechanicalTypes |> Array.map string
@@ -1665,7 +1747,8 @@ module ReferenceDeterministicPrograms =
         [| { ReferenceEvents.create "EffectRegistered" with
                Actor = actor
                SourceCard = attacker.Id
-               TargetCards = [| target.Id |]
+               TargetCards =
+                   target |> Option.map (_.Id >> Array.singleton) |> Option.defaultValue [||]
                Effect = effect
                Amount = instruction.Amount } |]
 
@@ -1678,6 +1761,25 @@ module ReferenceDeterministicPrograms =
         (baseDamage: int)
         =
         let mutable amount = baseDamage
+
+        let rankMatches (effect: CanonicalTemporaryEffect) =
+            let rank = authority.Cards[target.MechanicalId].Rank |> ValueOption.map string
+
+            (not (Array.contains "TargetIsRegular" effect.Conditions)
+             || rank = ValueSome "Regular")
+            && (not (Array.contains "TargetIsSeasoned" effect.Conditions)
+                || rank = ValueSome "Seasoned")
+            && (not (Array.contains "TargetIsLandlord" effect.Conditions)
+                || rank = ValueSome "Landlord")
+
+        let targetEffects =
+            state.Effects
+            |> Array.filter (fun effect -> effect.TargetCard = target.Id && rankMatches effect)
+
+        let sourceEffects =
+            state.Effects
+            |> Array.filter (fun effect ->
+                effect.TargetCard = attacker.Id && effect.AppliesFromRound <= state.RoundNumber)
 
         let ignoreStubborn =
             attack.Program
@@ -1692,19 +1794,32 @@ module ReferenceDeterministicPrograms =
 
         for step in authority.BaseRules.DamageOrder do
             match step with
-            | "PrintedOrProgramBaseDamage"
-            | "EffectsOnAttackingBlokeBeforeSoftSpotAndStubbornStreak"
-            | "EffectsOnDefendingBlokeAfterSoftSpotAndStubbornStreak" -> ()
+            | "PrintedOrProgramBaseDamage" -> ()
+            | "EffectsOnAttackingBlokeBeforeSoftSpotAndStubbornStreak" ->
+                amount <-
+                    amount
+                    + (sourceEffects
+                       |> Array.filter (fun effect -> effect.Kind = "ScaleNextAttackDamage")
+                       |> Array.sumBy _.Amount)
             | "SoftSpot" when not ignoreSoftSpot ->
                 let attackerTypes = authority.Cards[attacker.MechanicalId].MechanicalTypes
                 let modifiers = authority.Cards[target.MechanicalId].SoftSpotMultipliers
 
-                amount <-
-                    attackerTypes
-                    |> Array.choose modifiers.TryFind
-                    |> Array.tryHead
-                    |> Option.defaultValue 1
-                    |> (*) amount
+                let clearSoftSpot =
+                    targetEffects
+                    |> Array.exists (fun effect ->
+                        effect.Kind = "ModifySoftSpot"
+                        && effect.Amount = 1
+                        && effect.MechanicalTypes.Length = 0)
+
+                if not clearSoftSpot then
+                    let multiplier =
+                        attackerTypes
+                        |> Array.choose modifiers.TryFind
+                        |> Array.tryHead
+                        |> Option.defaultValue 1
+
+                    amount <- amount * multiplier
             | "StubbornStreak" when not ignoreStubborn ->
                 let attackerTypes = authority.Cards[attacker.MechanicalId].MechanicalTypes
                 let modifiers = authority.Cards[target.MechanicalId].StubbornStreakReductions
@@ -1715,6 +1830,15 @@ module ReferenceDeterministicPrograms =
                        |> Array.choose modifiers.TryFind
                        |> Array.tryHead
                        |> Option.defaultValue 0)
+            | "EffectsOnDefendingBlokeAfterSoftSpotAndStubbornStreak" ->
+                if targetEffects |> Array.exists (fun effect -> effect.Kind = "PreventDamage") then
+                    amount <- 0
+                else
+                    amount <-
+                        amount
+                        - (targetEffects
+                           |> Array.filter (fun effect -> effect.Kind = "ReduceDamage")
+                           |> Array.sumBy _.Amount)
             | "SoftSpot"
             | "StubbornStreak" -> ()
             | "ClampAtZeroAndPlaceCounters" -> amount <- max 0 amount
@@ -1745,7 +1869,7 @@ module ReferenceDeterministicPrograms =
 
         orderedAttackDamage authority state attacker target attack baseDamage
 
-    let private validateOwnedChoices
+    let internal validateOwnedChoices
         (authority: ReferenceAuthority)
         (actor: string)
         (choices: CanonicalChoice array)
@@ -1900,6 +2024,7 @@ module ReferenceDeterministicPrograms =
         (attacker: CanonicalCard)
         (effect: string)
         (attack: ReferenceAttack)
+        (isHouseRule: bool)
         (depth: int)
         (recordedBeerMats: bool array)
         (state: CanonicalState)
@@ -2099,6 +2224,33 @@ module ReferenceDeterministicPrograms =
 
                     let mutable runThen = true
 
+                    let registrationTargets kind =
+                        let currentSource = ReferenceState.card next attacker.Id
+
+                        let usesAttachedToolTarget =
+                            isHouseRule
+                            && kind = "ModifySoftSpot"
+                            && instruction.Targets.Length = 0
+                            && instruction.Sources.Length = 0
+                            && currentSource.Kind = "Kit"
+                            && currentSource.Zone = "Attached"
+                            && not (String.IsNullOrEmpty currentSource.AttachedTo)
+
+                        let inPlayTargets =
+                            if usesAttachedToolTarget then
+                                [||]
+                            else
+                                selectedTargets |> Array.filter inPlay
+
+                        if inPlayTargets.Length <> 0 then
+                            inPlayTargets |> Array.map Some
+                        elif not (String.IsNullOrEmpty currentSource.AttachedTo) then
+                            [| ReferenceState.card next currentSource.AttachedTo |> Some |]
+                        elif inPlay currentSource then
+                            [| Some currentSource |]
+                        else
+                            [| None |]
+
                     match instruction.Opcode with
                     | ReferenceOpcode.DealPrintedDamage ->
                         damageInstructions.Add(path, instruction)
@@ -2155,7 +2307,7 @@ module ReferenceDeterministicPrograms =
                                 "UntilEndOfOpponentsNextRound"
                                 "ScaleNextAttackDamage"
                                 instruction
-                                attacker
+                                (Some attacker)
 
                         next <-
                             { registered with
@@ -2235,6 +2387,16 @@ module ReferenceDeterministicPrograms =
                         let count =
                             if instruction.Selection = ReferenceSelection.UntilBlankSide then
                                 badgeSides * instruction.Amount
+                            elif instruction.ValueSource = ReferenceValueSource.MittCardsNeeded then
+                                resolvedValue
+                                    authority
+                                    next
+                                    actor
+                                    (ReferenceState.card next attacker.Id)
+                                    badgeSides
+                                    cardsChucked
+                                    qualifyingChucked
+                                    instruction
                             else
                                 instruction.Amount
 
@@ -2343,6 +2505,33 @@ module ReferenceDeterministicPrograms =
                                     moveBlokeToStack target
                                 else
                                     detachAndMove target.Id zone
+
+                                    if zone = "Booth" && target.Kind = "Bloke" then
+                                        let moved = ReferenceState.card next target.Id
+
+                                        next <-
+                                            ReferenceState.updateCard
+                                                { moved with
+                                                    EnteredAtOwnerRound =
+                                                        (ReferenceState.player next target.Owner)
+                                                            .RoundsStarted }
+                                                next
+
+                                    if destination = ReferenceDestination.BottomOfOtherStack then
+                                        let moved = ReferenceState.card next target.Id
+
+                                        let beneath =
+                                            ReferenceState.cardsIn next target.Owner "Stack"
+                                            |> Array.filter (fun value -> value.Id <> target.Id)
+                                            |> Array.fold
+                                                (fun position value ->
+                                                    max position (value.StackPosition + 1))
+                                                0
+
+                                        next <-
+                                            ReferenceState.updateCard
+                                                { moved with StackPosition = beneath }
+                                                next
 
                         lastSelectedCards <- moving |> Array.map _.Id
                         hasCardSelection <- true
@@ -2556,6 +2745,7 @@ module ReferenceDeterministicPrograms =
                                     actor
                                     currentAttacker
                                     selected
+                                    effect
                                     path
                                     firstBeerMatIsBlank
                                     aggregateAttackDamage
@@ -2697,6 +2887,7 @@ module ReferenceDeterministicPrograms =
                                     attacker
                                     effect
                                     copied
+                                    false
                                     (depth + 1)
                                     [||]
                                     next
@@ -2710,24 +2901,27 @@ module ReferenceDeterministicPrograms =
                             executionRejection <- copiedRejection
                             extraBarChits <- extraBarChits + copiedExtra
                     | ReferenceOpcode.ContinuousPartyTrick ->
-                        for target in selectedTargets do
-                            let registered, registeredEvents =
-                                registerEffect
-                                    next
-                                    actor
-                                    attacker
-                                    effect
-                                    "WhileSourceInPlay"
-                                    "ContinuousPartyTrick"
-                                    instruction
-                                    target
+                        if
+                            instruction.Selection <> ReferenceSelection.BeerMat || badgeSides <> 0
+                        then
+                            for target in registrationTargets "ContinuousPartyTrick" do
+                                let registered, registeredEvents =
+                                    registerEffect
+                                        next
+                                        actor
+                                        attacker
+                                        effect
+                                        "WhileSourceInPlay"
+                                        "ContinuousPartyTrick"
+                                        instruction
+                                        target
 
-                            next <- registered
-                            events.AddRange registeredEvents
+                                next <- registered
+                                events.AddRange registeredEvents
                     | ReferenceOpcode.EndRoundEffect ->
                         delayed <- true
 
-                        for target in selectedTargets do
+                        for target in registrationTargets "EndRoundEffect" do
                             let registered, registeredEvents =
                                 registerEffect
                                     next
@@ -2751,6 +2945,88 @@ module ReferenceDeterministicPrograms =
                                                 value) }
 
                             events.AddRange registeredEvents
+                    | ReferenceOpcode.PlayAsBloke ->
+                        let source = ReferenceState.card next attacker.Id
+
+                        if source.Zone = "Mitt" then
+                            let zone =
+                                if ReferenceState.cardsIn next actor "Oche" |> Array.isEmpty then
+                                    "Oche"
+                                else
+                                    "Booth"
+
+                            if
+                                zone = "Booth"
+                                && (ReferenceState.cardsIn next actor "Booth").Length
+                                   >= authority.BaseRules.Opening.BoothLimit
+                            then
+                                executionRejection <- Some("RuleLimitReached", [||])
+                            else
+                                let moved, movedEvent = moveCard source.Id zone "" next
+                                next <- moved
+                                events.Add movedEvent
+                    | ReferenceOpcode.TransformFromStack ->
+                        let replacement =
+                            lastSelectedCards
+                            |> Array.choose (ReferenceState.tryCard next)
+                            |> Array.tryFind (fun card -> card.Zone = "Stack")
+                            |> Option.orElseWith (fun () ->
+                                selectedTargets |> Array.tryFind (fun card -> card.Zone = "Stack"))
+
+                        match replacement with
+                        | Some replacement when mutation <> SkipProgramCardMovement ->
+                            let source = ReferenceState.card next attacker.Id
+                            let moved, movedEvent = moveCard source.Id "EmptiesTray" "" next
+
+                            next <-
+                                ReferenceState.updateCard
+                                    { ReferenceState.card moved replacement.Id with
+                                        Zone = source.Zone
+                                        Damage = source.Damage
+                                        EnteredAtOwnerRound =
+                                            (ReferenceState.player moved actor).RoundsStarted }
+                                    moved
+
+                            events.Add movedEvent
+                        | _ -> ()
+                    | ReferenceOpcode.ChuckSelf ->
+                        if not isHouseRule && mutation <> SkipProgramCardMovement then
+                            let source = ReferenceState.card next attacker.Id
+
+                            let related =
+                                Array.concat
+                                    [ source.Attachments; source.UnderlyingCards; [| source.Id |] ]
+                                |> Array.distinct
+
+                            next <-
+                                { next with
+                                    Cards =
+                                        next.Cards
+                                        |> Array.map (fun card ->
+                                            if Array.contains card.Id related then
+                                                { card with
+                                                    Zone = "EmptiesTray"
+                                                    StackPosition = -1
+                                                    AttachedTo = ""
+                                                    Attachments = [||]
+                                                    UnderlyingCards = [||]
+                                                    RoughStates = [||] }
+                                            else
+                                                card)
+                                    Effects =
+                                        next.Effects
+                                        |> Array.filter (fun effect ->
+                                            not (Array.contains effect.SourceCard related)
+                                            && not (Array.contains effect.TargetCard related)) }
+                    | ReferenceOpcode.OncePerRound ->
+                        next <-
+                            { next with
+                                RoundUsage =
+                                    { next.RoundUsage with
+                                        EffectsUsed =
+                                            Array.append next.RoundUsage.EffectsUsed [| effect |]
+                                            |> Array.distinct } }
+                    | ReferenceOpcode.TriggeredPartyTrick -> ()
                     | ReferenceOpcode.ForceBeerMatBlank ->
                         let registered =
                             { SourceEffect = effect
@@ -2800,7 +3076,10 @@ module ReferenceDeterministicPrograms =
 
                         let duration =
                             if instruction.Opcode = ReferenceOpcode.ModifySoftSpot then
-                                "WhileTargetInPlay"
+                                if isHouseRule then
+                                    "WhileSourceInPlay"
+                                else
+                                    "WhileTargetInPlay"
                             else
                                 "UntilEndOfOpponentsNextRound"
 
@@ -2815,7 +3094,7 @@ module ReferenceDeterministicPrograms =
                             else
                                 instruction
 
-                        for target in selectedTargets do
+                        for target in registrationTargets kind do
                             let registered, registeredEvents =
                                 registerEffect
                                     next
@@ -2831,7 +3110,7 @@ module ReferenceDeterministicPrograms =
                             events.AddRange registeredEvents
                     | ReferenceOpcode.IgnoreStubbornStreak
                     | ReferenceOpcode.IgnoreSoftSpotAndStubbornStreak -> ()
-                    | other -> invalidOp $"The BLOKEMON-136 interpreter cannot execute {other}."
+                    | other -> invalidOp $"The shared reference interpreter cannot execute {other}."
 
                     if runThen then
                         execute $"{path}/then/" instruction.Then
@@ -2983,6 +3262,39 @@ module ReferenceDeterministicPrograms =
         beerMatResults.ToArray(),
         executionRejection,
         extraBarChits
+
+    let internal executeStandaloneProgram
+        (authority: ReferenceAuthority)
+        (mutation: ReferenceProgramMutation)
+        (selected: CanonicalAction)
+        (actor: string)
+        (source: CanonicalCard)
+        (effect: string)
+        (program: ReferenceInstruction array)
+        (isHouseRule: bool)
+        (beerMatResults: bool array)
+        (state: CanonicalState)
+        =
+        let programShape =
+            { MechanicalId = effect
+              VimCost = [||]
+              PrintedDamage = 0
+              VariablePrintedDamage = false
+              CanBeUsedFromBench = false
+              Program = program }
+
+        executeProgram
+            authority
+            mutation
+            selected
+            actor
+            source
+            effect
+            programShape
+            isHouseRule
+            0
+            beerMatResults
+            state
 
     let private rejection
         (state: CanonicalState)
@@ -3235,6 +3547,7 @@ module ReferenceDeterministicPrograms =
                                     attacker
                                     attack.MechanicalId
                                     attack
+                                    false
                                     0
                                     [||]
                                     muddledState
@@ -3465,6 +3778,7 @@ module ReferenceDeterministicPrograms =
                         attacker
                         attack.MechanicalId
                         attack
+                        false
                         0
                         refreshed.PendingEffect.BeerMatResults
                         playing

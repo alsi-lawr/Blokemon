@@ -12,6 +12,7 @@
     <Compile Include="CommonFoundation.fs" />
     <Compile Include="DeterministicPrograms.fs" />
     <Compile Include="BranchingPrograms.fs" />
+    <Compile Include="LifecyclePrograms.fs" />
     <Compile Include="Replay.fs" />
     <Compile Include="DependencyEvidence.fs" />
   </ItemGroup>

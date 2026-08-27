@@ -214,6 +214,9 @@ module ReferenceCommonFoundation =
                             invalidOp
                                 $"The reference continuous support prerequisite cannot target {unsupported}.")
                 |> Array.filter isInPlay
+                |> Array.filter (fun target ->
+                    instruction.RelatedIds.Length = 0
+                    || Array.contains target.MechanicalId instruction.RelatedIds)
 
             if resolved.Length <> 0 then
                 resolved
@@ -238,13 +241,21 @@ module ReferenceCommonFoundation =
                 | ReferenceOpcode.PreventDamage
                 | ReferenceOpcode.PreventEffects
                 | ReferenceOpcode.ReduceDamage
+                | ReferenceOpcode.ScaleDamage
                 | ReferenceOpcode.ModifyAttackCost
                 | ReferenceOpcode.ModifyTaxiFare
                 | ReferenceOpcode.ModifySoftSpot
                 | ReferenceOpcode.RestrictTaxi
+                | ReferenceOpcode.RestrictLocal
                 | ReferenceOpcode.RestrictEmptiesRecovery ->
                     for target in targets source instruction do
-                        register source effect (string instruction.Opcode) instruction target
+                        let kind =
+                            if instruction.Opcode = ReferenceOpcode.ScaleDamage then
+                                "ScaleNextAttackDamage"
+                            else
+                                string instruction.Opcode
+
+                        register source effect kind instruction target
                 | ReferenceOpcode.AttachVim -> ()
                 | unsupported ->
                     invalidOp
@@ -312,25 +323,42 @@ module ReferenceCommonFoundation =
         (attacker: CanonicalCard)
         (attack: ReferenceAttack)
         =
-        let available = ResizeArray(attachedVim authority state attacker |> Array.map snd)
-        let mutable payable = true
+        let modifiers =
+            state.Effects
+            |> Array.filter (fun effect ->
+                effect.TargetCard = attacker.Id && effect.Kind = "ModifyAttackCost")
 
-        for typedCost in
-            attack.VimCost
-            |> Array.filter (fun value -> value <> ReferenceMechanicalType.Colorless) do
-            if payable then
-                let index = available.FindIndex(fun value -> value = typedCost)
+        if modifiers |> Array.exists (fun effect -> effect.Amount < 0) then
+            true
+        else
+            let available = ResizeArray(attachedVim authority state attacker |> Array.map snd)
+            let costs = ResizeArray(attack.VimCost)
 
-                if index < 0 then
-                    payable <- false
+            for modifier in modifiers |> Array.filter (fun effect -> effect.Amount > 0) do
+                if modifier.MechanicalTypes.Length = 0 then
+                    costs.AddRange(Seq.replicate modifier.Amount ReferenceMechanicalType.Colorless)
                 else
-                    available.RemoveAt index
+                    costs.AddRange(
+                        modifier.MechanicalTypes |> Seq.map Enum.Parse<ReferenceMechanicalType>
+                    )
 
-        payable
-        && available.Count
-           >= (attack.VimCost
-               |> Array.filter (fun value -> value = ReferenceMechanicalType.Colorless)
-               |> Array.length)
+            let mutable payable = true
+
+            for typedCost in
+                costs |> Seq.filter (fun value -> value <> ReferenceMechanicalType.Colorless) do
+                if payable then
+                    let index = available.FindIndex(fun value -> value = typedCost)
+
+                    if index < 0 then
+                        payable <- false
+                    else
+                        available.RemoveAt index
+
+            payable
+            && available.Count
+               >= (costs
+                   |> Seq.filter (fun value -> value = ReferenceMechanicalType.Colorless)
+                   |> Seq.length)
 
     let private promotionEligible
         (authority: ReferenceAuthority)

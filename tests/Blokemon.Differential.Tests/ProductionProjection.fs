@@ -348,3 +348,18 @@ module ProductionProjection =
         |> Seq.map legalAction
         |> Seq.filter (fun action -> supported.Contains action.Kind)
         |> Seq.toArray
+
+    let lifecycleLegalActions values =
+        let supported =
+            Set
+                [ "Promote"
+                  "PlayKit"
+                  "UsePartyTrick"
+                  "Attack"
+                  "EndRound"
+                  "ResolveEffectChoice" ]
+
+        values
+        |> Seq.map legalAction
+        |> Seq.filter (fun action -> supported.Contains action.Kind)
+        |> Seq.toArray

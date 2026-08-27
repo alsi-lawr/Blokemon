@@ -955,6 +955,357 @@ module ProductionSetup =
           Winner = ValueNone
           SuddenDeathCount = 0 }
 
+    let lifecycleState
+        (manifest: BlokemonRuntimeManifest)
+        (input: ReferenceObligationInput)
+        : MatchState =
+        let setup = materialize input
+        let parameters = setup.Parameters
+
+        let attackerMechanicalId, defenderMechanicalId =
+            match setup.Route with
+            | "promotion-decline" -> parameters[2], "BLK-001"
+            | "play-kit" -> "BLK-003", "BLK-001"
+            | "local-decline"
+            | "local-trigger" -> "BLK-001", "BLK-150"
+            | "kit-condition" -> parameters[2], "BLK-001"
+            | _ -> parameters[0], "BLK-001"
+
+        let mutable cards =
+            [| setupCard manifest "attacker" attackerMechanicalId "first" CardZone.Oche -1
+               setupCard manifest "defender" defenderMechanicalId "second" CardZone.Oche -1
+               setupCard
+                   manifest
+                   "first-draw"
+                   (basicVimFor manifest BlokemonMechanicalType.Fire)
+                   "first"
+                   CardZone.Stack
+                   0
+               setupCard
+                   manifest
+                   "second-draw"
+                   (basicVimFor manifest BlokemonMechanicalType.Water)
+                   "second"
+                   CardZone.Stack
+                   0 |]
+
+        let add owner id mechanicalId cardZone position =
+            let value = setupCard manifest id mechanicalId owner cardZone position
+
+            cards <-
+                cards
+                |> Array.filter (fun current -> current.Id <> value.Id)
+                |> Array.append [| value |]
+
+        let attach id target =
+            cards <- attachSetupCard (CardInstanceId id) (CardInstanceId target) cards
+
+        let mutable firstRounds = 2
+        let mutable firstBarChits = 6
+
+        match setup.Route with
+        | "continuous-refresh" ->
+            let setupName = parameters[2]
+
+            let vimType =
+                match setupName with
+                | "Water" -> Some BlokemonMechanicalType.Water
+                | "Lightning" -> Some BlokemonMechanicalType.Lightning
+                | "Fire" -> Some BlokemonMechanicalType.Fire
+                | "unequal" -> Some BlokemonMechanicalType.Water
+                | _ -> None
+
+            match vimType with
+            | Some mechanicalType ->
+                add "first" "vim-0" (basicVimFor manifest mechanicalType) CardZone.Mitt -1
+
+                attach "vim-0" "attacker"
+            | None -> ()
+
+            let moveSourceToBooth named =
+                cards <-
+                    updateSetupCard
+                        (CardInstanceId "attacker")
+                        (fun value -> { value with Zone = CardZone.Booth })
+                        cards
+
+                add "first" "own-oche" named CardZone.Oche -1
+
+            match setupName with
+            | "booth" -> moveSourceToBooth "BLK-001"
+            | "out-of-play" ->
+                cards <-
+                    updateSetupCard
+                        (CardInstanceId "attacker")
+                        (fun value -> { value with Zone = CardZone.Mitt })
+                        cards
+
+                add "first" "own-oche" "BLK-001" CardZone.Oche -1
+            | "no-vim-self" ->
+                add
+                    "first"
+                    "vim-sentinel"
+                    (basicVimFor manifest BlokemonMechanicalType.Water)
+                    CardZone.Mitt
+                    -1
+            | value when value.StartsWith("booth-named-", StringComparison.Ordinal) ->
+                moveSourceToBooth value["booth-named-".Length ..]
+            | value when value.StartsWith("named-", StringComparison.Ordinal) ->
+                add "first" "named-condition" value["named-".Length ..] CardZone.Booth -1
+            | "first-round" -> firstRounds <- 1
+            | _ -> ()
+        | "activated-decline"
+        | "activated-trigger" ->
+            let setupName = parameters[2]
+            let candidate = parameters[3]
+
+            match setupName with
+            | "damaged-self" ->
+                cards <-
+                    updateSetupCard
+                        (CardInstanceId "attacker")
+                        (fun value -> { value with Damage = 60 })
+                        cards
+            | "opponent-mitt" -> add "second" candidate "BLK-004" CardZone.Mitt -1
+            | "stack-kit" -> add "first" candidate "KIT-010" CardZone.Stack 1
+            | "stack-bloke-first-round" ->
+                add "first" candidate "BLK-001" CardZone.Stack 1
+                firstRounds <- 1
+            | "empties-kit" ->
+                add "first" candidate "KIT-012" CardZone.EmptiesTray -1
+
+                if setup.Route = "activated-trigger" then
+                    add "first" "candidate-2" "KIT-012" CardZone.EmptiesTray -1
+            | "three-card-draw" ->
+                add "first" "mitt-sentinel" "KIT-001" CardZone.Mitt -1
+
+                add
+                    "first"
+                    "effect-draw-1"
+                    (basicVimFor manifest BlokemonMechanicalType.Fire)
+                    CardZone.Stack
+                    1
+
+                add
+                    "first"
+                    "effect-draw-2"
+                    (basicVimFor manifest BlokemonMechanicalType.Water)
+                    CardZone.Stack
+                    2
+            | "with-own-booth" -> add "first" "own-booth" "BLK-004" CardZone.Booth -1
+            | "fixed-draw-sentinel" -> add "first" "mitt-sentinel" "KIT-001" CardZone.Mitt -1
+            | "default" -> ()
+            | unknown -> invalidOp $"Unknown production lifecycle activation setup {unknown}."
+        | "activated-unavailable" ->
+            let setupName = parameters[2]
+
+            if setupName = "booth" || setupName = "booth-first-round" then
+                cards <-
+                    updateSetupCard
+                        (CardInstanceId "attacker")
+                        (fun value -> { value with Zone = CardZone.Booth })
+                        cards
+
+                add "first" "own-oche" "BLK-001" CardZone.Oche -1
+
+            if setupName = "booth-first-round" then
+                firstRounds <- 1
+        | "promotion-decline" ->
+            add "first" "promotion" parameters[0] CardZone.Mitt -1
+
+            add
+                "first"
+                "retained-vim"
+                (basicVimFor manifest BlokemonMechanicalType.Water)
+                CardZone.Mitt
+                -1
+
+            attach "retained-vim" "attacker"
+
+            cards <-
+                updateSetupCard
+                    (CardInstanceId "attacker")
+                    (fun value ->
+                        { value with
+                            Damage = 20
+                            RoughStates =
+                                ImmutableArray.Create(
+                                    { State = BlokemonRoughState.DodgyPint
+                                      AppliedAtOwnerRound = 1 }
+                                    : RoughStateEntry
+                                ) })
+                    cards
+        | "local-decline"
+        | "local-trigger" ->
+            add "first" "local-under-test" "KIT-006" CardZone.Local -1
+
+            add
+                "first"
+                "mitt-vim"
+                (basicVimFor manifest BlokemonMechanicalType.Water)
+                CardZone.Mitt
+                -1
+
+            if setup.Route = "local-trigger" then
+                add "first" "mitt-sentinel" "KIT-001" CardZone.Mitt -1
+
+                add
+                    "first"
+                    "effect-draw-2"
+                    (basicVimFor manifest BlokemonMechanicalType.Fire)
+                    CardZone.Stack
+                    1
+
+                add
+                    "first"
+                    "effect-draw-3"
+                    (basicVimFor manifest BlokemonMechanicalType.Lightning)
+                    CardZone.Stack
+                    2
+        | "play-kit" ->
+            let kit = parameters[0]
+            let mode = parameters[2]
+            add "first" "kit-under-test" kit CardZone.Mitt -1
+
+            match kit with
+            | "KIT-007" ->
+                add
+                    "first"
+                    "effect-draw-1"
+                    (basicVimFor manifest BlokemonMechanicalType.Fire)
+                    CardZone.Stack
+                    1
+
+                add
+                    "first"
+                    "prize"
+                    (basicVimFor manifest BlokemonMechanicalType.Lightning)
+                    CardZone.BarChit
+                    0
+
+                firstBarChits <- 1
+            | "KIT-009" -> add "second" "other-mitt-bloke" "BLK-004" CardZone.Mitt -1
+            | "KIT-010" ->
+                add
+                    "second"
+                    "other-vim"
+                    (basicVimFor manifest BlokemonMechanicalType.Water)
+                    CardZone.Mitt
+                    -1
+
+                add
+                    "first"
+                    "own-vim"
+                    (basicVimFor manifest BlokemonMechanicalType.Fire)
+                    CardZone.Mitt
+                    -1
+
+                attach "other-vim" "defender"
+            | "KIT-011" -> add "second" "other-mitt-bloke" "BLK-004" CardZone.Mitt -1
+            | "KIT-008" when mode = "badge" ->
+                add "first" "own-booth" "BLK-004" CardZone.Booth -1
+
+                add
+                    "first"
+                    "candidate"
+                    (basicVimFor manifest BlokemonMechanicalType.Water)
+                    CardZone.EmptiesTray
+                    -1
+            | "KIT-005" when mode.StartsWith("search-", StringComparison.Ordinal) ->
+                cards <-
+                    updateSetupCard
+                        (CardInstanceId "first-draw")
+                        (fun value ->
+                            { value with
+                                MechanicalId = MechanicalCardId "BLK-001"
+                                Kind = CardKind.Bloke })
+                        cards
+
+                for index in 1..7 do
+                    add "first" $"top-{index}" "BLK-001" CardZone.Stack index
+            | _ -> ()
+        | "kit-condition" ->
+            add "first" "kit-under-test" parameters[0] CardZone.Mitt -1
+
+            add
+                "second"
+                "other-vim-0"
+                (basicVimFor manifest BlokemonMechanicalType.Grass)
+                CardZone.Mitt
+                -1
+
+            add
+                "second"
+                "other-vim-1"
+                (basicVimFor manifest BlokemonMechanicalType.Water)
+                CardZone.Mitt
+                -1
+
+            attach "other-vim-0" "defender"
+            attach "other-vim-1" "defender"
+        | unknown -> invalidOp $"Unowned production lifecycle route {unknown}."
+
+        for explicitCard in setup.Cards do
+            add
+                explicitCard.Owner.Value
+                explicitCard.Id.Value
+                explicitCard.MechanicalId.Value
+                explicitCard.Zone
+                -1
+
+        for count in setup.ZoneCounts do
+            for index in 0 .. count.Count - 1 do
+                add
+                    count.Owner.Value
+                    $"input-{count.Owner.Value}-{count.Zone}-{index}"
+                    (basicVimFor manifest BlokemonMechanicalType.Grass)
+                    count.Zone
+                    index
+
+        let players =
+            [| "first"; "second" |]
+            |> Array.map (fun id ->
+                let barChits =
+                    setup.Players
+                    |> Array.tryFind (fun value -> value.Id = PlayerId id)
+                    |> Option.map _.BarChitsRemaining
+                    |> Option.defaultValue (if id = "first" then firstBarChits else 6)
+
+                ({ Id = PlayerId id
+                   BarChitsRemaining = barChits
+                   MulliganCount = 0
+                   MulliganBonusAllowance = 0
+                   MulliganBonusChosen = true
+                   BonusDrawn = ImmutableArray<_>.Empty
+                   BonusPlacementChosen = true
+                   OpeningChosen = true
+                   RoundsStarted = if id = "first" then firstRounds else 2 }
+                : PlayerState))
+            |> ImmutableArray.CreateRange
+
+        { Id = MatchId $"obligation:{setup.Id}"
+          AuthorityVersion = manifest.ManifestVersion
+          Seed = setup.Seed
+          Random = MatchRandomState(setup.Seed.Value, 0)
+          Revision = MatchRevision 0L
+          LastEventSequence = 0L
+          Phase = MatchPhase.Playing
+          OpeningPlayer = PlayerId "second"
+          ActivePlayer = PlayerId "first"
+          RoundNumber = 4
+          Players = players
+          Cards = cards |> Array.sortBy _.Id.Value |> ImmutableArray.CreateRange
+          Effects = ImmutableArray<_>.Empty
+          ProcessedCommands = ImmutableArray<_>.Empty
+          RoundUsage = RoundUsage.Empty(PlayerId "first")
+          PendingEffect = ValueNone
+          PendingKnockout = ValueNone
+          PendingBarChits = ImmutableArray<_>.Empty
+          ReplacementPlayer = ValueNone
+          PendingRoundEnd = false
+          Winner = ValueNone
+          SuddenDeathCount = 0 }
+
     let programCommand (selected: CanonicalAction) =
         let parts = selected.Payload.Split(';')
 
@@ -971,6 +1322,46 @@ module ProductionSetup =
                 CardInstanceId(parts[0].Substring(9)),
                 EffectId(parts[1].Substring(7))
             ) }
+
+    let lifecycleCommand (selected: CanonicalAction) =
+        let parts = selected.Payload.Split(';')
+
+        let action =
+            match selected.Kind with
+            | "Attack" ->
+                MatchAction.Attack(
+                    CardInstanceId(parts[0].Substring(9)),
+                    EffectId(parts[1].Substring(7))
+                )
+            | "EndRound" -> MatchAction.EndRound
+            | "Promote" ->
+                MatchAction.Promote(
+                    CardInstanceId(parts[0].Substring(10)),
+                    CardInstanceId(parts[1].Substring(9))
+                )
+            | "PlayKit" ->
+                let target = parts[1].Substring(7)
+
+                MatchAction.PlayKit(
+                    CardInstanceId(parts[0].Substring(4)),
+                    if String.IsNullOrEmpty target then
+                        ValueNone
+                    else
+                        ValueSome(CardInstanceId target)
+                )
+            | "UsePartyTrick" ->
+                MatchAction.UsePartyTrick(
+                    CardInstanceId(parts[0].Substring(7)),
+                    EffectId(parts[1].Substring(7))
+                )
+            | other -> invalidOp $"Unsupported lifecycle production action {other}."
+
+        { Id = CommandId selected.CommandId
+          MatchId = MatchId selected.MatchId
+          Actor = PlayerId selected.Actor
+          ExpectedRevision = MatchRevision selected.ExpectedRevision
+          Choices = selected.Choices |> Seq.map canonicalChoice |> ImmutableArray.CreateRange
+          Action = action }
 
     let structuredProgramCommand (selected: CanonicalAction) (input: ProductionActionInput) =
         let choices =

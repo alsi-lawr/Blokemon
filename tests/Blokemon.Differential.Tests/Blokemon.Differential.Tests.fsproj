@@ -11,9 +11,11 @@
     <Compile Include="DifferentialRunner.fs" />
     <Compile Include="DeterministicProgramRunner.fs" />
     <Compile Include="BranchingProgramRunner.fs" />
+    <Compile Include="LifecycleProgramRunner.fs" />
     <Compile Include="DifferentialTests.fs" />
     <Compile Include="DeterministicProgramTests.fs" />
     <Compile Include="BranchingProgramTests.fs" />
+    <Compile Include="LifecycleProgramTests.fs" />
     <Compile Include="CommonFoundationTests.fs" />
   </ItemGroup>
   <ItemGroup>

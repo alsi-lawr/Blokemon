@@ -24,7 +24,7 @@ module internal MatchWins =
             && not (builder.CardsIn(player, CardZone.Booth) |> Seq.isEmpty))
         |> ValueOption.ofOption
 
-    let resolveWins
+    let private resolveLiveWins
         (catalog: AuthorityCatalog)
         (builder: MatchBuilder)
         (failedRequiredDraw: PlayerId voption)
@@ -69,6 +69,14 @@ module internal MatchWins =
                     )
 
                 builder.Events.Add(PendingMatchEvent.ofKind MatchEventKind.SuddenDeathStarted)
+
+    let resolveWins
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (failedRequiredDraw: PlayerId voption)
+        =
+        if builder.Phase <> MatchPhase.Complete then
+            resolveLiveWins catalog builder failedRequiredDraw
 
     let startRound (catalog: AuthorityCatalog) (builder: MatchBuilder) (player: PlayerId) =
         builder.ActivePlayer <- player
