@@ -363,3 +363,17 @@ module ProductionProjection =
         |> Seq.map legalAction
         |> Seq.filter (fun action -> supported.Contains action.Kind)
         |> Seq.toArray
+
+    let specializedTriggerLegalActions values =
+        let supported =
+            Set
+                [ "Promote"
+                  "Attack"
+                  "EndRound"
+                  "ResolveKnockoutTrigger"
+                  "ResolveBarChitTrigger" ]
+
+        values
+        |> Seq.map legalAction
+        |> Seq.filter (fun action -> supported.Contains action.Kind)
+        |> Seq.toArray

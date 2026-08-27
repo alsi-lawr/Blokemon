@@ -964,7 +964,8 @@ module ProductionSetup =
 
         let attackerMechanicalId, defenderMechanicalId =
             match setup.Route with
-            | "promotion-decline" -> parameters[2], "BLK-001"
+            | "promotion-decline"
+            | "promotion-trigger" -> parameters[2], "BLK-001"
             | "play-kit" -> "BLK-003", "BLK-001"
             | "local-decline"
             | "local-trigger" -> "BLK-001", "BLK-150"
@@ -1110,31 +1111,44 @@ module ProductionSetup =
 
             if setupName = "booth-first-round" then
                 firstRounds <- 1
-        | "promotion-decline" ->
+        | "promotion-decline"
+        | "promotion-trigger" ->
             add "first" "promotion" parameters[0] CardZone.Mitt -1
 
-            add
-                "first"
-                "retained-vim"
-                (basicVimFor manifest BlokemonMechanicalType.Water)
-                CardZone.Mitt
-                -1
+            if setup.Route = "promotion-decline" then
+                add
+                    "first"
+                    "retained-vim"
+                    (basicVimFor manifest BlokemonMechanicalType.Water)
+                    CardZone.Mitt
+                    -1
 
-            attach "retained-vim" "attacker"
+                attach "retained-vim" "attacker"
 
-            cards <-
-                updateSetupCard
-                    (CardInstanceId "attacker")
-                    (fun value ->
-                        { value with
-                            Damage = 20
-                            RoughStates =
-                                ImmutableArray.Create(
-                                    { State = BlokemonRoughState.DodgyPint
-                                      AppliedAtOwnerRound = 1 }
-                                    : RoughStateEntry
-                                ) })
-                    cards
+                cards <-
+                    updateSetupCard
+                        (CardInstanceId "attacker")
+                        (fun value ->
+                            { value with
+                                Damage = 20
+                                RoughStates =
+                                    ImmutableArray.Create(
+                                        { State = BlokemonRoughState.DodgyPint
+                                          AppliedAtOwnerRound = 1 }
+                                        : RoughStateEntry
+                                    ) })
+                        cards
+            else
+                for index in 1 .. (if parameters[0] = "BLK-045" then 8 else 4) do
+                    add
+                        "first"
+                        $"top-{index}"
+                        (basicVimFor manifest BlokemonMechanicalType.Fire)
+                        CardZone.Stack
+                        index
+
+                if parameters[0] = "BLK-093" then
+                    add "second" "opponent-supporter" "KIT-005" CardZone.EmptiesTray -1
         | "local-decline"
         | "local-trigger" ->
             add "first" "local-under-test" "KIT-006" CardZone.Local -1
@@ -1306,6 +1320,179 @@ module ProductionSetup =
           Winner = ValueNone
           SuddenDeathCount = 0 }
 
+    let specializedTriggerState
+        (manifest: BlokemonRuntimeManifest)
+        (input: ReferenceObligationInput)
+        : MatchState =
+        let setup = materialize input
+        let parameters = setup.Parameters
+
+        if setup.Route = "promotion-trigger" then
+            lifecycleState manifest input
+        else
+            let attackerMechanicalId, defenderMechanicalId, attachedVim =
+                match setup.Route with
+                | "reactive-trigger" ->
+                    parameters[2], parameters[0], [| "VIM-LAIRY"; "VIM-SOBER"; "VIM-SOBER" |]
+                | "knockout-trigger"
+                | "knockout-trigger-decline"
+                | "bar-chit-trigger"
+                | "bar-chit-trigger-blank"
+                | "bar-chit-trigger-decline"
+                | "bar-chit-trigger-full-booth" ->
+                    "BLK-003", "BLK-001", [| "VIM-BLAZED"; "VIM-BLAZED"; "VIM-SOBER" |]
+                | "paul-chuckle-trigger-fire" -> "BLK-076", "BLK-107", [| "VIM-LAIRY" |]
+                | "paul-chuckle-trigger-nonfire" -> "BLK-040", "BLK-107", [| "VIM-SOBER" |]
+                | "trigger-nonfire" ->
+                    if parameters[2] = "bar-chit" then
+                        "BLK-001", "BLK-001", [||]
+                    else
+                        parameters[0], "BLK-001", [||]
+                | "trivial-booth-damage" ->
+                    let allVim =
+                        [| "VIM-DODGY"
+                           "VIM-LAIRY"
+                           "VIM-CURRY"
+                           "VIM-BLAZED"
+                           "VIM-BEER"
+                           "VIM-GEEKED"
+                           "VIM-SOBER" |]
+                        |> Array.collect (fun id -> Array.create 4 id)
+
+                    parameters[0], "BLK-003", allVim
+                | unknown -> invalidOp $"Unowned production specialised route {unknown}."
+
+            let mutable cards =
+                [| setupCard manifest "attacker" attackerMechanicalId "first" CardZone.Oche -1
+                   setupCard manifest "defender" defenderMechanicalId "second" CardZone.Oche -1
+                   setupCard manifest "first-draw" "VIM-BLAZED" "first" CardZone.Stack 0
+                   setupCard manifest "second-draw" "VIM-SOBER" "second" CardZone.Stack 0 |]
+
+            let add owner id mechanicalId cardZone position =
+                let value = setupCard manifest id mechanicalId owner cardZone position
+
+                cards <-
+                    cards
+                    |> Array.filter (fun current -> current.Id <> value.Id)
+                    |> Array.append [| value |]
+
+            let attach attachment target =
+                cards <- attachSetupCard (CardInstanceId attachment) (CardInstanceId target) cards
+
+            for index in 0 .. attachedVim.Length - 1 do
+                add "first" $"vim-{index}" attachedVim[index] CardZone.Mitt -1
+                attach $"vim-{index}" "attacker"
+
+            let mutable firstBarChits = 6
+
+            match setup.Route with
+            | "knockout-trigger"
+            | "knockout-trigger-decline" ->
+                add "second" "trigger-source" "BLK-026" CardZone.Booth -1
+                add "second" "movable-vim" "VIM-BEER" CardZone.Mitt -1
+                attach "movable-vim" "defender"
+                add "first" "prize" "VIM-LAIRY" CardZone.BarChit 0
+                firstBarChits <- 1
+            | "bar-chit-trigger"
+            | "bar-chit-trigger-blank"
+            | "bar-chit-trigger-decline"
+            | "bar-chit-trigger-full-booth" ->
+                add "first" "triggered-prize" "BLK-113" CardZone.BarChit 0
+                add "first" "extra-prize" "VIM-LAIRY" CardZone.BarChit 1
+                add "second" "defender-bench" "BLK-004" CardZone.Booth -1
+
+                if setup.Route = "bar-chit-trigger-full-booth" then
+                    for index in 0..4 do
+                        add "first" $"full-booth-{index}" "BLK-004" CardZone.Booth index
+
+                firstBarChits <- 2
+            | "trigger-nonfire" when parameters[2] = "bar-chit" ->
+                cards <-
+                    updateSetupCard
+                        (CardInstanceId "attacker")
+                        (fun value ->
+                            { value with
+                                MechanicalId = MechanicalCardId parameters[0]
+                                Zone = CardZone.BarChit
+                                IsFaceDown = true
+                                StackPosition = 0 })
+                        cards
+
+                add "first" "own-oche" "BLK-001" CardZone.Oche -1
+                firstBarChits <- 1
+            | "trivial-booth-damage" ->
+                let benchOwner = if parameters.Length = 4 then parameters[3] else "BLK-003"
+
+                add "second" "a-other-booth" benchOwner CardZone.Booth -1
+            | "paul-chuckle-trigger-fire" ->
+                cards <-
+                    updateSetupCard
+                        (CardInstanceId "defender")
+                        (fun value -> { value with Damage = 70 })
+                        cards
+            | _ -> ()
+
+            for explicitCard in setup.Cards do
+                add
+                    explicitCard.Owner.Value
+                    explicitCard.Id.Value
+                    explicitCard.MechanicalId.Value
+                    explicitCard.Zone
+                    -1
+
+            for count in setup.ZoneCounts do
+                for index in 0 .. count.Count - 1 do
+                    add
+                        count.Owner.Value
+                        $"input-{count.Owner.Value}-{count.Zone}-{index}"
+                        "VIM-BLAZED"
+                        count.Zone
+                        index
+
+            let players =
+                [| "first"; "second" |]
+                |> Array.map (fun id ->
+                    let barChits =
+                        setup.Players
+                        |> Array.tryFind (fun player -> player.Id = PlayerId id)
+                        |> Option.map _.BarChitsRemaining
+                        |> Option.defaultValue (if id = "first" then firstBarChits else 6)
+
+                    ({ Id = PlayerId id
+                       BarChitsRemaining = barChits
+                       MulliganCount = 0
+                       MulliganBonusAllowance = 0
+                       MulliganBonusChosen = true
+                       BonusDrawn = ImmutableArray<_>.Empty
+                       BonusPlacementChosen = true
+                       OpeningChosen = true
+                       RoundsStarted = 2 }
+                    : PlayerState))
+                |> ImmutableArray.CreateRange
+
+            { Id = MatchId $"obligation:{setup.Id}"
+              AuthorityVersion = manifest.ManifestVersion
+              Seed = setup.Seed
+              Random = MatchRandomState(setup.Seed.Value, 0)
+              Revision = MatchRevision 0L
+              LastEventSequence = 0L
+              Phase = MatchPhase.Playing
+              OpeningPlayer = PlayerId "second"
+              ActivePlayer = PlayerId "first"
+              RoundNumber = 4
+              Players = players
+              Cards = cards |> Array.sortBy _.Id.Value |> ImmutableArray.CreateRange
+              Effects = ImmutableArray<_>.Empty
+              ProcessedCommands = ImmutableArray<_>.Empty
+              RoundUsage = RoundUsage.Empty(PlayerId "first")
+              PendingEffect = ValueNone
+              PendingKnockout = ValueNone
+              PendingBarChits = ImmutableArray<_>.Empty
+              ReplacementPlayer = ValueNone
+              PendingRoundEnd = false
+              Winner = ValueNone
+              SuddenDeathCount = 0 }
+
     let programCommand (selected: CanonicalAction) =
         let parts = selected.Payload.Split(';')
 
@@ -1355,6 +1542,29 @@ module ProductionSetup =
                     EffectId(parts[1].Substring(7))
                 )
             | other -> invalidOp $"Unsupported lifecycle production action {other}."
+
+        { Id = CommandId selected.CommandId
+          MatchId = MatchId selected.MatchId
+          Actor = PlayerId selected.Actor
+          ExpectedRevision = MatchRevision selected.ExpectedRevision
+          Choices = selected.Choices |> Seq.map canonicalChoice |> ImmutableArray.CreateRange
+          Action = action }
+
+    let specializedTriggerCommand (selected: CanonicalAction) =
+        let action =
+            match selected.Kind with
+            | "ResolveKnockoutTrigger" ->
+                let vim = selected.Payload.Substring(4)
+
+                MatchAction.ResolveKnockoutTrigger(
+                    if String.IsNullOrEmpty vim then
+                        ValueNone
+                    else
+                        ValueSome(CardInstanceId vim)
+                )
+            | "ResolveBarChitTrigger" ->
+                MatchAction.ResolveBarChitTrigger(Boolean.Parse(selected.Payload.Substring(6)))
+            | _ -> (lifecycleCommand selected).Action
 
         { Id = CommandId selected.CommandId
           MatchId = MatchId selected.MatchId

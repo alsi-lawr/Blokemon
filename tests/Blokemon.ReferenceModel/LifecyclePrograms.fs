@@ -209,7 +209,8 @@ module ReferenceLifecyclePrograms =
 
         let attackerMechanicalId, defenderMechanicalId =
             match route with
-            | "promotion-decline" -> parameters[2], "BLK-001"
+            | "promotion-decline"
+            | "promotion-trigger" -> parameters[2], "BLK-001"
             | "play-kit" -> "BLK-003", "BLK-001"
             | "local-decline"
             | "local-trigger" -> "BLK-001", "BLK-150"
@@ -332,28 +333,41 @@ module ReferenceLifecyclePrograms =
 
             if setup = "booth-first-round" then
                 firstRounds <- 1
-        | "promotion-decline" ->
+        | "promotion-decline"
+        | "promotion-trigger" ->
             add "first" "promotion" parameters[0] "Mitt" -1
 
-            add
-                "first"
-                "retained-vim"
-                (basicVimFor authority ReferenceMechanicalType.Water)
-                "Mitt"
-                -1
+            if route = "promotion-decline" then
+                add
+                    "first"
+                    "retained-vim"
+                    (basicVimFor authority ReferenceMechanicalType.Water)
+                    "Mitt"
+                    -1
 
-            attach "retained-vim" "attacker"
+                attach "retained-vim" "attacker"
 
-            cards <-
-                updateCard
-                    "attacker"
-                    (fun value ->
-                        { value with
-                            Damage = 20
-                            RoughStates =
-                                [| { State = "DodgyPint"
-                                     AppliedAtOwnerRound = 1 } |] })
-                    cards
+                cards <-
+                    updateCard
+                        "attacker"
+                        (fun value ->
+                            { value with
+                                Damage = 20
+                                RoughStates =
+                                    [| { State = "DodgyPint"
+                                         AppliedAtOwnerRound = 1 } |] })
+                        cards
+            else
+                for index in 1 .. (if parameters[0] = "BLK-045" then 8 else 4) do
+                    add
+                        "first"
+                        $"top-{index}"
+                        (basicVimFor authority ReferenceMechanicalType.Fire)
+                        "Stack"
+                        index
+
+                if parameters[0] = "BLK-093" then
+                    add "second" "opponent-supporter" "KIT-005" "EmptiesTray" -1
         | "local-decline"
         | "local-trigger" ->
             add "first" "local-under-test" "KIT-006" "Local" -1

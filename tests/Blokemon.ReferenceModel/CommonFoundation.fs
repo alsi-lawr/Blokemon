@@ -683,7 +683,7 @@ module ReferenceCommonFoundation =
                             && (not preserveDelayedTarget || effect.Kind <> "EndRoundEffect"))
                     )) }
 
-    let private chuckCardPile (id: string) (state: CanonicalState) =
+    let internal chuckCardPile (id: string) (state: CanonicalState) =
         let card = ReferenceState.card state id
 
         let chucked =
@@ -708,7 +708,7 @@ module ReferenceCommonFoundation =
                 |> removeEffectsFor cardId false)
             state
 
-    let private assignReplacement
+    let internal assignReplacement
         (mutation: ReferenceMutation)
         (player: string)
         (state: CanonicalState)
@@ -728,7 +728,7 @@ module ReferenceCommonFoundation =
         else
             state
 
-    let private takeBarChits
+    let internal takeBarChits
         (mutation: ReferenceMutation)
         (player: string)
         (count: int)
@@ -824,7 +824,7 @@ module ReferenceCommonFoundation =
 
         next, events.ToArray()
 
-    let private resolveWins
+    let internal resolveWins
         (authority: ReferenceAuthority)
         (mutation: ReferenceMutation)
         (random: ReferenceRandom)
@@ -912,7 +912,7 @@ module ReferenceCommonFoundation =
                 events.Add(ReferenceEvents.create "SuddenDeathStarted")
                 { next with Random = random.Snapshot }, events.ToArray()
 
-    let private barChitsFor (authority: ReferenceAuthority) (card: CanonicalCard) =
+    let internal barChitsFor (authority: ReferenceAuthority) (card: CanonicalCard) =
         if card.Kind = "Bloke" then
             if authority.BaseRules.BigHitterIds.Contains card.MechanicalId then
                 authority.BaseRules.SendHome.BigHitterBarChits
@@ -926,7 +926,7 @@ module ReferenceCommonFoundation =
         else
             0
 
-    let private stayingPower (authority: ReferenceAuthority) (card: CanonicalCard) =
+    let internal stayingPower (authority: ReferenceAuthority) (card: CanonicalCard) =
         if card.Kind = "Bloke" then
             authority.Cards[card.MechanicalId].StayingPower
         else

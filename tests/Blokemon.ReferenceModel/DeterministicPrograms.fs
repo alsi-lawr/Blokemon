@@ -3109,7 +3109,8 @@ module ReferenceDeterministicPrograms =
                             next <- registered
                             events.AddRange registeredEvents
                     | ReferenceOpcode.IgnoreStubbornStreak
-                    | ReferenceOpcode.IgnoreSoftSpotAndStubbornStreak -> ()
+                    | ReferenceOpcode.IgnoreSoftSpotAndStubbornStreak
+                    | ReferenceOpcode.RecoverFromSendHome -> ()
                     | other -> invalidOp $"The shared reference interpreter cannot execute {other}."
 
                     if runThen then
@@ -3292,6 +3293,29 @@ module ReferenceDeterministicPrograms =
             effect
             programShape
             isHouseRule
+            0
+            beerMatResults
+            state
+
+    let internal executeAttackProgram
+        (authority: ReferenceAuthority)
+        (mutation: ReferenceProgramMutation)
+        (selected: CanonicalAction)
+        (actor: string)
+        (source: CanonicalCard)
+        (attack: ReferenceAttack)
+        (beerMatResults: bool array)
+        (state: CanonicalState)
+        =
+        executeProgram
+            authority
+            mutation
+            selected
+            actor
+            source
+            attack.MechanicalId
+            attack
+            false
             0
             beerMatResults
             state
