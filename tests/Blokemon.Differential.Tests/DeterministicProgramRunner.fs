@@ -155,8 +155,8 @@ module DeterministicProgramRunner =
 
         Encoding.UTF8.GetBytes(text + "\n")
 
-    let runWithProductionInput
-        root
+    let internal runWithProductionAuthority
+        productionAuthority
         (authority: ReferenceAuthority)
         (obligation: ReferenceDeterministicObligation)
         (productionInput: ReferenceObligationInput)
@@ -164,11 +164,6 @@ module DeterministicProgramRunner =
         =
         let input = obligation.Input
         let initial = obligation.InitialState
-
-        let productionAuthority =
-            DifferentialRunner.productionAuthority
-                (Checkout.rawAuthorityPath root)
-                NoProductionMutation
 
         let engine = MatchEngine(productionAuthority)
         let productionSetup = ProductionSetup.materialize productionInput
@@ -319,6 +314,14 @@ module DeterministicProgramRunner =
                                             selected
                                             probeValues
                                             referenceTransition }
+
+    let runWithProductionInput root authority obligation productionInput mutation =
+        let productionAuthority =
+            DifferentialRunner.productionAuthority
+                (Checkout.rawAuthorityPath root)
+                NoProductionMutation
+
+        runWithProductionAuthority productionAuthority authority obligation productionInput mutation
 
     let run root authority obligation mutation =
         runWithProductionInput root authority obligation obligation.Input mutation

@@ -13,6 +13,7 @@ type DifferentialTests() =
     let root = Checkout.repositoryRoot ()
     let normalTrace = FoundationTraces.starter root "growroom" 101973UL
     let mulliganTrace = FoundationTraces.mulligan 3UL
+    let aggregate = lazy (AggregateRunner.load root)
 
     let replay name result =
         match result with
@@ -37,12 +38,20 @@ type DifferentialTests() =
         | value -> value
 
     [<Test>]
-    member _.``reference model should have no emitted production dependency``() =
+    member _.``reference model should have no direct or emitted production dependency``() =
+        let hasProductionDependency (references: string array) =
+            references
+            |> Array.exists (fun name ->
+                name.StartsWith("Blokemon.Game", StringComparison.Ordinal)
+                || name.StartsWith("Blokemon.App", StringComparison.Ordinal)
+                || name.StartsWith("Blokemon.Core", StringComparison.Ordinal))
+
+        DependencyEvidence.directAssemblyReferences ()
+        |> hasProductionDependency
+        |> should equal false
+
         DependencyEvidence.transitiveAssemblyReferences ()
-        |> Array.exists (fun name ->
-            name.StartsWith("Blokemon.Game", StringComparison.Ordinal)
-            || name.StartsWith("Blokemon.App", StringComparison.Ordinal)
-            || name.StartsWith("Blokemon.Core", StringComparison.Ordinal))
+        |> hasProductionDependency
         |> should equal false
 
     [<Test>]
@@ -242,15 +251,10 @@ type DifferentialTests() =
         | result -> failwith $"The rejection comparison returned {result}."
 
     [<Test>]
-    member _.``production observation should reach and fail the shared transition validator``() =
-        match
-            DifferentialRunner.runTrace
-                root
-                normalTrace
-                ProductionDriven
-                NoProductionMutation
-                NoReferenceMutation
-        with
+    member _.``aggregate production observation should reach and fail the shared transition validator``
+        ()
+        =
+        match AggregateRunner.productionDrivenNegative aggregate.Value with
         | Diverged divergence ->
             divergence.Stage |> should equal "selection-inputs:0"
             divergence.ReferenceFact <> divergence.ProductionFact |> should equal true
@@ -302,32 +306,36 @@ type DifferentialTests() =
         | result -> failwith $"Production selection was not rejected: {result}."
 
     [<Test>]
-    member _.``required draw and legal set mutants should be attributed before terminal``() =
-        match
-            DifferentialRunner.runTrace
-                root
-                normalTrace
-                ReferenceDriven
-                ProductionSkipsRequiredOpeningDraw
-                NoReferenceMutation
-        with
+    member _.``production required opening draw mutant should be attributed and leave authority unchanged``
+        ()
+        =
+        let before = File.ReadAllBytes(Checkout.rawAuthorityPath root)
+
+        match AggregateRunner.productionRequiredOpeningDrawMutant aggregate.Value with
         | Diverged divergence ->
+            divergence.TraceId |> should equal "starter:growroom"
+
             divergence.Stage.StartsWith("transition:", StringComparison.Ordinal)
             |> should equal true
         | result -> failwith $"The production draw mutant survived: {result}."
 
-        match
-            DifferentialRunner.runTrace
-                root
-                normalTrace
-                ReferenceDriven
-                NoProductionMutation
-                OmitResignFromLegalActions
-        with
+        File.ReadAllBytes(Checkout.rawAuthorityPath root) |> should equal before
+
+    [<Test>]
+    member _.``reference omit resign legal set mutant should be attributed and leave authority unchanged``
+        ()
+        =
+        let before = File.ReadAllBytes(Checkout.rawAuthorityPath root)
+
+        match AggregateRunner.referenceOmitResignLegalSetMutant aggregate.Value with
         | Diverged divergence ->
+            divergence.TraceId |> should equal "starter:growroom"
+
             divergence.Stage.StartsWith("legal-actions:", StringComparison.Ordinal)
             |> should equal true
         | result -> failwith $"The reference legal-set mutant survived: {result}."
+
+        File.ReadAllBytes(Checkout.rawAuthorityPath root) |> should equal before
 
     [<Test>]
     member _.``two clean foundation runs should produce bounded byte identical replays``() =

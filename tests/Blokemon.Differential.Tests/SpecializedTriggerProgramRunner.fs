@@ -72,19 +72,14 @@ module SpecializedTriggerProgramRunner =
            RoundUsage = state.RoundUsage
            Transport = state.Transport |}
 
-    let runWithProductionInput
-        root
+    let internal runWithProductionAuthority
+        productionAuthority
         (authority: ReferenceAuthority)
         (obligation: ReferenceSpecializedTriggerObligation)
         (productionInput: ReferenceObligationInput)
         mutation
         =
         let input = obligation.Input
-
-        let productionAuthority =
-            DifferentialRunner.productionAuthority
-                (Checkout.rawAuthorityPath root)
-                NoProductionMutation
 
         let engine = MatchEngine(productionAuthority)
         let productionSetup = ProductionSetup.materialize productionInput
@@ -293,6 +288,14 @@ module SpecializedTriggerProgramRunner =
                         selected
                         probeValues
                         transitionValues }
+
+    let runWithProductionInput root authority obligation productionInput mutation =
+        let productionAuthority =
+            DifferentialRunner.productionAuthority
+                (Checkout.rawAuthorityPath root)
+                NoProductionMutation
+
+        runWithProductionAuthority productionAuthority authority obligation productionInput mutation
 
     let run root authority obligation mutation =
         runWithProductionInput root authority obligation obligation.Input mutation

@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Corpus.fs" />
+    <Compile Include="UpstreamIdentity.fs" />
     <Compile Include="ProductionSetup.fs" />
     <Compile Include="ProductionProjection.fs" />
     <Compile Include="DifferentialRunner.fs" />
@@ -13,12 +14,14 @@
     <Compile Include="BranchingProgramRunner.fs" />
     <Compile Include="LifecycleProgramRunner.fs" />
     <Compile Include="SpecializedTriggerProgramRunner.fs" />
+    <Compile Include="AggregateRunner.fs" />
     <Compile Include="DifferentialTests.fs" />
     <Compile Include="DeterministicProgramTests.fs" />
     <Compile Include="BranchingProgramTests.fs" />
     <Compile Include="LifecycleProgramTests.fs" />
     <Compile Include="SpecializedTriggerProgramTests.fs" />
     <Compile Include="CommonFoundationTests.fs" />
+    <Compile Include="AggregateTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Blokemon.ReferenceModel/Blokemon.ReferenceModel.fsproj" />
