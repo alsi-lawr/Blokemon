@@ -39,10 +39,22 @@ jobs:
           --no-restore
           -p:TreatWarningsAsErrors=true
       - name: Test the core library
-        run: dotnet run --project tests/Blokemon.Core.Tests -c Release --no-build
+        run: >-
+          dotnet run --project tests/Blokemon.Core.Tests -c Release --no-build --
+          --maximum-parallel-tests 1
       - name: Test the game engine
-        run: dotnet run --project tests/Blokemon.Game.Tests -c Release --no-build
+        run: >-
+          dotnet run --project tests/Blokemon.Game.Tests -c Release --no-build --
+          --maximum-parallel-tests 1
       - name: Test the product rules
-        run: dotnet run --project tests/Blokemon.Product.Tests -c Release --no-build
+        run: >-
+          dotnet run --project tests/Blokemon.Product.Tests -c Release --no-build --
+          --maximum-parallel-tests 1
       - name: Test the web application
-        run: dotnet run --project tests/Blokemon.Web.Tests -c Release --no-build
+        run: >-
+          dotnet run --project tests/Blokemon.Web.Tests -c Release --no-build --
+          --maximum-parallel-tests 1
+      - name: Test the independent differential model
+        run: >-
+          dotnet run --project tests/Blokemon.Differential.Tests -c Release --no-build --
+          --maximum-parallel-tests 1
