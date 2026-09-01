@@ -9,6 +9,14 @@ open Blokemon.Game.EffectTargeting
 /// repeat a mechanical type. Both are asked while inspecting and again while validating.
 module internal ChoiceShapes =
 
+    let choiceAcceptsDependents choice =
+        match choice with
+        | EffectChoice.Amount(_, amount) -> amount <> 0
+        | EffectChoice.Cards(_, cards) -> cards.Length <> 0
+        | EffectChoice.Attachments(_, placements) -> placements.Length <> 0
+        | EffectChoice.MechanicalType _
+        | EffectChoice.Attack _ -> true
+
     let instructionOwnsCardChoice (instruction: BlokemonEffectInstruction) =
         if
             instruction.Opcode = BlokemonOpcode.MoveCards

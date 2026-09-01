@@ -27,6 +27,9 @@ type EffectId = { Value: string }
 type EffectChoiceId = { Value: string }
 
 [<Struct>]
+type CpuCandidateId = { Value: string }
+
+[<Struct>]
 type MatchRevision =
     { Value: int64 }
 
@@ -55,6 +58,8 @@ module ValueObjects =
     let EffectId value : EffectId = { Value = value }
 
     let EffectChoiceId value : EffectChoiceId = { Value = value }
+
+    let CpuCandidateId value : CpuCandidateId = { Value = value }
 
     let MatchRevision value : MatchRevision = { Value = value }
 

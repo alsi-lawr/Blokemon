@@ -253,19 +253,21 @@ module internal VintageChoices =
             let count = cards |> Seq.length
             let maximum = min instruction.Amount count
 
-            cardsRequirement
-                requirements
-                effect
-                path
-                "cards"
-                actor
-                (if instruction.Selection = BlokemonSelection.UpTo then
-                     0
-                 else
-                     maximum)
-                maximum
-                cards
-                dependency
+            requirements.Add
+                { ChoiceRequirement.create
+                      (choiceId effect path "cards")
+                      ChoiceRequirementKind.Cards
+                      actor
+                      (if instruction.Selection = BlokemonSelection.UpTo then
+                           0
+                       else
+                           maximum)
+                      maximum
+                      (ImmutableArray.CreateRange(cards |> Seq.map (fun card -> card.Id)))
+                      ImmutableArray<_>.Empty
+                      ImmutableArray<_>.Empty
+                      dependency with
+                    PreserveCardOrder = true }
 
             true
         | BlokemonOpcode.Wildfire ->

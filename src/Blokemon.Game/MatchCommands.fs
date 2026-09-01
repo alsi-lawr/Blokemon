@@ -47,7 +47,8 @@ type ChoiceRequirement =
       DependsOnOptional: EffectChoiceId voption
       EligibleTargets: ImmutableArray<CardInstanceId>
       RequireDifferentMechanicalTypes: bool
-      EligibleCardTypes: ImmutableArray<CardMechanicalTypes> }
+      EligibleCardTypes: ImmutableArray<CardMechanicalTypes>
+      PreserveCardOrder: bool }
 
 /// Whether a proposed action can be paid for as the table stands. An action the player cannot
 /// afford is still proposed, so the interface can show it and say what it needs rather than
@@ -93,4 +94,5 @@ module ChoiceRequirement =
           DependsOnOptional = dependsOnOptional
           EligibleTargets = ImmutableArray<_>.Empty
           RequireDifferentMechanicalTypes = false
-          EligibleCardTypes = ImmutableArray<_>.Empty }
+          EligibleCardTypes = ImmutableArray<_>.Empty
+          PreserveCardOrder = false }

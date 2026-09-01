@@ -19,6 +19,7 @@
     <Compile Include="AuthorityCatalog.fs" />
     <Compile Include="ResolutionTrace.fs" />
     <Compile Include="MatchBuilder.fs" />
+    <Compile Include="CpuObservation.fs" />
     <Compile Include="MatchSetup.fs" />
     <Compile Include="InterpreterTypes.fs" />
     <Compile Include="PokemonPowers.fs" />
@@ -57,6 +58,7 @@
     <Compile Include="MatchLegalChoices.fs" />
     <Compile Include="MatchPlayingActions.fs" />
     <Compile Include="MatchLegalActions.fs" />
+    <Compile Include="CpuObservations.fs" />
     <Compile Include="MatchCommit.fs" />
     <Compile Include="MatchEngine.fs" />
     <Compile Include="DeterministicCpu.fs" />

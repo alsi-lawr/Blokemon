@@ -206,6 +206,71 @@ module internal MatchLegalActions =
         | MatchPhase.Complete -> Seq.empty
         | other -> failwithf "Unhandled match phase %A." other
 
+    let materialize (state: MatchState) (action: LegalAction) =
+        let variants =
+            match action.Command.Action with
+            | MatchAction.ChooseOpening(oche, _) ->
+                action.ChoiceRequirements
+                |> Seq.tryHead
+                |> Option.map (fun requirement ->
+                    cardSets
+                        requirement.Minimum
+                        requirement.Maximum
+                        requirement.PreserveCardOrder
+                        requirement.EligibleCards
+                    |> Seq.map (fun booth ->
+                        MatchAction.ChooseOpening(oche, booth), ImmutableArray<_>.Empty))
+                |> Option.defaultValue Seq.empty
+            | MatchAction.ChooseBonusPlacement _ ->
+                action.ChoiceRequirements
+                |> Seq.tryHead
+                |> Option.map (fun requirement ->
+                    cardSets
+                        requirement.Minimum
+                        requirement.Maximum
+                        requirement.PreserveCardOrder
+                        requirement.EligibleCards
+                    |> Seq.map (fun booth ->
+                        MatchAction.ChooseBonusPlacement booth, ImmutableArray<_>.Empty))
+                |> Option.defaultValue Seq.empty
+            | MatchAction.Taxi(booth, _) when action.Affordability = ActionAffordability.Payable ->
+                let attachments =
+                    state.Oche action.Command.Actor
+                    |> ValueOption.map _.Attachments
+                    |> ValueOption.defaultValue ImmutableArray<_>.Empty
+
+                cardSets 0 attachments.Length false attachments
+                |> Seq.map (fun payment ->
+                    MatchAction.Taxi(booth, payment), ImmutableArray<_>.Empty)
+            | current ->
+                choiceCombinations action.ChoiceRequirements action.Command.Actor
+                |> Seq.map (fun choices -> current, choices)
+            |> Seq.toArray
+
+        variants
+        |> Seq.mapi (fun index (matchAction, choices) ->
+            let hasVariants = variants.Length > 1
+
+            let stableKey =
+                if hasVariants then
+                    $"{action.StableKey}:choice:%06d{index}"
+                else
+                    action.StableKey
+
+            let commandId =
+                if hasVariants then
+                    CommandId $"{action.Command.Id.Value}:choice:%06d{index}"
+                else
+                    action.Command.Id
+
+            { action with
+                StableKey = stableKey
+                Command =
+                    { action.Command with
+                        Id = commandId
+                        Choices = choices
+                        Action = matchAction } })
+
     let order (actions: LegalAction seq) =
         actions
         |> Seq.sortWith (fun left right ->

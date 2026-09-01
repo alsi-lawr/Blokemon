@@ -48,19 +48,24 @@ module internal ChoiceValidation =
 
         for requirement in requirements do
             if rejection.IsNone then
-                if requirement.DependsOnOptional.IsSome then
-                    rejection <- ValueSome CommandRejectionCode.InvalidChoice
+                let matching =
+                    choices |> Seq.filter (fun choice -> choice.Id = requirement.Id) |> Seq.toArray
 
-                if rejection.IsNone then
-                    let matching =
+                let isActive =
+                    match requirement.DependsOnOptional with
+                    | ValueNone -> true
+                    | ValueSome dependency ->
                         choices
-                        |> Seq.filter (fun choice -> choice.Id = requirement.Id)
-                        |> Seq.toArray
+                        |> Seq.tryFind (fun choice -> choice.Id = dependency)
+                        |> Option.exists choiceAcceptsDependents
 
+                if isActive then
                     if matching.Length = 0 then
                         rejection <- ValueSome CommandRejectionCode.ChoiceRequired
                     elif matching.Length <> 1 || not (choiceIsValid matching[0] requirement) then
                         rejection <- ValueSome CommandRejectionCode.InvalidChoice
+                elif matching.Length <> 0 then
+                    rejection <- ValueSome CommandRejectionCode.InvalidChoice
 
         if rejection.IsNone then
             if

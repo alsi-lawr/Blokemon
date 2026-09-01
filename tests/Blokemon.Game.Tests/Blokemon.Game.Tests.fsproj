@@ -14,6 +14,7 @@
     <Compile Include="VintageCorrectionTests.fs" />
     <Compile Include="OpeningTests.fs" />
     <Compile Include="CommandBoundaryTests.fs" />
+    <Compile Include="CpuObservationTests.fs" />
     <Compile Include="DeterminismAndReplayTests.fs" />
     <Compile Include="ModifierDurationTests.fs" />
     <Compile Include="DamageAndRoughStateTests.fs" />

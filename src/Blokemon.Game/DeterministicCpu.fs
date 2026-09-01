@@ -30,23 +30,24 @@ type DeterministicCpu() =
               LegalActionKind.EndRound, 15 ]
 
     member _.Choose(engine: MatchEngine, state: MatchState, actor: PlayerId) =
-        // Resignation is voluntary and never automated, and an action the actor cannot pay for is
-        // offered to the interface rather than to a policy, so the set seen here is exactly the
-        // set of moves that would actually be accepted.
+        let observation = engine.GetCpuObservation(state, actor, CpuObservationMode.Fair)
+
+        // Resignation is voluntary and never automated.
         let selected =
-            engine.GetLegalActions(state, actor)
-            |> Seq.filter (fun action ->
-                action.Kind <> LegalActionKind.Resign
-                && action.Affordability = ActionAffordability.Payable)
+            observation.Candidates
+            |> Seq.filter (fun candidate -> candidate.Kind <> LegalActionKind.Resign)
             |> Seq.sortWith (fun left right ->
                 let byPriority = compare priority[left.Kind] priority[right.Kind]
 
                 if byPriority <> 0 then
                     byPriority
                 else
-                    String.CompareOrdinal(left.StableKey, right.StableKey))
+                    String.CompareOrdinal(left.Id.Value, right.Id.Value))
             |> Seq.tryHead
 
         match selected with
-        | Some action -> CpuDecision.Selected action
+        | Some candidate ->
+            match engine.TryMaterializeCpuAction(state, actor, candidate.Id) with
+            | ValueSome action -> CpuDecision.Selected action
+            | ValueNone -> CpuDecision.NoLegalAction
         | None -> CpuDecision.NoLegalAction
