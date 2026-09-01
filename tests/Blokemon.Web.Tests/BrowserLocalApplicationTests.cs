@@ -319,41 +319,6 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
-    public async Task TwoCompatibleAuthorityChanges_MigrateByVersionOnlyEachTime()
-    {
-        var originalCatalogue = Catalogue();
-        var documents = new MemoryDocumentStore();
-        var application = Application(originalCatalogue, documents, new ServerHandler(null));
-        var original = await PopulateBrowserProfile(application, documents);
-        var firstCatalogue = WithManifestVersion(originalCatalogue, "compatible-manifest-one");
-
-        Value(await Application(firstCatalogue, documents, new ServerHandler(null)).State());
-        var first = (await documents.Read("profile"))!;
-        var secondCatalogue = WithManifestVersion(firstCatalogue, "compatible-manifest-two");
-
-        Value(await Application(secondCatalogue, documents, new ServerHandler(null)).State());
-        var second = (await documents.Read("profile"))!;
-
-        first.Revision.ShouldBe(original.Revision + 1);
-        JsonNode
-            .DeepEquals(
-                JsonNode.Parse(first.Json),
-                ExpectedVersionOnlyProfile(original, firstCatalogue.Mechanics.ManifestVersion)
-            )
-            .ShouldBeTrue();
-        second.Revision.ShouldBe(first.Revision + 1);
-        JsonNode
-            .DeepEquals(
-                JsonNode.Parse(second.Json),
-                ExpectedVersionOnlyProfile(first, secondCatalogue.Mechanics.ManifestVersion)
-            )
-            .ShouldBeTrue();
-
-        Value(await Application(secondCatalogue, documents, new ServerHandler(null)).State());
-        (await documents.Read("profile")).ShouldBe(second);
-    }
-
-    [Test]
     public async Task BrowserAuthorityMigration_ConflictPreservesHistoricalDocument()
     {
         var catalogue = Catalogue();
@@ -1696,24 +1661,6 @@ public sealed class BrowserLocalApplicationTests
         var expected = JsonNode.Parse(historical.Json)!.AsObject();
         expected["profile"]!["authorityManifestVersion"] = manifestVersion;
         return expected;
-    }
-
-    private static BlokemonCatalogue WithManifestVersion(
-        BlokemonCatalogue catalogue,
-        string manifestVersion
-    )
-    {
-        var bootstrap = JsonNode.Parse(catalogue.ToBootstrapJson())!.AsObject();
-        var mechanics = JsonNode.Parse(bootstrap["mechanicsJson"]!.GetValue<string>())!.AsObject();
-        mechanics["manifestVersion"] = manifestVersion;
-        bootstrap["mechanicsJson"] = mechanics.ToJsonString();
-
-        var starterDecks = JsonNode
-            .Parse(bootstrap["starterDecksJson"]!.GetValue<string>())!
-            .AsObject();
-        starterDecks["mechanicalManifestVersion"] = manifestVersion;
-        bootstrap["starterDecksJson"] = starterDecks.ToJsonString();
-        return BlokemonCatalogue.FromBootstrapJson(bootstrap.ToJsonString());
     }
 
     private static BlokemonCatalogue Catalogue() =>

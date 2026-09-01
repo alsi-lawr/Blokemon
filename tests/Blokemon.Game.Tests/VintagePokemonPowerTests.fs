@@ -129,6 +129,44 @@ type VintagePokemonPowerTests() =
         hasPowerAction "BLK-072-T01" newlyPlayed |> should be False
 
     [<Test>]
+    member _.``cowardice from the only active should emit one win when terminal resolution is revisited``
+        ()
+        =
+        let state = MatchScenario.BattleState "BLK-072" "BLK-001" [] 1312UL
+        let tentacool = state.Card(CardInstanceId "attacker")
+        let engine = MatchScenario.Engine()
+
+        let finished, events =
+            MatchScenario.AppliedWith(
+                engine.Apply(state, (powerAction "BLK-072-T01" state).Command)
+            )
+
+        (finished.Card tentacool.Id).Zone |> should equal CardZone.Mitt
+        finished.Winner |> should equal (ValueSome MatchScenario.SecondPlayer)
+        finished.Phase |> should equal MatchPhase.Complete
+
+        let matchWon =
+            events
+            |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.MatchWon)
+            |> Seq.exactlyOne
+
+        matchWon.Actor |> should equal (ValueSome MatchScenario.SecondPlayer)
+
+        let afterCompletion =
+            MatchScenario.Command
+                finished
+                "after-terminal-cowardice"
+                MatchScenario.SecondPlayer
+                ImmutableArray<_>.Empty
+                MatchAction.EndRound
+
+        let rejectedState, rejection =
+            MatchScenario.Rejected(engine.Apply(finished, afterCompletion))
+
+        rejection.Code |> should equal CommandRejectionCode.MatchComplete
+        rejectedState |> should equal finished
+
+    [<Test>]
     member _.``buzzap should award one Prize and make Electrode provide two chosen Energy``() =
         let original = MatchScenario.BattleState "BLK-001" "BLK-004" [] 1303UL
 

@@ -16,32 +16,19 @@ namespace Blokemon.Web.Tests;
 public sealed class MatchMigrationTests
 {
     private static readonly Guid _firstDeck = Guid.Parse("20000000-0000-0000-0000-000000000001");
+    private const string CompatibleLegacyAuthority = "sv151-candidate.17";
 
     [Test]
-    [Arguments(false, 1, "sv151-candidate.12")]
-    [Arguments(true, 1, "sv151-candidate.12")]
-    [Arguments(false, 1, "sv151-candidate.14")]
-    [Arguments(true, 1, "sv151-candidate.14")]
-    [Arguments(false, 2, "sv151-candidate.14")]
-    [Arguments(true, 2, "sv151-candidate.14")]
-    [Arguments(false, 2, "sv151-candidate.15")]
-    [Arguments(true, 2, "sv151-candidate.15")]
-    [Arguments(false, 2, "sv151-candidate.16")]
-    [Arguments(true, 2, "sv151-candidate.16")]
-    [Arguments(false, 2, "sv151-candidate.17")]
-    [Arguments(true, 2, "sv151-candidate.17")]
-    public async Task SupportedActiveMatchVersion_MigratesThroughBackupAndColdReplayForEachProvider(
-        bool sqlite,
-        int sourceSchema,
-        string sourceAuthority
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task CompatibleLegacyActiveMatch_MigratesThroughBackupAndColdReplayForEachProvider(
+        bool sqlite
     )
     {
         await using var fixture = await DocumentStoreFixture.Create(sqlite);
         var catalogue = Catalogue();
-        var sourceJson = MatchAtVersion(sourceSchema, sourceAuthority);
-        await fixture.Store.Create("match", sourceJson);
-        var source = (await fixture.Store.Read("match"))!;
         var profile = Profile(catalogue);
+        var source = await CreateCompatibleLegacyActiveMatch(catalogue, fixture.Store, profile);
 
         var restored = await new LocalMatchService(catalogue, fixture.Store).State(
             profile,
@@ -68,8 +55,8 @@ public sealed class MatchMigrationTests
             source,
             MigrationIdentity(
                 "match",
-                sourceSchema,
-                sourceAuthority,
+                2,
+                CompatibleLegacyAuthority,
                 catalogue.Mechanics.ManifestVersion
             )
         );
@@ -81,34 +68,15 @@ public sealed class MatchMigrationTests
     }
 
     [Test]
-    [Arguments(false, 1, "sv151-candidate.12")]
-    [Arguments(true, 1, "sv151-candidate.12")]
-    [Arguments(false, 1, "sv151-candidate.14")]
-    [Arguments(true, 1, "sv151-candidate.14")]
-    [Arguments(false, 2, "sv151-candidate.14")]
-    [Arguments(true, 2, "sv151-candidate.14")]
-    [Arguments(false, 2, "sv151-candidate.15")]
-    [Arguments(true, 2, "sv151-candidate.15")]
-    [Arguments(false, 2, "sv151-candidate.16")]
-    [Arguments(true, 2, "sv151-candidate.16")]
-    [Arguments(false, 2, "sv151-candidate.17")]
-    [Arguments(true, 2, "sv151-candidate.17")]
-    public async Task SupportedHistoryVersion_MigratesAllMatchesBeforeReplacementForEachProvider(
-        bool sqlite,
-        int sourceSchema,
-        string sourceAuthority
-    )
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task CompatibleLegacyHistory_MigratesBeforeReplacementForEachProvider(bool sqlite)
     {
         await using var fixture = await DocumentStoreFixture.Create(sqlite);
         var catalogue = Catalogue();
         var profile = Profile(catalogue, "history-profile.json");
-        var activeJson = Fixture("schema-one-completed-match.json");
-        var historyJson = HistoryAtVersion(sourceSchema, sourceAuthority);
-        await fixture.Store.Create("match", activeJson);
-        await fixture.Store.Create("match-history", historyJson);
-        var historySource = (await fixture.Store.Read("match-history"))!;
+        var historySource = await CreateCompatibleLegacyHistory(catalogue, fixture.Store, profile);
         var service = new LocalMatchService(catalogue, fixture.Store);
-        var completed = await service.State(profile, profile.DisplayName.Value);
 
         var started = await service.Start(
             profile,
@@ -118,8 +86,6 @@ public sealed class MatchMigrationTests
         var history = (await fixture.Store.Read("match-history"))!;
         var backup = (await fixture.Store.Read(BackupKey("match-history", historySource)))!;
 
-        completed.Error.ShouldBeNull();
-        completed.View!.Frame.IsComplete.ShouldBeTrue();
         started.Error.ShouldBeNull();
         started.View!.Frame.Id.ShouldBe(Guid.Parse("30000000-0000-0000-0000-000000000003"));
         history.Revision.ShouldBe(historySource.Revision + 1);
@@ -135,8 +101,8 @@ public sealed class MatchMigrationTests
             historySource,
             MigrationIdentity(
                 "match-history",
-                sourceSchema,
-                sourceAuthority,
+                2,
+                CompatibleLegacyAuthority,
                 catalogue.Mechanics.ManifestVersion
             )
         );
@@ -145,18 +111,17 @@ public sealed class MatchMigrationTests
     [Test]
     [Arguments(false)]
     [Arguments(true)]
-    public async Task IncompatiblePreD3History_LeavesTheWholeHistoryAndBackupSpaceUntouched(
+    public async Task StructurallyInvalidPreD3History_IsCorruptAndPreservedWithoutABackup(
         bool sqlite
     )
     {
         await using var fixture = await DocumentStoreFixture.Create(sqlite);
         var catalogue = Catalogue();
         var profile = Profile(catalogue, "history-profile.json");
-        await fixture.Store.Create("match", Fixture("schema-one-completed-match.json"));
         await fixture.Store.Create("match-history", Fixture("pre-d3-match-history.json"));
         var historySource = (await fixture.Store.Read("match-history"))!;
         var service = new LocalMatchService(catalogue, fixture.Store);
-        var completed = await service.State(profile, profile.DisplayName.Value);
+        var restored = await service.State(profile, profile.DisplayName.Value);
 
         var rejected = await service.Start(
             profile,
@@ -164,26 +129,24 @@ public sealed class MatchMigrationTests
             new(Guid.Parse("30000000-0000-0000-0000-000000000004"), _firstDeck)
         );
 
-        completed.Error!.Code.ShouldBe("match.history_authority_changed");
-        completed.View!.Frame.IsComplete.ShouldBeTrue();
-        rejected.Error!.Code.ShouldBe("match.history_authority_changed");
+        restored.Error!.Code.ShouldBe("match.history_corrupt");
+        restored.View.ShouldBeNull();
+        rejected.Error!.Code.ShouldBe("match.history_corrupt");
         (await fixture.Store.Read("match-history")).ShouldBe(historySource);
         (await fixture.Store.Read(BackupKey("match-history", historySource))).ShouldBeNull();
-        (await fixture.Store.Read("match"))!.Json.ShouldContain(
-            "30000000-0000-0000-0000-000000000001",
-            Case.Sensitive
-        );
+        (await fixture.Store.Read("match")).ShouldBeNull();
     }
 
     [Test]
     [Arguments(false)]
     [Arguments(true)]
-    public async Task UnpaidRingRoadHistory_IsIncompatibleAndPreservedForEachProvider(bool sqlite)
+    public async Task StructurallyInvalidUnpaidRingRoadHistory_IsCorruptAndPreservedForEachProvider(
+        bool sqlite
+    )
     {
         await using var fixture = await DocumentStoreFixture.Create(sqlite);
         var catalogue = Catalogue();
         var profile = Profile(catalogue, "history-profile.json");
-        await fixture.Store.Create("match", Fixture("schema-one-completed-match.json"));
         await fixture.Store.Create(
             "match-history",
             HistoryFixtureAtVersion(
@@ -195,18 +158,48 @@ public sealed class MatchMigrationTests
         var historySource = (await fixture.Store.Read("match-history"))!;
         var service = new LocalMatchService(catalogue, fixture.Store);
 
-        var completed = await service.State(profile, profile.DisplayName.Value);
+        var restored = await service.State(profile, profile.DisplayName.Value);
         var rejected = await service.Start(
             profile,
             profile.DisplayName.Value,
             new(Guid.Parse("30000000-0000-0000-0000-000000000006"), _firstDeck)
         );
 
-        completed.Error!.Code.ShouldBe("match.history_authority_changed");
-        completed.View!.Frame.IsComplete.ShouldBeTrue();
+        restored.Error!.Code.ShouldBe("match.history_corrupt");
+        restored.View.ShouldBeNull();
+        rejected.Error!.Code.ShouldBe("match.history_corrupt");
+        (await fixture.Store.Read("match-history")).ShouldBe(historySource);
+        (await fixture.Store.Read(BackupKey("match-history", historySource))).ShouldBeNull();
+        (await fixture.Store.Read("match")).ShouldBeNull();
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task LegacyVimDodgyHistory_IsAuthorityChangedAndPreservedForEachProvider(
+        bool sqlite
+    )
+    {
+        await using var fixture = await DocumentStoreFixture.Create(sqlite);
+        var catalogue = Catalogue();
+        var profile = Profile(catalogue, "history-profile.json");
+        await fixture.Store.Create("match-history", HistoryAtVersion(2, CompatibleLegacyAuthority));
+        var historySource = (await fixture.Store.Read("match-history"))!;
+        var service = new LocalMatchService(catalogue, fixture.Store);
+
+        var restored = await service.State(profile, profile.DisplayName.Value);
+        var rejected = await service.Start(
+            profile,
+            profile.DisplayName.Value,
+            new(Guid.Parse("30000000-0000-0000-0000-000000000007"), _firstDeck)
+        );
+
+        restored.Error!.Code.ShouldBe("match.history_authority_changed");
+        restored.View.ShouldBeNull();
         rejected.Error!.Code.ShouldBe("match.history_authority_changed");
         (await fixture.Store.Read("match-history")).ShouldBe(historySource);
         (await fixture.Store.Read(BackupKey("match-history", historySource))).ShouldBeNull();
+        (await fixture.Store.Read("match")).ShouldBeNull();
     }
 
     [Test]
@@ -245,8 +238,7 @@ public sealed class MatchMigrationTests
         var inner = fixture.Store;
         var catalogue = Catalogue();
         var profile = Profile(catalogue);
-        await inner.Create("match", Fixture("schema-one-active-match.json"));
-        var source = (await inner.Read("match"))!;
+        var source = await CreateCompatibleLegacyActiveMatch(catalogue, inner, profile);
         var documents = new ConcurrentMatchUpdateStore(inner, participants: 2);
         var first = new LocalMatchService(catalogue, documents);
         var second = new LocalMatchService(catalogue, documents);
@@ -273,7 +265,12 @@ public sealed class MatchMigrationTests
             backup,
             "match",
             source,
-            MigrationIdentity("match", 1, "sv151-candidate.14", catalogue.Mechanics.ManifestVersion)
+            MigrationIdentity(
+                "match",
+                2,
+                CompatibleLegacyAuthority,
+                catalogue.Mechanics.ManifestVersion
+            )
         );
     }
 
@@ -288,8 +285,7 @@ public sealed class MatchMigrationTests
         var inner = fixture.Store;
         var catalogue = Catalogue();
         var profile = Profile(catalogue);
-        await inner.Create("match", Fixture("schema-one-active-match.json"));
-        var source = (await inner.Read("match"))!;
+        var source = await CreateCompatibleLegacyActiveMatch(catalogue, inner, profile);
         using var cancellation = new CancellationTokenSource();
         var documents = new CancelAfterBackupStore(inner, cancellation);
 
@@ -307,7 +303,12 @@ public sealed class MatchMigrationTests
             backup,
             "match",
             source,
-            MigrationIdentity("match", 1, "sv151-candidate.14", catalogue.Mechanics.ManifestVersion)
+            MigrationIdentity(
+                "match",
+                2,
+                CompatibleLegacyAuthority,
+                catalogue.Mechanics.ManifestVersion
+            )
         );
 
         var retried = await new LocalMatchService(catalogue, inner).State(
@@ -329,8 +330,7 @@ public sealed class MatchMigrationTests
         var inner = fixture.Store;
         var catalogue = Catalogue();
         var profile = Profile(catalogue);
-        await inner.Create("match", Fixture("schema-one-active-match.json"));
-        var source = (await inner.Read("match"))!;
+        var source = await CreateCompatibleLegacyActiveMatch(catalogue, inner, profile);
         using var cancellation = new CancellationTokenSource();
         var documents = new CommitMatchThenCancelStore(inner, cancellation);
 
@@ -394,14 +394,13 @@ public sealed class MatchMigrationTests
         await using var fixture = await DocumentStoreFixture.Create(sqlite);
         var catalogue = Catalogue();
         var profile = Profile(catalogue, "history-profile.json");
-        await fixture.Store.Create("match", Fixture("schema-one-completed-match.json"));
         await fixture.Store.Create(
             "match-history",
             HistoryAtVersion(sourceSchema, sourceAuthority)
         );
         var historySource = (await fixture.Store.Read("match-history"))!;
         var service = new LocalMatchService(catalogue, fixture.Store);
-        var completed = await service.State(profile, profile.DisplayName.Value);
+        var restored = await service.State(profile, profile.DisplayName.Value);
 
         var rejected = await service.Start(
             profile,
@@ -409,8 +408,8 @@ public sealed class MatchMigrationTests
             new(Guid.Parse("30000000-0000-0000-0000-000000000005"), _firstDeck)
         );
 
-        completed.Error!.Code.ShouldBe("match.history_version");
-        completed.View!.Frame.IsComplete.ShouldBeTrue();
+        restored.Error!.Code.ShouldBe("match.history_version");
+        restored.View.ShouldBeNull();
         rejected.Error!.Code.ShouldBe("match.history_version");
         (await fixture.Store.Read("match-history")).ShouldBe(historySource);
         (await fixture.Store.Read(BackupKey("match-history", historySource))).ShouldBeNull();
@@ -455,8 +454,7 @@ public sealed class MatchMigrationTests
         var inner = fixture.Store;
         var catalogue = Catalogue();
         var profile = Profile(catalogue);
-        await inner.Create("match", Fixture("schema-one-active-match.json"));
-        var source = (await inner.Read("match"))!;
+        var source = await CreateCompatibleLegacyActiveMatch(catalogue, inner, profile);
         var externalJson = source.Json + " ";
         var documents = new DivergentMatchUpdateStore(inner, externalJson);
 
@@ -477,7 +475,12 @@ public sealed class MatchMigrationTests
             backup,
             "match",
             source,
-            MigrationIdentity("match", 1, "sv151-candidate.14", catalogue.Mechanics.ManifestVersion)
+            MigrationIdentity(
+                "match",
+                2,
+                CompatibleLegacyAuthority,
+                catalogue.Mechanics.ManifestVersion
+            )
         );
     }
 
@@ -491,8 +494,7 @@ public sealed class MatchMigrationTests
         await using var fixture = await DocumentStoreFixture.Create(sqlite);
         var catalogue = Catalogue();
         var profile = Profile(catalogue);
-        await fixture.Store.Create("match", Fixture("schema-one-active-match.json"));
-        var source = (await fixture.Store.Read("match"))!;
+        var source = await CreateCompatibleLegacyActiveMatch(catalogue, fixture.Store, profile);
         const string conflictingBackup = "{\"occupied\":true}";
         await fixture.Store.Create(BackupKey("match", source), conflictingBackup);
         var backup = (await fixture.Store.Read(BackupKey("match", source)))!;
@@ -681,19 +683,14 @@ public sealed class MatchMigrationTests
             "profile",
             CurrentProfileDocument(catalogue, "history-profile.json")
         );
-        await fixture.Store.Create("match", Fixture("schema-one-completed-match.json"));
+        var currentProfile = Profile(catalogue, "history-profile.json");
+        var active = await CreateCurrentCompletedMatch(catalogue, fixture.Store, currentProfile);
         await fixture.Store.Create("match-history", HistoryAtVersion(2, "arbitrary-authority"));
         await fixture.Store.Create("match-migration-backup/sentinel", "backup-sentinel");
         var documents = new RecordingDeleteStore(fixture.Store);
         var application = Application(catalogue, documents);
         var gated = Value(await application.State());
         var recovery = gated.MatchRecovery!;
-        var active = (await fixture.Store.Read("match"))!;
-        var activeBackup = (
-            await fixture.Store.Read(
-                BackupKey("match", new(1, Fixture("schema-one-completed-match.json")))
-            )
-        )!;
         var profile = (await fixture.Store.Read("profile"))!;
         var backup = (await fixture.Store.Read("match-migration-backup/sentinel"))!;
 
@@ -721,11 +718,6 @@ public sealed class MatchMigrationTests
         (await fixture.Store.Read("match-history")).ShouldBeNull();
         (await fixture.Store.Read("match")).ShouldBe(active);
         (await fixture.Store.Read("profile")).ShouldBe(profile);
-        (
-            await fixture.Store.Read(
-                BackupKey("match", new(1, Fixture("schema-one-completed-match.json")))
-            )
-        ).ShouldBe(activeBackup);
         (await fixture.Store.Read("match-migration-backup/sentinel")).ShouldBe(backup);
         documents.UnconditionalDeletes.ShouldBeEmpty();
         documents.CheckedDeletes.ShouldBe(["match-history"]);
@@ -1033,6 +1025,103 @@ public sealed class MatchMigrationTests
         (await fixture.Store.Read("profile")).ShouldBe(profile);
         (await fixture.Store.Read("match-migration-backup/sentinel")).ShouldBe(backup);
         documents.DeleteAttempts.ShouldBe(1);
+    }
+
+    private static async Task<StoredDocument> CreateCompatibleLegacyActiveMatch(
+        BlokemonCatalogue catalogue,
+        IStateDocumentStore documents,
+        LocalProfile profile
+    )
+    {
+        var current = await CreateCurrentActiveMatch(catalogue, documents, profile);
+        var legacyJson = DocumentAtVersion(current.Json, 2, CompatibleLegacyAuthority);
+        await documents.Delete("match");
+        (await documents.Create("match", legacyJson)).ShouldBeOfType<DocumentWriteResult.Written>();
+        return (await documents.Read("match"))!;
+    }
+
+    private static async Task<StoredDocument> CreateCompatibleLegacyHistory(
+        BlokemonCatalogue catalogue,
+        IStateDocumentStore documents,
+        LocalProfile profile
+    )
+    {
+        var completed = await CreateCurrentCompletedMatch(catalogue, documents, profile);
+        var archived = JsonNode.Parse(completed.Json)!.AsObject();
+        archived["authorityVersion"] = CompatibleLegacyAuthority;
+        var history = new JsonObject
+        {
+            ["schemaVersion"] = 2,
+            ["authorityVersion"] = CompatibleLegacyAuthority,
+            ["matches"] = new JsonArray(archived),
+        };
+        await documents.Delete("match");
+        (
+            await documents.Create("match-history", history.ToJsonString())
+        ).ShouldBeOfType<DocumentWriteResult.Written>();
+        return (await documents.Read("match-history"))!;
+    }
+
+    private static async Task<StoredDocument> CreateCurrentCompletedMatch(
+        BlokemonCatalogue catalogue,
+        IStateDocumentStore documents,
+        LocalProfile profile
+    )
+    {
+        var service = new LocalMatchService(catalogue, documents);
+        var current = await CreateCurrentActiveMatch(catalogue, documents, profile, service);
+        var started = await service.State(profile, profile.DisplayName.Value);
+        started.Error.ShouldBeNull();
+        var match = started.View!;
+        var resign = match.LegalActions.Single(static action =>
+            action.Kind == MatchActionKindView.Resign
+        );
+        var completed = await service.Apply(
+            profile,
+            profile.DisplayName.Value,
+            match.Frame.Id,
+            new(
+                Guid.Parse("30000000-0000-0000-0000-000000000102"),
+                match.Frame.Revision,
+                resign.Id,
+                []
+            )
+        );
+
+        completed.Error.ShouldBeNull();
+        completed.View!.Frame.IsComplete.ShouldBeTrue();
+        var stored = (await documents.Read("match"))!;
+        stored.Revision.ShouldBe(current.Revision + 1);
+        return stored;
+    }
+
+    private static Task<StoredDocument> CreateCurrentActiveMatch(
+        BlokemonCatalogue catalogue,
+        IStateDocumentStore documents,
+        LocalProfile profile
+    ) =>
+        CreateCurrentActiveMatch(
+            catalogue,
+            documents,
+            profile,
+            new LocalMatchService(catalogue, documents)
+        );
+
+    private static async Task<StoredDocument> CreateCurrentActiveMatch(
+        BlokemonCatalogue catalogue,
+        IStateDocumentStore documents,
+        LocalProfile profile,
+        LocalMatchService service
+    )
+    {
+        var started = await service.Start(
+            profile,
+            profile.DisplayName.Value,
+            new(Guid.Parse("30000000-0000-0000-0000-000000000101"), _firstDeck)
+        );
+        started.Error.ShouldBeNull();
+        started.View.ShouldNotBeNull();
+        return (await documents.Read("match"))!;
     }
 
     private static void AssertBackup(

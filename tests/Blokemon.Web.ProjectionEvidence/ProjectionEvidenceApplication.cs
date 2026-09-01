@@ -80,14 +80,14 @@ public static class ProjectionEvidenceComposition
     private static BlokemonCatalogue EvidenceCatalogue(string bootstrapJson)
     {
         // No checked-in card currently offers Colorless as a mechanical-type choice. The evidence
-        // authority adds that raw option to an existing real choice before catalogue validation,
-        // so all ten labels still have to travel through MatchViewProjection.
-        const string darknessThenDragon =
-            "                \\u0022Darkness\\u0022,\\n" + "                \\u0022Dragon\\u0022,";
-        const string darknessColorlessThenDragon =
-            "                \\u0022Darkness\\u0022,\\n"
-            + "                \\u0022Colorless\\u0022,\\n"
-            + "                \\u0022Dragon\\u0022,";
+        // authority adds only that raw option to Conversion 1 before catalogue validation, so the
+        // public Local adaptation travels through the real MatchView projection and command path.
+        const string fightingChoice =
+            "                \\u0022Fighting\\u0022\\n" + "              ],";
+        const string fightingAndColorlessChoices =
+            "                \\u0022Fighting\\u0022,\\n"
+            + "                \\u0022Colorless\\u0022\\n"
+            + "              ],";
         var facebookDadStart = bootstrapJson.IndexOf(
             "\\u0022id\\u0022: \\u0022BLK-137\\u0022",
             StringComparison.Ordinal
@@ -98,12 +98,18 @@ public static class ProjectionEvidenceComposition
             StringComparison.Ordinal
         );
         var facebookDad = bootstrapJson[facebookDadStart..facebookDadEnd];
-        facebookDad = ReplaceSingle(
-            facebookDad,
-            darknessThenDragon,
-            darknessColorlessThenDragon,
-            "Facebook Dad mechanical-type choice"
+        var conversionOneEnd = facebookDad.IndexOf(
+            "\\u0022mechanicalId\\u0022: \\u0022BLK-137-B02\\u0022",
+            StringComparison.Ordinal
         );
+        var conversionOne = facebookDad[..conversionOneEnd];
+        conversionOne = ReplaceSingle(
+            conversionOne,
+            fightingChoice,
+            fightingAndColorlessChoices,
+            "Facebook Dad Conversion 1 mechanical-type choice"
+        );
+        facebookDad = conversionOne + facebookDad[conversionOneEnd..];
         var bootstrap =
             bootstrapJson[..facebookDadStart] + facebookDad + bootstrapJson[facebookDadEnd..];
 
@@ -140,6 +146,34 @@ public static class ProjectionEvidenceComposition
             "Growroom BLK-143 entry"
         );
         bootstrap = bootstrap[..growroomStart] + growroom + bootstrap[growroomEnd..];
+
+        // Conversion 1 offers a choice only while the Defending Blokemon has a Weakness. Remove
+        // the opponent deck's sole no-Weakness Basic so every deterministic opening exercises that
+        // real precondition rather than depending on a favourable shuffle.
+        var brickLaneStart = bootstrap.IndexOf(
+            "\\u0022id\\u0022: \\u0022brick-lane-heat\\u0022",
+            starterAuthority,
+            StringComparison.Ordinal
+        );
+        var brickLaneEnd = bootstrap.IndexOf(
+            "\\u0022id\\u0022: \\u0022early-shift\\u0022",
+            brickLaneStart,
+            StringComparison.Ordinal
+        );
+        var brickLane = bootstrap[brickLaneStart..brickLaneEnd];
+        brickLane = ReplaceSingle(
+            brickLane,
+            StarterEntry("BLK-004", 3),
+            StarterEntry("BLK-004", 4),
+            "Brick Lane BLK-004 entry"
+        );
+        brickLane = ReplaceSingle(
+            brickLane,
+            StarterEntry("BLK-146", 1),
+            string.Empty,
+            "Brick Lane BLK-146 entry"
+        );
+        bootstrap = bootstrap[..brickLaneStart] + brickLane + bootstrap[brickLaneEnd..];
         return BlokemonCatalogue.FromBootstrapJson(bootstrap);
     }
 
@@ -184,7 +218,9 @@ public static class ProjectionEvidenceComposition
                     && action.EffectId == "BLK-137-B01"
                     && action.ChoiceRequirements.Any(static requirement =>
                         requirement.Kind == MatchChoiceKindView.MechanicalType
-                        && requirement.EligibleMechanicalTypes.Length == 10
+                        && requirement.EligibleMechanicalTypes.Any(static mechanicalType =>
+                            mechanicalType.Value == "Colorless"
+                        )
                     )
                 )
             )

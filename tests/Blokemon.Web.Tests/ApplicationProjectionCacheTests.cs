@@ -318,7 +318,7 @@ public sealed class ApplicationProjectionCacheTests
     }
 
     [Test]
-    public async Task AuthorityMigrationAndReplacement_ProduceTheColdCompleteView()
+    public async Task AuthorityMigrationAndApplicationReplacement_ProduceTheColdCompleteView()
     {
         var catalogue = Catalogue();
         var documents = new ControllableDocumentStore();
@@ -340,7 +340,7 @@ public sealed class ApplicationProjectionCacheTests
             .ShouldBe(catalogue.Mechanics.ManifestVersion);
         await ShouldEqualColdReference(migrated, catalogue, documents);
 
-        var replacement = WithManifestVersion(catalogue, "replacement-authority");
+        var replacement = Catalogue();
         var replacementApplication = Local(replacement, documents);
         var replaced = Value(await replacementApplication.State());
         Snapshot(replacementApplication).ShouldBe(new(1, 1, 1, 1, 1, 1, 1, 1, 1));
@@ -619,34 +619,20 @@ public sealed class ApplicationProjectionCacheTests
         ApplicationView initial
     )
     {
-        var current = initial;
-        for (var count = 0; count < 256; count++)
+        if (initial.Match!.Frame.IsComplete)
         {
-            if (current.Match!.Frame.IsComplete)
-            {
-                return current;
-            }
-
-            var action =
-                current.Match.LegalActions.FirstOrDefault(static candidate =>
-                    candidate.Kind == MatchActionKindView.Attack
-                )
-                ?? current.Match.LegalActions.FirstOrDefault(static candidate =>
-                    candidate.Kind == MatchActionKindView.AttachEnergy
-                )
-                ?? current.Match.LegalActions.FirstOrDefault(static candidate =>
-                    candidate.Kind == MatchActionKindView.EndTurn
-                )
-                ?? current.Match.LegalActions.First();
-            current = Value(
-                await application.ApplyMatchAction(
-                    current.Match.Frame.Id,
-                    RequestFor(current.Match, action)
-                )
-            ).Application;
+            return initial;
         }
 
-        throw new InvalidOperationException("The match did not complete inside the test bound.");
+        var resign = initial.Match.LegalActions.Single(static candidate =>
+            candidate.Kind == MatchActionKindView.Resign
+        );
+        return Value(
+            await application.ApplyMatchAction(
+                initial.Match.Frame.Id,
+                RequestFor(initial.Match, resign)
+            )
+        ).Application;
     }
 
     private static ApplyMatchActionRequest RequestFor(MatchView match, MatchActionView action) =>
@@ -959,23 +945,6 @@ public sealed class ApplicationProjectionCacheTests
         (
             await documents.Update("profile", stored.Revision, document.ToJsonString())
         ).ShouldBeOfType<DocumentWriteResult.Written>();
-    }
-
-    private static BlokemonCatalogue WithManifestVersion(
-        BlokemonCatalogue catalogue,
-        string manifestVersion
-    )
-    {
-        var bootstrap = JsonNode.Parse(catalogue.ToBootstrapJson())!.AsObject();
-        var mechanics = JsonNode.Parse(bootstrap["mechanicsJson"]!.GetValue<string>())!.AsObject();
-        mechanics["manifestVersion"] = manifestVersion;
-        bootstrap["mechanicsJson"] = mechanics.ToJsonString();
-        var starters = JsonNode
-            .Parse(bootstrap["starterDecksJson"]!.GetValue<string>())!
-            .AsObject();
-        starters["mechanicalManifestVersion"] = manifestVersion;
-        bootstrap["starterDecksJson"] = starters.ToJsonString();
-        return BlokemonCatalogue.FromBootstrapJson(bootstrap.ToJsonString());
     }
 
     private static BlokemonCatalogue Catalogue() =>

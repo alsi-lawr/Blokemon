@@ -99,7 +99,7 @@ Asleep, Confused and Paralyzed replace one another. Poisoned can coexist with on
 
 ## Knock Out, Prize Cards and winning
 
-When Damage on a Blokemon equals or exceeds its HP, it is Knocked Out and discarded with its attached cards. Knocking Out an ordinary Blokemon awards exactly one Prize Card. No card in this profile awards two Prize Cards. Selected card-text exceptions, including Reenactor and Spiral-Eyed Regular, govern whether a Prize Card is taken for those objects.
+When Damage on a Blokemon equals or exceeds its HP, it is Knocked Out and discarded with its attached cards. Knocking Out an ordinary Blokemon awards exactly one Prize Card. Selected card-text exceptions, including Reenactor and Spiral-Eyed Regular, govern whether a Prize Card is taken for those objects.
 
 A player wins by taking their last Prize Card, leaving the opponent with no Blokemon in play, or having the opponent fail the required start-of-turn draw. If both players satisfy one win condition at the same time, play Sudden Death with one Prize Card. If one player satisfies more simultaneous win conditions, that player wins.
 

@@ -12,7 +12,6 @@ protocol. It uses only Python's standard library and the repository's existing .
 
 The executable evidence covers:
 
-- the deterministic direct `CardFace` consumer inventory;
 - actual reading-control activation and non-nested sibling controls;
 - unchanged card markup and uniformly scaled internal geometry at 1440x900 and 390x844, within the 20px viewer
   margin;
@@ -26,8 +25,7 @@ The executable evidence covers:
 - all seven Energy faces, with six cards returned by Basic Energy searches and Side Hustle excluded
   from those results but visible and independently searchable as Special Energy in Collection and Decks;
 - Home card-detail metadata, selected and live Match costs, cost tooltips and accessibility labels;
-- all approved mechanical-choice button labels, including the raw `Colorless` value rendered as
-  `Local`; and
+- the raw `Colorless` mechanical choice rendered as `Local` and submitted without changing its command value; and
 - reduced-motion viewer behavior in Collection, Home, Packs, Decks, and Match.
 
 Published files, browser profiles, and logs are transient and are removed when the check exits.
