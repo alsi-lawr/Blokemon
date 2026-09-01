@@ -146,9 +146,7 @@ type KnockoutResolutionTests() =
         applied.Phase |> should equal MatchPhase.Complete
 
     [<Test>]
-    member _.``sending home an active with a bloke on the booth should wait for the replacement instead``
-        ()
-        =
+    member _.``replacing a knocked out active should continue with the next player's round``() =
         let engine = MatchScenario.Engine()
 
         let state =
@@ -164,11 +162,53 @@ type KnockoutResolutionTests() =
                       Damage = Lethal }
                   booth ]
 
-        let applied =
-            MatchScenario.Applied(
+        let applied, attackEvents =
+            MatchScenario.AppliedWith(
                 engine.Apply(state, MatchScenario.AttackCommand state "BLK-001-B01")
             )
 
         applied.Winner.IsNone |> should be True
         applied.Phase |> should equal MatchPhase.AwaitingReplacement
         applied.ReplacementPlayer |> should equal (ValueSome MatchScenario.SecondPlayer)
+        applied.PendingRoundEnd |> should be True
+
+        let roundTransitions (events: MatchEvent seq) =
+            events
+            |> Seq.choose (fun (event: MatchEvent) ->
+                match event.Kind with
+                | MatchEventKind.RoundEnded
+                | MatchEventKind.RoundStarted -> Some(event.Kind, event.Actor)
+                | _ -> None)
+            |> Seq.toList
+
+        roundTransitions attackEvents |> should be Empty
+
+        let replacement =
+            engine.GetLegalActions(applied, MatchScenario.SecondPlayer)
+            |> Seq.find (fun action -> action.Kind = LegalActionKind.ChooseReplacement)
+
+        let continued, replacementEvents =
+            MatchScenario.AppliedWith(engine.Apply(applied, replacement.Command))
+
+        roundTransitions replacementEvents
+        |> should
+            equal
+            [ MatchEventKind.RoundEnded, ValueSome MatchScenario.FirstPlayer
+              MatchEventKind.RoundStarted, ValueSome MatchScenario.SecondPlayer ]
+
+        continued.Phase |> should equal MatchPhase.Playing
+        continued.ActivePlayer |> should equal MatchScenario.SecondPlayer
+        continued.ReplacementPlayer.IsNone |> should be True
+        continued.PendingRoundEnd |> should be False
+        continued.PendingEffect.IsNone |> should be True
+        continued.PendingKnockout.IsNone |> should be True
+        continued.PendingBarChits |> should be Empty
+
+        continued.Oche(MatchScenario.FirstPlayer).Value.Id
+        |> should equal (CardInstanceId "attacker")
+
+        continued.Oche(MatchScenario.SecondPlayer).Value.Id |> should equal booth.Id
+
+        engine.GetLegalActions(continued, MatchScenario.SecondPlayer)
+        |> Seq.exists (fun action -> action.Kind = LegalActionKind.EndRound)
+        |> should be True

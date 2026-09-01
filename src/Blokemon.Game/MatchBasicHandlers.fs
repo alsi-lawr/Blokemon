@@ -323,7 +323,7 @@ module internal MatchBasicHandlers =
 
                 if builder.ReplacementPlayer.IsNone then
                     if builder.PendingRoundEnd then
-                        builder.PendingRoundEnd <- false
+                        builder.Phase <- MatchPhase.Playing
                         completeRound catalog interpreter builder
                     else
                         builder.Phase <- MatchPhase.Playing
