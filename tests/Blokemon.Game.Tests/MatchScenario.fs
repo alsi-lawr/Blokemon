@@ -5,6 +5,7 @@ open System.Collections.Immutable
 open System.IO
 open Blokemon.Core.SetDesign
 open Blokemon.Game
+open Blokemon.Cpu
 
 /// The shared table every test starts from: the printed authority, a legal deck, and a mid-match
 /// state posed so a single attack can be inspected in isolation.

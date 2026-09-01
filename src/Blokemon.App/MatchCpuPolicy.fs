@@ -3,6 +3,7 @@ namespace Blokemon.App
 open System
 open Blokemon.App.Contracts
 open Blokemon.Game
+open Blokemon.Cpu
 
 module internal MatchCpuPolicy =
 

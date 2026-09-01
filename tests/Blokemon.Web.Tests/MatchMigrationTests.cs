@@ -1240,7 +1240,7 @@ public sealed class MatchMigrationTests
     {
         var document = JsonSerializer.Deserialize<MatchDocument>(json, MatchJson.Options)!;
         var engine = new Blokemon.Game.MatchEngine(catalogue.Mechanics);
-        var cpu = new Blokemon.Game.DeterministicCpu();
+        var cpu = new Blokemon.Cpu.DeterministicCpu();
         var cpuPlayer = new Blokemon.Game.PlayerId("cpu:local");
         var started = (Blokemon.Game.MatchStartOutcome.Started)engine.Start(document.Start);
         var state = started.state;
@@ -1252,7 +1252,7 @@ public sealed class MatchMigrationTests
             {
                 if (
                     cpu.ChooseLegacy(engine, state, cpuPlayer)
-                    is not Blokemon.Game.CpuDecision.Selected selected
+                    is not Blokemon.Cpu.CpuDecision.Selected selected
                 )
                 {
                     return;

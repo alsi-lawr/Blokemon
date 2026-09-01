@@ -1,9 +1,11 @@
-namespace Blokemon.Game.Tests
+namespace Blokemon.Cpu.Tests
 
 open System.Collections.Immutable
 open System.Runtime.InteropServices
 open Blokemon.Core.SetDesign
 open Blokemon.Game
+open Blokemon.Cpu
+open Blokemon.Game.Tests
 open FsUnit
 open TUnit.Core
 
@@ -322,13 +324,7 @@ type CpuPolicyTests() =
             )
 
         let fairState =
-            engine.CreateCpuPlanningState(
-                rematerialized,
-                fairObservation,
-                CpuObservationMode.Fair,
-                0UL,
-                0UL
-            )
+            CpuPlanning.createFairState engine rematerialized fairObservation 0UL 0UL
 
         let next = selected (choose CpuDifficulty.Normal 0UL fairState)
 

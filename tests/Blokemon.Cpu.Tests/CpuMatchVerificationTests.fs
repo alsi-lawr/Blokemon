@@ -1,8 +1,10 @@
-namespace Blokemon.Game.Tests
+namespace Blokemon.Cpu.Tests
 
 open System.Collections.Generic
 open System.Collections.Immutable
 open Blokemon.Game
+open Blokemon.Cpu
+open Blokemon.Game.Tests
 open FsUnit
 open TUnit.Core
 

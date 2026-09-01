@@ -2,6 +2,7 @@ namespace Blokemon.Game.Tests
 
 open System.Collections.Immutable
 open Blokemon.Game
+open Blokemon.Cpu
 open FsUnit
 open TUnit.Core
 

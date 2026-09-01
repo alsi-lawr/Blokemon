@@ -42,6 +42,10 @@ jobs:
         run: >-
           dotnet run --project tests/Blokemon.Core.Tests -c Release --no-build --
           --maximum-parallel-tests 1
+      - name: Test the CPU policy
+        run: >-
+          dotnet run --project tests/Blokemon.Cpu.Tests -c Release --no-build --
+          --maximum-parallel-tests 1
       - name: Test the game engine
         run: >-
           dotnet run --project tests/Blokemon.Game.Tests -c Release --no-build --

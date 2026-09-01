@@ -69,6 +69,7 @@
     <ProjectReference Include="../Blokemon.App.Catalogue/Blokemon.App.Catalogue.fsproj" />
     <ProjectReference Include="../Blokemon.App.Contracts/Blokemon.App.Contracts.csproj" />
     <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
+    <ProjectReference Include="../Blokemon.Cpu/Blokemon.Cpu.fsproj" />
     <ProjectReference Include="../Blokemon.Game/Blokemon.Game.fsproj" />
     <ProjectReference Include="../Blokemon.Product/Blokemon.Product.fsproj" />
   </ItemGroup>

@@ -15,8 +15,6 @@
     <Compile Include="OpeningTests.fs" />
     <Compile Include="CommandBoundaryTests.fs" />
     <Compile Include="CpuObservationTests.fs" />
-    <Compile Include="CpuPolicyTests.fs" />
-    <Compile Include="CpuMatchVerificationTests.fs" />
     <Compile Include="DeterminismAndReplayTests.fs" />
     <Compile Include="ModifierDurationTests.fs" />
     <Compile Include="DamageAndRoughStateTests.fs" />
@@ -29,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Blokemon.App/Blokemon.App.fsproj" />
     <ProjectReference Include="../../src/Blokemon.Core/Blokemon.Core.fsproj" />
+    <ProjectReference Include="../../src/Blokemon.Cpu/Blokemon.Cpu.fsproj" />
     <ProjectReference Include="../../src/Blokemon.Game/Blokemon.Game.fsproj" />
   </ItemGroup>
   <ItemGroup>

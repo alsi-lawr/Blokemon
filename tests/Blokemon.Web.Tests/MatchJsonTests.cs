@@ -3,6 +3,7 @@ using System.Text.Json;
 using Blokemon.App;
 using Blokemon.App.Catalogue;
 using Blokemon.Core.SetDesign;
+using Blokemon.Cpu;
 using Blokemon.Game;
 using Blokemon.Web.Content;
 using Microsoft.FSharp.Core;

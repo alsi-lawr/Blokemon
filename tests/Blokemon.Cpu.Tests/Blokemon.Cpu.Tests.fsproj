@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Blokemon.Cpu.Tests</RootNamespace>
+    <AssemblyName>Blokemon.Cpu.Tests</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Blokemon.Game.Tests/MatchScenario.fs" Link="MatchScenario.fs" />
+    <Compile Include="CpuPolicyTests.fs" />
+    <Compile Include="CpuMatchVerificationTests.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Blokemon.Core/Blokemon.Core.fsproj" />
+    <ProjectReference Include="../../src/Blokemon.Cpu/Blokemon.Cpu.fsproj" />
+    <ProjectReference Include="../../src/Blokemon.Game/Blokemon.Game.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      FsUnit's NUnit flavour registers no Microsoft Testing Platform test framework, so TUnit
+      stays the only host and an FsUnit assertion failure surfaces as an ordinary TUnit failure.
+    -->
+    <PackageReference Include="FsUnit" />
+    <PackageReference Include="TUnit" />
+    <PackageReference Include="FSharp.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content
+      Include="../../content/authorities/mechanics.json"
+      Link="Authorities/mechanics.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
+</Project>

@@ -7,6 +7,7 @@ open Blokemon.App.Catalogue
 open Blokemon.App.Contracts
 open Blokemon.Core.SetDesign
 open Blokemon.Game
+open Blokemon.Cpu
 
 type internal GameCommandId = Blokemon.Game.CommandId
 

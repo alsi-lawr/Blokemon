@@ -13,6 +13,7 @@ open Blokemon.App.MatchStore
 open Blokemon.App.MatchViewProjection
 open Blokemon.Product
 open Blokemon.Game
+open Blokemon.Cpu
 
 [<Sealed>]
 type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentStore) =

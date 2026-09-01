@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Blokemon.Cpu</RootNamespace>
+    <AssemblyName>Blokemon.Cpu</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="CpuPolicy.fs" />
+    <Compile Include="CpuEvaluation.fs" />
+    <Compile Include="CpuPlanning.fs" />
+    <Compile Include="CpuCandidateSelection.fs" />
+    <Compile Include="CpuForwardSearch.fs" />
+    <Compile Include="DeterministicCpu.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Blokemon.Game/Blokemon.Game.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Blokemon.Cpu.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      Central package management sets DisableImplicitFSharpCoreReference, so without this
+      reference the project builds green and fails at runtime with a missing FSharp.Core.
+    -->
+    <PackageReference Include="FSharp.Core" />
+  </ItemGroup>
+</Project>

@@ -2,6 +2,7 @@ namespace Blokemon.Game.Tests
 
 open Blokemon.Core.SetDesign
 open Blokemon.Game
+open Blokemon.Cpu
 open FsUnit
 open TUnit.Core
 

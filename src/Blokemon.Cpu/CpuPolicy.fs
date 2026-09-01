@@ -1,4 +1,6 @@
-namespace Blokemon.Game
+namespace Blokemon.Cpu
+
+open Blokemon.Game
 
 [<RequireQualifiedAccess>]
 type CpuDifficulty =

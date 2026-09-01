@@ -20,7 +20,6 @@
     <Compile Include="ResolutionTrace.fs" />
     <Compile Include="MatchBuilder.fs" />
     <Compile Include="CpuObservation.fs" />
-    <Compile Include="CpuPolicy.fs" />
     <Compile Include="MatchSetup.fs" />
     <Compile Include="InterpreterTypes.fs" />
     <Compile Include="PokemonPowers.fs" />
@@ -41,7 +40,6 @@
     <Compile Include="EffectInstructions.fs" />
     <Compile Include="EffectExecution.fs" />
     <Compile Include="AuthorityAudit.fs" />
-    <Compile Include="CpuEvaluation.fs" />
     <Compile Include="BlokemonInterpreter.fs" />
     <Compile Include="MatchRules.fs" />
     <Compile Include="MatchWins.fs" />
@@ -61,17 +59,14 @@
     <Compile Include="MatchPlayingActions.fs" />
     <Compile Include="MatchLegalActions.fs" />
     <Compile Include="CpuObservations.fs" />
-    <Compile Include="CpuPlanning.fs" />
     <Compile Include="MatchCommit.fs" />
     <Compile Include="MatchEngine.fs" />
-    <Compile Include="CpuCandidateSelection.fs" />
-    <Compile Include="CpuForwardSearch.fs" />
-    <Compile Include="DeterministicCpu.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Blokemon.Core/Blokemon.Core.fsproj" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Blokemon.Cpu" />
     <InternalsVisibleTo Include="Blokemon.Game.Tests" />
   </ItemGroup>
   <ItemGroup>

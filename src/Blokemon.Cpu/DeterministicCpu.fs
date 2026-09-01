@@ -1,9 +1,11 @@
-namespace Blokemon.Game
+namespace Blokemon.Cpu
+
+open Blokemon.Game
 
 open System
 open System.Collections.Generic
-open Blokemon.Game.CpuCandidateSelection
-open Blokemon.Game.CpuPolicyLimits
+open Blokemon.Cpu.CpuCandidateSelection
+open Blokemon.Cpu.CpuPolicyLimits
 
 /// A deterministic strategic policy. Every choice begins and ends at the engine-owned CPU
 /// candidate boundary; only bounded planning snapshots are advanced between those two points.
@@ -70,13 +72,15 @@ type DeterministicCpu() =
         let samples =
             [| for sampleIndex in 0 .. sampleCount - 1 ->
                    let sampleState =
-                       engine.CreateCpuPlanningState(
-                           state,
-                           observation,
-                           mode,
-                           input.Seed,
-                           uint64 sampleIndex
-                       )
+                       match mode with
+                       | CpuObservationMode.Fair ->
+                           CpuPlanning.createFairState
+                               engine
+                               state
+                               observation
+                               input.Seed
+                               (uint64 sampleIndex)
+                       | CpuObservationMode.Authoritative -> state
 
                    let sampleObservation = engine.GetCpuObservation(sampleState, actor, mode)
                    sampleState, sampleObservation |]

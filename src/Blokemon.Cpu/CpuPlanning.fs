@@ -1,4 +1,6 @@
-namespace Blokemon.Game
+namespace Blokemon.Cpu
+
+open Blokemon.Game
 
 open System
 open System.Collections.Generic
@@ -113,12 +115,13 @@ module internal CpuPlanning =
         pool[int (key % uint64 pool.Length)]
 
     let createFairState
-        (catalog: AuthorityCatalog)
+        (engine: MatchEngine)
         (source: MatchState)
         (observation: CpuObservation)
         (seed: uint64)
         (sampleIndex: uint64)
         =
+        let catalog = engine.CpuCatalog
         let pool = identityPool catalog
         let known = observation.State.Cards |> Seq.map (fun card -> card.Id, card) |> dict
 

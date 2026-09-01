@@ -14,7 +14,6 @@ open Blokemon.Game.MatchTriggerHandlers
 open Blokemon.Game.MatchLegalActions
 open Blokemon.Game.CpuObservations
 open Blokemon.Game.CpuCandidateIds
-open Blokemon.Game.CpuPolicyLimits
 
 /// The one place a match state is ever advanced: a validated start request produces the first
 /// state, and each command produces exactly one successor from exactly one predecessor.
@@ -28,6 +27,8 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
 
     member internal _.ResolutionTrace
         with set trace = interpreter.ResolutionTrace <- trace
+
+    member internal _.CpuCatalog = catalog
 
     member _.Start(request: MatchStartRequest) =
         let issues = validateStart catalog authorityIsValid request
@@ -300,48 +301,3 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
         =
         this.TryMaterializeCpuAction(state, actor, candidate)
         |> ValueOption.map _.Command
-
-    member internal this.CreateCpuPlanningState
-        (
-            state: MatchState,
-            observation: CpuObservation,
-            mode: CpuObservationMode,
-            seed: uint64,
-            sampleIndex: uint64
-        ) =
-        match mode with
-        | CpuObservationMode.Fair ->
-            CpuPlanning.createFairState catalog state observation seed sampleIndex
-        | CpuObservationMode.Authoritative -> state
-
-    member internal _.ScoreCpuTransition
-        (
-            actor: PlayerId,
-            kind: LegalActionKind,
-            before: MatchState,
-            beforeObservation: CpuObservation,
-            after: MatchState,
-            afterObservation: CpuObservation
-        ) =
-        let readyAttacks (observation: CpuObservation) =
-            observation.Candidates
-            |> Seq.truncate rootCandidateLimit
-            |> Seq.choose (fun action ->
-                match action.Action with
-                | MatchAction.Attack(attacker, attack) ->
-                    catalog.Attack attack
-                    |> ValueOption.map (fun details -> attacker, details.PrintedDamage)
-                    |> ValueOption.toOption
-                | _ -> None)
-            |> Seq.groupBy fst
-            |> Seq.map (fun (attacker, attacks) -> attacker, attacks |> Seq.map snd |> Seq.max)
-            |> Map.ofSeq
-
-        CpuEvaluation.transitionScore
-            catalog
-            (readyAttacks beforeObservation)
-            (readyAttacks afterObservation)
-            actor
-            kind
-            before
-            after

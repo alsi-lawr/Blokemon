@@ -1,4 +1,6 @@
-namespace Blokemon.Game
+namespace Blokemon.Cpu
+
+open Blokemon.Game
 
 open System
 open System.Collections.Generic
@@ -72,14 +74,14 @@ module internal CpuCandidateSelection =
                     let nextObservation = engine.GetCpuObservation(next, actor, mode)
 
                     let score =
-                        engine.ScoreCpuTransition(
-                            actor,
-                            candidate.Kind,
-                            state,
-                            observation,
-                            next,
+                        CpuEvaluation.scoreTransition
+                            engine
+                            actor
+                            candidate.Kind
+                            state
+                            observation
+                            next
                             nextObservation
-                        )
 
                     ValueSome(score, next, nextObservation)
 

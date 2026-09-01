@@ -1,7 +1,9 @@
-namespace Blokemon.Game
+namespace Blokemon.Cpu
 
-open Blokemon.Game.CpuCandidateSelection
-open Blokemon.Game.CpuPolicyLimits
+open Blokemon.Game
+
+open Blokemon.Cpu.CpuCandidateSelection
+open Blokemon.Cpu.CpuPolicyLimits
 
 module internal CpuForwardSearch =
 

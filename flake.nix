@@ -41,6 +41,7 @@
               ./src/Blokemon.Core
               ./src/Blokemon.Core.Codecs
               ./src/Blokemon.Core.Contracts
+              ./src/Blokemon.Cpu
               ./src/Blokemon.Game
               ./src/Blokemon.Product
               ./src/Blokemon.Web.Client
@@ -70,6 +71,7 @@
               ./src/Blokemon.Core
               ./src/Blokemon.Core.Codecs
               ./src/Blokemon.Core.Contracts
+              ./src/Blokemon.Cpu
               ./src/Blokemon.Game
               ./src/Blokemon.PackGen
               ./src/Blokemon.Product

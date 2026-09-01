@@ -14,6 +14,7 @@ open Blokemon.App.MatchIdentity
 open Blokemon.App.MatchPayloads
 open Blokemon.Product
 open Blokemon.Game
+open Blokemon.Cpu
 
 /// The computer's turn, and the verified replay that turns a stored document back into a state.
 /// A document is trusted only after every command in it replays to the same command.

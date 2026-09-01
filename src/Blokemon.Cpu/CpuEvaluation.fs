@@ -1,9 +1,13 @@
-namespace Blokemon.Game
+namespace Blokemon.Cpu
+
+open Blokemon.Game
 
 open System
 open System.Linq
 
 module internal CpuEvaluation =
+
+    open CpuPolicyLimits
 
     let private sameEnergyBurnEffect (left: TemporaryEffect) (right: TemporaryEffect) =
         left.Kind = TemporaryEffectKind.EnergyBurn
@@ -205,3 +209,37 @@ module internal CpuEvaluation =
             scoreState catalog afterReadiness actor after
             - scoreState catalog readyBefore actor before
             + progress
+
+    let scoreTransition
+        (engine: MatchEngine)
+        (actor: PlayerId)
+        (kind: LegalActionKind)
+        (before: MatchState)
+        (beforeObservation: CpuObservation)
+        (after: MatchState)
+        (afterObservation: CpuObservation)
+        =
+        let catalog = engine.CpuCatalog
+
+        let readyAttacks (observation: CpuObservation) =
+            observation.Candidates
+            |> Seq.truncate rootCandidateLimit
+            |> Seq.choose (fun action ->
+                match action.Action with
+                | MatchAction.Attack(attacker, attack) ->
+                    catalog.Attack attack
+                    |> ValueOption.map (fun details -> attacker, details.PrintedDamage)
+                    |> ValueOption.toOption
+                | _ -> None)
+            |> Seq.groupBy fst
+            |> Seq.map (fun (attacker, attacks) -> attacker, attacks |> Seq.map snd |> Seq.max)
+            |> Map.ofSeq
+
+        transitionScore
+            catalog
+            (readyAttacks beforeObservation)
+            (readyAttacks afterObservation)
+            actor
+            kind
+            before
+            after

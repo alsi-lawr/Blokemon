@@ -8,6 +8,7 @@
     <Project Path="src/Blokemon.Core/Blokemon.Core.fsproj" />
     <Project Path="src/Blokemon.Core.Codecs/Blokemon.Core.Codecs.csproj" />
     <Project Path="src/Blokemon.Core.Contracts/Blokemon.Core.Contracts.fsproj" />
+    <Project Path="src/Blokemon.Cpu/Blokemon.Cpu.fsproj" />
     <Project Path="src/Blokemon.Game/Blokemon.Game.fsproj" />
     <Project Path="src/Blokemon.PackGen/Blokemon.PackGen.fsproj" />
     <Project Path="src/Blokemon.Product/Blokemon.Product.fsproj" />
@@ -19,6 +20,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Blokemon.Core.Tests/Blokemon.Core.Tests.fsproj" />
+    <Project Path="tests/Blokemon.Cpu.Tests/Blokemon.Cpu.Tests.fsproj" />
     <Project Path="tests/Blokemon.Game.Tests/Blokemon.Game.Tests.fsproj" />
     <Project Path="tests/Blokemon.Product.Tests/Blokemon.Product.Tests.fsproj" />
     <Project Path="tests/Blokemon.Web.Headless/Blokemon.Web.Headless.csproj" />
