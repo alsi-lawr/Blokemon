@@ -70,7 +70,7 @@ module private LocalProfileFixtures =
     let legalCards (profile: LocalProfile) =
         [ { CardId = profile.GuaranteedRegularCollectibleId
             Quantity = 1 }
-          { CardId = value (CardId.Create authority.Value.BasicVim[0].Id)
+          { CardId = value (CardId.Create (authority.Value.BasicVim |> Array.find _.IsBasic).Id)
             Quantity = 59 } ]
 
     let createPopulatedProfile () =
@@ -221,7 +221,9 @@ type LocalProfileTests() =
         let profile = createProfile ()
         let regular = profile.GuaranteedRegularCollectibleId
         let kit = value (CardId.Create authority.Value.Kits[0].Id)
-        let vim = value (CardId.Create authority.Value.BasicVim[0].Id)
+
+        let vim =
+            value (CardId.Create (authority.Value.BasicVim |> Array.find _.IsBasic).Id)
 
         let legal =
             DeckValidator.Validate
@@ -249,6 +251,26 @@ type LocalProfileTests() =
                       { CardId = vim; Quantity = 54 } ]
             )
 
+        // Advanced Rulebook Version 1, p. 20: Double Colorless is not Basic Energy, so it
+        // remains subject to the four-card name limit.
+        let doubleColorless =
+            authority.Value.BasicVim
+            |> Array.find (fun energy -> not energy.IsBasic)
+            |> _.Id
+            |> CardId.Create
+            |> value
+
+        let tooManyDoubleColorless =
+            invalidIssues (
+                DeckValidator.Validate
+                    profile
+                    authority.Value
+                    [ { CardId = regular; Quantity = 1 }
+                      { CardId = doubleColorless
+                        Quantity = 5 }
+                      { CardId = vim; Quantity = 54 } ]
+            )
+
         legal.IsValid |> should be True
 
         overOwned
@@ -259,10 +281,16 @@ type LocalProfileTests() =
         |> Seq.exists (fun issue -> issue.IsMechanicalCopyLimitExceeded)
         |> should be True
 
+        tooManyDoubleColorless
+        |> Seq.exists (fun issue -> issue.IsMechanicalCopyLimitExceeded)
+        |> should be True
+
     [<Test>]
     member _.``deck validation should require exactly sixty cards and a regular collectible``() =
         let profile = createProfile ()
-        let vim = value (CardId.Create authority.Value.BasicVim[0].Id)
+
+        let vim =
+            value (CardId.Create (authority.Value.BasicVim |> Array.find _.IsBasic).Id)
 
         let wrongCount =
             invalidIssues (
@@ -685,7 +713,7 @@ type LocalProfileTests() =
                 )
             )
 
-        let vimId = authority.Value.BasicVim[0].Id
+        let vimId = (authority.Value.BasicVim |> Array.find _.IsBasic).Id
 
         let illegalDeck =
             failure (

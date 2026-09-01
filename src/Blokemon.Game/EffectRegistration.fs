@@ -71,7 +71,6 @@ module internal EffectRegistration =
                 && runtime.Source.Kind = CardKind.Kit
                 && runtime.Source.Zone = CardZone.Attached
                 && runtime.Source.AttachedTo.IsSome
-                && (catalog.Kit runtime.Source.MechanicalId).Kind = BlokemonKitKind.BarKit
 
             let mutable targets =
                 (if usesAttachedToolTarget then

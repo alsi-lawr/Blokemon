@@ -37,6 +37,15 @@ module internal MatchRules =
     let isInPlay (card: CardState) =
         card.Zone = CardZone.Oche || card.Zone = CardZone.Booth
 
+    let pokemonPowerIsEnabled (catalog: AuthorityCatalog) (card: CardState) =
+        card.Kind = CardKind.Bloke
+        && isInPlay card
+        && not (
+            card.RoughStates
+            |> Seq.exists (fun entry ->
+                Array.contains entry.State catalog.Manifest.BaseRules.PokemonPower.DisabledBy)
+        )
+
     /// A player who started over waits for the one who did not to finish setting up. Fewest
     /// mulligans places first, and an equal count leaves both free to place in either order.
     let mayPlaceOpening (state: MatchState) (actor: PlayerId) =
@@ -163,7 +172,7 @@ module internal MatchRules =
                     attacker.Attachments
                     |> Seq.map builder.Card
                     |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
-                    |> Seq.map (fun card -> (catalog.Vim card.MechanicalId).MechanicalType)
+                    |> Seq.collect (fun card -> (catalog.Vim card.MechanicalId).Provides)
                 )
 
             let mutable payable = true
@@ -185,6 +194,52 @@ module internal MatchRules =
                >= (costs
                    |> Seq.filter (fun cost -> cost = BlokemonMechanicalType.Colorless)
                    |> Seq.length)
+
+    let energyUnits (catalog: AuthorityCatalog) (card: CardState) =
+        if card.Kind = CardKind.Vim then
+            (catalog.Vim card.MechanicalId).Provides.Length
+        else
+            0
+
+    let retreatPaymentIsValid
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (outgoing: CardState)
+        (fare: int)
+        (selected: ImmutableArray<CardInstanceId>)
+        =
+        let attachedEnergy =
+            outgoing.Attachments
+            |> Seq.map builder.Card
+            |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
+            |> Seq.toArray
+
+        let chosen = selected |> Seq.map builder.FindCard |> Seq.toArray
+
+        selected.Length = (selected |> Seq.distinct |> Seq.length)
+        && chosen
+           |> Array.forall (fun card ->
+               card.IsSome
+               && attachedEnergy |> Array.exists (fun energy -> energy.Id = card.Value.Id))
+        && (if fare = 0 then
+                selected.Length = 0
+            else
+                let supplied = chosen |> Array.sumBy (fun card -> energyUnits catalog card.Value)
+
+                supplied >= fare
+                && chosen
+                   |> Array.forall (fun card -> supplied - energyUnits catalog card.Value < fare))
+
+    let defaultRetreatPayment (catalog: AuthorityCatalog) (attachments: CardState seq) (fare: int) =
+        let chosen = ResizeArray<CardInstanceId>()
+        let mutable supplied = 0
+
+        for energy in attachments |> Seq.sortBy (fun card -> -energyUnits catalog card, card.Id) do
+            if supplied < fare then
+                chosen.Add energy.Id
+                supplied <- supplied + energyUnits catalog energy
+
+        ImmutableArray.CreateRange chosen, supplied >= fare
 
     let validatePlayingTurn (builder: MatchBuilder) (actor: PlayerId) =
         if builder.Phase <> MatchPhase.Playing then
@@ -261,7 +316,11 @@ module internal MatchRules =
             let stackRules = catalog.Manifest.BaseRules.Stack
 
             let limit =
-                if stackRules.BasicVimExempt && catalog.Kind card = CardKind.Vim then
+                if
+                    stackRules.BasicVimExempt
+                    && catalog.Kind card = CardKind.Vim
+                    && (catalog.Vim card).IsBasic
+                then
                     Int32.MaxValue
                 else
                     min (catalog.CopyLimit card) stackRules.MechanicalCopyLimit

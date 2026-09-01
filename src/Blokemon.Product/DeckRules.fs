@@ -101,7 +101,7 @@ module internal DeckRules =
                 if not vim.FreelyAvailable then
                     issues.Add(DeckValidationIssue.CatalogueCardNotFree cardId)
 
-                if not rules.BasicVimExempt then
+                if not (rules.BasicVimExempt && vim.IsBasic) then
                     checkCopyLimit
                         issues
                         cardId

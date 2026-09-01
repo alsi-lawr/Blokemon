@@ -135,7 +135,6 @@ module private AuthorityParityFixtures =
               CardFilter =
                 { Categories = [| BlokemonCardCategory.Kit |]
                   Ranks = Array.empty
-                  KitKinds = Array.empty
                   BasicVimOnly = false
                   DifferentMechanicalTypes = false
                   ExcludedRelatedIds = Array.empty }
@@ -154,44 +153,6 @@ module private AuthorityParityFixtures =
                 |> Array.map (fun card -> if card.Id = changed.Id then changed else card) }
 
 type AuthorityParityTests() =
-
-    [<Test>]
-    member _.``the second opener should be able to use its promotion ability in its first round``
-        ()
-        =
-        let promotion =
-            MatchScenario.PlainCard "promotion" "BLK-022" MatchScenario.FirstPlayer CardZone.Mitt -1
-
-        let state = MatchScenario.BattleState "BLK-021" "BLK-150" [] 701UL
-
-        let state =
-            { state with
-                Players =
-                    ImmutableArray.CreateRange(
-                        state.Players
-                        |> Seq.map (fun player ->
-                            if player.Id = MatchScenario.FirstPlayer then
-                                { player with RoundsStarted = 1 }
-                            else
-                                player)
-                    ) }
-
-        let state = addCards state [ promotion ]
-        let engine = MatchScenario.Engine()
-
-        let action =
-            engine.GetLegalActions(state, MatchScenario.FirstPlayer)
-            |> Seq.filter (fun candidate ->
-                candidate.Kind = LegalActionKind.Promote
-                && (match candidate.Command.Action with
-                    | MatchAction.Promote(promotionCard, promoted) ->
-                        promotionCard = promotion.Id && promoted = CardInstanceId "attacker"
-                    | _ -> false))
-            |> Seq.exactlyOne
-
-        let applied = MatchScenario.Applied(engine.Apply(state, action.Command))
-
-        (applied.Card promotion.Id).Zone |> should equal CardZone.Oche
 
     [<Test>]
     member _.``a recoil knockout should not trigger the send-home reaction``() =
@@ -214,43 +175,6 @@ type AuthorityParityTests() =
         |> should equal CardZone.EmptiesTray
 
         (applied.Card donni.Id).Zone |> should equal CardZone.Booth
-
-    [<Test>]
-    member _.``an item lock should not block an otherwise legal supporter``() =
-        let item =
-            MatchScenario.PlainCard "item" "KIT-001" MatchScenario.SecondPlayer CardZone.Mitt -1
-
-        let supporter =
-            MatchScenario.PlainCard
-                "supporter"
-                "KIT-005"
-                MatchScenario.SecondPlayer
-                CardZone.Mitt
-                -1
-
-        let state =
-            addCards
-                (MatchScenario.BattleState "BLK-049" "BLK-150" [ "VIM-BLAZED" ] 709UL)
-                [ item; supporter ]
-
-        let attacked =
-            MatchScenario.Applied(
-                MatchScenario.Engine().Apply(state, MatchScenario.AttackCommand state "BLK-049-B01")
-            )
-
-        let actions =
-            MatchScenario.Engine().GetLegalActions(attacked, MatchScenario.SecondPlayer)
-
-        let playsKit (kit: CardInstanceId) =
-            actions
-            |> Seq.exists (fun action ->
-                action.Kind = LegalActionKind.PlayKit
-                && (match action.Command.Action with
-                    | MatchAction.PlayKit(played, _) -> played = kit
-                    | _ -> false))
-
-        playsKit item.Id |> should be False
-        playsKit supporter.Id |> should be True
 
     [<Test>]
     member _.``a chosen soft spot should persist until the defender leaves the oche``() =

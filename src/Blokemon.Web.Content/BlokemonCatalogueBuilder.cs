@@ -96,7 +96,7 @@ public static class BlokemonCatalogueBuilder
                     presentation.Name,
                     CardKindView.Kit,
                     "Kit",
-                    mechanical.Kind.ToString(),
+                    "Kit",
                     cardDocument.BuildMarkup(printedCards[mechanical.Id]),
                     KitRules(mechanics, mechanical, presentation),
                     0,

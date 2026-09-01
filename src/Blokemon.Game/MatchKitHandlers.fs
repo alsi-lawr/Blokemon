@@ -129,26 +129,6 @@ module internal MatchKitHandlers =
                         | Some result -> result
                         | None ->
 
-                            match kit.Kind, targetId with
-                            | BlokemonKitKind.BarKit, ValueSome target ->
-                                builder.Attach(kitCard.Id, target)
-                            | BlokemonKitKind.Local, _ ->
-                                let current =
-                                    builder.Cards
-                                    |> Seq.filter (fun card ->
-                                        card.Owner = command.Actor && card.Zone = CardZone.Local)
-                                    |> Seq.toArray
-                                    |> Array.tryExactlyOne
-
-                                match current with
-                                | Some card when catalog.Manifest.BaseRules.Kit.NewLocalChucksOld ->
-                                    builder.MoveCard(card.Id, CardZone.EmptiesTray)
-                                | Some _ -> ()
-                                | None -> ()
-
-                                builder.MoveCard(kitCard.Id, CardZone.Local)
-                            | _ -> ()
-
                             let executionRejection =
                                 executableRules
                                 |> Array.tryPick (fun houseRule ->
@@ -194,16 +174,6 @@ module internal MatchKitHandlers =
                                                     [ kitCard.MechanicalId ]
                                             ) }
 
-                                builder.RoundUsage <-
-                                    match kit.Kind with
-                                    | BlokemonKitKind.BarBit -> builder.RoundUsage
-                                    | BlokemonKitKind.Mate ->
-                                        { builder.RoundUsage with
-                                            MatesPlayed = builder.RoundUsage.MatesPlayed + 1 }
-                                    | BlokemonKitKind.Local ->
-                                        { builder.RoundUsage with
-                                            LocalsPlayed = builder.RoundUsage.LocalsPlayed + 1 }
-                                    | BlokemonKitKind.BarKit -> builder.RoundUsage
-                                    | other -> failwithf "Unhandled kit kind %A." other
+
 
                                 HandlerResult.accepted

@@ -19,6 +19,7 @@
     <Compile Include="AuthorityCatalog.fs" />
     <Compile Include="ResolutionTrace.fs" />
     <Compile Include="MatchBuilder.fs" />
+    <Compile Include="MatchSetup.fs" />
     <Compile Include="InterpreterTypes.fs" />
     <Compile Include="EffectTargeting.fs" />
     <Compile Include="ChoiceShapes.fs" />

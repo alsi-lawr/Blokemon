@@ -2,8 +2,6 @@ namespace Blokemon.Game.Tests
 
 open System
 open System.Collections.Immutable
-open System.IO
-open System.Text.Json
 open Blokemon.Core.SetDesign
 open Blokemon.Game
 open FsUnit
@@ -177,6 +175,7 @@ module internal AuthorityAuditFixtures =
                 "BLK-110"
                 [ "VIM-LAIRY"; "VIM-SOBER"; "VIM-SOBER" ]
                 (seedForBadge ())
+            |> MatchScenario.WithRestartableDecks
 
         let applied =
             MatchScenario.Applied(
@@ -340,74 +339,3 @@ type AuthorityAuditTests() =
 
         observation |> should not' (equal baseline)
         observation |> should equal expectedObservation
-
-    [<Test>]
-    member _.``the reconciled Jungle authority should flatten 298 effects to 626 instructions``() =
-        use document =
-            JsonDocument.Parse(
-                File.ReadAllText(
-                    Path.Combine(
-                        AppContext.BaseDirectory,
-                        "Authorities",
-                        "sv151-authority-reconciliation.json"
-                    )
-                )
-            )
-
-        let root = document.RootElement
-        let reconciled = root.GetProperty("effects").EnumerateArray() |> Seq.toArray
-
-        let sourceException =
-            root.GetProperty("canonicalSourceExceptions").GetProperty("BLK-040")
-
-        let effectIds (partyTricks: BlokemonPartyTrick array) attacks houseRules =
-            Seq.concat
-                [ partyTricks |> Seq.map (fun effect -> effect.MechanicalId)
-                  attacks |> Seq.map (fun (effect: BlokemonAttack) -> effect.MechanicalId)
-                  houseRules |> Seq.map (fun (effect: BlokemonHouseRule) -> effect.MechanicalId) ]
-
-        let declared =
-            Seq.append
-                (MatchScenario.Authority.Collectibles
-                 |> Seq.collect (fun card ->
-                     effectIds card.PartyTricks card.Attacks card.HouseRules))
-                (MatchScenario.Authority.Kits
-                 |> Seq.collect (fun card ->
-                     effectIds card.PartyTricks card.Attacks card.HouseRules))
-            |> Seq.sortWith (fun left right -> String.CompareOrdinal(left, right))
-            |> Seq.toArray
-
-        let documented =
-            reconciled
-            |> Array.map (fun effect -> effect.GetProperty("mechanicalId").GetString())
-            |> Array.sortWith (fun left right -> String.CompareOrdinal(left, right))
-
-        let audit = BlokemonInterpreter(MatchScenario.Authority).AuditAuthority()
-
-        root.GetProperty("authorityVersion").GetString()
-        |> should equal MatchScenario.Authority.ManifestVersion
-
-        (sourceException.GetProperty("sourceCard").GetString(),
-         sourceException.GetProperty("sourceSet").GetString(),
-         sourceException.GetProperty("sourceNumber").GetInt32(),
-         sourceException.GetProperty("sourceUrl").GetString())
-        |> should
-            equal
-            ("Wigglytuff", "Jungle", 32, "https://pkmncards.com/card/wigglytuff-jungle-ju-32/")
-
-        documented |> should equal declared
-        reconciled.Length |> should equal 298
-
-        reconciled
-        |> Array.filter (fun effect ->
-            effect.GetProperty("disposition").GetString() = "CorrectedFromCandidate6")
-        |> Array.length
-        |> should equal 93
-
-        audit.EffectCount |> should equal 298
-        // Candidate.6's 643 was derived before BLK-113's SV151-correct optional Booth branch
-        // (+1), before the three fossil Kits lost their spurious Optional wrappers (-3), and before
-        // the twelve disconnected Big Hitter instructions were removed (-12). Replacing BLK-040's
-        // Party Trick and Attack with its two Jungle Attacks removes three more instructions (-3).
-        audit.InstructionCount |> should equal 626
-        audit.Issues.Length |> should equal 0

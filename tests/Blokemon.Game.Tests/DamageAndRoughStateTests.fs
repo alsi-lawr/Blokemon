@@ -96,13 +96,12 @@ type DamageAndRoughStateTests() =
         |> should equal 0
 
     [<Test>]
-    member _.``the checkup should resolve marker damage before recovery and clear an expired legless``
-        ()
-        =
+    /// Advanced Rulebook v1, pp. 5 and 16-18: Poison places one damage counter after each
+    /// player's turn, while Paralysis ends after the afflicted player's next turn.
+    member _.``the checkup should place Poison damage and clear expired Paralysis``() =
         let roughStates =
             ImmutableArray.Create(
                 MatchScenario.RoughState BlokemonRoughState.DodgyPint 2,
-                MatchScenario.RoughState BlokemonRoughState.Singed 2,
                 MatchScenario.RoughState BlokemonRoughState.Legless 1
             )
 
@@ -140,7 +139,7 @@ type DamageAndRoughStateTests() =
                 && matchEvent.SourceCard.IsNone
                 && Seq.contains (CardInstanceId "attacker") matchEvent.TargetCards)
 
-        checkedCard.Damage |> should equal 30
+        checkedCard.Damage |> should equal 10
 
         checkedCard.RoughStates
         |> Seq.exists (fun entry -> entry.State = BlokemonRoughState.DodgyPint)
@@ -154,4 +153,4 @@ type DamageAndRoughStateTests() =
         |> Seq.map (fun matchEvent -> matchEvent.Amount)
         |> Seq.sort
         |> Seq.toList
-        |> should equal [ 10; 20 ]
+        |> should equal [ 10 ]

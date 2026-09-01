@@ -87,14 +87,7 @@ type BlokemonCatalogue
     member _.StayingPower(id: string) =
         match mechanics.Collectibles |> Array.tryFind (fun card -> card.Id = id) with
         | Some card -> card.StayingPower
-        | None ->
-            if
-                mechanics.BaseRules.FossilKits.KitIds
-                |> Array.exists (fun kitId -> String.Equals(kitId, id, StringComparison.Ordinal))
-            then
-                mechanics.BaseRules.FossilKits.PlayAsRegularLocalStayingPower
-            else
-                0
+        | None -> 0
 
     member _.CardsWithOwnership(ownership: IReadOnlyDictionary<string, int>) =
         cards.Values

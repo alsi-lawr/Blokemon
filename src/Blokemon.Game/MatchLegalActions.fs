@@ -110,6 +110,7 @@ module internal MatchLegalActions =
             Seq.empty
         else
             state.CardsIn(actor, CardZone.Booth)
+            |> Seq.filter (fun card -> card.Kind = CardKind.Bloke)
             |> Seq.map (fun card ->
                 simple
                     LegalActionKind.ChooseReplacement

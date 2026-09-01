@@ -17,8 +17,6 @@ module internal EffectCardMoves =
         (destination: BlokemonEffectDestination)
         =
         runtime.Source.Kind = CardKind.Kit
-        && (let kind = (catalog.Kit runtime.Source.MechanicalId).Kind
-            kind = BlokemonKitKind.BarBit || kind = BlokemonKitKind.Mate)
         && card.Kind = CardKind.Kit
         && card.Zone = CardZone.EmptiesTray
         && (destination = BlokemonEffectDestination.OwnStack

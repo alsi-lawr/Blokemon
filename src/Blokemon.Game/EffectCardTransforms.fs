@@ -25,9 +25,11 @@ module internal EffectCardTransforms =
                 resolveSelectedTargets catalog runtime instruction path |> Seq.tryHead)
 
         match incoming with
-        | Some incoming when incoming.Zone = CardZone.Booth ->
+        | Some incoming when incoming.Kind = CardKind.Bloke && incoming.Zone = CardZone.Booth ->
             match runtime.Builder.Oche incoming.Owner with
-            | ValueSome outgoing when not (effectIsPrevented runtime outgoing) ->
+            | ValueSome outgoing when
+                outgoing.Kind = CardKind.Bloke && not (effectIsPrevented runtime outgoing)
+                ->
                 resolvePendingDamageFor catalog runtime outgoing.Id
                 let outgoing = runtime.Builder.Card outgoing.Id
 

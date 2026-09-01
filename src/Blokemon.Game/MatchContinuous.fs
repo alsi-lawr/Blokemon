@@ -13,11 +13,7 @@ module internal MatchContinuous =
         (interpreter: BlokemonInterpreter)
         (builder: MatchBuilder)
         =
-        for source in
-            builder.Cards
-            |> Seq.filter isInPlay
-            |> Seq.sortBy (fun card -> card.Id)
-            |> Seq.toArray do
+        for source in builder.Cards |> Seq.sortBy (fun card -> card.Id) |> Seq.toArray do
             for trick in
                 catalog.PartyTricks source
                 |> Seq.filter (fun trick -> trick.Trigger = BlokemonTrigger.Continuous)
@@ -25,16 +21,17 @@ module internal MatchContinuous =
                 let effect = EffectId trick.MechanicalId
                 builder.RemoveEffects(effect, source.Id)
 
-                interpreter.Execute(
-                    builder,
-                    source.Owner,
-                    source,
-                    effect,
-                    trick.Program,
-                    ImmutableArray<_>.Empty,
-                    false
-                )
-                |> ignore
+                if pokemonPowerIsEnabled catalog source then
+                    interpreter.Execute(
+                        builder,
+                        source.Owner,
+                        source,
+                        effect,
+                        trick.Program,
+                        ImmutableArray<_>.Empty,
+                        false
+                    )
+                    |> ignore
 
         for source in
             builder.Cards

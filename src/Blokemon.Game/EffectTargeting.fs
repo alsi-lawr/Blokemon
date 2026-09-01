@@ -59,10 +59,8 @@ module internal EffectTargeting =
             && (filter.Ranks.Length = 0
                 || (card.Kind = CardKind.Bloke
                     && Array.contains (catalog.Bloke card.MechanicalId).Rank filter.Ranks))
-            && (filter.KitKinds.Length = 0
-                || (card.Kind = CardKind.Kit
-                    && Array.contains (catalog.Kit card.MechanicalId).Kind filter.KitKinds))
-            && (not filter.BasicVimOnly || card.Kind = CardKind.Vim)
+            && (not filter.BasicVimOnly
+                || (card.Kind = CardKind.Vim && (catalog.Vim card.MechanicalId).IsBasic))
             && not (
                 filter.ExcludedRelatedIds.Contains(card.MechanicalId.Value, StringComparer.Ordinal)
             )
@@ -135,9 +133,7 @@ module internal EffectTargeting =
         | BlokemonTarget.OwnAttachedBarKits ->
             inPlay builder actor
             |> Seq.collect (fun card -> card.Attachments |> Seq.map builder.Card)
-            |> Seq.filter (fun card ->
-                card.Kind = CardKind.Kit
-                && (catalog.Kit card.MechanicalId).Kind = BlokemonKitKind.BarKit)
+            |> Seq.filter (fun card -> card.Kind = CardKind.Kit)
         | BlokemonTarget.OwnOcheAttachedVim ->
             yieldCard (builder.Oche actor)
             |> Seq.collect (fun card -> card.Attachments |> Seq.map builder.Card)
@@ -225,7 +221,9 @@ module internal EffectTargeting =
             source.Attachments
             |> Seq.map builder.Card
             |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
-        | BlokemonOpcode.SwapOche -> builder.CardsIn(builder.Other actor, CardZone.Booth)
+        | BlokemonOpcode.SwapOche ->
+            builder.CardsIn(builder.Other actor, CardZone.Booth)
+            |> Seq.filter (fun card -> card.Kind = CardKind.Bloke)
         | _ -> Seq.empty
 
     let resolveCandidates

@@ -244,7 +244,7 @@ module SetAuthority =
         let previous =
             toPrevious (Option.ofObj mechanical.PromotesFromId) art names supportNames
 
-        let prizes = PrizeCards.create mechanical.BarChitsWhenSentHome
+        let prizes = PrizeCards.create mechanics.BaseRules.SendHome.PrizeCardsPerKnockout
 
         let lineage =
             match previous with

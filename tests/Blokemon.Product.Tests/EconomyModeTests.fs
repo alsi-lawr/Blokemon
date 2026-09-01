@@ -90,7 +90,7 @@ module private EconomyModeFixtures =
             value (DeckName.Create $"{starterDeckId} deck"),
             [ { CardId = profile.GuaranteedRegularCollectibleId
                 Quantity = 1 }
-              { CardId = value (CardId.Create authority.Value.BasicVim[0].Id)
+              { CardId = value (CardId.Create (authority.Value.BasicVim |> Array.find _.IsBasic).Id)
                 Quantity = 59 } ]
         )
 

@@ -120,6 +120,35 @@ module MatchScenario =
                     |> Seq.sortBy (fun card -> card.Id)
                 ) }
 
+    let WithRestartableDecks (state: MatchState) =
+        let requiredCards = Authority.BaseRules.Stack.CardCount
+
+        let fillers =
+            [ for player in state.Players do
+                  let ownedCards = state.Cards |> Seq.filter (fun card -> card.Owner = player.Id)
+                  let ownedCount = ownedCards |> Seq.length
+
+                  if ownedCount > requiredCards then
+                      invalidArg
+                          (nameof state)
+                          $"Player {player.Id.Value} owns {ownedCount} cards; a deck may contain only {requiredCards}."
+
+                  let nextPosition =
+                      ownedCards
+                      |> Seq.filter (fun card -> card.Zone = CardZone.Stack)
+                      |> Seq.fold (fun next card -> max next (card.StackPosition + 1)) 0
+
+                  for index in 0 .. requiredCards - ownedCount - 1 do
+                      yield
+                          PlainCard
+                              $"restart-filler:{player.Id.Value}:{index}"
+                              "BLK-001"
+                              player.Id
+                              CardZone.Stack
+                              (nextPosition + index) ]
+
+        WithCards state fillers
+
     let BattleStateWith
         (attacker: string)
         (defender: string)

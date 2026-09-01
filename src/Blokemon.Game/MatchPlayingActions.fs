@@ -67,18 +67,14 @@ module internal MatchPlayingActions =
         (interpreter: BlokemonInterpreter)
         (state: MatchState)
         (actor: PlayerId)
-        (inPlay: CardState array)
+        (_inPlay: CardState array)
         =
         state.CardsIn(actor, CardZone.Mitt)
         |> Seq.filter (fun card -> card.Kind = CardKind.Kit)
         |> Seq.collect (fun kitCard ->
             let kit = catalog.Kit kitCard.MechanicalId
 
-            let targets =
-                if kit.Kind = BlokemonKitKind.BarKit then
-                    inPlay |> Seq.map (fun card -> ValueSome card.Id)
-                else
-                    Seq.singleton ValueNone
+            let targets: CardInstanceId voption seq = Seq.singleton ValueNone
 
             let requirements =
                 ImmutableArray.CreateRange(
@@ -130,6 +126,7 @@ module internal MatchPlayingActions =
                 catalog.PartyTricks source
                 |> Seq.filter (fun trick ->
                     trick.Trigger = BlokemonTrigger.Activated
+                    && pokemonPowerIsEnabled catalog source
                     // An activation that could not change anything is not a move to offer: the
                     // card would glow, the player would take it, and the table would sit still.
                     && EffectViability.activationCanAct
@@ -188,20 +185,9 @@ module internal MatchPlayingActions =
                         ))
                         (MatchAction.Attack(source.Id, effect)))
 
-            let fossils =
-                if source.Kind = CardKind.Kit && catalog.IsFossil source.MechanicalId then
-                    Seq.singleton (
-                        simple
-                            LegalActionKind.ChuckFossil
-                            state
-                            actor
-                            $"chuck:{source.Id.Value}"
-                            (MatchAction.ChuckFossil source.Id)
-                    )
-                else
-                    Seq.empty
 
-            Seq.concat [ tricks; attacks; fossils ])
+
+            Seq.concat [ tricks; attacks ])
 
     let private taxiActions (catalog: AuthorityCatalog) (state: MatchState) (actor: PlayerId) =
         match state.Oche actor with
@@ -215,24 +201,16 @@ module internal MatchPlayingActions =
                 |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
                 |> Seq.toArray
 
-            // The payload is still built by truncating what is attached, so a taxi already stored
-            // in a saved document rebuilds to exactly the command it was recorded as. Truncating
-            // to a fare the attachments cannot cover takes all of them either way: what changes
-            // here is that the shortfall is now declared rather than proposed as though it were
-            // payable.
-            let vim =
-                attached
-                |> Seq.truncate fare
-                |> Seq.map (fun card -> card.Id)
-                |> ImmutableArray.CreateRange
+            let vim, canPay = defaultRetreatPayment catalog attached fare
 
             let affordability =
-                if attached.Length >= fare then
+                if canPay then
                     ActionAffordability.Payable
                 else
                     ActionAffordability.ShortOfTaxiFare fare
 
             state.CardsIn(actor, CardZone.Booth)
+            |> Seq.filter (fun card -> card.Kind = CardKind.Bloke)
             |> Seq.map (fun booth ->
                 { simple
                       LegalActionKind.Taxi
@@ -290,7 +268,8 @@ module internal MatchPlayingActions =
         else
             let inPlay =
                 state.Cards
-                |> Seq.filter (fun card -> card.Owner = actor && isInPlay card)
+                |> Seq.filter (fun card ->
+                    card.Owner = actor && card.Kind = CardKind.Bloke && isInPlay card)
                 |> Seq.toArray
 
             Seq.concat

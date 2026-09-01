@@ -85,10 +85,7 @@ module private OpcodeConformanceScenarios =
 
     let clearRoughStateShouldHealClearAndReportEvents () =
         let roughStates =
-            ImmutableArray.Create(
-                MatchScenario.RoughState BlokemonRoughState.DodgyPint 2,
-                MatchScenario.RoughState BlokemonRoughState.Singed 2
-            )
+            ImmutableArray.Create(MatchScenario.RoughState BlokemonRoughState.DodgyPint 2)
 
         let state =
             MatchScenario.BattleStateWith
@@ -134,11 +131,6 @@ module private OpcodeConformanceScenarios =
               ValueNone,
               [ CardInstanceId "attacker" ],
               ValueSome BlokemonRoughState.DodgyPint,
-              0
-              MatchEventKind.RoughStateCleared,
-              ValueNone,
-              [ CardInstanceId "attacker" ],
-              ValueSome BlokemonRoughState.Singed,
               0 ]
 
     let ignoreStubbornStreakShouldBypassAnAuthoritativeControl () =
@@ -245,56 +237,6 @@ module private OpcodeConformanceScenarios =
                ValueSome(EffectId "BLK-075-B01"),
                ValueSome false ])
 
-    let restrictLocalShouldApplyOnlyFromTheOche () =
-        let table restrictionAtOche =
-            let state = MatchScenario.BattleState "BLK-001" "BLK-001" [] 1031UL
-
-            let restriction =
-                MatchScenario.PlainCard
-                    "restriction"
-                    "KIT-002"
-                    MatchScenario.FirstPlayer
-                    (if restrictionAtOche then CardZone.Oche else CardZone.Booth)
-                    -1
-
-            let firstBloke =
-                { state.Card(CardInstanceId "attacker") with
-                    Zone = if restrictionAtOche then CardZone.Booth else CardZone.Oche }
-
-            let local =
-                MatchScenario.PlainCard
-                    "local"
-                    "KIT-006"
-                    MatchScenario.SecondPlayer
-                    CardZone.Mitt
-                    -1
-
-            { MatchScenario.WithCards state [ firstBloke; restriction; local ] with
-                ActivePlayer = MatchScenario.SecondPlayer
-                RoundUsage = RoundUsage.Empty MatchScenario.SecondPlayer }
-
-        let restricted = table true
-        let control = table false
-
-        let command =
-            MatchScenario.Command
-                restricted
-                "play-local"
-                MatchScenario.SecondPlayer
-                ImmutableArray<_>.Empty
-                (MatchAction.PlayKit(CardInstanceId "local", ValueNone))
-
-        let rejectedState, rejection =
-            MatchScenario.Rejected((MatchScenario.Engine()).Apply(restricted, command))
-
-        rejection.Code |> should equal CommandRejectionCode.EffectUnavailable
-        rejectedState |> should equal restricted
-
-        let applied =
-            MatchScenario.Applied((MatchScenario.Engine()).Apply(control, command))
-
-        (applied.Card(CardInstanceId "local")).Zone |> should equal CardZone.Local
-
     let restrictTaxiShouldBeTheOnlyDifferenceForTheSameTaxi () =
         let authorityWithoutRestriction =
             MatchScenario.Authority
@@ -357,11 +299,10 @@ module private OpcodeConformanceScenarios =
 type OpcodeConformanceTests() =
 
     [<Test>]
-    member _.``every long-tail opcode should have an observable MatchEngine result``() =
+    member _.``retained long-tail opcodes should have observable MatchEngine results``() =
         clearRoughStateShouldHealClearAndReportEvents ()
         ignoreStubbornStreakShouldBypassAnAuthoritativeControl ()
         ignoreSoftSpotAndStubbornStreakShouldBypassBothModifiers ()
         repeatUntilBlankSideShouldExposeItsExactSeededTosses ()
-        restrictLocalShouldApplyOnlyFromTheOche ()
         restrictTaxiShouldBeTheOnlyDifferenceForTheSameTaxi ()
         triggeredPartyTrickShouldBeRequiredByPublicStartValidation ()

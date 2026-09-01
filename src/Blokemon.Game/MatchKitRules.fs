@@ -1,101 +1,25 @@
 namespace Blokemon.Game
 
-open System.Linq
 open Blokemon.Core.SetDesign
-open Blokemon.Game.MatchRules
-open Blokemon.Game.MatchKnockouts
-open Blokemon.Game.MatchPending
 
-/// Whether a kit card may be played at all: the per-round limits, the local already on the table,
-/// and the bar kit that needs a legal host.
+/// Vintage Trainer cards share one play rule. Card-specific text can move a Trainer elsewhere;
+/// otherwise the handler discards it after resolving that text.
 module internal MatchKitRules =
 
-    let private validateLocal
-        (catalog: AuthorityCatalog)
-        (builder: MatchBuilder)
-        (actor: PlayerId)
-        (kit: BlokemonKit)
-        =
-        if builder.RoundUsage.LocalsPlayed >= catalog.Manifest.BaseRules.Kit.LocalsPerRound then
-            ValueSome CommandRejectionCode.RuleLimitReached
-        else
-            let current =
-                builder.Cards
-                |> Seq.filter (fun card -> card.Owner = actor && card.Zone = CardZone.Local)
-                |> Seq.toArray
-                |> Array.tryExactlyOne
-
-            match current with
-            | Some card when
-                catalog.Manifest.BaseRules.Kit.SameMechanicalLocalCannotReplace
-                && card.MechanicalId.Value = kit.Id
-                ->
-                ValueSome CommandRejectionCode.RuleLimitReached
-            | Some _ when
-                catalog.Manifest.BaseRules.Kit.OneLocalInPlay
-                && not catalog.Manifest.BaseRules.Kit.NewLocalChucksOld
-                ->
-                ValueSome CommandRejectionCode.RuleLimitReached
-            | _ -> ValueNone
-
-    let private validateBarKit
-        (catalog: AuthorityCatalog)
-        (builder: MatchBuilder)
-        (actor: PlayerId)
-        (targetId: CardInstanceId voption)
-        =
-        match targetId with
-        | ValueNone -> ValueSome CommandRejectionCode.CardNotFound
-        | ValueSome id ->
-            match builder.FindCard id with
-            | ValueNone -> ValueSome CommandRejectionCode.CardNotOwned
-            | ValueSome target when target.Owner <> actor || not (isInPlay target) ->
-                ValueSome CommandRejectionCode.CardNotOwned
-            | ValueSome target ->
-                if
-                    (target.Attachments
-                     |> Seq.map builder.Card
-                     |> Seq.filter (fun card ->
-                         card.Kind = CardKind.Kit
-                         && (catalog.Kit card.MechanicalId).Kind = BlokemonKitKind.BarKit)
-                     |> Seq.length)
-                    >= catalog.Manifest.BaseRules.Kit.BarKitsPerBloke
-                then
-                    ValueSome CommandRejectionCode.RuleLimitReached
-                else
-                    ValueNone
-
     let validateKitCategory
-        (catalog: AuthorityCatalog)
+        (_catalog: AuthorityCatalog)
         (builder: MatchBuilder)
         (actor: PlayerId)
-        (kit: BlokemonKit)
+        (_trainer: BlokemonKit)
         (targetId: CardInstanceId voption)
         =
-        let restricted =
+        if targetId.IsSome then
+            ValueSome CommandRejectionCode.InvalidChoice
+        elif
             builder.Effects
             |> Seq.exists (fun effect ->
-                effect.Owner <> actor
-                && ((effect.Kind = TemporaryEffectKind.RestrictKit
-                     && kit.Kind = BlokemonKitKind.BarBit)
-                    || (kit.Kind = BlokemonKitKind.Local
-                        && effect.Kind = TemporaryEffectKind.RestrictLocal)))
-
-        if restricted then
+                effect.Owner <> actor && effect.Kind = TemporaryEffectKind.RestrictKit)
+        then
             ValueSome CommandRejectionCode.EffectUnavailable
         else
-            match kit.Kind with
-            | BlokemonKitKind.BarBit -> ValueNone
-            | BlokemonKitKind.Mate ->
-                if
-                    builder.RoundUsage.MatesPlayed >= catalog.Manifest.BaseRules.Kit.MatesPerRound
-                    || (not catalog.Manifest.BaseRules.Opening.OpeningParticipantMayPlayMate
-                        && actor = builder.OpeningPlayer
-                        && (builder.Player actor).RoundsStarted = 1)
-                then
-                    ValueSome CommandRejectionCode.RuleLimitReached
-                else
-                    ValueNone
-            | BlokemonKitKind.Local -> validateLocal catalog builder actor kit
-            | BlokemonKitKind.BarKit -> validateBarKit catalog builder actor targetId
-            | other -> failwithf "Unhandled kit kind %A." other
+            ValueNone

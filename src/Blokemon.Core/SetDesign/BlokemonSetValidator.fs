@@ -20,21 +20,30 @@ module BlokemonSetValidator =
             issues
 
         check
+            (StringComparer.Ordinal.Equals(
+                manifest.ManifestVersion,
+                "base-jungle-fossil-1999-shared-rules-candidate.1"
+            ))
+            "runtime.manifest-version"
+            "The runtime manifest must use the 1999 shared-rules load identity."
+            issues
+
+        check
             (manifest.Collectibles.Length = 151)
             "runtime.collectible-count"
             "The runtime manifest must contain exactly 151 collectible identities."
             issues
 
         check
-            (manifest.Kits.Length = 14)
+            (manifest.Kits.Length = 32)
             "runtime.kit-count"
-            "The runtime manifest must contain exactly 14 fixed kit definitions."
+            "The runtime manifest must account for all 32 selected vintage Trainer identities."
             issues
 
         check
             (manifest.BasicVim.Length = 7)
             "runtime.vim-count"
-            "The runtime manifest must contain exactly seven Basic Vim definitions."
+            "The runtime manifest must contain the six Basic Energy cards and Double Colorless Energy."
             issues
 
         BlokemonSetContentValidator.validate manifest issues

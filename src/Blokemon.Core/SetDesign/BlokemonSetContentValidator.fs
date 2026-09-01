@@ -161,7 +161,33 @@ module internal BlokemonSetContentValidator =
                  && not card.Pulled
                  && not card.Traded))
             "runtime.vim-boundary"
-            "Basic Vim must be free, non-owned, non-pulled, non-traded and accepted for presentation."
+            "Energy must be free, non-owned, non-pulled, non-traded and accepted for presentation."
+            issues
+
+        let basicEnergy = manifest.BasicVim |> Array.filter _.IsBasic
+
+        let specialEnergy =
+            manifest.BasicVim |> Array.filter (fun energy -> not energy.IsBasic)
+
+        check
+            (basicEnergy.Length = 6
+             && basicEnergy
+                |> Array.forall (fun energy ->
+                    energy.Provides = [| energy.MechanicalType |]
+                    && energy.StackCopyLimit = manifest.BaseRules.Stack.CardCount))
+            "runtime.basic-energy"
+            "Exactly six Basic Energy cards must each provide one matching Energy and remain exempt from the four-card limit."
+            issues
+
+        check
+            (specialEnergy.Length = 1
+             && specialEnergy[0].Id = "VIM-DODGY"
+             && specialEnergy[0].MechanicalType = BlokemonMechanicalType.Colorless
+             && specialEnergy[0].Provides = [| BlokemonMechanicalType.Colorless
+                                               BlokemonMechanicalType.Colorless |]
+             && specialEnergy[0].StackCopyLimit = manifest.BaseRules.Stack.MechanicalCopyLimit)
+            "runtime.double-colorless-energy"
+            "Side Hustle must be Special Energy that provides two Colorless Energy and obeys the four-card limit."
             issues
 
     let private validateProducts

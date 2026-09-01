@@ -12,10 +12,10 @@ module private ResolutionAuthorityScenarios =
 
     let expectedAttackSteps =
         [ BlokemonAttackResolutionStep.ValidateDeclaredAttackAndVim
-          BlokemonAttackResolutionStep.ApplyEffectsThatAlterOrCancelAttack
           BlokemonAttackResolutionStep.ResolveMuddledCheck
           BlokemonAttackResolutionStep.MakeRequiredChoices
           BlokemonAttackResolutionStep.PayOrPerformUseRequirements
+          BlokemonAttackResolutionStep.ApplyEffectsThatAlterOrCancelAttack
           BlokemonAttackResolutionStep.ApplyBeforeDamageEffects
           BlokemonAttackResolutionStep.CalculateAndPlaceDamage
           BlokemonAttackResolutionStep.ResolveOtherEffects
@@ -25,11 +25,14 @@ module private ResolutionAuthorityScenarios =
 
     let expectedDamageSteps =
         [ BlokemonDamageResolutionStep.PrintedOrProgramBaseDamage
-          BlokemonDamageResolutionStep.EffectsOnAttackingBlokeBeforeSoftSpotAndStubbornStreak
-          BlokemonDamageResolutionStep.SoftSpot
-          BlokemonDamageResolutionStep.StubbornStreak
-          BlokemonDamageResolutionStep.EffectsOnDefendingBlokeAfterSoftSpotAndStubbornStreak
-          BlokemonDamageResolutionStep.ClampAtZeroAndPlaceCounters ]
+          BlokemonDamageResolutionStep.EffectsOnAttackingBloke
+          BlokemonDamageResolutionStep.StopWhenDamageIsZero
+          BlokemonDamageResolutionStep.Weakness
+          BlokemonDamageResolutionStep.Resistance
+          BlokemonDamageResolutionStep.TrainerEffects
+          BlokemonDamageResolutionStep.PokemonPowers
+          BlokemonDamageResolutionStep.PlaceDamageCounters
+          BlokemonDamageResolutionStep.EffectsAfterDamage ]
 
     let tracedEngine () =
         let trace = ResizeArray<ResolutionTraceEntry>()
@@ -209,6 +212,9 @@ type ResolutionAuthorityTests() =
         |> should
             equal
             [ BlokemonAttackResolutionStep.ValidateDeclaredAttackAndVim
+              BlokemonAttackResolutionStep.ResolveMuddledCheck
+              BlokemonAttackResolutionStep.MakeRequiredChoices
+              BlokemonAttackResolutionStep.PayOrPerformUseRequirements
               BlokemonAttackResolutionStep.ApplyEffectsThatAlterOrCancelAttack ]
 
         damageSteps trace |> should be Empty
@@ -242,7 +248,7 @@ type ResolutionAuthorityTests() =
                 engine.Apply(state, MatchScenario.AttackCommand state "BLK-111-B01")
             )
 
-        attackSteps trace |> should equal (expectedAttackSteps |> List.take 4)
+        attackSteps trace |> should equal (expectedAttackSteps |> List.take 3)
         damageSteps trace |> should be Empty
         requested.Phase |> should equal MatchPhase.AwaitingEffectChoice
 

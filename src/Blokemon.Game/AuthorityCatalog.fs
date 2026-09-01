@@ -71,9 +71,6 @@ type internal AuthorityCatalog(manifest: BlokemonRuntimeManifest) =
         | ValueSome card -> card.Rank = BlokemonRank.Regular
         | ValueNone -> false
 
-    member _.IsFossil(id: MechanicalCardId) =
-        manifest.BaseRules.FossilKits.KitIds.Contains(id.Value, StringComparer.Ordinal)
-
     member _.RoughState(state: BlokemonRoughState) =
         manifest.BaseRules.RoughStates.Single(fun rule -> rule.State = state)
 
@@ -93,7 +90,7 @@ type internal AuthorityCatalog(manifest: BlokemonRuntimeManifest) =
         if card.Kind = CardKind.Bloke then
             this.Bloke(card.MechanicalId).StayingPower
         else
-            manifest.BaseRules.FossilKits.PlayAsRegularLocalStayingPower
+            invalidOp "Only Pokemon in play have Hit Points."
 
     member this.TaxiFare(card: CardState) =
         if card.Kind = CardKind.Bloke then
@@ -103,17 +100,7 @@ type internal AuthorityCatalog(manifest: BlokemonRuntimeManifest) =
 
     member this.BarChits(card: CardState) =
         if card.Kind = CardKind.Bloke then
-            if
-                manifest.BaseRules.BigHitters.BlokeIds.Contains(
-                    card.MechanicalId.Value,
-                    StringComparer.Ordinal
-                )
-            then
-                manifest.BaseRules.SendHome.BigHitterBarChits
-            else
-                manifest.BaseRules.SendHome.NormalBarChits
-        elif manifest.BaseRules.FossilKits.SentHomeAwardsOneBarChit then
-            1
+            manifest.BaseRules.SendHome.PrizeCardsPerKnockout
         else
             0
 

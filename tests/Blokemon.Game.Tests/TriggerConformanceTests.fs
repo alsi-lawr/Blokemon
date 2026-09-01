@@ -496,17 +496,31 @@ module private TriggerConformanceFixtures =
                 "BLK-110"
                 [ "VIM-LAIRY"; "VIM-SOBER"; "VIM-SOBER" ]
                 0UL
+            |> MatchScenario.WithRestartableDecks
 
         let retaliated, positiveEvents = applyAttack engine positive "BLK-076-B02"
 
         countEffectEvents MatchEventKind.TriggerResolved "BLK-110-T01" positiveEvents
         |> should equal 1
 
-        (retaliated.Card(CardInstanceId "attacker")).Zone
-        |> should equal CardZone.EmptiesTray
+        positiveEvents
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.BlokeSentHome)
+        |> Seq.map _.SourceCard
+        |> Seq.toList
+        |> should
+            equal
+            [ ValueSome(CardInstanceId "defender"); ValueSome(CardInstanceId "attacker") ]
 
-        (retaliated.Card(CardInstanceId "defender")).Zone
-        |> should equal CardZone.EmptiesTray
+        positiveEvents
+        |> Seq.filter (fun matchEvent -> matchEvent.Kind = MatchEventKind.SuddenDeathStarted)
+        |> Seq.length
+        |> should equal 1
+
+        retaliated.Phase |> should equal MatchPhase.OpeningPlacement
+        retaliated.Winner.IsNone |> should be True
+        retaliated.SuddenDeathCount |> should equal 1
+        (retaliated.Card(CardInstanceId "attacker")).Damage |> should equal 0
+        (retaliated.Card(CardInstanceId "defender")).Damage |> should equal 0
 
         let negative = MatchScenario.BattleState "BLK-122" "BLK-110" [ "VIM-SOBER" ] 0UL
 

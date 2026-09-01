@@ -39,7 +39,7 @@ module internal MatchTrickHandlers =
                 let isActivatedTrick =
                     trick.IsSome
                     && source.Owner = command.Actor
-                    && isInPlay source
+                    && pokemonPowerIsEnabled catalog source
                     && catalog.PartyTricks source
                        |> Seq.exists (fun candidate ->
                            candidate.MechanicalId = effect.Value

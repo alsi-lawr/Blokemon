@@ -168,6 +168,7 @@ module internal EffectDamage =
         (placeResolved: (int -> unit) voption)
         =
         let mutable resolved = damage
+        let mutable stoppedAtZero = false
 
         for step in catalog.Manifest.BaseRules.DamageOrder do
             runtime.ResolutionTrace(DamageStep step)
@@ -175,17 +176,26 @@ module internal EffectDamage =
             resolved <-
                 match step with
                 | BlokemonDamageResolutionStep.PrintedOrProgramBaseDamage -> resolved
-                | BlokemonDamageResolutionStep.EffectsOnAttackingBlokeBeforeSoftSpotAndStubbornStreak ->
+                | BlokemonDamageResolutionStep.EffectsOnAttackingBloke ->
                     applyOutgoingAttackDamage runtime resolved
-                | BlokemonDamageResolutionStep.SoftSpot when kind = DamageKind.Attack ->
+                | BlokemonDamageResolutionStep.StopWhenDamageIsZero ->
+                    stoppedAtZero <- resolved = 0
+                    resolved
+                | BlokemonDamageResolutionStep.Weakness when
+                    kind = DamageKind.Attack && not stoppedAtZero
+                    ->
                     applySoftSpot catalog runtime target resolved
-                | BlokemonDamageResolutionStep.SoftSpot -> resolved
-                | BlokemonDamageResolutionStep.StubbornStreak when kind = DamageKind.Attack ->
+                | BlokemonDamageResolutionStep.Weakness -> resolved
+                | BlokemonDamageResolutionStep.Resistance when
+                    kind = DamageKind.Attack && not stoppedAtZero
+                    ->
                     applyStubbornStreak catalog runtime target resolved
-                | BlokemonDamageResolutionStep.StubbornStreak -> resolved
-                | BlokemonDamageResolutionStep.EffectsOnDefendingBlokeAfterSoftSpotAndStubbornStreak ->
+                | BlokemonDamageResolutionStep.Resistance -> resolved
+                | BlokemonDamageResolutionStep.TrainerEffects when not stoppedAtZero ->
                     applyAttackProtection catalog runtime target resolved
-                | BlokemonDamageResolutionStep.ClampAtZeroAndPlaceCounters ->
+                | BlokemonDamageResolutionStep.TrainerEffects -> resolved
+                | BlokemonDamageResolutionStep.PokemonPowers -> resolved
+                | BlokemonDamageResolutionStep.PlaceDamageCounters ->
                     let clamped = max 0 resolved
 
                     match placeResolved with
@@ -193,6 +203,7 @@ module internal EffectDamage =
                     | ValueNone -> ()
 
                     clamped
+                | BlokemonDamageResolutionStep.EffectsAfterDamage -> resolved
                 | unsupported ->
                     invalidOp $"Unsupported validated damage-resolution step {unsupported}."
 

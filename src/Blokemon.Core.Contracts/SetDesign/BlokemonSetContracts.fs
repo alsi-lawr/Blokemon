@@ -54,12 +54,6 @@ type BlokemonProductBucket =
     | Uncommon = 1
     | Rare = 2
 
-type BlokemonKitKind =
-    | BarBit = 0
-    | Mate = 1
-    | Local = 2
-    | BarKit = 3
-
 type BlokemonRoughState =
     | DodgyPint = 0
     | Singed = 1
@@ -223,7 +217,6 @@ type BlokemonEffectDestination =
 type BlokemonEffectCardFilter =
     { Categories: BlokemonCardCategory array
       Ranks: BlokemonRank array
-      KitKinds: BlokemonKitKind array
       BasicVimOnly: bool
       DifferentMechanicalTypes: bool
       ExcludedRelatedIds: string array }
@@ -310,13 +303,11 @@ type BlokemonCollectible =
       SoftSpots: BlokemonMechanicalTypeModifier array
       StubbornStreaks: BlokemonMechanicalTypeModifier array
       TaxiFare: int
-      BarChitsWhenSentHome: int
       ProductBucket: BlokemonProductBucket
       StackCopyLimit: int }
 
 type BlokemonKit =
     { Id: string
-      Kind: BlokemonKitKind
       PresentationStatus: BlokemonPresentationStatus
       PartyTricks: BlokemonPartyTrick array
       Attacks: BlokemonAttack array
@@ -330,6 +321,8 @@ type BlokemonKit =
 type BlokemonBasicVim =
     { Id: string
       MechanicalType: BlokemonMechanicalType
+      Provides: BlokemonMechanicalType array
+      IsBasic: bool
       PresentationStatus: BlokemonPresentationStatus
       FreelyAvailable: bool
       Owned: bool
@@ -386,9 +379,8 @@ type BlokemonOpeningRules =
       BothMulliganNoBonus: bool
       OtherSideBonusPerExtraMulligan: bool
       OtherSideBonusOptional: bool
-      BarChitCount: int
-      OpeningParticipantMayAttack: bool
-      OpeningParticipantMayPlayMate: bool }
+      PrizeCardCount: int
+      OpeningParticipantMayAttack: bool }
 
 type BlokemonRoundRules =
     { RequiredOpeningDraw: bool
@@ -406,17 +398,16 @@ type BlokemonPromotionRules =
 type BlokemonVimRules =
     { NormalAttachmentPerRound: int
       CostNotChuckedUnlessSpecified: bool
-      LocalSatisfiedByAnyVim: bool }
+      ColorlessSatisfiedByAnyEnergy: bool }
 
-type BlokemonKitRules =
-    { BarBitsPerRound: string
-      BarKitsPerRound: string
-      BarKitsPerBloke: int
-      MatesPerRound: int
-      LocalsPerRound: int
-      OneLocalInPlay: bool
-      SameMechanicalLocalCannotReplace: bool
-      NewLocalChucksOld: bool }
+type BlokemonTrainerRules =
+    { UnlimitedPerTurn: bool
+      ResolveTextThenDiscard: bool }
+
+type BlokemonPokemonPowerRules =
+    { NotAttacks: bool
+      UsableFromBench: bool
+      DisabledBy: BlokemonRoughState array }
 
 type BlokemonTaxiRules =
     { PerRound: int
@@ -431,10 +422,10 @@ type BlokemonDamageRules =
 
 type BlokemonAttackResolutionStep =
     | ValidateDeclaredAttackAndVim = 0
-    | ApplyEffectsThatAlterOrCancelAttack = 1
-    | ResolveMuddledCheck = 2
-    | MakeRequiredChoices = 3
-    | PayOrPerformUseRequirements = 4
+    | ResolveMuddledCheck = 1
+    | MakeRequiredChoices = 2
+    | PayOrPerformUseRequirements = 3
+    | ApplyEffectsThatAlterOrCancelAttack = 4
     | ApplyBeforeDamageEffects = 5
     | CalculateAndPlaceDamage = 6
     | ResolveOtherEffects = 7
@@ -444,11 +435,14 @@ type BlokemonAttackResolutionStep =
 
 type BlokemonDamageResolutionStep =
     | PrintedOrProgramBaseDamage = 0
-    | EffectsOnAttackingBlokeBeforeSoftSpotAndStubbornStreak = 1
-    | SoftSpot = 2
-    | StubbornStreak = 3
-    | EffectsOnDefendingBlokeAfterSoftSpotAndStubbornStreak = 4
-    | ClampAtZeroAndPlaceCounters = 5
+    | EffectsOnAttackingBloke = 1
+    | StopWhenDamageIsZero = 2
+    | Weakness = 3
+    | Resistance = 4
+    | TrainerEffects = 5
+    | PokemonPowers = 6
+    | PlaceDamageCounters = 7
+    | EffectsAfterDamage = 8
 
 type BlokemonEffectDrawFromShortStack =
     | DrawAvailableCardsWithoutLosing = 0
@@ -477,7 +471,9 @@ type BlokemonRoughStateRule =
       PreventsTaxi: bool
       RecoversAfterOwnersNextRound: Nullable<bool>
       BeforeAttackBeerMat: Nullable<bool>
-      BlankSideCancelsAndSelfDamageCounters: Nullable<int> }
+      BlankSideCancelsAndSelfDamageCounters: Nullable<int>
+      BeforeTaxiBeerMat: Nullable<bool>
+      BlankSideConsumesTaxi: Nullable<bool> }
 
 type BlokemonRoughStateCoexistenceRules =
     { RotatedGroup: BlokemonRoughState array
@@ -488,26 +484,15 @@ type BlokemonRoughStateCoexistenceRules =
 type BlokemonSendHomeRules =
     { DamageAtLeastStayingPower: bool
       ChuckBlokeAndAttachedCards: bool
-      NormalBarChits: int
-      BigHitterBarChits: int
+      PrizeCardsPerKnockout: int
       OwnerPromotesFromBooth: bool }
 
 type BlokemonWinRules =
     { Conditions: string array
-      OneMethodEach: string
-      MoreMethodsWins: string
-      SuddenDeathBarChits: int
+      SimultaneousWin: string
+      SuddenDeathPrizeCards: int
+      SuddenDeathStartsFreshGame: bool
       RepeatUntilWinner: bool }
-
-type BlokemonFossilKitRules =
-    { KitIds: string array
-      PlayAsRegularLocalStayingPower: int
-      CannotHaveRoughStates: bool
-      CannotTaxi: bool
-      MayChuckFromPlayDuringOwnersRound: bool
-      SentHomeAwardsOneBarChit: bool }
-
-type BlokemonBigHitterRules = { BlokeIds: string array }
 
 type BlokemonBaseRules =
     { RulesVersion: string
@@ -516,7 +501,8 @@ type BlokemonBaseRules =
       Round: BlokemonRoundRules
       Promotion: BlokemonPromotionRules
       Vim: BlokemonVimRules
-      Kit: BlokemonKitRules
+      Trainer: BlokemonTrainerRules
+      PokemonPower: BlokemonPokemonPowerRules
       Taxi: BlokemonTaxiRules
       AttackOrder: BlokemonAttackResolutionStep array
       DamageOrder: BlokemonDamageResolutionStep array
@@ -529,8 +515,6 @@ type BlokemonBaseRules =
       RoughStateCoexistence: BlokemonRoughStateCoexistenceRules
       SendHome: BlokemonSendHomeRules
       Win: BlokemonWinRules
-      FossilKits: BlokemonFossilKitRules
-      BigHitters: BlokemonBigHitterRules
       OpcodeInventory: BlokemonOpcode array }
 
 type BlokemonRuntimeManifest =

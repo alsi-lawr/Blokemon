@@ -35,73 +35,18 @@ type KnockoutResolutionTests() =
         |> Seq.toList
 
     [<Test>]
-    member _.``each fixed Big Hitter identity should award two Bar Chits when sent home``() =
-        let bigHitters =
-            [| "BLK-003"
-               "BLK-006"
-               "BLK-009"
-               "BLK-024"
-               "BLK-038"
-               "BLK-065"
-               "BLK-076"
-               "BLK-115"
-               "BLK-124"
-               "BLK-145"
-               "BLK-151" |]
-
-        MatchScenario.Authority.BaseRules.BigHitters.BlokeIds |> should equal bigHitters
-
-        for bigHitterId in bigHitters do
-            let state =
-                MatchScenario.BattleState
-                    "BLK-003"
-                    bigHitterId
-                    [ "VIM-BLAZED"; "VIM-BLAZED"; "VIM-SOBER" ]
-                    29UL
-
-            let defender =
-                { state.Card(CardInstanceId "defender") with
-                    Damage = Lethal }
-
-            let barChits =
-                [ for index in 0..5 ->
-                      MatchScenario.PlainCard
-                          $"bar-chit-{index}"
-                          "VIM-SOBER"
-                          MatchScenario.FirstPlayer
-                          CardZone.BarChit
-                          index ]
-
-            let state = MatchScenario.WithCards state (defender :: barChits)
-
-            let applied, events =
-                MatchScenario.AppliedWith(
-                    MatchScenario
-                        .Engine()
-                        .Apply(state, MatchScenario.AttackCommand state "BLK-003-B01")
-                )
-
-            let award =
-                events
-                |> Seq.find (fun matchEvent ->
-                    matchEvent.Kind = MatchEventKind.BarChitsTaken
-                    && matchEvent.SourceCard = ValueSome defender.Id)
-
-            (bigHitterId, award.Amount, (applied.Player MatchScenario.FirstPlayer).BarChitsRemaining)
-            |> should equal (bigHitterId, 2, 4)
-
-    [<Test>]
-    member _.``sending karaoke queen home should award one ordinary bar chit``() =
+    /// Advanced Rulebook v1, p. 16: every Knocked Out Pokémon awards exactly one Prize.
+    member _.``a Knock Out should award exactly one Prize``() =
         let state =
             MatchScenario.BattleState
                 "BLK-003"
-                "BLK-040"
+                "BLK-003"
                 [ "VIM-BLAZED"; "VIM-BLAZED"; "VIM-SOBER" ]
-                31UL
+                29UL
 
         let defender =
             { state.Card(CardInstanceId "defender") with
-                Damage = 79 }
+                Damage = Lethal }
 
         let barChits =
             [ for index in 0..5 ->
@@ -134,16 +79,17 @@ type KnockoutResolutionTests() =
         =
         let engine = MatchScenario.Engine()
 
-        let state =
+        let original =
             MatchScenario.BattleState "BLK-001" "BLK-003" [ "VIM-BLAZED"; "VIM-SOBER" ] 29UL
 
         let state =
             MatchScenario.WithCards
-                state
-                [ { state.Card(CardInstanceId "attacker") with
+                original
+                [ { original.Card(CardInstanceId "attacker") with
                       Damage = Lethal }
-                  { state.Card(CardInstanceId "defender") with
+                  { original.Card(CardInstanceId "defender") with
                       Damage = Lethal } ]
+            |> MatchScenario.WithRestartableDecks
 
         let applied, events =
             MatchScenario.AppliedWith(
@@ -165,20 +111,28 @@ type KnockoutResolutionTests() =
               MatchEventKind.BlokeSentHome
               MatchEventKind.SuddenDeathStarted ]
 
-        LeftTheOche applied "attacker" |> should be True
-        LeftTheOche applied "defender" |> should be True
+        // Advanced Rulebook v1, p. 24: a tied game is followed by a completely new
+        // one-Prize game, so the Knocked Out state does not survive the resolution.
+        applied.Phase |> should equal MatchPhase.OpeningPlacement
+        applied.Winner.IsNone |> should be True
+        (applied.Card(CardInstanceId "attacker")).Damage |> should equal 0
+        (applied.Card(CardInstanceId "defender")).Damage |> should equal 0
         applied.SuddenDeathCount |> should be (greaterThan state.SuddenDeathCount)
 
     [<Test>]
     member _.``a retaliating defender should take the attacker home in the same resolution``() =
         let engine = MatchScenario.Engine()
 
-        let state =
+        let original =
             MatchScenario.BattleState
                 "BLK-076"
                 "BLK-110"
                 [ "VIM-LAIRY"; "VIM-SOBER"; "VIM-SOBER" ]
                 41UL
+
+        // A retaliatory double Knock Out is a tied game, so provide complete decks for the
+        // fresh-game setup that follows it (Advanced Rulebook v1, p. 24).
+        let state = MatchScenario.WithRestartableDecks original
 
         let applied, events =
             MatchScenario.AppliedWith(

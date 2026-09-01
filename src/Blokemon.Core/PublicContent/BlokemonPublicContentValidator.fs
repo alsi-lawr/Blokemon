@@ -94,19 +94,11 @@ module BlokemonPublicContentValidator =
           CanBeUsedFromBench = canBeUsedFromBench }
 
     let private expectedCollectibleRules
-        (mechanics: BlokemonRuntimeManifest)
+        (_mechanics: BlokemonRuntimeManifest)
         (mechanical: BlokemonCollectible)
         =
-        let executableRules =
-            mechanical.HouseRules
-            |> Array.map (fun effect -> expectedFrom effect.MechanicalId effect.Program false false)
-
-        if mechanics.BaseRules.BigHitters.BlokeIds |> Array.contains mechanical.Id then
-            Array.append
-                executableRules
-                [| expectedFrom $"{mechanical.Id}-R01" Array.empty false false |]
-        else
-            executableRules
+        mechanical.HouseRules
+        |> Array.map (fun effect -> expectedFrom effect.MechanicalId effect.Program false false)
 
     let private validateEffects
         (ownerId: string)
@@ -382,18 +374,10 @@ module BlokemonPublicContentValidator =
                 $"Support {index + 1} is not bound to the locked ID."
                 issues
 
-            let expectedCategory =
-                match mechanical.Kind with
-                | BlokemonKitKind.BarBit -> "TERM-CATEGORY-001"
-                | BlokemonKitKind.BarKit -> "TERM-CATEGORY-002"
-                | BlokemonKitKind.Mate -> "TERM-CATEGORY-003"
-                | BlokemonKitKind.Local -> "TERM-CATEGORY-004"
-                | _ -> raise (ArgumentOutOfRangeException(nameof mechanics))
-
             check
-                (content.CategoryTermId = expectedCategory)
+                (content.CategoryTermId = "TERM-CATEGORY-001")
                 "support.category"
-                $"{content.Id} has the wrong public support category."
+                $"{content.Id} is not presented as a single vintage Trainer card."
                 issues
 
             let expectedEffects =

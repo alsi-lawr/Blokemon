@@ -177,7 +177,10 @@ module internal MatchBasicHandlers =
                     for current in builder.Players |> Seq.toArray do
                         builder.SetAsideBarChits(
                             current.Id,
-                            catalog.Manifest.BaseRules.Opening.BarChitCount
+                            (if builder.SuddenDeathCount > 0 then
+                                 catalog.Manifest.BaseRules.Win.SuddenDeathPrizeCards
+                             else
+                                 catalog.Manifest.BaseRules.Opening.PrizeCardCount)
                         )
 
                     if
@@ -211,6 +214,7 @@ module internal MatchBasicHandlers =
                 elif
                     vim.Kind <> CardKind.Vim
                     || vim.Zone <> CardZone.Mitt
+                    || target.Kind <> CardKind.Bloke
                     || not (isInPlay target)
                     || builder.RoundUsage.VimAttachments
                        >= catalog.Manifest.BaseRules.Vim.NormalAttachmentPerRound
@@ -258,30 +262,12 @@ module internal MatchBasicHandlers =
                     HandlerResult.accepted
 
     let chuckFossil
-        (catalog: AuthorityCatalog)
-        (builder: MatchBuilder)
-        (actor: PlayerId)
-        (fossilId: CardInstanceId)
+        (_catalog: AuthorityCatalog)
+        (_builder: MatchBuilder)
+        (_actor: PlayerId)
+        (_fossilId: CardInstanceId)
         =
-        match validatePlayingTurn builder actor with
-        | ValueSome turn -> HandlerResult.reject turn
-        | ValueNone ->
-
-            match builder.FindCard fossilId with
-            | ValueSome fossil when
-                fossil.Owner = actor
-                && fossil.Kind = CardKind.Kit
-                && catalog.IsFossil fossil.MechanicalId
-                && isInPlay fossil
-                && catalog.Manifest.BaseRules.FossilKits.MayChuckFromPlayDuringOwnersRound
-                ->
-                builder.ChuckBloke fossil.Id |> ignore
-
-                if fossil.Zone = CardZone.Oche then
-                    assignReplacement builder actor
-
-                HandlerResult.accepted
-            | _ -> HandlerResult.reject CommandRejectionCode.EffectUnavailable
+        HandlerResult.reject CommandRejectionCode.EffectUnavailable
 
     let endRound
         (catalog: AuthorityCatalog)
@@ -310,7 +296,9 @@ module internal MatchBasicHandlers =
         else
             match builder.FindCard boothBloke with
             | ValueSome replacement when
-                replacement.Owner = actor && replacement.Zone = CardZone.Booth
+                replacement.Owner = actor
+                && replacement.Kind = CardKind.Bloke
+                && replacement.Zone = CardZone.Booth
                 ->
                 builder.MoveCard(replacement.Id, CardZone.Oche)
                 builder.ReplacementPlayer <- nextReplacement builder

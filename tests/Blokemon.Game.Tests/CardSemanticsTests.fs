@@ -301,62 +301,6 @@ type CardSemanticsTests() =
         (allowedState.Card(CardInstanceId "defender")).Damage |> should equal 20
 
     [<Test>]
-    member _.``playing a fossil kit should be ungated and should put the kit into the booth``() =
-        let engine = MatchScenario.Engine()
-
-        let fossil =
-            MatchScenario.PlainCard "reenactor" "KIT-001" MatchScenario.FirstPlayer CardZone.Mitt -1
-
-        let state =
-            MatchScenario.WithCards
-                (MatchScenario.BattleState "BLK-001" "BLK-150" [] 829UL)
-                [ fossil ]
-
-        let play = kitAction engine state fossil.Id
-        let applied = MatchScenario.Applied(engine.Apply(state, play.Command))
-
-        play.ChoiceRequirements
-        |> Seq.exists (fun requirement -> requirement.Kind = ChoiceRequirementKind.Optional)
-        |> should be False
-
-        (applied.Card fossil.Id).Zone |> should equal CardZone.Booth
-
-        engine.GetLegalActions(applied, MatchScenario.FirstPlayer)
-        |> Seq.exists (fun action ->
-            action.Kind = LegalActionKind.ChuckFossil
-            && (match action.Command.Action with
-                | MatchAction.ChuckFossil chucked -> chucked = fossil.Id
-                | _ -> false))
-        |> should be True
-
-    [<Test>]
-    member _.``every fossil kit should share the same ungated play program``() =
-        for fossilId in [ "KIT-001"; "KIT-002"; "KIT-003" ] do
-            let rule =
-                MatchScenario.Authority.Kits
-                |> Array.find (fun kit -> kit.Id = fossilId)
-                |> fun kit ->
-                    kit.HouseRules
-                    |> Array.find (fun houseRule -> houseRule.MechanicalId = $"{fossilId}-R01")
-
-            rule.Program
-            |> Array.map (fun instruction -> instruction.Opcode)
-            |> Array.toList
-            |> should
-                equal
-                [ BlokemonOpcode.ModifyTaxiFare
-                  BlokemonOpcode.RestrictTaxi
-                  BlokemonOpcode.PlayAsBloke
-                  BlokemonOpcode.ChuckSelf ]
-
-            rule.Program
-            |> Array.forall (fun instruction ->
-                instruction.Predicates.Length = 0
-                && instruction.Then.Length = 0
-                && instruction.Otherwise.Length = 0)
-            |> should be True
-
-    [<Test>]
     member _.``revealing cards should emit one generic reveal and leave the bar chits where they were``
         ()
         =

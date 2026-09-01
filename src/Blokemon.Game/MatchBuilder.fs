@@ -16,6 +16,7 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
     let pendingBarChits = ResizeArray<PendingBarChitResolution> state.PendingBarChits
     let events = ResizeArray<PendingMatchEvent>()
     let random = DeterministicRandom state.Random
+    let mutable openingPlayer = state.OpeningPlayer
 
     member val Revision = state.Revision with get, set
     member val LastEventSequence = state.LastEventSequence with get, set
@@ -30,10 +31,13 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
     member val Winner = state.Winner with get, set
     member val SuddenDeathCount = state.SuddenDeathCount with get, set
 
+    member _.OpeningPlayer
+        with get () = openingPlayer
+        and set value = openingPlayer <- value
+
     member _.Id = state.Id
     member _.AuthorityVersion = state.AuthorityVersion
     member _.Seed = state.Seed
-    member _.OpeningPlayer = state.OpeningPlayer
     member _.Random = random
     member _.Events = events
     member _.Players = players :> seq<PlayerState>
@@ -46,6 +50,47 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
 
     member _.RemoveBarChit(pending: PendingBarChitResolution) =
         pendingBarChits.Remove pending |> ignore
+
+    member this.ResetForFreshGame(prizeCards: int) =
+        effects.Clear()
+        pendingBarChits.Clear()
+        this.PendingEffect <- ValueNone
+        this.PendingKnockout <- ValueNone
+        this.ReplacementPlayer <- ValueNone
+        this.PendingRoundEnd <- false
+        this.Winner <- ValueNone
+        this.RoundNumber <- 0
+
+        for player in players |> Seq.toArray do
+            this.SetPlayer
+                { player with
+                    BarChitsRemaining = prizeCards
+                    MulliganCount = 0
+                    MulliganBonusAllowance = 0
+                    MulliganBonusChosen = false
+                    BonusDrawn = ImmutableArray<_>.Empty
+                    BonusPlacementChosen = true
+                    OpeningChosen = false
+                    RoundsStarted = 0 }
+
+        for player in players |> Seq.map (fun player -> player.Id) |> Seq.toArray do
+            for index, card in
+                cards
+                |> Seq.filter (fun card -> card.Owner = player)
+                |> Seq.sortBy (fun card -> card.Id)
+                |> Seq.indexed do
+                this.SetCard
+                    { card with
+                        Zone = CardZone.Stack
+                        IsFaceDown = false
+                        StackPosition = index
+                        AttachedTo = ValueNone
+                        Attachments = ImmutableArray<_>.Empty
+                        UnderlyingCards = ImmutableArray<_>.Empty
+                        Damage = 0
+                        RoughStates = ImmutableArray<_>.Empty
+                        EnteredAtOwnerRound = 0
+                        LastPromotedRound = -1 }
 
     member _.RecordCommand(command: CommandId) = processedCommands.Add command
 
@@ -424,11 +469,7 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
 
         if
             (not rule.OcheOnly || target.Zone = CardZone.Oche)
-            && not (
-                target.Kind = CardKind.Kit
-                && catalog.IsFossil target.MechanicalId
-                && catalog.Manifest.BaseRules.FossilKits.CannotHaveRoughStates
-            )
+            && target.Kind = CardKind.Bloke
         then
             let rotated = catalog.Manifest.BaseRules.RoughStateCoexistence.RotatedGroup
 
@@ -541,7 +582,7 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
           Revision = this.Revision
           LastEventSequence = this.LastEventSequence
           Phase = this.Phase
-          OpeningPlayer = state.OpeningPlayer
+          OpeningPlayer = this.OpeningPlayer
           ActivePlayer = this.ActivePlayer
           RoundNumber = this.RoundNumber
           Players = ImmutableArray.CreateRange players

@@ -82,7 +82,7 @@ module internal MatchAttackHandlers =
                     actor,
                     attacker.Id,
                     rule.BlankSideCancelsAndSelfDamageCounters.GetValueOrDefault() * 10,
-                    DamageKind.PlacedCounter,
+                    DamageKind.SelfDamage,
                     ValueSome attacker.Id
                 )
 
@@ -101,7 +101,12 @@ module internal MatchAttackHandlers =
                     0
                 |> ignore
 
-                finishOrPendRound catalog interpreter builder
+                if
+                    builder.Phase = MatchPhase.Playing
+                    || builder.Phase = MatchPhase.AwaitingReplacement
+                then
+                    finishOrPendRound catalog interpreter builder
+
                 false
         | None -> true
 
@@ -415,6 +420,8 @@ module internal MatchAttackHandlers =
                                 if
                                     sendHomeResolved
                                     && catalog.Manifest.BaseRules.Round.AttackEndsRound
+                                    && (builder.Phase = MatchPhase.Playing
+                                        || builder.Phase = MatchPhase.AwaitingReplacement)
                                 then
                                     finishOrPendRound catalog interpreter builder
                             | unsupported ->

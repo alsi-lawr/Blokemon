@@ -88,14 +88,7 @@ module internal EffectPredicates =
             match otherOche () with
             | ValueSome card -> card.UnderlyingCards.Length > 0
             | ValueNone -> false
-        | BlokemonCondition.OtherOcheIsBigHitter ->
-            match otherOche () with
-            | ValueSome other ->
-                catalog.Manifest.BaseRules.BigHitters.BlokeIds.Contains(
-                    other.MechanicalId.Value,
-                    StringComparer.Ordinal
-                )
-            | ValueNone -> false
+        | BlokemonCondition.OtherOcheIsBigHitter -> false
         | BlokemonCondition.AttachedVimCountsAreEqual ->
             match builder.Oche runtime.Actor, otherOche () with
             | ValueSome own, ValueSome other ->

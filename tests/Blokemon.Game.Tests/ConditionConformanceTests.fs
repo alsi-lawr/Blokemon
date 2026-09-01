@@ -515,28 +515,6 @@ module private ConditionConformanceScenarios =
         (noddedOffResult.Card defenderId).Zone |> should equal CardZone.EmptiesTray
         (ordinaryResult.Card defenderId).Zone |> should equal CardZone.Oche
 
-    let private verifyOtherOcheIsBigHitter () =
-        let bigHitter =
-            MatchScenario.BattleState
-                "BLK-134"
-                "BLK-003"
-                [ "VIM-SOBER"; "VIM-SOBER"; "VIM-SOBER" ]
-                1061UL
-
-        let ordinary =
-            MatchScenario.BattleState
-                "BLK-134"
-                "BLK-002"
-                [ "VIM-SOBER"; "VIM-SOBER"; "VIM-SOBER" ]
-                1063UL
-
-        let engine = MatchScenario.Engine()
-        let bigHitterResult = applyAttack engine bigHitter "BLK-134-B02"
-        let ordinaryResult = applyAttack engine ordinary "BLK-134-B02"
-
-        (bigHitterResult.Card defenderId).Damage |> should equal 180
-        (ordinaryResult.Card defenderId).Damage |> should equal 90
-
     let private verifyOtherOcheIsPromoted () =
         let promoted =
             MatchScenario.BattleState "BLK-142" "BLK-002" [ "VIM-SOBER"; "VIM-SOBER" ] 1069UL
@@ -1022,7 +1000,6 @@ module private ConditionConformanceScenarios =
         | "OtherOcheHasDamage" -> verifyOtherOcheHasDamage ()
         | "OtherOcheHasMechanicalType" -> verifyOtherOcheHasMechanicalType ()
         | "OtherOcheHasRoughState" -> verifyOtherOcheHasRoughState ()
-        | "OtherOcheIsBigHitter" -> verifyOtherOcheIsBigHitter ()
         | "OtherOcheIsPromoted" -> verifyOtherOcheIsPromoted ()
         | "OtherSentHomeByThisAttackDamage" -> verifyOtherSentHomeByThisAttackDamage ()
         | "OwnBarChitCountIsGreater" -> verifyOwnBarChitCountIsGreater ()
@@ -1053,7 +1030,6 @@ type ConditionConformanceTests() =
     [<Arguments("OtherOcheHasDamage")>]
     [<Arguments("OtherOcheHasMechanicalType")>]
     [<Arguments("OtherOcheHasRoughState")>]
-    [<Arguments("OtherOcheIsBigHitter")>]
     [<Arguments("OtherOcheIsPromoted")>]
     [<Arguments("OtherSentHomeByThisAttackDamage")>]
     [<Arguments("OwnBarChitCountIsGreater")>]

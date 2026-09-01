@@ -47,8 +47,7 @@ module internal AuthorityAudit =
              | null -> false
              | filter ->
                  (filter.Categories |> Array.exists (fun value -> not (Enum.IsDefined value)))
-                 || (filter.Ranks |> Array.exists (fun value -> not (Enum.IsDefined value)))
-                 || (filter.KitKinds |> Array.exists (fun value -> not (Enum.IsDefined value))))
+                 || (filter.Ranks |> Array.exists (fun value -> not (Enum.IsDefined value))))
         then
             false
         elif

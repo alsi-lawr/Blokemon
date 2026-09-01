@@ -1,5 +1,5 @@
 {
-  "manifestVersion": "sv151-candidate.19",
+  "manifestVersion": "base-jungle-fossil-1999-shared-rules-candidate.1",
   "presentationStatus": "Accepted",
   "approvedMechanicalDisplayMap": [
     {
@@ -110,12 +110,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -215,12 +214,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -362,12 +360,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 4,
-      "barChitsWhenSentHome": 2,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -449,12 +446,11 @@
       "softSpots": [
         {
           "mechanicalType": "Water",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -553,12 +549,11 @@
       "softSpots": [
         {
           "mechanicalType": "Water",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -695,12 +690,11 @@
       "softSpots": [
         {
           "mechanicalType": "Water",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 2,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -813,12 +807,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -894,7 +887,6 @@
                       "Vim"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": true,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -939,12 +931,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -1055,7 +1046,6 @@
                       "Vim"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": true,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -1087,12 +1077,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 2,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -1184,12 +1173,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -1302,12 +1290,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -1424,7 +1411,6 @@
                       "Bloke"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -1470,7 +1456,6 @@
                       "Bloke"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -1502,12 +1487,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -1589,12 +1573,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -1688,12 +1671,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -1832,12 +1814,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -1909,7 +1890,6 @@
                     "ranks": [
                       "Regular"
                     ],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -1971,7 +1951,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -1981,7 +1961,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -2034,7 +2013,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -2044,7 +2023,6 @@
         }
       ],
       "taxiFare": 0,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -2188,7 +2166,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -2198,7 +2176,6 @@
         }
       ],
       "taxiFare": 0,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -2268,12 +2245,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -2341,12 +2317,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 0,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -2453,7 +2428,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -2463,7 +2438,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -2598,7 +2572,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -2608,7 +2582,6 @@
         }
       ],
       "taxiFare": 0,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -2693,12 +2666,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -2828,12 +2800,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 2,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -2885,7 +2856,6 @@
                   "Vim"
                 ],
                 "ranks": [],
-                "kitKinds": [],
                 "basicVimOnly": true,
                 "differentMechanicalTypes": false,
                 "excludedRelatedIds": []
@@ -2964,12 +2934,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -3115,12 +3084,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -3212,12 +3180,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -3369,12 +3336,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -3446,12 +3412,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -3521,7 +3486,6 @@
                       "Bloke"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -3615,12 +3579,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -3742,12 +3705,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -3800,12 +3762,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -3888,12 +3849,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -4028,12 +3988,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -4107,7 +4066,6 @@
                     "ranks": [
                       "Regular"
                     ],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -4171,12 +4129,11 @@
       "softSpots": [
         {
           "mechanicalType": "Metal",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -4296,12 +4253,11 @@
       "softSpots": [
         {
           "mechanicalType": "Metal",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -4388,12 +4344,11 @@
       "softSpots": [
         {
           "mechanicalType": "Water",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -4530,12 +4485,11 @@
       "softSpots": [
         {
           "mechanicalType": "Water",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 2,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -4585,9 +4539,6 @@
                   "Kit"
                 ],
                 "ranks": [],
-                "kitKinds": [
-                  "Mate"
-                ],
                 "basicVimOnly": false,
                 "differentMechanicalTypes": false,
                 "excludedRelatedIds": []
@@ -4708,12 +4659,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -4812,7 +4762,7 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -4822,7 +4772,6 @@
         }
       ],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -4945,7 +4894,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -4955,7 +4904,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -5006,7 +4954,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -5016,7 +4964,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -5070,12 +5017,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -5161,7 +5107,6 @@
                       "Vim"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": true,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -5242,12 +5187,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -5331,7 +5275,6 @@
                       "Vim"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": true,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -5413,12 +5356,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -5518,12 +5460,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -5587,7 +5528,6 @@
                     "ranks": [
                       "Regular"
                     ],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -5651,12 +5591,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -5739,12 +5678,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -5861,12 +5799,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -5948,12 +5885,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -6033,12 +5969,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -6135,12 +6070,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -6221,9 +6155,6 @@
                       "Kit"
                     ],
                     "ranks": [],
-                    "kitKinds": [
-                      "Mate"
-                    ],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -6327,12 +6258,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -6411,12 +6341,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -6488,7 +6417,6 @@
                       "Bloke"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -6534,12 +6462,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -6640,12 +6567,11 @@
       "softSpots": [
         {
           "mechanicalType": "Psychic",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -6767,12 +6693,11 @@
       "softSpots": [
         {
           "mechanicalType": "Psychic",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -6843,12 +6768,11 @@
       "softSpots": [
         {
           "mechanicalType": "Water",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -6937,7 +6861,6 @@
                       "Vim"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": true,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -7002,12 +6925,11 @@
       "softSpots": [
         {
           "mechanicalType": "Water",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 4,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -7093,12 +7015,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -7211,12 +7132,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -7361,12 +7281,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -7419,7 +7338,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -7429,7 +7348,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -7498,7 +7416,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -7508,7 +7426,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -7605,7 +7522,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -7615,7 +7532,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 2,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -7697,12 +7613,11 @@
       "softSpots": [
         {
           "mechanicalType": "Psychic",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -7772,12 +7687,11 @@
       "softSpots": [
         {
           "mechanicalType": "Psychic",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -7915,12 +7829,11 @@
       "softSpots": [
         {
           "mechanicalType": "Psychic",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -8034,12 +7947,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -8121,12 +8033,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -8238,12 +8149,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -8325,12 +8235,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -8504,12 +8413,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -8607,12 +8515,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -8726,12 +8633,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -8842,12 +8748,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 4,
-      "barChitsWhenSentHome": 2,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -8930,12 +8835,11 @@
       "softSpots": [
         {
           "mechanicalType": "Water",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -9034,12 +8938,11 @@
       "softSpots": [
         {
           "mechanicalType": "Water",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -9137,7 +9040,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -9147,7 +9050,6 @@
         }
       ],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -9254,7 +9156,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -9264,7 +9166,6 @@
         }
       ],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -9362,12 +9263,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -9439,9 +9339,6 @@
                       "Kit"
                     ],
                     "ranks": [],
-                    "kitKinds": [
-                      "BarBit"
-                    ],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -9487,12 +9384,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -9571,7 +9467,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -9581,7 +9477,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -9650,7 +9545,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -9660,7 +9555,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -9806,7 +9700,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -9816,7 +9710,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -9869,12 +9762,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -9956,12 +9848,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -10032,12 +9923,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -10155,12 +10045,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 4,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -10246,12 +10135,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -10335,12 +10223,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -10393,7 +10280,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -10403,7 +10290,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -10493,9 +10379,6 @@
                       "Kit"
                     ],
                     "ranks": [],
-                    "kitKinds": [
-                      "Mate"
-                    ],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -10543,7 +10426,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -10553,7 +10436,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -10665,7 +10547,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -10675,7 +10557,6 @@
         }
       ],
       "taxiFare": 0,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -10774,12 +10655,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 4,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -10833,7 +10713,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -10843,7 +10723,6 @@
         }
       ],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -10970,7 +10849,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -10980,7 +10859,6 @@
         }
       ],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -11044,7 +10922,6 @@
                       "Vim"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": true,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -11126,12 +11003,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -11231,12 +11107,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -11320,12 +11195,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -11460,12 +11334,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -11550,12 +11423,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -11653,12 +11525,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -11815,12 +11686,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -11932,12 +11802,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -12034,12 +11903,11 @@
       "softSpots": [
         {
           "mechanicalType": "Psychic",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -12170,12 +12038,11 @@
       "softSpots": [
         {
           "mechanicalType": "Psychic",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -12244,12 +12111,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 4,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -12321,12 +12187,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -12448,12 +12313,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -12553,12 +12417,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -12679,12 +12542,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 4,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -12842,12 +12704,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -12937,12 +12798,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -13053,12 +12913,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 2,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -13141,12 +13000,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -13215,12 +13073,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -13332,12 +13189,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -13499,12 +13355,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -13574,12 +13429,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -13710,12 +13564,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -13845,7 +13698,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -13855,7 +13708,6 @@
         }
       ],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -13924,7 +13776,6 @@
                   "Vim"
                 ],
                 "ranks": [],
-                "kitKinds": [],
                 "basicVimOnly": true,
                 "differentMechanicalTypes": false,
                 "excludedRelatedIds": []
@@ -13967,12 +13818,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 0,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -14096,12 +13946,11 @@
       "softSpots": [
         {
           "mechanicalType": "Metal",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 2,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -14220,12 +14069,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -14345,12 +14193,11 @@
       "softSpots": [
         {
           "mechanicalType": "Water",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -14471,12 +14318,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fire",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -14526,7 +14372,6 @@
                 "ranks": [
                   "Regular"
                 ],
-                "kitKinds": [],
                 "basicVimOnly": false,
                 "differentMechanicalTypes": false,
                 "excludedRelatedIds": []
@@ -14601,12 +14446,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -14673,12 +14517,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -14811,12 +14654,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 4,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -14884,7 +14726,6 @@
                       "Bloke"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -14979,12 +14820,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -15061,7 +14901,6 @@
                     "ranks": [
                       "Regular"
                     ],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": [
@@ -15158,12 +14997,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -15235,7 +15073,6 @@
                       "Bloke"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": true,
                     "excludedRelatedIds": []
@@ -15328,12 +15165,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -15476,12 +15312,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -15608,12 +15443,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 0,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -15771,12 +15605,11 @@
       "softSpots": [
         {
           "mechanicalType": "Water",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -15837,12 +15670,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -15913,7 +15745,6 @@
                   "Vim"
                 ],
                 "ranks": [],
-                "kitKinds": [],
                 "basicVimOnly": false,
                 "differentMechanicalTypes": false,
                 "excludedRelatedIds": []
@@ -15926,12 +15757,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -16078,12 +15908,11 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -16167,12 +15996,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Common",
       "stackCopyLimit": 4
     },
@@ -16281,12 +16109,11 @@
       "softSpots": [
         {
           "mechanicalType": "Grass",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -16412,7 +16239,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -16422,7 +16249,6 @@
         }
       ],
       "taxiFare": 0,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -16507,9 +16333,6 @@
                       "Kit"
                     ],
                     "ranks": [],
-                    "kitKinds": [
-                      "BarKit"
-                    ],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -16574,12 +16397,11 @@
       "softSpots": [
         {
           "mechanicalType": "Fighting",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [],
       "taxiFare": 4,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -16733,7 +16555,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -16743,7 +16565,6 @@
         }
       ],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -16905,7 +16726,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -16915,7 +16736,6 @@
         }
       ],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 2,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -17073,7 +16893,7 @@
       "softSpots": [
         {
           "mechanicalType": "Lightning",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -17083,7 +16903,6 @@
         }
       ],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -17165,7 +16984,6 @@
       "softSpots": [],
       "stubbornStreaks": [],
       "taxiFare": 1,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Uncommon",
       "stackCopyLimit": 4
     },
@@ -17263,7 +17081,6 @@
       "softSpots": [],
       "stubbornStreaks": [],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -17371,7 +17188,6 @@
       "softSpots": [],
       "stubbornStreaks": [],
       "taxiFare": 3,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -17485,7 +17301,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -17495,7 +17311,6 @@
         }
       ],
       "taxiFare": 2,
-      "barChitsWhenSentHome": 1,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     },
@@ -17611,7 +17426,7 @@
       "softSpots": [
         {
           "mechanicalType": "Darkness",
-          "modifier": "\u00d72"
+          "modifier": "×2"
         }
       ],
       "stubbornStreaks": [
@@ -17621,7 +17436,6 @@
         }
       ],
       "taxiFare": 0,
-      "barChitsWhenSentHome": 2,
       "productBucket": "Rare",
       "stackCopyLimit": 4
     }
@@ -17629,7 +17443,6 @@
   "kits": [
     {
       "id": "KIT-001",
-      "kind": "BarBit",
       "presentationStatus": "Accepted",
       "partyTricks": [
         {
@@ -17796,7 +17609,6 @@
     },
     {
       "id": "KIT-002",
-      "kind": "BarBit",
       "presentationStatus": "Accepted",
       "partyTricks": [
         {
@@ -17986,7 +17798,6 @@
     },
     {
       "id": "KIT-003",
-      "kind": "BarBit",
       "presentationStatus": "Accepted",
       "partyTricks": [
         {
@@ -18153,7 +17964,6 @@
     },
     {
       "id": "KIT-004",
-      "kind": "BarKit",
       "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
@@ -18252,7 +18062,6 @@
     },
     {
       "id": "KIT-005",
-      "kind": "Mate",
       "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
@@ -18301,7 +18110,6 @@
                       "Bloke"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -18414,7 +18222,6 @@
     },
     {
       "id": "KIT-006",
-      "kind": "Local",
       "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
@@ -18480,7 +18287,6 @@
                       "Vim"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": true,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -18559,7 +18365,6 @@
     },
     {
       "id": "KIT-007",
-      "kind": "Mate",
       "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
@@ -18654,7 +18459,6 @@
     },
     {
       "id": "KIT-008",
-      "kind": "BarBit",
       "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
@@ -18698,7 +18502,6 @@
                       "Vim"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": true,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -18761,7 +18564,6 @@
     },
     {
       "id": "KIT-009",
-      "kind": "Mate",
       "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
@@ -18829,7 +18631,6 @@
                 "ranks": [
                   "Regular"
                 ],
-                "kitKinds": [],
                 "basicVimOnly": false,
                 "differentMechanicalTypes": false,
                 "excludedRelatedIds": []
@@ -18889,7 +18690,6 @@
     },
     {
       "id": "KIT-010",
-      "kind": "Mate",
       "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
@@ -18935,7 +18735,6 @@
                       "Vim"
                     ],
                     "ranks": [],
-                    "kitKinds": [],
                     "basicVimOnly": false,
                     "differentMechanicalTypes": false,
                     "excludedRelatedIds": []
@@ -18952,7 +18751,6 @@
                   "Vim"
                 ],
                 "ranks": [],
-                "kitKinds": [],
                 "basicVimOnly": false,
                 "differentMechanicalTypes": false,
                 "excludedRelatedIds": []
@@ -19012,7 +18810,6 @@
     },
     {
       "id": "KIT-011",
-      "kind": "BarBit",
       "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
@@ -19061,7 +18858,6 @@
                   "Bloke"
                 ],
                 "ranks": [],
-                "kitKinds": [],
                 "basicVimOnly": false,
                 "differentMechanicalTypes": false,
                 "excludedRelatedIds": []
@@ -19121,7 +18917,6 @@
     },
     {
       "id": "KIT-012",
-      "kind": "BarKit",
       "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
@@ -19214,7 +19009,6 @@
     },
     {
       "id": "KIT-013",
-      "kind": "BarKit",
       "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
@@ -19299,7 +19093,6 @@
     },
     {
       "id": "KIT-014",
-      "kind": "BarKit",
       "presentationStatus": "Accepted",
       "partyTricks": [],
       "attacks": [],
@@ -19381,18 +19174,239 @@
       "pulled": false,
       "traded": false,
       "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-015",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-016",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-017",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-018",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-019",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-020",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-021",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-022",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-023",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-024",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-025",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-026",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-027",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-028",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-029",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-030",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-031",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
+    },
+    {
+      "id": "KIT-032",
+      "presentationStatus": "Accepted",
+      "partyTricks": [],
+      "attacks": [],
+      "houseRules": [],
+      "freelyAvailable": true,
+      "owned": false,
+      "pulled": false,
+      "traded": false,
+      "stackCopyLimit": 4
     }
   ],
   "basicVim": [
     {
       "id": "VIM-DODGY",
-      "mechanicalType": "Darkness",
+      "mechanicalType": "Colorless",
       "presentationStatus": "Accepted",
       "freelyAvailable": true,
       "owned": false,
       "pulled": false,
       "traded": false,
-      "stackCopyLimit": 60
+      "stackCopyLimit": 4,
+      "provides": [
+        "Colorless",
+        "Colorless"
+      ],
+      "isBasic": false
     },
     {
       "id": "VIM-LAIRY",
@@ -19402,7 +19416,11 @@
       "owned": false,
       "pulled": false,
       "traded": false,
-      "stackCopyLimit": 60
+      "stackCopyLimit": 60,
+      "provides": [
+        "Fighting"
+      ],
+      "isBasic": true
     },
     {
       "id": "VIM-CURRY",
@@ -19412,7 +19430,11 @@
       "owned": false,
       "pulled": false,
       "traded": false,
-      "stackCopyLimit": 60
+      "stackCopyLimit": 60,
+      "provides": [
+        "Fire"
+      ],
+      "isBasic": true
     },
     {
       "id": "VIM-BLAZED",
@@ -19422,7 +19444,11 @@
       "owned": false,
       "pulled": false,
       "traded": false,
-      "stackCopyLimit": 60
+      "stackCopyLimit": 60,
+      "provides": [
+        "Grass"
+      ],
+      "isBasic": true
     },
     {
       "id": "VIM-BEER",
@@ -19432,7 +19458,11 @@
       "owned": false,
       "pulled": false,
       "traded": false,
-      "stackCopyLimit": 60
+      "stackCopyLimit": 60,
+      "provides": [
+        "Lightning"
+      ],
+      "isBasic": true
     },
     {
       "id": "VIM-GEEKED",
@@ -19442,7 +19472,11 @@
       "owned": false,
       "pulled": false,
       "traded": false,
-      "stackCopyLimit": 60
+      "stackCopyLimit": 60,
+      "provides": [
+        "Psychic"
+      ],
+      "isBasic": true
     },
     {
       "id": "VIM-SOBER",
@@ -19452,7 +19486,11 @@
       "owned": false,
       "pulled": false,
       "traded": false,
-      "stackCopyLimit": 60
+      "stackCopyLimit": 60,
+      "provides": [
+        "Water"
+      ],
+      "isBasic": true
     }
   ],
   "products": {
@@ -19506,7 +19544,7 @@
     }
   },
   "baseRules": {
-    "rulesVersion": "blokemon-base-rules-1.0.0-candidate.9",
+    "rulesVersion": "wotc-advanced-rulebook-v1-1999-candidate.1",
     "stack": {
       "cardCount": 60,
       "mechanicalCopyLimit": 4,
@@ -19522,9 +19560,8 @@
       "bothMulliganNoBonus": true,
       "otherSideBonusPerExtraMulligan": true,
       "otherSideBonusOptional": true,
-      "barChitCount": 6,
-      "openingParticipantMayAttack": false,
-      "openingParticipantMayPlayMate": false
+      "openingParticipantMayAttack": true,
+      "prizeCardCount": 6
     },
     "round": {
       "requiredOpeningDraw": true,
@@ -19542,17 +19579,7 @@
     "vim": {
       "normalAttachmentPerRound": 1,
       "costNotChuckedUnlessSpecified": true,
-      "localSatisfiedByAnyVim": true
-    },
-    "kit": {
-      "barBitsPerRound": "Unlimited",
-      "barKitsPerRound": "Unlimited",
-      "barKitsPerBloke": 1,
-      "matesPerRound": 1,
-      "localsPerRound": 1,
-      "oneLocalInPlay": true,
-      "sameMechanicalLocalCannotReplace": true,
-      "newLocalChucksOld": true
+      "colorlessSatisfiedByAnyEnergy": true
     },
     "taxi": {
       "perRound": 1,
@@ -19563,10 +19590,10 @@
     },
     "attackOrder": [
       "ValidateDeclaredAttackAndVim",
-      "ApplyEffectsThatAlterOrCancelAttack",
       "ResolveMuddledCheck",
       "MakeRequiredChoices",
       "PayOrPerformUseRequirements",
+      "ApplyEffectsThatAlterOrCancelAttack",
       "ApplyBeforeDamageEffects",
       "CalculateAndPlaceDamage",
       "ResolveOtherEffects",
@@ -19576,11 +19603,14 @@
     ],
     "damageOrder": [
       "PrintedOrProgramBaseDamage",
-      "EffectsOnAttackingBlokeBeforeSoftSpotAndStubbornStreak",
-      "SoftSpot",
-      "StubbornStreak",
-      "EffectsOnDefendingBlokeAfterSoftSpotAndStubbornStreak",
-      "ClampAtZeroAndPlaceCounters"
+      "EffectsOnAttackingBloke",
+      "StopWhenDamageIsZero",
+      "Weakness",
+      "Resistance",
+      "TrainerEffects",
+      "PokemonPowers",
+      "PlaceDamageCounters",
+      "EffectsAfterDamage"
     ],
     "damage": {
       "boothDamageUsesSoftSpotOrStubbornStreak": false,
@@ -19596,7 +19626,6 @@
     "checkup": {
       "roughStateOrder": [
         "DodgyPint",
-        "Singed",
         "NoddedOff",
         "Legless"
       ],
@@ -19615,19 +19644,9 @@
         "preventsTaxi": false,
         "recoversAfterOwnersNextRound": null,
         "beforeAttackBeerMat": null,
-        "blankSideCancelsAndSelfDamageCounters": null
-      },
-      {
-        "state": "Singed",
-        "ocheOnly": true,
-        "checkupDamageCounters": 2,
-        "checkupBeerMat": true,
-        "badgeSideRecovers": true,
-        "preventsAttack": false,
-        "preventsTaxi": false,
-        "recoversAfterOwnersNextRound": null,
-        "beforeAttackBeerMat": null,
-        "blankSideCancelsAndSelfDamageCounters": null
+        "blankSideCancelsAndSelfDamageCounters": null,
+        "beforeTaxiBeerMat": null,
+        "blankSideConsumesTaxi": null
       },
       {
         "state": "NoddedOff",
@@ -19639,7 +19658,9 @@
         "preventsTaxi": true,
         "recoversAfterOwnersNextRound": null,
         "beforeAttackBeerMat": null,
-        "blankSideCancelsAndSelfDamageCounters": null
+        "blankSideCancelsAndSelfDamageCounters": null,
+        "beforeTaxiBeerMat": null,
+        "blankSideConsumesTaxi": null
       },
       {
         "state": "Legless",
@@ -19651,7 +19672,9 @@
         "preventsTaxi": true,
         "recoversAfterOwnersNextRound": true,
         "beforeAttackBeerMat": null,
-        "blankSideCancelsAndSelfDamageCounters": null
+        "blankSideCancelsAndSelfDamageCounters": null,
+        "beforeTaxiBeerMat": null,
+        "blankSideConsumesTaxi": null
       },
       {
         "state": "Muddled",
@@ -19663,7 +19686,9 @@
         "preventsTaxi": false,
         "recoversAfterOwnersNextRound": null,
         "beforeAttackBeerMat": true,
-        "blankSideCancelsAndSelfDamageCounters": 3
+        "blankSideCancelsAndSelfDamageCounters": 2,
+        "beforeTaxiBeerMat": true,
+        "blankSideConsumesTaxi": true
       }
     ],
     "roughStateCoexistence": {
@@ -19674,7 +19699,6 @@
       ],
       "latestRotatedStateReplacesPrevious": true,
       "markerGroup": [
-        "Singed",
         "DodgyPint"
       ],
       "markersCoexistWithEachOtherAndRotatedGroup": true
@@ -19682,47 +19706,19 @@
     "sendHome": {
       "damageAtLeastStayingPower": true,
       "chuckBlokeAndAttachedCards": true,
-      "normalBarChits": 1,
-      "bigHitterBarChits": 2,
+      "prizeCardsPerKnockout": 1,
       "ownerPromotesFromBooth": true
     },
     "win": {
       "conditions": [
-        "TakeLastBarChit",
-        "LeaveOtherSideNoBloke",
-        "OtherSideFailsRequiredDraw"
+        "TakeLastPrizeCard",
+        "OpponentHasNoPokemonInPlay",
+        "OpponentCannotDrawAtStartOfTurn"
       ],
-      "oneMethodEach": "SuddenDeath",
-      "moreMethodsWins": "Immediate",
-      "suddenDeathBarChits": 1,
+      "simultaneousWin": "MoreWinConditionsWinsOtherwiseSuddenDeath",
+      "suddenDeathPrizeCards": 1,
+      "suddenDeathStartsFreshGame": true,
       "repeatUntilWinner": true
-    },
-    "fossilKits": {
-      "kitIds": [
-        "KIT-001",
-        "KIT-002",
-        "KIT-003"
-      ],
-      "playAsRegularLocalStayingPower": 60,
-      "cannotHaveRoughStates": true,
-      "cannotTaxi": true,
-      "mayChuckFromPlayDuringOwnersRound": true,
-      "sentHomeAwardsOneBarChit": true
-    },
-    "bigHitters": {
-      "blokeIds": [
-        "BLK-003",
-        "BLK-006",
-        "BLK-009",
-        "BLK-024",
-        "BLK-038",
-        "BLK-065",
-        "BLK-076",
-        "BLK-115",
-        "BLK-124",
-        "BLK-145",
-        "BLK-151"
-      ]
     },
     "opcodeInventory": [
       "DealPrintedDamage",
@@ -19774,6 +19770,19 @@
       "ContinuousPartyTrick",
       "OncePerRound",
       "EndRoundEffect"
-    ]
+    ],
+    "trainer": {
+      "unlimitedPerTurn": true,
+      "resolveTextThenDiscard": true
+    },
+    "pokemonPower": {
+      "notAttacks": true,
+      "usableFromBench": true,
+      "disabledBy": [
+        "NoddedOff",
+        "Muddled",
+        "Legless"
+      ]
+    }
   }
 }

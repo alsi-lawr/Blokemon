@@ -74,7 +74,10 @@ module internal MatchKnockouts =
             let sources =
                 builder.Cards
                 |> Seq.filter (fun card ->
-                    card.Owner = knockedOut.Owner && card.Id <> knockedOut.Id && isInPlay card)
+                    card.Owner = knockedOut.Owner
+                    && card.Id <> knockedOut.Id
+                    && card.Kind = CardKind.Bloke
+                    && isInPlay card)
                 |> Seq.filter (fun card ->
                     catalog.PartyTricks card
                     |> Seq.exists (fun trick ->
@@ -176,7 +179,7 @@ module internal MatchKnockouts =
         =
         ImmutableArray.CreateRange(
             builder.Cards
-            |> Seq.filter isInPlay
+            |> Seq.filter (fun card -> card.Kind = CardKind.Bloke && isInPlay card)
             |> Seq.filter (fun card ->
                 Seq.contains card.Id forcedSendHome
                 || card.Damage >= effectiveStayingPower catalog card)
@@ -206,7 +209,7 @@ module internal MatchKnockouts =
                 identified
                 |> Seq.choose (fun cardId ->
                     match builder.FindCard cardId with
-                    | ValueSome card when isInPlay card -> Some card
+                    | ValueSome card when card.Kind = CardKind.Bloke && isInPlay card -> Some card
                     | _ -> None)
             )
 

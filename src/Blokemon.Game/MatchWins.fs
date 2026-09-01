@@ -2,6 +2,7 @@ namespace Blokemon.Game
 
 open System.Collections.Generic
 open Blokemon.Game.MatchRules
+open Blokemon.Game.MatchSetup
 
 /// Who has won, who still owes a replacement, and how a round begins.
 module internal MatchWins =
@@ -9,7 +10,8 @@ module internal MatchWins =
     let assignReplacement (builder: MatchBuilder) (player: PlayerId) =
         if
             (builder.Oche player).IsNone
-            && not (builder.CardsIn(player, CardZone.Booth) |> Seq.isEmpty)
+            && (builder.CardsIn(player, CardZone.Booth)
+                |> Seq.exists (fun card -> card.Kind = CardKind.Bloke))
         then
             if builder.ReplacementPlayer.IsNone then
                 builder.ReplacementPlayer <- ValueSome player
@@ -21,7 +23,8 @@ module internal MatchWins =
         |> Seq.map (fun player -> player.Id)
         |> Seq.tryFind (fun player ->
             (builder.Oche player).IsNone
-            && not (builder.CardsIn(player, CardZone.Booth) |> Seq.isEmpty))
+            && (builder.CardsIn(player, CardZone.Booth)
+                |> Seq.exists (fun card -> card.Kind = CardKind.Bloke)))
         |> ValueOption.ofOption
 
     let private resolveLiveWins
@@ -41,7 +44,11 @@ module internal MatchWins =
             let other = builder.Other player.Id
 
             if
-                not (builder.Cards |> Seq.exists (fun card -> card.Owner = other && isInPlay card))
+                not (
+                    builder.Cards
+                    |> Seq.exists (fun card ->
+                        card.Owner = other && card.Kind = CardKind.Bloke && isInPlay card)
+                )
             then
                 methods[player.Id] <- methods[player.Id] + 1
 
@@ -61,14 +68,8 @@ module internal MatchWins =
                 builder.Events.Add(PendingMatchEvent.forActor MatchEventKind.MatchWon winner)
             else
                 builder.SuddenDeathCount <- builder.SuddenDeathCount + 1
-
-                for player in builder.Players |> Seq.toArray do
-                    builder.ResetBarChits(
-                        player.Id,
-                        catalog.Manifest.BaseRules.Win.SuddenDeathBarChits
-                    )
-
                 builder.Events.Add(PendingMatchEvent.ofKind MatchEventKind.SuddenDeathStarted)
+                startFreshGame catalog builder
 
     let resolveWins
         (catalog: AuthorityCatalog)
