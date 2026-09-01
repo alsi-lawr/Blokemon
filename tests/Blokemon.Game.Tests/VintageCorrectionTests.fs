@@ -1108,6 +1108,14 @@ type VintageCorrectionTrainerTests() =
                 -1
                 (CardInstanceId "attacker")
 
+        let basicBench =
+            MatchScenario.PlainCard
+                "devolve-basic-bench"
+                "BLK-004"
+                MatchScenario.FirstPlayer
+                CardZone.Booth
+                0
+
         let energy =
             MatchScenario.AttachedCard
                 "devolve-energy"
@@ -1132,7 +1140,9 @@ type VintageCorrectionTrainerTests() =
                 -1
 
         let state =
-            MatchScenario.WithCards original [ basic; stageOne; stageTwo; energy; spray ]
+            MatchScenario.WithCards
+                original
+                [ basic; basicBench; stageOne; stageTwo; energy; spray ]
 
         let action = VintageCorrectionScenarios.trainerAction "devolution-spray" state
         let requirement = action.ChoiceRequirements |> Seq.exactlyOne
@@ -1140,6 +1150,7 @@ type VintageCorrectionTrainerTests() =
         requirement.EligibleCards |> should contain stageOne.Id
         requirement.EligibleCards |> should contain stageTwo.Id
         requirement.EligibleCards |> should not' (contain basic.Id)
+        requirement.EligibleCards |> should not' (contain basicBench.Id)
 
         let applied =
             MatchScenario.Applied(

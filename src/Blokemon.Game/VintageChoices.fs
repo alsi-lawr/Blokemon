@@ -237,8 +237,7 @@ module internal VintageChoices =
                     seq {
                         if card.UnderlyingCards.Length > 0 then
                             yield card
-
-                        yield! card.UnderlyingCards |> Seq.skip 1 |> Seq.map builder.Card
+                            yield! card.UnderlyingCards |> Seq.skip 1 |> Seq.map builder.Card
                     })
 
             cardsRequirement requirements effect path "cards" actor 1 1 stages dependency
