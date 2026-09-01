@@ -69,8 +69,8 @@ let private draw (contentDirectory: string) (output: string) =
     page.Append(shell (Path.Combine(content, "fonts")) cards.Stylesheet) |> ignore
 
     section page "Collectibles" (set.Blokemon |> Seq.map (fun card -> cards.Build card))
-    section page "Support" (set.Supports |> Seq.map (fun card -> cards.Build card))
-    section page "Basic Energy" (set.Energy |> Seq.map (fun card -> cards.Build card))
+    section page "Trainers" (set.Trainers |> Seq.map (fun card -> cards.Build card))
+    section page "Energy" (set.Energy |> Seq.map (fun card -> cards.Build card))
     section page "Reverse" [ cards.Build set.Reverse ]
     section page "Type glyphs" (Enum.GetValues<BlokemonType>() |> Seq.map TypeGlyphs.glyph)
 

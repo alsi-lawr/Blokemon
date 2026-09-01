@@ -1,72 +1,111 @@
-# Blokemon technical mechanics
+# Blokemon technical rules
 
-**Status:** Portable mechanical authority.
+**Status:** Published companion to the selected 1999 rules and card authority.
 
-## Authority and boundaries
+## Authority and scope
 
-The published mechanical authority is `content/authorities/mechanics.json`. It defines 151 collectible names and types, opaque mechanical IDs, internal mechanical types, display mappings, opcodes, targets, the fixed kit and Basic Vim library, acquisition products and the complete base-rule structure.
+Blokemon uses a closed 1999 rules profile. The normative general-rules authority is the pinned *Pokémon Trading Card Game Advanced Rulebook, Version 1* published by Wizards of the Coast. The normative card authority is the selected English printing for each card in the 1999 Kanto authority ledger. The ledger also closes the profile over 25 enumerated pre-Base-Set-2 Wizards rulings; no later-era rule or card text is imported implicitly.
 
-All authority programs are validated against executable opcode, condition, target, selection, distribution and trigger shapes. `sv151-authority-reconciliation.json` binds effects to the preserved SV151 candidate.6 source hashes, records the narrow cases where declarative authority corrects a candidate-program omission or ambiguity, and identifies canonical-source exceptions. BLK-040 is the current exception and maps the original Wigglytuff from Jungle #32. `Blokemon.Game` executes the authority without provider, web or storage dependencies and persists random state, identified face-down bar chits, deferred choices, trigger timing and accepted command identities in `MatchState`.
+The executable expression of that profile is `content/authorities/mechanics.json`. Public names, card copy and terminology are bound by `content/authorities/public-content.json`. `content/reference/1999-kanto-authority-ledger.json` records each source selection, ruling and presentation mapping. If this companion is less specific than a selected card, that card's printed text governs.
 
-Roadie is the display label for internal Metal on BLK-035, BLK-036 and BLK-124 soft spots and BLK-137's selectable-affinity mechanic. Roadie is not a collectible type.
+## Closed card pool and public terminology
 
-## Stack and opening
+The collectible card pool contains:
 
-- Each side has exactly 60 cards, no more than four cards with one mechanical identity except unlimited Basic Vim, and at least one Regular Bloke.
-- Sample the opening side before either shuffle or opening draw. Each side shuffles, draws a seven-card mitt, places one Regular Bloke at the oche, may place up to five Regular Blokes in the booth, then sets six bar chits.
-- A mitt without a Regular Bloke is reshuffled and redrawn until legal. Simultaneous mulligans grant no bonus. For each excess mulligan, the other side may draw up to one extra card.
-- Throughout a bout, every card instance occupies exactly one zone, and each side's booth holds at most five Blokes.
-- The opening side cannot play a Mate or declare an Attack in its first round.
+- 151 selected Blokemon presentations sourced from Base Set, Jungle and Fossil, with the approved Mew Black Star Promo 8 exception;
+- all 32 distinct Trainer cards from Base Set, Jungle and Fossil, each represented once; and
+- the six Basic Energy cards plus Side Hustle, the Special Energy presentation of Double Colorless Energy.
 
-## Round, promotion, Vim, kits and taxi
+Blokemon public rules use **Blokemon**, **Trainer**, **Energy**, **Active Spot**, **Bench**, **Hand**, **Deck**, **discard pile**, **Prize Card**, **HP**, **Damage**, **Attack**, **Blokemon Power**, **Weakness**, **Resistance**, **Retreat**, **Evolution** and **Knocked Out**. Internal identifiers and storage labels are not extra card categories or rules.
 
-- Start each round with the required stack draw. Failure to make that required draw loses the bout. An effect draw from a short stack takes only available cards and does not itself lose the bout.
-- An Attack ends the round; a Party Trick does not. One normal Vim attachment is allowed per round. Attack Vim costs stay attached unless an instruction says to chuck them; Local cost symbols accept any Vim.
-- Promotion requires the exact mechanical edge. A Bloke cannot promote on either side's first round, its first round in play, or twice in one round. Promotion retains damage and attached cards while clearing rough states and Attack effects.
-- Bar Bits and Bar Kits are unlimited per round, with at most one Bar Kit on a Bloke. At most one Mate and one Local may be played per round. Only one Local is in play per side; an identical mechanical Local cannot replace itself and a different Local chucks the old one.
-- Taxi is once per round, requires a booth Bloke and chucks one Vim per fare symbol. NoddedOff or Legless Blokes cannot taxi. Moving to the booth clears rough states and Attack effects but retains damage and attachments.
+## Deck construction and setup
 
-## Attack and damage ordering
+- A deck contains exactly 60 cards and at least one Basic Blokemon.
+- A deck may contain no more than four cards with the same identity. Basic Energy cards are exempt from that limit; Side Hustle is Special Energy and is therefore limited to four copies.
+- Each player shuffles, draws a seven-card Hand, places one Basic Blokemon in the Active Spot and may place up to five more Basic Blokemon on the Bench, then sets aside six Prize Cards.
+- A Hand without a Basic Blokemon is revealed, reshuffled and redrawn until legal. The other player may draw an optional card for each excess mulligan after both players have a legal Hand.
+- The starting player may Attack on their first turn. Neither player may evolve a Blokemon on their first turn.
 
-Resolve one committed Attack in this exact order:
+## Turn sequence
 
-1. Validate the declared Attack and Vim.
+At the start of a turn, the player draws one card. A player who cannot make this required draw loses the game. A draw required by card text takes the available cards if the Deck runs short and does not itself cause that loss. During the turn, the player may take the following actions in any legal order:
 
-Attack declaration metadata is authoritative at this step: `canBeUsedFromBench` is false by default, while a true value permits that Attack to be declared while its Blokemon is on the Bench. The match engine enforces this field directly.
-2. Apply effects that alter or cancel the Attack.
-3. Resolve the Muddled beer-mat check.
-4. Make required choices.
-5. Pay or perform use requirements.
-6. Apply before-damage effects.
-7. Calculate and place damage.
-8. Resolve other effects.
-9. Check every send-home condition.
-10. Take bar chits and promote from the booth where required.
-11. End the round.
+- put Basic Blokemon onto the Bench, up to its five-card limit;
+- evolve Blokemon;
+- attach one Energy card from the Hand;
+- play Trainer cards;
+- use Blokemon Powers;
+- Retreat the Active Blokemon once; and
+- Attack with the Active Blokemon.
 
-Calculate damage in this exact order: printed or program-defined base damage; effects on the Attacking Bloke before soft spot/stubborn streak; soft spot; stubborn streak; effects on the defending Bloke after those modifiers; clamp at zero and place counters. Booth damage ignores soft spots and stubborn streaks. Placed counters are not damage and do not use damage modifiers.
+An Attack ends the turn. A player may end the turn without Attacking.
 
-`UpTo` means one through the stated count except an optional draw may choose zero. “Any amount/number” may choose zero. Optional effects may be declined. `Chosen` consumes an explicit eligible object; `SeededRandom` consumes the explicit deterministic RNG stream.
+## Trainers and Blokemon Powers
 
-## Rough states and checkup
+Trainer is one card class. A player may play any number of Trainer cards during their turn. A Trainer resolves according to its printed text and is then discarded unless that text places it somewhere else. A selected card's own text governs exceptional objects such as Reenactor and Spiral-Eyed Regular.
 
-Only the oche Bloke has rough states. During checkup resolve DodgyPint, Singed, NoddedOff and Legless as one non-interleavable block; other checkup effects may occur only before or after the whole block, then check both sides for send-home conditions.
+A Blokemon Power is not an Attack and does not end the turn. It can normally be used from the Bench as well as the Active Spot. Asleep, Confused or Paralyzed Blokemon cannot use a Blokemon Power unless the selected card says otherwise.
 
-- DodgyPint places one damage counter.
-- Singed places two damage counters, then a beer-mat badge side clears it.
-- NoddedOff prevents Attack and taxi; a checkup beer-mat badge side clears it.
-- Legless prevents Attack and taxi and clears after its owner's next round.
-- Muddled makes a beer-mat check before Attack; blank side cancels the Attack and places three self-damage counters.
-- NoddedOff, Muddled and Legless are the rotated group; the latest replaces the previous. Singed and DodgyPint coexist with each other and the rotated group. Promotion or moving to the booth clears all rough states.
+## Energy and Retreat
 
-## Send home, bar chits and terminal outcomes
+The six Basic Energy cards are the unlimited-copy Energy cards. Side Hustle is Special Energy: while attached to a Blokemon it provides 2 Local Energy, and it never counts as Basic Energy. Attaching Side Hustle uses the turn's single Energy-card attachment.
 
-A Bloke is sent home when damage is at least staying power. Chuck that Bloke and every attachment. A normal target awards one bar chit; a Big Hitter awards two. If play continues, the defeated side chooses a booth Bloke to promote to the oche.
+An Attack's Local Energy requirements can be satisfied by any Energy type. Energy used to satisfy an Attack remains attached unless the selected card says to discard it.
 
-A side wins by taking its last bar chit, leaving the other side with no Bloke in play, or having the other side fail its required opening draw. If both sides achieve one win method simultaneously, use sudden death with one bar chit and repeat until a winner. If one side achieves more simultaneous win methods, it wins immediately.
+A player may Retreat the Active Blokemon once during their turn if the Bench is not empty. They discard attached Energy cards that provide at least the printed Retreat cost, then exchange the Active Blokemon with a Benched Blokemon. Because Side Hustle provides 2 Local Energy, one attached Side Hustle can pay a Retreat cost of two. A Confused Blokemon flips a coin before paying to Retreat; a failed check uses that turn's Retreat without discarding Energy or moving. Retreating keeps Damage and attached cards that were not paid, while clearing Special Conditions and effects on the retreating Active Blokemon.
 
-KIT-001 through KIT-003 may act as Regular Local Blokes with 60 staying power. They cannot have rough states or taxi, may be chucked by their owner during their round, and award one bar chit when sent home. The eleven IDs listed in `bigHitters.blokeIds` award two bar chits.
+## Evolution
 
-## Products
+Evolution must follow the exact Basic-to-Stage-1 or Stage-1-to-Stage-2 edge printed on the selected cards. A Blokemon cannot evolve on either player's first turn, on the same turn it entered play, or more than once in one turn. Evolution keeps Damage and attached cards while clearing Special Conditions and effects on that Blokemon.
 
-The one-card product is uniform across all 151 collectible identities (1/151 each). The eleven-card product selects one of 49 Rare, three distinct of 49 Uncommon and seven distinct of 53 Common identities. Exact named-identity inclusion odds are 1/49 Rare, 3/49 Uncommon and 7/53 Common. There is no pity; one pack cannot repeat an identity; separate packs may.
+## Attacks and Damage
+
+After an Attack is declared and its Energy requirement is validated, resolve it in this order:
+
+1. make the Confused check, if required;
+2. make the choices required by the Attack;
+3. pay or perform its use requirements;
+4. apply effects that change or cancel the Attack;
+5. apply effects that occur before Damage;
+6. calculate and place Damage;
+7. resolve the Attack's other effects;
+8. check all Knocked Out Blokemon, take Prize Cards and promote from the Bench where required; and
+9. end the turn.
+
+Calculate Damage in this order:
+
+1. begin with the amount printed or calculated by the Attack;
+2. apply effects on the Attacking Blokemon;
+3. stop if the result is zero;
+4. apply Weakness;
+5. apply Resistance;
+6. apply Trainer effects;
+7. apply Blokemon Powers;
+8. place Damage counters; and
+9. resolve effects that occur after Damage.
+
+Damage to a Benched Blokemon does not apply Weakness or Resistance. Effects that place Damage counters are not Damage and do not apply Damage modifiers.
+
+## Special Conditions and between-turn checks
+
+Only an Active Blokemon can be Poisoned, Asleep, Paralyzed or Confused.
+
+- Poisoned places one Damage counter between turns.
+- Asleep prevents Attacking and Retreating; a coin flip between turns clears it on heads.
+- Paralyzed prevents Attacking and Retreating and clears after its owner's next turn.
+- Confused requires a coin flip before Attacking; a failed check cancels the Attack and places two Damage counters on that Blokemon.
+
+Asleep, Confused and Paralyzed replace one another. Poisoned can coexist with one of those conditions. Between turns, resolve Special Conditions as one check block, then check for Knocked Out Blokemon.
+
+## Knock Out, Prize Cards and winning
+
+When Damage on a Blokemon equals or exceeds its HP, it is Knocked Out and discarded with its attached cards. Knocking Out an ordinary Blokemon awards exactly one Prize Card. No card in this profile awards two Prize Cards. Selected card-text exceptions, including Reenactor and Spiral-Eyed Regular, govern whether a Prize Card is taken for those objects.
+
+A player wins by taking their last Prize Card, leaving the opponent with no Blokemon in play, or having the opponent fail the required start-of-turn draw. If both players satisfy one win condition at the same time, play Sudden Death with one Prize Card. If one player satisfies more simultaneous win conditions, that player wins.
+
+## Pinned sources and compatibility boundary
+
+- General rules: *Pokémon Trading Card Game Advanced Rulebook, Version 1*, Wizards of the Coast, `https://www.judgeball.com/files/archives/tcg-rulebooks/en/WOTC_v1.pdf`, SHA-256 `374e154ca72536146e359e9eca6e22a7815ded5403d7db51429ac7351cf6c00a`.
+- Card printings, rulings and presentation mappings: `content/reference/1999-kanto-authority-ledger.json` and its human-readable companion `content/reference/1999-kanto-authority-ledger.md`.
+
+Archived match manifests and migration records describe historical compatibility only. They do not add cards, terminology or rules to the published 1999 profile.

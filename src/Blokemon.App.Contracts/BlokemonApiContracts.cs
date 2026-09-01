@@ -19,13 +19,13 @@ public sealed record ProfileView(
 public enum CardKindView
 {
     Blokemon,
-    Kit,
-    BasicVim,
+    Trainer,
+    Energy,
 }
 
 public enum CardRuleKindView
 {
-    Ability,
+    PokemonPower,
     Attack,
     Rule,
     Energy,
@@ -185,7 +185,7 @@ public enum MatchActionKindView
     PlayBlokemon,
     Evolve,
     PlayTrainer,
-    UseAbility,
+    UsePokemonPower,
     Attack,
     Retreat,
     DiscardFossil,

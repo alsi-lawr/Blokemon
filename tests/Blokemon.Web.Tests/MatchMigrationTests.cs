@@ -1115,6 +1115,7 @@ public sealed class MatchMigrationTests
     {
         var document = JsonNode.Parse(Fixture(fixture))!.AsObject();
         document["profile"]!["authorityManifestVersion"] = catalogue.Mechanics.ManifestVersion;
+        MakeCurrentDeckLegal(document);
         return document.ToJsonString();
     }
 
@@ -1140,11 +1141,36 @@ public sealed class MatchMigrationTests
     {
         var document = JsonNode.Parse(Fixture(fixture))!.AsObject();
         document["profile"]!["authorityManifestVersion"] = catalogue.Mechanics.ManifestVersion;
+        MakeCurrentDeckLegal(document);
         var product = JsonSerializer.Deserialize<ProductDocument>(
             document.ToJsonString(),
             new JsonSerializerOptions(JsonSerializerDefaults.Web)
         )!;
         return ProductValue(LocalProfile.Restore(product.Profile, catalogue.Mechanics));
+    }
+
+    private static void MakeCurrentDeckLegal(JsonObject document)
+    {
+        foreach (var deck in document["profile"]!["savedDecks"]!.AsArray())
+        {
+            var cards = deck!["cards"]!.AsArray();
+            var doubleColorless = cards
+                .Select(static card => card!.AsObject())
+                .SingleOrDefault(static card => card["cardId"]!.GetValue<string>() == "VIM-DODGY");
+            if (doubleColorless is null)
+            {
+                continue;
+            }
+
+            var quantity = doubleColorless["quantity"]!.GetValue<int>();
+            if (quantity <= 4)
+            {
+                continue;
+            }
+
+            doubleColorless["quantity"] = 4;
+            cards.Add(new JsonObject { ["cardId"] = "VIM-BLAZED", ["quantity"] = quantity - 4 });
+        }
     }
 
     private static TValue ProductValue<TValue, TFailure>(DomainResult<TValue, TFailure> result)

@@ -16,7 +16,7 @@ else
     var owned = _view!.Cards.Count(static card => card.OwnedQuantity > 0);
     <header class="topline">
         <div><span class="eyebrow">@owned owned · @_view.Cards.Length cards</span><h1>Your collection.</h1></div>
-        <span class="dev-badge">Trainer cards and Basic Energy are always available</span>
+        <span class="dev-badge">Trainer and Energy cards are always available</span>
     </header>
     <div class="toolbar" role="search">
         <label class="visually-hidden" for="collection-search">Search cards</label>
@@ -80,7 +80,7 @@ else
             );
 
     // The last arm printed the enum's own name, which is where the code's private vocabulary leaks
-    // onto a page a player reads - "BasicVim" for what the game calls Basic Energy. Naming every
+    // onto a page a player reads. Naming every
     // kind means a new one must be given public words before it can compile. The suppression is
     // for the other half of the same warning: a value cast in from outside the names the enum
     // declares, which a card handed down from the catalogue cannot be.
@@ -89,8 +89,8 @@ else
         kind switch
         {
             CardKindView.Blokemon => "Blokemon",
-            CardKindView.Kit => "Trainer",
-            CardKindView.BasicVim => "Basic Energy",
+            CardKindView.Trainer => "Trainer",
+            CardKindView.Energy => "Energy",
         };
 #pragma warning restore CS8524
 }

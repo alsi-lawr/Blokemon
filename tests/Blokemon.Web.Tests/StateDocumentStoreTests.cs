@@ -43,7 +43,7 @@ public sealed class StateDocumentStoreTests
                     null,
                     null,
                     "The Friday stack",
-                    [new("BLK-001", 1), new("VIM-DODGY", 59)]
+                    [new("BLK-001", 1), new("VIM-BLAZED", 59)]
                 )
             )
         );
@@ -86,7 +86,7 @@ public sealed class StateDocumentStoreTests
                     null,
                     null,
                     "Historical deck",
-                    [new("BLK-001", 1), new("VIM-DODGY", 59)]
+                    [new("BLK-001", 1), new("VIM-BLAZED", 59)]
                 )
             )
         );
@@ -116,7 +116,7 @@ public sealed class StateDocumentStoreTests
         var deckCards = profile["savedDecks"]![0]!["cards"]!.AsArray();
         deckCards
             .Select(static item => item!.AsObject())
-            .Single(item => item["cardId"]!.GetValue<string>() == "VIM-DODGY")["cardId"] =
+            .Single(item => item["cardId"]!.GetValue<string>() == "VIM-BLAZED")["cardId"] =
             historicalDeckCardId;
         await store.Update("profile", original.Revision, document.ToJsonString());
         var historical = (await store.Read("profile"))!;
@@ -151,7 +151,7 @@ public sealed class StateDocumentStoreTests
                     deck.Id,
                     deck.Revision,
                     "Current deck",
-                    [new("BLK-001", 1), new("VIM-DODGY", 59)]
+                    [new("BLK-001", 1), new("VIM-BLAZED", 59)]
                 )
             )
         );
@@ -171,12 +171,12 @@ public sealed class StateDocumentStoreTests
         revised
             .Decks.Single()
             .Entries.Select(static entry => entry.CardId)
-            .ShouldBe(["BLK-001", "VIM-DODGY"], ignoreOrder: true);
+            .ShouldBe(["BLK-001", "VIM-BLAZED"], ignoreOrder: true);
         (persistedProfile["authorityManifestVersion"]!.GetValue<string>()).ShouldBe(
             "historical-manifest"
         );
         persistedDeck["revision"]!.GetValue<long>().ShouldBe(deck.Revision + 1);
-        persistedCardIds.ShouldBe(["BLK-001", "VIM-DODGY"], ignoreOrder: true);
+        persistedCardIds.ShouldBe(["BLK-001", "VIM-BLAZED"], ignoreOrder: true);
         Error(pack).Code.ShouldBe("pack.authority_changed");
         Error(pack)
             .Message.ShouldBe(
@@ -206,7 +206,7 @@ public sealed class StateDocumentStoreTests
                     null,
                     null,
                     "Current deck",
-                    [new("BLK-001", 1), new("VIM-DODGY", 59)]
+                    [new("BLK-001", 1), new("VIM-BLAZED", 59)]
                 )
             )
         );
@@ -281,7 +281,7 @@ public sealed class StateDocumentStoreTests
                     null,
                     null,
                     "Local deck",
-                    [new("BLK-001", 1), new("VIM-DODGY", 59)]
+                    [new("BLK-001", 1), new("VIM-BLAZED", 59)]
                 )
             )
         );

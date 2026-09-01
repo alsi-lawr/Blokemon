@@ -722,7 +722,7 @@
 
 .blokemon-gym-card .rule-entry + .rule-entry { border-top: 2px solid var(--tt-ink); }
 
-/* Ability and Rule keep the Attack grid and share its copy margin; their Energy gutter is blank. */
+/* Blokemon Power and Rule keep the Attack grid and share its copy margin; their Energy gutter is blank. */
 
 .blokemon-gym-card .entry-energy {
   grid-column: 1;
@@ -780,7 +780,7 @@
   text-shadow: .5px .4px 0 rgba(168, 60, 30, .16);
 }
 
-/* Period coloured inline lead-in for Ability and Rule entries. */
+/* Period coloured inline lead-in for Blokemon Power and Rule entries. */
 .blokemon-gym-card .entry-lead {
   margin-right: 6px;
   font: 700 21px/24px var(--blokemon-face);
@@ -941,8 +941,8 @@
   opacity: .74;
 }
 
-/* Support: no HP, type disc, evolution or stat row. Its rules region runs to the flavour plate. */
-.blokemon-gym-card[data-card-type="Support"] {
+/* Trainer: no HP, type disc, evolution or stat row. Its rules region runs to the flavour plate. */
+.blokemon-gym-card[data-card-type="Trainer"] {
   --tt-haze: #fdfaef;
   --tt-cream: #f0e6cc;
   --tt-mid: #c9b285;
@@ -1077,7 +1077,7 @@
 }
 
 /*
-  Basic Energy. A gold-foil header bar carries the ENERGY wordmark, the bound illustration drops
+  Energy. A gold-foil header bar carries the ENERGY wordmark, the bound illustration drops
   back to a printed field behind the furniture, and the type symbol rides a printed sphere.
 */
 .blokemon-gym-card:has([data-placement="field"]) .card-name {

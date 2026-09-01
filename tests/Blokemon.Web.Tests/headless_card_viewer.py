@@ -46,15 +46,7 @@ MECHANICAL_ENERGY_TYPES = [
     "Dragon",
     "Metal",
 ]
-BASIC_ENERGY_NAMES = [
-    "Dutch Courage",
-    "Front",
-    "Haze",
-    "Heat",
-    "Resolve",
-    "Rush",
-    "Side Hustle",
-]
+SIDE_HUSTLE = "Side Hustle"
 
 
 class EvidenceFailure(RuntimeError):
@@ -932,7 +924,7 @@ def energy_catalogue_surfaces(devtools, origin):
     collection_energy = devtools.evaluate(
         """
         [...document.querySelectorAll('.collection-grid .card-tile')]
-          .filter(card => card.querySelector(':scope > span:last-child')?.textContent.trim().startsWith('Basic Energy · '))
+          .filter(card => card.querySelector(':scope > span:last-child')?.textContent.trim().startsWith('Energy · '))
           .map(card => ({
             name: card.querySelector(':scope > b')?.textContent.trim(),
             metadata: card.querySelector(':scope > span:last-child')?.textContent.trim(),
@@ -941,14 +933,21 @@ def energy_catalogue_surfaces(devtools, origin):
         """
     )
     require(
-        sorted(item["name"] for item in collection_energy) == BASIC_ENERGY_NAMES
+        len(collection_energy) == 7
+        and len({item["name"] for item in collection_energy}) == 7
+        and SIDE_HUSTLE in {item["name"] for item in collection_energy}
         and all(item["rendered"] for item in collection_energy),
-        "Collection renders all seven Basic Energy card faces",
+        "Collection renders seven distinct Energy card faces, including Side Hustle",
     )
     require(
         next(item for item in collection_energy if item["name"] == "Dutch Courage")["metadata"]
-        == "Basic Energy · Beer",
-        "Collection visibly names Dutch Courage as Basic Energy · Beer",
+        == "Energy · Beer",
+        "Collection visibly names Dutch Courage as Energy · Beer",
+    )
+    require(
+        next(item for item in collection_energy if item["name"] == SIDE_HUSTLE)["metadata"]
+        == "Energy · Local",
+        "Collection visibly names Side Hustle as Energy · Local",
     )
 
     beer_matches = search(
@@ -963,12 +962,23 @@ def energy_catalogue_surfaces(devtools, origin):
         "#collection-search",
         collection_cards,
         "Basic Energy",
-        7,
+        6,
         "Collection Basic Energy search results",
     )
     require(
-        sorted(basic_matches) == BASIC_ENERGY_NAMES,
-        "Collection search independently matches the public Basic Energy category",
+        len(set(basic_matches)) == 6 and SIDE_HUSTLE not in basic_matches,
+        "Collection Basic Energy search returns six distinct cards and excludes Side Hustle",
+    )
+    special_matches = search(
+        "#collection-search",
+        collection_cards,
+        "Special Energy",
+        1,
+        "Collection Special Energy search results",
+    )
+    require(
+        special_matches == [SIDE_HUSTLE],
+        "Collection visibly returns Side Hustle for the public Special Energy category",
     )
     search(
         "#collection-search",
@@ -988,7 +998,7 @@ def energy_catalogue_surfaces(devtools, origin):
     deck_energy = devtools.evaluate(
         """
         [...document.querySelectorAll('.catalogue-grid .catalogue-card')]
-          .filter(card => card.querySelector('.catalogue-card-name small')?.textContent.trim().startsWith('Basic Energy · '))
+          .filter(card => card.querySelector('.catalogue-card-name small')?.textContent.trim().startsWith('Energy · '))
           .map(card => ({
             name: card.querySelector('.catalogue-card-name b')?.textContent.trim(),
             metadata: card.querySelector('.catalogue-card-name small')?.textContent.trim()
@@ -996,13 +1006,20 @@ def energy_catalogue_surfaces(devtools, origin):
         """
     )
     require(
-        sorted(item["name"] for item in deck_energy) == BASIC_ENERGY_NAMES,
-        "Decks renders all seven Basic Energy catalogue cards",
+        len(deck_energy) == 7
+        and len({item["name"] for item in deck_energy}) == 7
+        and SIDE_HUSTLE in {item["name"] for item in deck_energy},
+        "Decks renders seven distinct Energy catalogue cards, including Side Hustle",
     )
     require(
         next(item for item in deck_energy if item["name"] == "Dutch Courage")["metadata"]
-        == "Basic Energy · Beer",
-        "Decks visibly names Dutch Courage as Basic Energy · Beer",
+        == "Energy · Beer",
+        "Decks visibly names Dutch Courage as Energy · Beer",
+    )
+    require(
+        next(item for item in deck_energy if item["name"] == SIDE_HUSTLE)["metadata"]
+        == "Energy · Local",
+        "Decks visibly names Side Hustle as Energy · Local",
     )
     beer_matches = search("#deck-search", deck_cards, "Beer", None, "Decks Beer search results")
     require("Dutch Courage" in beer_matches, "Decks search independently matches the visible Beer type")
@@ -1010,12 +1027,23 @@ def energy_catalogue_surfaces(devtools, origin):
         "#deck-search",
         deck_cards,
         "Basic Energy",
-        7,
+        6,
         "Decks Basic Energy search results",
     )
     require(
-        sorted(basic_matches) == BASIC_ENERGY_NAMES,
-        "Decks search independently matches the public Basic Energy category",
+        len(set(basic_matches)) == 6 and SIDE_HUSTLE not in basic_matches,
+        "Decks Basic Energy search returns six distinct cards and excludes Side Hustle",
+    )
+    special_matches = search(
+        "#deck-search",
+        deck_cards,
+        "Special Energy",
+        1,
+        "Decks Special Energy search results",
+    )
+    require(
+        special_matches == [SIDE_HUSTLE],
+        "Decks visibly returns Side Hustle for the public Special Energy category",
     )
     search("#deck-search", deck_cards, "Beer Energy", 0, "Decks synthetic Beer Energy search")
     require(True, "Decks does not synthesize Beer Energy phrase matching across fields")
@@ -1024,19 +1052,19 @@ def energy_catalogue_surfaces(devtools, origin):
         """
         (() => {
           const button = [...document.querySelectorAll('.filters button')]
-            .find(candidate => candidate.textContent.trim().startsWith('Basic Energy'));
+            .find(candidate => candidate.textContent.trim().startsWith('Energy'));
           if (!button) return false;
           button.click();
           return true;
         })()
         """
     )
-    require(filtered, "activated the Decks Basic Energy filter")
+    require(filtered, "activated the Decks Energy filter")
     devtools.wait_for(
         "document.querySelectorAll('.catalogue-grid .catalogue-card').length === 7",
-        "Decks Basic Energy filter results",
+        "Decks Energy filter results",
     )
-    require(True, "Decks Basic Energy filter presents exactly the seven public Energy cards")
+    require(True, "Decks Energy filter presents exactly the seven public Energy cards")
 
 
 def home_energy_detail_surface(devtools, origin):

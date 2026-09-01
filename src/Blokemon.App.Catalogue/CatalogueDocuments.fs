@@ -63,6 +63,7 @@ type internal KnownCard =
     { Id: string
       Kind: KnownCardKind
       CopyLimit: int
+      IsBasicEnergy: bool
       IsRegular: bool
       PromotesFromId: string | null
       Attacks: BlokemonAttack array }

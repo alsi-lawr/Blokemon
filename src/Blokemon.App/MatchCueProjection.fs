@@ -122,15 +122,25 @@ module internal MatchCueProjection =
         let cue = cue context.Catalogue context.Engine
 
         let human = document.Start.FirstDeck.Owner
+        let steps = pending |> Seq.toArray
+
+        // A choice made by the opponent can resolve an attack in the following presentation
+        // step. Keep every event from this mutation in view so the attack cue reports the damage
+        // that the declared attack actually dealt rather than stopping at the choice boundary.
+        let presentationEvents = ResizeArray<MatchEvent>()
+
+        for step in steps do
+            for matchEvent in step.Events do
+                presentationEvents.Add matchEvent
 
         MatchPresentationView(
-            pending
+            steps
             |> Seq.map (fun step ->
                 MatchPresentationStepView(
                     frame document step.State displayName,
                     step.Events
                     |> Seq.map (fun matchEvent ->
-                        cue step.State human displayName matchEvent step.Events)
+                        cue step.State human displayName matchEvent presentationEvents)
                     |> Seq.choose Option.ofObj
                     |> Seq.toArray
                 ))

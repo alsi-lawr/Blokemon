@@ -25,9 +25,9 @@
         <div class="selected-card-head"><div><span class="eyebrow">@PublicZone(Selected.Zone)</span><h2>@Selected.Card.Name</h2><small>@(Math.Max(0, Selected.HitPoints - Shown)) / @Selected.HitPoints HP</small></div></div>
         <div class="state-line">
             <span>@Selected.AttachedEnergy.Length Energy</span>
-            @foreach (var tool in Selected.AttachedTools)
+            @foreach (var trainer in Selected.AttachedTools)
             {
-                <span>Tool: @tool.Name</span>
+                <span>Trainer: @trainer.Name</span>
             }
             <span>@Shown damage</span>
             @foreach (var condition in Selected.Conditions)
@@ -171,7 +171,7 @@
     private static string RuleKind(CardRuleKindView kind) =>
         kind switch
         {
-            CardRuleKindView.Ability => "Ability",
+            CardRuleKindView.PokemonPower => "Blokemon Power",
             CardRuleKindView.Attack => "Attack",
             CardRuleKindView.Rule => "Rule",
             CardRuleKindView.Energy => "Energy",

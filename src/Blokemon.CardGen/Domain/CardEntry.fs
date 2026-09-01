@@ -6,8 +6,8 @@ open System.Collections.Immutable
 /// An entry in a card's mechanics region.
 [<RequireQualifiedAccess>]
 type CardEntry =
-    /// An Ability entry.
-    | Ability of id: MechanicalId * name: string * effectText: string
+    /// A Blokemon Power entry.
+    | PokemonPower of id: MechanicalId * name: string * effectText: string
 
     /// An Attack entry, whose effect text is absent on a pure-Damage Attack.
     | Attack of
@@ -23,14 +23,14 @@ type CardEntry =
     /// The mechanical identifier of the entry.
     member this.Id =
         match this with
-        | CardEntry.Ability(id = id)
+        | CardEntry.PokemonPower(id = id)
         | CardEntry.Attack(id = id)
         | CardEntry.Rule(id = id) -> id
 
     /// The printed name of the entry.
     member this.Name =
         match this with
-        | CardEntry.Ability(name = name)
+        | CardEntry.PokemonPower(name = name)
         | CardEntry.Attack(name = name)
         | CardEntry.Rule(name = name) -> name
 
@@ -43,9 +43,9 @@ module CardEntry =
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof name)
         name
 
-    /// An Ability entry.
-    let ability id name effectText =
-        CardEntry.Ability(id, printedName name, effectText)
+    /// A Blokemon Power entry.
+    let pokemonPower id name effectText =
+        CardEntry.PokemonPower(id, printedName name, effectText)
 
     /// An Attack entry.
     let attack id name energyCost damage effectText =

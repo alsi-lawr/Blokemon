@@ -76,7 +76,7 @@ module internal MatchLabels =
         | LegalActionKind.PlayBloke -> MatchActionKindView.PlayBlokemon
         | LegalActionKind.Promote -> MatchActionKindView.Evolve
         | LegalActionKind.PlayKit -> MatchActionKindView.PlayTrainer
-        | LegalActionKind.UsePartyTrick -> MatchActionKindView.UseAbility
+        | LegalActionKind.UsePartyTrick -> MatchActionKindView.UsePokemonPower
         | LegalActionKind.Attack -> MatchActionKindView.Attack
         | LegalActionKind.Taxi -> MatchActionKindView.Retreat
         | LegalActionKind.ChuckFossil -> MatchActionKindView.DiscardFossil

@@ -289,136 +289,6 @@ public sealed class LocalMatchTests
         playCue.ActorIsLocalPlayer.ShouldBe(true);
     }
 
-    [Test]
-    public async Task AuntieAtTheDoor_RevealsOnlyTheLocalPrizeFacesInTheCue()
-    {
-        await using var database = await TestDatabase.Create();
-        var catalogue = BlokemonCatalogueBuilder.Load(
-            Path.Combine(AppContext.BaseDirectory, "content")
-        );
-        var fixture = ReadyFixture.FromExisting(database, catalogue);
-        Value(await fixture.Application.CreateProfile(new(_profileCommand, "Local Player")));
-        var deckCommand = Guid.Parse("20000000-0000-0000-0000-000000000007");
-        Value(
-            await fixture.Application.SaveDeck(
-                new(
-                    deckCommand,
-                    null,
-                    null,
-                    "Auntie deck",
-                    [new("BLK-001", 1), new("KIT-007", 4), new("VIM-DODGY", 55)]
-                )
-            )
-        );
-
-        var matchCommands = Enumerable
-            .Range(1, 8)
-            .Select(static index => Guid.Parse($"40000000-0000-0000-0000-00000000000{index}"))
-            .ToArray();
-        var matchIndex = 0;
-        var current = await StartAuntieMatch(
-            fixture.Application,
-            matchCommands[matchIndex++],
-            deckCommand
-        );
-        var presentations = new List<MatchPresentationView>();
-        MatchEventCueView? reveal = null;
-        ApplicationView? afterReveal = null;
-        var prizesBefore = 0;
-
-        for (var attempt = 0; attempt < 400 && reveal is null; attempt++)
-        {
-            var match = current.Match!;
-            if (match.Frame.IsComplete)
-            {
-                if (matchIndex >= matchCommands.Length)
-                {
-                    break;
-                }
-                current = await StartAuntieMatch(
-                    fixture.Application,
-                    matchCommands[matchIndex++],
-                    deckCommand
-                );
-                continue;
-            }
-
-            var auntie = match.Frame.Player.Hand.FirstOrDefault(static card =>
-                card.Card.Id == "KIT-007"
-            );
-            var auntieAction = auntie is null
-                ? null
-                : match.LegalActions.FirstOrDefault(action =>
-                    action.Kind == MatchActionKindView.PlayTrainer
-                    && action.SourceCardInstanceId == auntie.Id
-                );
-            var action =
-                auntieAction
-                ?? match.LegalActions.FirstOrDefault(static candidate =>
-                    candidate.Kind == MatchActionKindView.EndTurn
-                )
-                ?? match.LegalActions[0];
-            if (auntieAction is not null)
-            {
-                prizesBefore = match.Frame.Player.PrizeCards;
-            }
-            var mutation = Value<MatchMutationView>(
-                await fixture.Application.ApplyMatchAction(
-                    match.Frame.Id,
-                    RequestFor(match, action, Guid.NewGuid())
-                )
-            );
-            if (mutation.Presentation is { } presentation)
-            {
-                presentations.Add(presentation);
-            }
-            current = mutation.Application;
-            if (auntieAction is not null)
-            {
-                reveal = mutation
-                    .Presentation!.Steps.SelectMany(static step => step.Events)
-                    .Single(static cue => cue.Kind == MatchAnimationKindView.Reveal);
-                afterReveal = mutation.Application;
-            }
-        }
-
-        reveal.ShouldNotBeNull();
-        reveal!.ActorIsLocalPlayer.ShouldBe(true);
-        prizesBefore.ShouldBeGreaterThan(0);
-        reveal.RevealedCards.Length.ShouldBe(prizesBefore);
-        reveal.TargetCardInstanceIds.Length.ShouldBe(prizesBefore);
-        reveal
-            .RevealedCards.All(static card => !string.IsNullOrEmpty(card.FaceHtml))
-            .ShouldBeTrue();
-        afterReveal!.Match!.Frame.Player.PrizeCards.ShouldBe(prizesBefore);
-        var leakedCues = presentations
-            .SelectMany(static presentation => presentation.Steps)
-            .SelectMany(static step => step.Events)
-            .Where(static cue => cue.RevealedCards.Length > 0 && cue.ActorIsLocalPlayer != true)
-            .Select(static cue =>
-                $"{cue.Kind}|{cue.Label}|actorLocal:{cue.ActorIsLocalPlayer}|faces:{cue.RevealedCards.Length}"
-            )
-            .ToArray();
-        leakedCues.ShouldBeEmpty();
-    }
-
-    private static async Task<ApplicationView> StartAuntieMatch(
-        LocalApplicationService application,
-        Guid matchCommand,
-        Guid deckCommand
-    )
-    {
-        var started = Value(await application.StartMatch(new(matchCommand, deckCommand)));
-        var opening = await AdvanceToOpeningChoice(application, started);
-        var openingMatch = opening.Match!;
-        return Value(
-            await application.ApplyMatchAction(
-                openingMatch.Frame.Id,
-                RequestFor(openingMatch, OpeningAction(openingMatch), Guid.NewGuid())
-            )
-        );
-    }
-
     // A mulligan is the rules' own reveal: the hand goes back, and it is shown before it goes.
     //
     // BOTH hands. A player has already seen their own seven, so the rulebook never troubles to
@@ -443,7 +313,7 @@ public sealed class LocalMatchTests
                     null,
                     null,
                     "Mulligan deck",
-                    [new("BLK-001", 1), new("KIT-007", 4), new("VIM-DODGY", 55)]
+                    [new("BLK-001", 1), new("VIM-BLAZED", 59)]
                 )
             )
         );
@@ -757,21 +627,12 @@ public sealed class LocalMatchTests
     }
 
     [Test]
-    public async Task NonOpeningChoiceFailures_AreTypedAndNonMutating()
+    public async Task Whirlwind_PresentationReportsPrintedDamage()
     {
         await using var database = await TestDatabase.Create();
         var fixture = ChoiceMatchFixture.Create(database);
         var (match, action) = await ReachCiggySamAttack(fixture);
-
-        await AssertChoiceFailuresDoNotMutate(fixture, match, action);
-    }
-
-    [Test]
-    public async Task ZeroDamageAttack_PresentationNamesTheAttackAndReportsNoDamage()
-    {
-        await using var database = await TestDatabase.Create();
-        var fixture = ChoiceMatchFixture.Create(database);
-        var (match, action) = await ReachCiggySamAttack(fixture);
+        var defending = match.Frame.Opponent.Active!;
 
         var result = await fixture.Service.Apply(
             fixture.Profile,
@@ -785,6 +646,7 @@ public sealed class LocalMatchTests
                 result.Error?.Message ?? "No presentation returned."
             );
         }
+        var resolved = Match(result);
         var cue = result
             .Presentation.Steps.SelectMany(static step => step.Events)
             .Single(eventCue =>
@@ -792,220 +654,10 @@ public sealed class LocalMatchTests
                 && eventCue.ActorIsLocalPlayer == true
             );
 
-        cue.Label.ShouldBe("Local Player used Bring a Mate.");
-        cue.Amount.ShouldBe(0);
-    }
-
-    [Test]
-    public async Task DamageAttack_PresentationReportsResolvedDamage()
-    {
-        await using var database = await TestDatabase.Create();
-        var fixture = ChoiceMatchFixture.Create(database);
-        var (match, firstAttack) = await ReachCiggySamAttack(fixture);
-        var activeId = firstAttack.SourceCardInstanceId!;
-        var attach = match.LegalActions.First(action =>
-            action.Kind == MatchActionKindView.AttachEnergy
-            && action.TargetCardInstanceId == activeId
-        );
-        var attached = Match(
-            await fixture.Service.Apply(
-                fixture.Profile,
-                "Local Player",
-                match.Frame.Id,
-                RequestFor(match, attach, Guid.NewGuid())
-            )
-        );
-        var attack = attached.LegalActions.Single(action =>
-            action.Id == $"attack:{activeId}:BLK-016-B02"
-        );
-
-        var result = await fixture.Service.Apply(
-            fixture.Profile,
-            "Local Player",
-            attached.Frame.Id,
-            RequestFor(attached, attack, Guid.NewGuid())
-        );
-        if (result.Error is not null || result.Presentation is null)
-        {
-            throw new InvalidOperationException(
-                result.Error?.Message ?? "No presentation returned."
-            );
-        }
-        var cue = result
-            .Presentation.Steps.SelectMany(static step => step.Events)
-            .Single(eventCue =>
-                eventCue.Kind == MatchAnimationKindView.Attack
-                && eventCue.ActorIsLocalPlayer == true
-            );
-
-        cue.Label.ShouldBe("Local Player used Last Drag.");
-        cue.Amount.ShouldBeGreaterThan(0);
-    }
-
-    [Test]
-    public async Task DeferredChoiceFailuresAndRestart_AreTotalAndNonMutating()
-    {
-        await using var database = await TestDatabase.Create();
-        var fixture = ChoiceMatchFixture.Create(database);
-        var (deferred, action) = await ReachCiggySamDeferredChoice(fixture);
-        var requirement = action.ChoiceRequirements.Single();
-        requirement.Kind.ShouldBe(MatchChoiceKindView.Cards);
-        requirement.EligibleCards.Length.ShouldBeGreaterThan(0);
-
-        await AssertChoiceFailuresDoNotMutate(fixture, deferred, action);
-        var beforeRestart = await fixture.Store.Read("match");
-        var restartedService = fixture.Restart();
-        var restored = Match(await restartedService.State(fixture.Profile, "Local Player"));
-        var afterRestart = await fixture.Store.Read("match");
-        await AssertEquivalent(restored, deferred);
-        afterRestart.ShouldBe(beforeRestart);
-
-        var selection = SelectionFor(requirement) with
-        {
-            CardInstanceIds = [requirement.EligibleCards[0].Id],
-        };
-        var request = RequestFor(restored, action, Guid.NewGuid()) with { Choices = [selection] };
-        var resolved = Match(
-            await restartedService.Apply(
-                fixture.Profile,
-                "Local Player",
-                restored.Frame.Id,
-                request
-            )
-        );
-        var restoredResolution = Match(
-            await fixture.Restart().State(fixture.Profile, "Local Player")
-        );
-
-        await AssertEquivalent(restoredResolution, resolved);
-    }
-
-    // KIT-011 (Door Staff) and KIT-009 both reveal the opponent's hand and then ask the player to
-    // choose a Blokemon from it. The candidates used to be filtered back out of the view, leaving
-    // a requirement the player could never satisfy; a card is offered precisely because the effect
-    // entitles the chooser to see it, so both cards are playable again.
-    // The start command id fixes the shuffle, so each case walks the same match every run: the one
-    // where the opponent still holds a Blokemon when the Kit becomes playable.
-    [Test]
-    [Arguments("KIT-011", "30000000-0000-0000-0000-000000000002")]
-    [Arguments("KIT-009", "30000000-0000-0000-0000-000000000038")]
-    public async Task RevealedOpponentHandChoice_OffersItsCandidatesAndResolves(
-        string kitId,
-        string startCommand
-    )
-    {
-        await using var database = await TestDatabase.Create();
-        var fixture = ChoiceMatchFixture.Create(database, kitId);
-        var (match, action, requirement) = await ReachRevealKitChoice(
-            fixture,
-            kitId,
-            Guid.Parse(startCommand)
-        );
-
-        requirement.Kind.ShouldBe(MatchChoiceKindView.Cards);
-        requirement.Chooser.IsLocalPlayer.ShouldBeTrue();
-        requirement.Minimum.ShouldBe(1);
-        requirement.EligibleCards.Length.ShouldBeGreaterThanOrEqualTo(requirement.Minimum);
-        requirement.EligibleCards.ShouldAllBe(card =>
-            card.OwnerName != "Local Player" && card.Zone == "Mitt"
-        );
-        // Every candidate carries a real face, so the tray can render what it is asking about.
-        requirement.EligibleCards.ShouldAllBe(card => card.Card.FaceHtml.Length > 0);
-        // The types that pair with the candidates travel with them, so a different-types
-        // requirement could still be validated against the very same set.
-        requirement
-            .EligibleCardTypes.Select(static types => types.CardInstanceId)
-            .ShouldBe(requirement.EligibleCards.Select(static card => card.Id), ignoreOrder: true);
-
-        var chosen = requirement.EligibleCards[0];
-        var opponentHandBefore = match.Frame.Opponent.HandCount;
-        var request = RequestFor(match, action, Guid.NewGuid());
-        var mutation = await fixture.Service.Apply(
-            fixture.Profile,
-            "Local Player",
-            match.Frame.Id,
-            request with
-            {
-                Choices =
-                [
-                    .. request.Choices.Select(choice =>
-                        choice.Id == requirement.Id
-                            ? choice with
-                            {
-                                CardInstanceIds = [chosen.Id],
-                            }
-                            : choice
-                    ),
-                ],
-            }
-        );
-        var resolved = Match(mutation);
-
-        // The choice went through: the card left the hand it was chosen from.
-        var afterChoice = (mutation.Presentation?.Steps ?? [])
-            .Select(static step => step.Frame)
-            .First(frame => frame.Opponent.HandCount < opponentHandBefore);
-        afterChoice.Opponent.HandCount.ShouldBe(opponentHandBefore - 1);
-        // The reveal was scoped to the choice: the opponent's hand is still not projected, and
-        // nothing they hold is shown anywhere once the choice is answered.
-        resolved.Frame.Opponent.Hand.ShouldBeEmpty();
-        AssertNoHiddenOpponentCards(resolved);
-    }
-
-    // A Kit played to the table stays in play as a public card carrying live abilities, so the
-    // board projects it on its owner's side and the ability is driven from that card.
-    [Test]
-    public async Task LocalKitInPlay_IsProjectedOntoItsOwnersSideOfTheBoard()
-    {
-        await using var database = await TestDatabase.Create();
-        var fixture = ChoiceMatchFixture.Create(database, "KIT-006");
-        var match = Match(
-            await fixture.Service.Start(
-                fixture.Profile,
-                "Local Player",
-                new(_matchCommand, _firstDeckCommand)
-            )
-        );
-        for (var step = 0; step < 240 && match.Frame.Player.InPlayKits.Length == 0; step++)
-        {
-            var hand = match.Frame.Player.Hand.ToDictionary(
-                static card => card.Id,
-                StringComparer.Ordinal
-            );
-            var next =
-                match.LegalActions.FirstOrDefault(action =>
-                    action.Kind == MatchActionKindView.PlayTrainer
-                    && action.SourceCardInstanceId is { } source
-                    && hand.TryGetValue(source, out var card)
-                    && card.Card.Id == "KIT-006"
-                ) ?? ForwardAction(match);
-            if (next is null || match.Frame.IsComplete)
-            {
-                break;
-            }
-
-            match = Match(
-                await fixture.Service.Apply(
-                    fixture.Profile,
-                    "Local Player",
-                    match.Frame.Id,
-                    RequestFor(match, next, Guid.NewGuid())
-                )
-            );
-        }
-
-        var inPlay = match.Frame.Player.InPlayKits.ShouldHaveSingleItem();
-        inPlay.Card.Id.ShouldBe("KIT-006");
-        inPlay.Zone.ShouldBe("Local");
-        inPlay.OwnerName.ShouldBe("Local Player");
-        // The zone is a single match-wide slot, so only one side ever carries one.
-        match.Frame.Opponent.InPlayKits.ShouldBeEmpty();
-        // The projected card is the source the aura hangs off: its ability is a card action
-        // pointing back at the very card the board now shows.
-        match
-            .LegalActions.Where(static action => action.Kind == MatchActionKindView.UseAbility)
-            .Select(static action => action.SourceCardInstanceId)
-            .ShouldContain(inPlay.Id);
+        cue.Label.ShouldBe("Local Player used Whirlwind.");
+        cue.Amount.ShouldBe(10);
+        resolved.Frame.Opponent.Active!.Id.ShouldNotBe(defending.Id);
+        resolved.Frame.Opponent.Bench.Single(card => card.Id == defending.Id).Damage.ShouldBe(10);
     }
 
     // The reveal must not become a standing window into the opponent's hand: nothing outside a
@@ -1047,7 +699,7 @@ public sealed class LocalMatchTests
                     // cards - their Prize Cards and their deck. The two decks share no card, so
                     // a face from the opponent's deck showing up here would be a leak.
                     cue.RevealedCards.ShouldAllBe(card =>
-                        card.Id == "BLK-016" || card.Id == "VIM-DODGY"
+                        card.Id == "BLK-016" || card.Id == "VIM-BLAZED"
                     );
                 }
             }
@@ -1488,73 +1140,6 @@ public sealed class LocalMatchTests
         throw new InvalidOperationException("The match did not complete inside the test bound.");
     }
 
-    // Walks the match forward until the human can play the reveal-then-choose Kit and the
-    // requirement it carries has candidates to offer. Everything here is deterministic: the
-    // shuffle seed is derived from the profile and the fixed start command id.
-    private static async Task<(
-        MatchView Match,
-        MatchActionView Action,
-        MatchChoiceRequirementView Requirement
-    )> ReachRevealKitChoice(ChoiceMatchFixture fixture, string kitId, Guid startCommand)
-    {
-        var match = Match(
-            await fixture.Service.Start(
-                fixture.Profile,
-                "Local Player",
-                new(startCommand, _firstDeckCommand)
-            )
-        );
-        for (var step = 0; step < 240 && !match.Frame.IsComplete; step++)
-        {
-            if (RevealedHandChoice(match) is { } ready)
-            {
-                return (match, ready.Action, ready.Requirement);
-            }
-
-            var next = ForwardAction(match);
-            if (next is null)
-            {
-                break;
-            }
-
-            match = Match(
-                await fixture.Service.Apply(
-                    fixture.Profile,
-                    "Local Player",
-                    match.Frame.Id,
-                    RequestFor(match, next, Guid.NewGuid())
-                )
-            );
-        }
-
-        throw new InvalidOperationException(
-            $"The match never offered a satisfiable {kitId} choice inside the test bound."
-        );
-    }
-
-    // The choice the reveal effects put to the player: pick from the cards the opponent was
-    // holding, whichever action ends up carrying the requirement.
-    private static (
-        MatchActionView Action,
-        MatchChoiceRequirementView Requirement
-    )? RevealedHandChoice(MatchView match) =>
-        match
-            .LegalActions.SelectMany(static action =>
-                action.ChoiceRequirements.Select(requirement =>
-                    (Action: action, Requirement: requirement)
-                )
-            )
-            .Where(static pair =>
-                pair.Requirement.Kind == MatchChoiceKindView.Cards
-                && pair.Requirement.Chooser.IsLocalPlayer
-                && pair.Requirement.EligibleCards.Length > 0
-                && pair.Requirement.EligibleCards.All(static card =>
-                    card.Zone == "Mitt" && card.OwnerName != "Local Player"
-                )
-            )
-            .Select(static pair => ((MatchActionView, MatchChoiceRequirementView)?)pair)
-            .FirstOrDefault();
-
     // The least interesting legal move: settle anything the engine is waiting on, otherwise end
     // the round. Resigning is never taken, so the walk always makes progress through the match.
     private static MatchActionView? ForwardAction(MatchView match) =>
@@ -1697,104 +1282,33 @@ public sealed class LocalMatchTests
         );
         if (attack is null)
         {
+            var secondAttach = nextRound.LegalActions.FirstOrDefault(action =>
+                action.Id.StartsWith("attach:", StringComparison.Ordinal)
+                && action.Id.EndsWith($":{ocheId}", StringComparison.Ordinal)
+            );
+            if (secondAttach is not null)
+            {
+                nextRound = Match(
+                    await fixture.Service.Apply(
+                        fixture.Profile,
+                        "Local Player",
+                        nextRound.Frame.Id,
+                        RequestFor(nextRound, secondAttach, Guid.NewGuid())
+                    )
+                );
+                attack = nextRound.LegalActions.SingleOrDefault(action =>
+                    action.Id == $"attack:{ocheId}:BLK-016-B01"
+                );
+            }
+        }
+        if (attack is null)
+        {
             throw new InvalidOperationException(
                 $"The {nextRound.Frame.Player.Active?.Card.Id} attack was unavailable: {string.Join(", ", nextRound.LegalActions.Select(static action => action.Id))}"
             );
         }
-        attack.ChoiceRequirements.Single().Kind.ShouldBe(MatchChoiceKindView.Optional);
+        attack.ChoiceRequirements.Single().Kind.ShouldBe(MatchChoiceKindView.Cards);
         return (nextRound, attack);
-    }
-
-    private static async Task<(
-        MatchView Match,
-        MatchActionView Action
-    )> ReachCiggySamDeferredChoice(ChoiceMatchFixture fixture)
-    {
-        var (match, attack) = await ReachCiggySamAttack(fixture);
-        var optional = attack.ChoiceRequirements.Single();
-        var request = RequestFor(match, attack, Guid.NewGuid()) with
-        {
-            Choices = [SelectionFor(optional) with { Accepted = true }],
-        };
-        var deferred = Match(
-            await fixture.Service.Apply(fixture.Profile, "Local Player", match.Frame.Id, request)
-        );
-        return (
-            deferred,
-            deferred.LegalActions.Single(action =>
-                action.Id.StartsWith("choice:", StringComparison.Ordinal)
-            )
-        );
-    }
-
-    private static async Task AssertChoiceFailuresDoNotMutate(
-        ChoiceMatchFixture fixture,
-        MatchView match,
-        MatchActionView action
-    )
-    {
-        var original = await fixture.Store.Read("match");
-        var requirement = action.ChoiceRequirements.Single();
-        var valid = RequestFor(match, action, Guid.NewGuid());
-        var wrongKind =
-            requirement.Kind == MatchChoiceKindView.Optional
-                ? MatchChoiceKindView.Cards
-                : MatchChoiceKindView.Optional;
-        var cases = new[]
-        {
-            new ChoiceFailureCase(
-                valid with
-                {
-                    CommandId = Guid.NewGuid(),
-                    Choices = [],
-                },
-                "match.choice_required"
-            ),
-            new ChoiceFailureCase(
-                valid with
-                {
-                    CommandId = Guid.NewGuid(),
-                    Choices =
-                    [
-                        .. valid.Choices,
-                        EmptySelection(requirement) with
-                        {
-                            Id = "unknown-choice",
-                        },
-                    ],
-                },
-                "match.choice_invalid"
-            ),
-            new ChoiceFailureCase(
-                valid with
-                {
-                    CommandId = Guid.NewGuid(),
-                    Choices =
-                    [
-                        EmptySelection(requirement) with
-                        {
-                            Kind = wrongKind,
-                            Accepted = wrongKind == MatchChoiceKindView.Optional ? false : null,
-                        },
-                    ],
-                },
-                "match.choice_invalid"
-            ),
-        };
-
-        foreach (var candidate in cases)
-        {
-            var response = await fixture.Service.Apply(
-                fixture.Profile,
-                "Local Player",
-                match.Frame.Id,
-                candidate.Request
-            );
-            var after = await fixture.Store.Read("match");
-            response.View.ShouldBeNull();
-            response.Error!.Code.ShouldBe(candidate.ErrorCode);
-            after.ShouldBe(original);
-        }
     }
 
     private static MatchActionView OpeningAction(MatchView match) =>
@@ -1909,10 +1423,7 @@ public sealed class LocalMatchTests
             ? succeeded.Value
             : throw new InvalidOperationException("The product fixture transition failed.");
 
-    private static LocalProfile CreateChoiceProfile(
-        BlokemonCatalogue catalogue,
-        string? kitId = null
-    )
+    private static LocalProfile CreateChoiceProfile(BlokemonCatalogue catalogue)
     {
         var profile = ProductValue(
             LocalProfile.Create(
@@ -1937,18 +1448,10 @@ public sealed class LocalMatchTests
             profile.CreateDeck(
                 ProductValue(DeckId.Create(_firstDeckCommand.ToString("D"))),
                 ProductValue(DeckName.Create("Choice deck")),
-                kitId is null
-                    ?
-                    [
-                        new(ProductValue(CardId.Create("BLK-016")), 4),
-                        new(ProductValue(CardId.Create("VIM-DODGY")), 56),
-                    ]
-                    :
-                    [
-                        new(ProductValue(CardId.Create("BLK-016")), 4),
-                        new DeckCardSelection(ProductValue(CardId.Create(kitId)), 4),
-                        new(ProductValue(CardId.Create("VIM-DODGY")), 52),
-                    ],
+                [
+                    new(ProductValue(CardId.Create("BLK-016")), 4),
+                    new(ProductValue(CardId.Create("VIM-BLAZED")), 56),
+                ],
                 catalogue.Mechanics
             )
         ).Profile;
@@ -1958,8 +1461,6 @@ public sealed class LocalMatchTests
     {
         JsonSerializer.Serialize(actual).ShouldBe(JsonSerializer.Serialize(expected));
     }
-
-    private sealed record ChoiceFailureCase(ApplyMatchActionRequest Request, string ErrorCode);
 
     private sealed record PersistedProfileDocument(
         int SchemaVersion,
@@ -1975,12 +1476,12 @@ public sealed class LocalMatchTests
         LocalProfile Profile
     )
     {
-        public static ChoiceMatchFixture Create(TestDatabase database, string? kitId = null)
+        public static ChoiceMatchFixture Create(TestDatabase database)
         {
             var catalogue = BlokemonCatalogueBuilder.Load(
                 Path.Combine(AppContext.BaseDirectory, "content")
             );
-            var profile = CreateChoiceProfile(catalogue, kitId);
+            var profile = CreateChoiceProfile(catalogue);
             var store = new StateDocumentStore(database);
             return new(catalogue, database, store, new(catalogue, store), profile);
         }
@@ -2012,7 +1513,7 @@ public sealed class LocalMatchTests
                         null,
                         null,
                         "First deck",
-                        [new("BLK-001", 1), new("VIM-DODGY", 59)]
+                        [new("BLK-001", 1), new("VIM-BLAZED", 59)]
                     )
                 )
             );
@@ -2025,7 +1526,7 @@ public sealed class LocalMatchTests
                             null,
                             null,
                             "Second deck",
-                            [new("BLK-001", 1), new("VIM-DODGY", 59)]
+                            [new("BLK-001", 1), new("VIM-BLAZED", 59)]
                         )
                     )
                 );

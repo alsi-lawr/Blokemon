@@ -16,10 +16,10 @@ type CardSet =
         /// The collectible fronts.
         Blokemon: ImmutableArray<Card>
 
-        /// The Support fronts.
-        Supports: ImmutableArray<Card>
+        /// The Trainer fronts.
+        Trainers: ImmutableArray<Card>
 
-        /// The Basic Energy fronts.
+        /// The Energy fronts.
         Energy: ImmutableArray<Card>
 
         /// The shared reverse.
@@ -168,7 +168,7 @@ module SetAuthority =
         match promotesFromId with
         | None -> None
         | Some promotesFromId ->
-            // A few collectibles promote from a Support that is played as a stand-in Basic.
+            // A few collectibles promote from a Trainer that is played as a stand-in Basic.
             let name =
                 tryFind names promotesFromId
                 |> Option.orElseWith (fun () -> tryFind supportNames promotesFromId)
@@ -193,12 +193,12 @@ module SetAuthority =
             |> Seq.map (fun attack -> attack.MechanicalId, attack)
             |> indexed
 
-        let abilities =
-            [ for ability in published.Abilities ->
-                  CardEntry.ability
-                      (MechanicalId.create ability.MechanicalId)
-                      ability.Name
-                      (effectText ability.EffectText) ]
+        let powers =
+            [ for power in published.PokemonPowers ->
+                  CardEntry.pokemonPower
+                      (MechanicalId.create power.MechanicalId)
+                      power.Name
+                      (effectText power.EffectText) ]
 
         let attacks =
             [ for attack in published.Attacks ->
@@ -219,7 +219,7 @@ module SetAuthority =
                       rule.Name
                       (effectText rule.EffectText) ]
 
-        ImmutableArray.CreateRange(abilities @ attacks @ rules)
+        ImmutableArray.CreateRange(powers @ attacks @ rules)
 
     /// A card printed in the atmosphere its type carries.
     let private themed (printedType: BlokemonType) id regions =
@@ -280,12 +280,7 @@ module SetAuthority =
             (CardId.create published.Id)
             ([ CardRegion.PrintedField ] @ lineage @ face)
 
-    let private toSupport
-        (published: BlokemonPublicSupport)
-        (category: string)
-        (art: ArtIndex)
-        number
-        =
+    let private toTrainer (published: BlokemonPublicTrainer) (art: ArtIndex) number =
         let effects =
             [ for effect in published.Effects ->
                   CardEntry.rule
@@ -294,28 +289,38 @@ module SetAuthority =
                       (effectText effect.EffectText) ]
 
         { Id = CardId.create published.Id
-          ThemeToken = Some "Support"
+          ThemeToken = Some "Trainer"
           Regions =
             ImmutableArray.CreateRange
                 [ CardRegion.PrintedField
-                  CardRegion.Nameplate(Some category, published.Name)
+                  CardRegion.Nameplate(Some "Trainer", published.Name)
                   CardRegion.Illustration(
-                      art.For(published.Id, $"{published.Name} Support illustration."),
+                      art.For(published.Id, $"{published.Name} Trainer illustration."),
                       IllustrationPlacement.Framed
                   )
-                  CardRegion.IdentityStrip $"{category} · {published.Id}"
+                  CardRegion.IdentityStrip $"Trainer · {published.Id}"
                   CardRegion.Mechanics(ImmutableArray.CreateRange effects)
                   CardRegion.Colophon(
                       Some
-                          $"{category} card. Played from hand, then discarded unless its own text says otherwise.",
+                          "Trainer card. Played from hand, then discarded unless its own text says otherwise.",
                       Some published.Id,
                       Some Rarity.Uncommon,
                       Some number
                   ) ] }
 
-    let private toEnergy (published: BlokemonPublicBasicEnergy) (art: ArtIndex) number =
+    let private toEnergy
+        (published: BlokemonPublicEnergy)
+        (mechanical: BlokemonBasicVim)
+        (mechanics: BlokemonRuntimeManifest)
+        (art: ArtIndex)
+        number
+        =
         let printedType =
-            Enum.Parse<BlokemonType>(published.Id.Split('-')[1], ignoreCase = true)
+            BlokemonMechanicalDisplay.ApprovedLabel mechanics mechanical.MechanicalType
+            |> _.ToString()
+            |> fun label -> Enum.Parse<BlokemonType>(label, ignoreCase = false)
+
+        let energyKind = if mechanical.IsBasic then "Basic" else "Special"
 
         themed
             printedType
@@ -324,7 +329,7 @@ module SetAuthority =
               CardRegion.Vitality(None, printedType)
               CardRegion.Nameplate(None, "Energy")
               CardRegion.Illustration(
-                  art.ForSymbol(published.SymbolKey, $"{published.Name} Basic Energy field."),
+                  art.ForSymbol(published.SymbolKey, $"{published.Name} {energyKind} Energy field."),
                   IllustrationPlacement.Field
               )
               CardRegion.Denomination printedType
@@ -362,24 +367,21 @@ module SetAuthority =
             |> Seq.map (fun card -> card.Id, card.ApprovedName)
             |> indexed
 
-        let supportNames =
-            content.Supports |> Seq.map (fun support -> support.Id, support.Name) |> indexed
-
-        let category =
-            content.Terminology |> Seq.map (fun term -> term.Id, term.Singular) |> indexed
+        let trainerNames =
+            content.Trainers |> Seq.map (fun trainer -> trainer.Id, trainer.Name) |> indexed
 
         let profiles = loadProfiles ()
         let printing = loadPrinting printingManifestPath
 
-        let supportNumbers =
-            content.Supports
+        let trainerNumbers =
+            content.Trainers
             |> List.ofArray
             |> List.sortWith (fun left right -> String.CompareOrdinal(left.Name, right.Name))
-            |> List.map (fun support -> support.Id)
+            |> List.map (fun trainer -> trainer.Id)
             |> number
 
         let energyNumbers =
-            content.BasicEnergy
+            content.Energy
             |> List.ofArray
             |> List.sortWith (fun left right -> String.CompareOrdinal(left.Id, right.Id))
             |> List.map (fun energy -> energy.Id)
@@ -394,19 +396,23 @@ module SetAuthority =
                           mechanics
                           art
                           names
-                          supportNames
+                          trainerNames
                           profiles[card.Id]
                           printing.Numbers[card.Id]
                           (printing.Holo.Contains card.Id) ]
-          Supports =
+          Trainers =
             ImmutableArray.CreateRange
-                [ for support in content.Supports ->
-                      toSupport
-                          support
-                          category[support.CategoryTermId]
-                          art
-                          supportNumbers[support.Id] ]
+                [ for trainer in content.Trainers ->
+                      toTrainer trainer art trainerNumbers[trainer.Id] ]
           Energy =
             ImmutableArray.CreateRange
-                [ for energy in content.BasicEnergy -> toEnergy energy art energyNumbers[energy.Id] ]
+                [ for index in 0 .. content.Energy.Length - 1 ->
+                      let energy = content.Energy[index]
+
+                      toEnergy
+                          energy
+                          mechanics.BasicVim[index]
+                          mechanics
+                          art
+                          energyNumbers[energy.Id] ]
           Reverse = toReverse art }

@@ -79,13 +79,12 @@ type StarterDeckCatalogue private (version: string, decks: IReadOnlyDictionary<s
         if entries |> Seq.sumBy (fun entry -> entry.Quantity) <> 60 then
             raise (invalid $"Starter deck {source.Id} must contain exactly 60 cards.")
 
-        let energyCount =
+        let basicEnergyCount =
             entries
-            |> Seq.filter (fun entry ->
-                knownCards[entry.CardId].Kind = CatalogueDocuments.KnownCardKind.Energy)
+            |> Seq.filter (fun entry -> knownCards[entry.CardId].IsBasicEnergy)
             |> Seq.sumBy (fun entry -> entry.Quantity)
 
-        if energyCount <> 15 then
+        if basicEnergyCount <> 15 then
             raise (invalid $"Starter deck {source.Id} must contain exactly 15 Basic Energy.")
 
         let hasRegular =
@@ -206,6 +205,7 @@ type StarterDeckCatalogue private (version: string, decks: IReadOnlyDictionary<s
                 { Id = card.Id
                   Kind = CatalogueDocuments.KnownCardKind.Blokemon
                   CopyLimit = card.StackCopyLimit
+                  IsBasicEnergy = false
                   IsRegular = card.Rank = BlokemonRank.Regular
                   PromotesFromId = card.PromotesFromId
                   Attacks = card.Attacks }
@@ -217,6 +217,7 @@ type StarterDeckCatalogue private (version: string, decks: IReadOnlyDictionary<s
                 { Id = card.Id
                   Kind = CatalogueDocuments.KnownCardKind.Trainer
                   CopyLimit = card.StackCopyLimit
+                  IsBasicEnergy = false
                   IsRegular = false
                   PromotesFromId = null
                   Attacks = Array.empty }
@@ -228,6 +229,7 @@ type StarterDeckCatalogue private (version: string, decks: IReadOnlyDictionary<s
                 { Id = card.Id
                   Kind = CatalogueDocuments.KnownCardKind.Energy
                   CopyLimit = card.StackCopyLimit
+                  IsBasicEnergy = card.IsBasic
                   IsRegular = false
                   PromotesFromId = null
                   Attacks = Array.empty }

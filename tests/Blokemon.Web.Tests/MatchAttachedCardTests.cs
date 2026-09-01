@@ -40,5 +40,5 @@ public sealed class MatchAttachedCardTests
         );
 
     private static CardView Card(string id) =>
-        new(id, id, CardKindView.BasicVim, string.Empty, string.Empty, string.Empty, [], 0, false);
+        new(id, id, CardKindView.Energy, string.Empty, string.Empty, string.Empty, [], 0, false);
 }

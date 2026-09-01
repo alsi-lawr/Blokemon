@@ -873,7 +873,7 @@ public sealed class BrowserLocalApplicationTests
             static card => card.Kind,
             StringComparer.Ordinal
         );
-        var energy = starter.Entries.First(entry => kinds[entry.CardId] == CardKindView.BasicVim);
+        var energy = starter.Entries.First(entry => kinds[entry.CardId] == CardKindView.Energy);
         var unowned = claimed.Cards.First(card =>
             card.Kind == CardKindView.Blokemon
             && card.OwnedQuantity == 0

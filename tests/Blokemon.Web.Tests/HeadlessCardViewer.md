@@ -23,8 +23,8 @@ The executable evidence covers:
 - pack identity and reader gating before face-up, with reading isolated from reveal advancement;
 - revealed cue reading isolated from acknowledgement;
 - action isolation in Home, Decks, Packs, and Match representatives; and
-- all seven Basic Energy faces plus independent Collection and Decks searches by approved type and
-  public category;
+- all seven Energy faces, with six cards returned by Basic Energy searches and Side Hustle excluded
+  from those results but visible and independently searchable as Special Energy in Collection and Decks;
 - Home card-detail metadata, selected and live Match costs, cost tooltips and accessibility labels;
 - all approved mechanical-choice button labels, including the raw `Colorless` value rendered as
   `Local`; and

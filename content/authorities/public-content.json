@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "blokemon-public-content-schema-2.0.0-candidate.5",
-  "contentVersion": "blokemon-public-content-2.0.0-candidate.10",
-  "mechanicalManifestVersion": "sv151-candidate.19",
-  "terminologyVersion": "blokemon-public-terminology-2.0.0-candidate.6",
+  "schemaVersion": "blokemon-public-content-schema-1999-candidate.1",
+  "contentVersion": "blokemon-public-content-1999-candidate.1",
+  "mechanicalManifestVersion": "base-jungle-fossil-1999-card-semantics-candidate.1",
+  "terminologyVersion": "blokemon-public-terminology-1999-candidate.1",
   "humanApprovalStatus": "Accepted",
   "terminology": [
     {
@@ -99,30 +99,9 @@
     {
       "id": "TERM-CATEGORY-001",
       "category": "Category",
-      "singular": "Item",
-      "plural": "Items",
-      "definition": "A Trainer card you may play without a per-turn category limit unless an effect says otherwise."
-    },
-    {
-      "id": "TERM-CATEGORY-002",
-      "category": "Category",
-      "singular": "Tool",
-      "plural": "Tools",
-      "definition": "A Trainer card attached to a Blokemon; each Blokemon can have at most 1 Tool."
-    },
-    {
-      "id": "TERM-CATEGORY-003",
-      "category": "Category",
-      "singular": "Supporter",
-      "plural": "Supporters",
-      "definition": "A Trainer card category limited to 1 play during your turn."
-    },
-    {
-      "id": "TERM-CATEGORY-004",
-      "category": "Category",
-      "singular": "Stadium",
-      "plural": "Stadiums",
-      "definition": "A shared Trainer card; only 1 Stadium remains in play."
+      "singular": "Trainer",
+      "plural": "Trainers",
+      "definition": "A Trainer card played from your hand during your turn; resolve its text, then discard it unless its own text says otherwise."
     },
     {
       "id": "TERM-STATUS-001",
@@ -134,30 +113,23 @@
     {
       "id": "TERM-STATUS-002",
       "category": "Status",
-      "singular": "Burned",
-      "plural": "Burned",
-      "definition": "During the between-turn status check, put 2 damage counters on the affected Active Blokemon, then flip a coin and clear Burned on heads."
-    },
-    {
-      "id": "TERM-STATUS-003",
-      "category": "Status",
       "singular": "Asleep",
       "plural": "Asleep",
       "definition": "The affected Active Blokemon cannot Attack or Retreat; during the between-turn status check, flip a coin and clear Asleep on heads."
     },
     {
-      "id": "TERM-STATUS-004",
+      "id": "TERM-STATUS-003",
       "category": "Status",
       "singular": "Paralyzed",
       "plural": "Paralyzed",
-      "definition": "The affected Active Blokemon cannot Attack or Retreat; clear Paralyzed after its owner\u2019s next turn."
+      "definition": "The affected Active Blokemon cannot Attack or Retreat; clear Paralyzed after its owner’s next turn."
     },
     {
-      "id": "TERM-STATUS-005",
+      "id": "TERM-STATUS-004",
       "category": "Status",
       "singular": "Confused",
       "plural": "Confused",
-      "definition": "Before attacking, flip a coin. On tails, cancel the Attack and put 3 damage counters on that Blokemon."
+      "definition": "Before attacking, flip a coin. On tails, cancel the Attack and put 2 damage counters on that Blokemon."
     },
     {
       "id": "TERM-TARGET-001",
@@ -197,35 +169,35 @@
     {
       "id": "TERM-TARGET-006",
       "category": "Target",
-      "singular": "Your opponent\u2019s Active Blokemon",
-      "plural": "Your opponents\u2019 Active Blokemon",
+      "singular": "Your opponent’s Active Blokemon",
+      "plural": "Your opponents’ Active Blokemon",
       "definition": "The opposing Blokemon in the Active Spot."
     },
     {
       "id": "TERM-TARGET-007",
       "category": "Target",
-      "singular": "1 of your opponent\u2019s Benched Blokemon",
-      "plural": "Your opponents\u2019 Benched Blokemon",
+      "singular": "1 of your opponent’s Benched Blokemon",
+      "plural": "Your opponents’ Benched Blokemon",
       "definition": "An eligible opposing Blokemon you choose from the Bench."
     },
     {
       "id": "TERM-TARGET-008",
       "category": "Target",
-      "singular": "Each of your opponent\u2019s Benched Blokemon",
+      "singular": "Each of your opponent’s Benched Blokemon",
       "plural": "Each opposing Benched Blokemon",
       "definition": "Every eligible opposing Blokemon on the Bench."
     },
     {
       "id": "TERM-TARGET-009",
       "category": "Target",
-      "singular": "1 of your opponent\u2019s Blokemon",
-      "plural": "Your opponents\u2019 Blokemon",
+      "singular": "1 of your opponent’s Blokemon",
+      "plural": "Your opponents’ Blokemon",
       "definition": "One eligible Blokemon your opponent controls."
     },
     {
       "id": "TERM-TARGET-010",
       "category": "Target",
-      "singular": "Each of your opponent\u2019s Blokemon",
+      "singular": "Each of your opponent’s Blokemon",
       "plural": "Each opposing Blokemon",
       "definition": "Every eligible Blokemon your opponent controls."
     },
@@ -239,9 +211,9 @@
     {
       "id": "TERM-TARGET-012",
       "category": "Target",
-      "singular": "Your opponent\u2019s hand",
-      "plural": "Your opponents\u2019 hands",
-      "definition": "Your opponent\u2019s private cards, revealed only when an effect requires it."
+      "singular": "Your opponent’s hand",
+      "plural": "Your opponents’ hands",
+      "definition": "Your opponent’s private cards, revealed only when an effect requires it."
     },
     {
       "id": "TERM-TARGET-013",
@@ -253,9 +225,9 @@
     {
       "id": "TERM-TARGET-014",
       "category": "Target",
-      "singular": "Your opponent\u2019s Deck",
-      "plural": "Your opponents\u2019 Decks",
-      "definition": "Your opponent\u2019s face-down draw pile."
+      "singular": "Your opponent’s Deck",
+      "plural": "Your opponents’ Decks",
+      "definition": "Your opponent’s face-down draw pile."
     },
     {
       "id": "TERM-TARGET-015",
@@ -272,18 +244,11 @@
       "definition": "A face-down card taken after a Knock Out or another stated effect."
     },
     {
-      "id": "TERM-TARGET-017",
-      "category": "Target",
-      "singular": "Stadium in play",
-      "plural": "Stadiums in play",
-      "definition": "The shared Stadium currently in play."
-    },
-    {
       "id": "TERM-CHOICE-001",
       "category": "Choice",
       "singular": "Choose",
       "plural": "Choose",
-      "definition": "The effect\u2019s controller selects an eligible target."
+      "definition": "The effect’s controller selects an eligible target."
     },
     {
       "id": "TERM-CHOICE-002",
@@ -500,7 +465,7 @@
       "category": "Timing",
       "singular": "Until the end of the next turn",
       "plural": "Until the ends of the next turns",
-      "definition": "The effect expires after the specified participant\u2019s next turn."
+      "definition": "The effect expires after the specified participant’s next turn."
     },
     {
       "id": "TERM-TIMING-010",
@@ -547,9 +512,9 @@
     {
       "id": "TERM-CORE-004",
       "category": "Core",
-      "singular": "Ability",
-      "plural": "Abilities",
-      "definition": "A card effect that does not itself end the turn."
+      "singular": "Blokemon Power",
+      "plural": "Blokemon Powers",
+      "definition": "A Blokemon card effect that is not an Attack and can be used from the Bench unless its text says otherwise."
     },
     {
       "id": "TERM-CORE-005",
@@ -577,21 +542,21 @@
       "category": "Core",
       "singular": "Hand",
       "plural": "Hands",
-      "definition": "A participant\u2019s private held cards."
+      "definition": "A participant’s private held cards."
     },
     {
       "id": "TERM-CORE-009",
       "category": "Core",
       "singular": "Deck",
       "plural": "Decks",
-      "definition": "A participant\u2019s face-down draw pile."
+      "definition": "A participant’s face-down draw pile."
     },
     {
       "id": "TERM-CORE-010",
       "category": "Core",
       "singular": "Discard pile",
       "plural": "Discard piles",
-      "definition": "A participant\u2019s face-up discarded cards."
+      "definition": "A participant’s face-up discarded cards."
     },
     {
       "id": "TERM-CORE-011",
@@ -654,7 +619,7 @@
       "category": "Core",
       "singular": "Discard",
       "plural": "Discards",
-      "definition": "Move a card to its owner\u2019s discard pile."
+      "definition": "Move a card to its owner’s discard pile."
     },
     {
       "id": "TERM-CORE-020",
@@ -669,13 +634,6 @@
       "singular": "Reveal",
       "plural": "Reveals",
       "definition": "Show the stated private card to both participants for the effect."
-    },
-    {
-      "id": "TERM-CORE-022",
-      "category": "Core",
-      "singular": "Two-Prize Blokemon",
-      "plural": "Two-Prize Blokemon",
-      "definition": "A locked high-impact Blokemon that awards 2 Prize Cards when Knocked Out."
     }
   ],
   "collectibles": [
@@ -684,12 +642,12 @@
       "approvedName": "Weedman Will",
       "approvedType": "Blazed",
       "flavourText": "He never brings enough for everyone, but somehow everyone gets some.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-001-B01",
-          "name": "Share the Green",
-          "effectText": "Heal 20 damage from this Blokemon."
+          "name": "Leech Seed",
+          "effectText": "Unless all damage from this attack is prevented, you may remove 1 damage counter from Weedman Will."
         }
       ],
       "rules": [],
@@ -708,16 +666,17 @@
       "approvedName": "Bedroom Grower",
       "approvedType": "Blazed",
       "flavourText": "The spare room is strictly invitation only, especially when the meter reader calls.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-002-B01",
-          "name": "Water the Crop",
-          "effectText": "Heal 20 damage from this Blokemon."
+          "name": "Vine Whip",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-002-B02",
-          "name": "Lights on Full"
+          "name": "Poisonpowder",
+          "effectText": "The Defending Blokemon is now Poisoned."
         }
       ],
       "rules": [],
@@ -736,30 +695,24 @@
       "approvedName": "Howard Marks",
       "approvedType": "Blazed",
       "flavourText": "He can quiet a whole snug without raising his voice.",
-      "abilities": [
+      "pokemonPowers": [
         {
           "mechanicalId": "BLK-003-T01",
-          "name": "Peace in the Snug",
-          "effectText": "Once per turn, if this is your Active Blokemon, you may heal 60 damage from any 1 of your Blokemon."
+          "name": "Energy Trans",
+          "effectText": "As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Blokemon and attach it to a different one. This power can't be used if Howard Marks is Asleep, Confused, or Paralyzed."
         }
       ],
       "attacks": [
         {
           "mechanicalId": "BLK-003-B01",
-          "name": "Calm the Room",
-          "effectText": "Your opponent's Active Blokemon is now Confused and Poisoned."
+          "name": "Solarbeam",
+          "effectText": null
         }
       ],
-      "rules": [
-        {
-          "mechanicalId": "BLK-003-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
-        }
-      ],
+      "rules": [],
       "illustration": {
         "brief": "An assured older raconteur occupies the centre of a low pub booth with relaxed open palms; wide low-angle portrait, brass rail and two empty water glasses, deep bottle green cut by a calm cream spotlight.",
-        "prompt": "Seat Howard Marks along the back curve of a low snug, viewed from table height with both open palms calming unseen companions on either side. Use the brass rail and two water glasses to create a quiet horizontal rhythm, leaving a cream pool of light around his assured face; avoid portraits, trademarks and any written d\u00e9cor in the pub.",
+        "prompt": "Seat Howard Marks along the back curve of a low snug, viewed from table height with both open palms calming unseen companions on either side. Use the brass rail and two water glasses to create a quiet horizontal rhythm, leaving a cream pool of light around his assured face; avoid portraits, trademarks and any written décor in the pub.",
         "altIntent": "Howard Marks appears as an older, composed raconteur whose relaxed hands and central place in the booth make a noisy room feel settled without force."
       },
       "art": {
@@ -772,16 +725,17 @@
       "approvedName": "Dave Lister",
       "approvedType": "Curry",
       "flavourText": "He has missed the last shuttle but never the last vindaloo.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-004-B01",
-          "name": "Chuck the Sign",
-          "effectText": "Discard the Stadium in play."
+          "name": "Scratch",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-004-B02",
-          "name": "Curry on Low"
+          "name": "Ember",
+          "effectText": "Discard 1 Fire Energy card attached to Dave Lister in order to use this attack."
         }
       ],
       "rules": [],
@@ -800,16 +754,17 @@
       "approvedName": "Four-Naan Jeremy",
       "approvedType": "Curry",
       "flavourText": "Four naans is not a challenge; it is the opening order.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-005-B01",
-          "name": "Starter Heat"
+          "name": "Slash",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-005-B02",
-          "name": "Three-Chilli Finish",
-          "effectText": "Discard 1 Energy from this Blokemon."
+          "name": "Flamethrower",
+          "effectText": "Discard 1 Fire Energy card attached to Four-Naan Jeremy in order to use this attack."
         }
       ],
       "rules": [],
@@ -828,26 +783,21 @@
       "approvedName": "Brick Lane Boss",
       "approvedType": "Curry",
       "flavourText": "He knows every shortcut between the curry house and the head of the queue.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-006-T01",
+          "name": "Energy Burn",
+          "effectText": "As often as you like during your turn (before your attack), you may turn all Energy attached to Brick Lane Boss into Fire Energy for the rest of the turn. This power can't be used if Brick Lane Boss is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-006-B01",
-          "name": "Boss's Nerve",
-          "effectText": "If this Blokemon has any damage counters, this Attack deals 100 more damage."
-        },
-        {
-          "mechanicalId": "BLK-006-B02",
-          "name": "Brick Lane Blowout",
-          "effectText": "Discard 3 Energy from this Blokemon."
+          "name": "Fire Spin",
+          "effectText": "Discard 2 Energy cards attached to Brick Lane Boss in order to use this attack."
         }
       ],
-      "rules": [
-        {
-          "mechanicalId": "BLK-006-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
-        }
-      ],
+      "rules": [],
       "illustration": {
         "brief": "A formidable host surveys a neon-lit restaurant doorway like his own patch; broad frontal portrait, tailored dark coat, reservation book and glowing kitchen pass, restrained saffron and midnight navy.",
         "prompt": "Give Brick Lane Boss the threshold of a busy curry house, standing broad and still while kitchen light and drifting steam divide the pavement behind him. A slightly low frontal lens should make his tailored coat, reservation book and watchful expression feel authoritative; leave the book, windows and signage unreadable and use no borrowed venue identity.",
@@ -863,16 +813,17 @@
       "approvedName": "Designated Driver",
       "approvedType": "Sober",
       "flavourText": "The keys were in his pocket before anyone suggested shots.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-007-B01",
-          "name": "Keep It Covered",
-          "effectText": "Flip a coin. When it lands heads, prevent all damage done to this Blokemon by Attacks until the end of your opponent's next turn."
+          "name": "Bubble",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         },
         {
           "mechanicalId": "BLK-007-B02",
-          "name": "Keys in Hand"
+          "name": "Withdraw",
+          "effectText": "Flip a coin. If heads, prevent all damage done to Designated Driver during your opponent's next turn. (Any other effects of attacks still happen.)"
         }
       ],
       "rules": [],
@@ -891,16 +842,17 @@
       "approvedName": "Dry January",
       "approvedType": "Sober",
       "flavourText": "By week three he is correcting the ingredients on every soft drink.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-008-B01",
-          "name": "Clear the Empties",
-          "effectText": "Choose up to 3 Basic Sober Energy cards in your discard pile and add them to your hand."
+          "name": "Withdraw",
+          "effectText": "Flip a coin. If heads, prevent all damage done to Dry January during your opponent's next turn. (Any other effects of attacks still happen.)"
         },
         {
           "mechanicalId": "BLK-008-B02",
-          "name": "Fresh Lap"
+          "name": "Bite",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -919,27 +871,21 @@
       "approvedName": "Parkrun",
       "approvedType": "Sober",
       "flavourText": "He arrives before sunrise and still asks whether the route is hilly.",
-      "abilities": [
+      "pokemonPowers": [
         {
           "mechanicalId": "BLK-009-T01",
-          "name": "Parkrun Core",
-          "effectText": "After applying Weakness and Resistance, reduce damage from Attacks done to this Blokemon by 30."
+          "name": "Rain Dance",
+          "effectText": "As often as you like during your turn (before your attack), you may attach 1 Water Energy card to 1 of your Water Blokemon. (This doesn't use up your 1 Energy card attachment for the turn.) This power can't be used if Parkrun is Asleep, Confused, or Paralyzed."
         }
       ],
       "attacks": [
         {
           "mechanicalId": "BLK-009-B01",
-          "name": "Two-Lane Finish",
-          "effectText": "You may discard up to 2 Basic Sober Energy cards from your hand. For each card discarded this way, this Attack deals 140 damage."
+          "name": "Hydro Pump",
+          "effectText": "Does 40 damage plus 10 more damage for each Water Energy attached to Parkrun but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         }
       ],
-      "rules": [
-        {
-          "mechanicalId": "BLK-009-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
-        }
-      ],
+      "rules": [],
       "illustration": {
         "brief": "A broad-shouldered runner tightens a watch beside a park gate in cold dawn mist; low three-quarter view, numbered vest, twin water flasks and wet tarmac, steel blue with fresh mint highlights.",
         "prompt": "Crouch the camera near wet tarmac as Parkrun tightens a watch at a misty park gate, shoulders already squared for the route. Twin flasks and muddy trainers should make a low triangle around him while cold steel-blue dawn catches his breath; the vest may carry colour blocks but no number, event name or logo.",
@@ -955,12 +901,12 @@
       "approvedName": "First Rollie",
       "approvedType": "Blazed",
       "flavourText": "One careful attempt later, he is giving everyone rolling advice.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-010-B01",
-          "name": "First Little Nibble",
-          "effectText": "If your opponent's Active Blokemon is Blazed, this Attack deals 30 more damage."
+          "name": "String Shot",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         }
       ],
       "rules": [],
@@ -979,16 +925,17 @@
       "approvedName": "Couch Lock",
       "approvedType": "Blazed",
       "flavourText": "The sofa accepted him hours ago and has stopped expecting movement.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-011-B01",
-          "name": "Settle In"
+          "name": "Stiffen",
+          "effectText": "Flip a coin. If heads, prevent all damage done to Couch Lock during your opponent's next turn. (Any other effects of attacks still happen.)"
         },
         {
           "mechanicalId": "BLK-011-B02",
-          "name": "Do Not Disturb",
-          "effectText": "Flip a coin. When it lands heads, prevent all damage done to this Blokemon by Attacks until the end of your opponent's next turn."
+          "name": "Stun Spore",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         }
       ],
       "rules": [],
@@ -1007,17 +954,17 @@
       "approvedName": "High as a Kite",
       "approvedType": "Blazed",
       "flavourText": "He went out for air and returned convinced he had flown.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-012-B01",
-          "name": "Catch the Draught",
-          "effectText": "Your opponent chooses 1 of their Benched Blokemon and switches it with their Active Blokemon."
+          "name": "Whirlwind",
+          "effectText": "If your opponent has any Benched Blokemon, he or she chooses 1 of them and switches it with the Defending Blokemon. (Do the damage before switching the Blokemon.)"
         },
         {
           "mechanicalId": "BLK-012-B02",
-          "name": "Gone with the Smoke",
-          "effectText": "Choose 1 of your opponent's Benched Blokemon. Shuffle it and its attached cards into your opponent's Deck. Then shuffle this Blokemon and its attached cards into your Deck. This Attack does nothing if your opponent has no Benched Blokemon."
+          "name": "Mega Drain",
+          "effectText": "Remove a number of damage counters from High as a Kite equal to half the damage done to the Defending Blokemon (after applying Weakness and Resistance) (rounded up to the nearest 10)."
         }
       ],
       "rules": [],
@@ -1036,15 +983,12 @@
       "approvedName": "Soap Bar",
       "approvedType": "Blazed",
       "flavourText": "Nobody knows how old it is; everybody knows who brought it.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-013-B01",
-          "name": "Square Up"
-        },
-        {
-          "mechanicalId": "BLK-013-B02",
-          "name": "Corner-Shop Chomp"
+          "name": "Poison Sting",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Poisoned."
         }
       ],
       "rules": [],
@@ -1063,17 +1007,17 @@
       "approvedName": "Cheese",
       "approvedType": "Blazed",
       "flavourText": "It has been in the fridge long enough to have its own tenancy.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-014-T01",
-          "name": "Cheese Wrap",
-          "effectText": "Prevent all effects of your opponent's Attacks affecting this Blokemon. Damage is not an effect."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-014-B01",
-          "name": "Wrapped and Ready"
+          "name": "Stiffen",
+          "effectText": "Flip a coin. If heads, prevent all damage done to Cheese during your opponent's next turn. (Any other effects of attacks still happen.)"
+        },
+        {
+          "mechanicalId": "BLK-014-B02",
+          "name": "Poisonpowder",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Poisoned."
         }
       ],
       "rules": [],
@@ -1092,16 +1036,17 @@
       "approvedName": "Stardawg",
       "approvedType": "Blazed",
       "flavourText": "One mention of strains and he becomes impossible to interrupt.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-015-B01",
-          "name": "Needle Drop",
-          "effectText": "If your hand is empty, this Attack deals 120 more damage and your opponent's Active Blokemon is now Paralyzed and Poisoned."
+          "name": "Twineedle",
+          "effectText": "Flip 2 coins. This attack does 30 damage times the number of heads."
         },
         {
           "mechanicalId": "BLK-015-B02",
-          "name": "Straight Through"
+          "name": "Poison Sting",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Poisoned."
         }
       ],
       "rules": [],
@@ -1120,16 +1065,12 @@
       "approvedName": "Ciggy Sam",
       "approvedType": "Local",
       "flavourText": "He has one left and three stories about where the packet went.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-016-B01",
-          "name": "Bring a Mate",
-          "effectText": "Search your Deck and choose up to 2 Basic Blokemon. After selecting them, put them onto your Bench and shuffle your Deck."
-        },
-        {
-          "mechanicalId": "BLK-016-B02",
-          "name": "Last Drag"
+          "name": "Whirlwind",
+          "effectText": "If your opponent has any Benched Blokemon, he or she chooses 1 of them and switches it with the Defending Blokemon. (Do the damage before switching the Blokemon.)"
         }
       ],
       "rules": [],
@@ -1148,11 +1089,17 @@
       "approvedName": "Pub Regular",
       "approvedType": "Local",
       "flavourText": "The stool has shaped itself around him over the years.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-017-B01",
-          "name": "Same Again"
+          "name": "Whirlwind",
+          "effectText": "If your opponent has any Benched Blokemon, he or she chooses 1 of them and switches it with the Defending Blokemon. (Do the damage before switching the Blokemon.)"
+        },
+        {
+          "mechanicalId": "BLK-017-B02",
+          "name": "Mirror Move",
+          "effectText": "If Pub Regular was attacked last turn, do the final result of that attack on Pub Regular to the Defending Blokemon."
         }
       ],
       "rules": [],
@@ -1171,16 +1118,17 @@
       "approvedName": "Local Celebrity",
       "approvedType": "Local",
       "flavourText": "He waves at strangers because half of them probably know him.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-018-B01",
-          "name": "Work the Room"
+          "name": "Wing Attack",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-018-B02",
-          "name": "Over the Rooftops",
-          "effectText": "Flip a coin. When it lands tails, this Attack deals nothing. If heads, prevent all damage and effects of Attacks affecting this Blokemon until the end of your opponent's next turn."
+          "name": "Hurricane",
+          "effectText": "Unless this attack Knocks Out the Defending Blokemon, return the Defending Blokemon and all cards attached to it to your opponent's hand."
         }
       ],
       "rules": [],
@@ -1199,12 +1147,12 @@
       "approvedName": "Scrounger",
       "approvedType": "Local",
       "flavourText": "He only needs a small favour, repeated indefinitely.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-019-B01",
-          "name": "Pick at It",
-          "effectText": "Count the damage counters on your opponent's Active Blokemon. This Attack deals 10 more damage for each one."
+          "name": "Bite",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -1223,18 +1171,23 @@
       "approvedName": "Borrow-a-Fiver",
       "approvedType": "Local",
       "flavourText": "The original fiver now has a family tree of explanations.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-020-B01",
-          "name": "Ask Again",
-          "effectText": "Count the damage counters on your opponent's Active Blokemon. This Attack deals 30 more damage for each one."
+          "name": "Bite",
+          "effectText": null
+        },
+        {
+          "mechanicalId": "BLK-020-B02",
+          "name": "Super Fang",
+          "effectText": "Does damage to the Defending Blokemon equal to half the Defending Blokemon's remaining HP (rounded up to the nearest 10)."
         }
       ],
       "rules": [],
       "illustration": {
         "brief": "A scruffy pub mate asks to borrow a single five-pound note while another person holds the note out across the table.",
-        "prompt": "Show a scruffy adult British pub mate genuinely asking another person to lend him one recognisable five-pound note. He leans forward with an embarrassed persuasive expression and an open asking hand while the other person holds out a single small blue-green UK \u00a35 polymer note. Keep the note simplified, with no legible portrait, serial number or writing. One pub table, one half-pint and a cracked phone; the borrowing exchange is unmistakable.",
+        "prompt": "Show a scruffy adult British pub mate genuinely asking another person to lend him one recognisable five-pound note. He leans forward with an embarrassed persuasive expression and an open asking hand while the other person holds out a single small blue-green UK £5 polymer note. Keep the note simplified, with no legible portrait, serial number or writing. One pub table, one half-pint and a cracked phone; the borrowing exchange is unmistakable.",
         "altIntent": "A scruffy pub mate asks to borrow a single five-pound note while another person holds the note out across the table."
       },
       "art": {
@@ -1247,17 +1200,17 @@
       "approvedName": "Dole Spender",
       "approvedType": "Local",
       "flavourText": "He can make any afternoon sound like a full working week.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-021-T01",
-          "name": "Benefit of Experience",
-          "effectText": "If you took the second opening turn, you may evolve this Blokemon during your first turn."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-021-B01",
-          "name": "Benefits Appointment"
+          "name": "Peck",
+          "effectText": null
+        },
+        {
+          "mechanicalId": "BLK-021-B02",
+          "name": "Mirror Move",
+          "effectText": "If Dole Spender was attacked last turn, do the final result of that attack on Dole Spender to the Defending Blokemon."
         }
       ],
       "rules": [],
@@ -1276,16 +1229,17 @@
       "approvedName": "Cash-in-Hand",
       "approvedType": "Local",
       "flavourText": "The envelope is thick, the invoice is surprisingly thin.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-022-B01",
-          "name": "Pocket the Change",
-          "effectText": "Choose up to 3 cards while looking through your Deck. Add them to your hand, then shuffle your Deck."
+          "name": "Agility",
+          "effectText": "Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to Cash-in-Hand."
         },
         {
           "mechanicalId": "BLK-022-B02",
-          "name": "Quick Exit"
+          "name": "Drill Peck",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -1304,12 +1258,17 @@
       "approvedName": "Snake Oil",
       "approvedType": "Dodgy",
       "flavourText": "Every bottle cures a problem nobody knew they had.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-023-B01",
-          "name": "No Refunds",
-          "effectText": "Flip a coin. When it lands heads, discard 1 Energy from your opponent's Active Blokemon."
+          "name": "Spit Poison",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Poisoned."
+        },
+        {
+          "mechanicalId": "BLK-023-B02",
+          "name": "Wrap",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         }
       ],
       "rules": [],
@@ -1328,26 +1287,20 @@
       "approvedName": "Boiler Room",
       "approvedType": "Dodgy",
       "flavourText": "The pressure rises precisely when the cooling-off period ends.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-024-B01",
-          "name": "Boiler-Plate Clamp",
-          "effectText": "Your opponent's Active Blokemon cannot Retreat during your opponent's next turn."
+          "name": "Terror Strike",
+          "effectText": "Flip a coin. If heads and if your opponent has any Benched Blokemon, he or she chooses 1 of them and switches it with the Defending Blokemon. (Do the damage before switching the Blokemon.)"
         },
         {
           "mechanicalId": "BLK-024-B02",
-          "name": "Terms and Conditions",
-          "effectText": "Your opponent chooses 2 cards from their hand and discards them."
+          "name": "Poison Fang",
+          "effectText": "The Defending Blokemon is now Poisoned."
         }
       ],
-      "rules": [
-        {
-          "mechanicalId": "BLK-024-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
-        }
-      ],
+      "rules": [],
       "illustration": {
         "brief": "A headset closer commands a windowless sales floor from the centre aisle; deep one-point perspective, coiled cables and red desk lamps, black cherry and warning red.",
         "prompt": "Send the camera down the centre aisle of Boiler Room's windowless sales floor toward the headset closer standing at the vanishing point. Coiled cables, empty monitor shapes and red desk lamps should repeat toward his commanding stance in black cherry light; remove all interface detail, wall copy and company branding.",
@@ -1363,16 +1316,17 @@
       "approvedName": "Pintman",
       "approvedType": "Beer",
       "flavourText": "One pint in and he is volunteering to carry the whole round.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-025-B01",
-          "name": "Get a Round In",
-          "effectText": "Search your Deck for a Basic Beer Energy card and attach it to this Blokemon. Then shuffle your Deck."
+          "name": "Gnaw",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-025-B02",
-          "name": "Pint-Sized Dig"
+          "name": "Thunder Jolt",
+          "effectText": "Flip a coin. If tails, Pintman does 10 damage to itself."
         }
       ],
       "rules": [],
@@ -1390,25 +1344,24 @@
       "id": "BLK-026",
       "approvedName": "Donni",
       "approvedType": "Beer",
-      "flavourText": "Donni necks a can of lager\u2014his electric soup\u2014before squaring up to the Crack Fox.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-026-T01",
-          "name": "Keg Earth",
-          "effectText": "When 1 of your Blokemon is Knocked Out by damage from your opponent's Attack, you may move 1 Beer Energy from that Blokemon to this Blokemon."
-        }
-      ],
+      "flavourText": "Donni necks a can of lager—his electric soup—before squaring up to the Crack Fox.",
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-026-B01",
-          "name": "Electric Souperman",
-          "effectText": "This Blokemon also does 50 damage to itself."
+          "name": "Agility",
+          "effectText": "Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to Donni."
+        },
+        {
+          "mechanicalId": "BLK-026-B02",
+          "name": "Thunder",
+          "effectText": "Flip a coin. If tails, Donni does 30 damage to itself."
         }
       ],
       "rules": [],
       "illustration": {
         "brief": "Donni necks a plain can of lager while squaring up to the Crack Fox; a bold face-off with the raised can as the focal prop, electric amber against charcoal and ample negative space.",
-        "prompt": "Show Donni necking a plain unbranded can of lager\u2014his electric soup\u2014as he gears up to fight the Crack Fox. Stage them as two clear opposing silhouettes, with Donni\u2019s raised can and clenched free hand carrying the action; keep the sewer setting to one flat arch and one puddle shape, with no labels, litter or incidental clutter.",
+        "prompt": "Show Donni necking a plain unbranded can of lager—his electric soup—as he gears up to fight the Crack Fox. Stage them as two clear opposing silhouettes, with Donni’s raised can and clenched free hand carrying the action; keep the sewer setting to one flat arch and one puddle shape, with no labels, litter or incidental clutter.",
         "altIntent": "Donni drinks a can of lager to become Electric Souperman and face the Crack Fox."
       },
       "art": {
@@ -1421,17 +1374,12 @@
       "approvedName": "You Looking at Me?",
       "approvedType": "Lairy",
       "flavourText": "The question was rhetorical, but he has taken it as a booking.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-027-T01",
-          "name": "Dust-Up Screen",
-          "effectText": "Your opponent cannot use effects of their own Item or Supporter cards to move Trainer cards from their discard pile into their Deck."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-027-B01",
-          "name": "First Shove"
+          "name": "Sand-attack",
+          "effectText": "If the Defending Blokemon tries to attack during your opponent's next turn, your opponent flips a coin. If tails, that attack does nothing."
         }
       ],
       "rules": [],
@@ -1450,17 +1398,17 @@
       "approvedName": "Come On Then",
       "approvedType": "Lairy",
       "flavourText": "He has already removed the jacket and nobody has answered yet.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-028-B01",
-          "name": "Car-Park Fracas",
-          "effectText": "Your opponent's Active Blokemon cannot Retreat during your opponent's next turn."
+          "name": "Slash",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-028-B02",
-          "name": "Studded Sole",
-          "effectText": "If your opponent's Active Blokemon already has any damage counters, this Attack deals 100 more damage."
+          "name": "Fury Swipes",
+          "effectText": "Flip 3 coins. This attack does 20 damage times the number of heads."
         }
       ],
       "rules": [],
@@ -1479,12 +1427,17 @@
       "approvedName": "Fake Tan Fran",
       "approvedType": "Dodgy",
       "flavourText": "The tan is fresh enough to count as protective equipment.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-029-B01",
-          "name": "Fresh Coat",
-          "effectText": "Your opponent's Active Blokemon is now Poisoned."
+          "name": "Fury Swipes",
+          "effectText": "Flip 3 coins. This attack does 10 damage times the number of heads."
+        },
+        {
+          "mechanicalId": "BLK-029-B02",
+          "name": "Call for Family",
+          "effectText": "Search your deck for a Basic Blokemon named Knockoff Nigel or Fake Tan Fran and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)"
         }
       ],
       "rules": [],
@@ -1503,16 +1456,17 @@
       "approvedName": "Facebook Marketplace",
       "approvedType": "Dodgy",
       "flavourText": "Pickup is tonight, postage is somehow another forty quid.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-030-B01",
-          "name": "Collection Only",
-          "effectText": "Search your Deck for up to 3 Blokemon, reveal them, and add them to your hand. Then shuffle your Deck."
+          "name": "Supersonic",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Confused."
         },
         {
           "mechanicalId": "BLK-030-B02",
-          "name": "Cash-Price Chomp"
+          "name": "Double Kick",
+          "effectText": "Flip 2 coins. This attack does 30 damage times the number of heads."
         }
       ],
       "rules": [],
@@ -1531,16 +1485,17 @@
       "approvedName": "MLM Queen",
       "approvedType": "Dodgy",
       "flavourText": "Her business is mostly confidence and a very active group chat.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-031-B01",
-          "name": "Downline Pressure",
-          "effectText": "Prevent all damage done to this Blokemon by Attacks from Basic Blokemon until your opponent's next turn ends."
+          "name": "Boyfriends",
+          "effectText": "Does 20 damage plus 20 more damage for each Landlord you have in play."
         },
         {
           "mechanicalId": "BLK-031-B02",
-          "name": "Exit the Group Chat"
+          "name": "Mega Punch",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -1559,11 +1514,12 @@
       "approvedName": "Knockoff Nigel",
       "approvedType": "Dodgy",
       "flavourText": "The logo is nearly right if you stand far enough away.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-032-B01",
-          "name": "Market-Stall Jab"
+          "name": "Horn Hazard",
+          "effectText": "Flip a coin. If tails, this attack does nothing."
         }
       ],
       "rules": [],
@@ -1582,15 +1538,17 @@
       "approvedName": "Cash Only",
       "approvedType": "Dodgy",
       "flavourText": "The machine works; the receipt printer is a different story.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-033-B01",
-          "name": "No Receipt"
+          "name": "Double Kick",
+          "effectText": "Flip 2 coins. This attack does 30 damage times the number of heads."
         },
         {
           "mechanicalId": "BLK-033-B02",
-          "name": "Premium Knockoff"
+          "name": "Horn Drill",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -1609,18 +1567,17 @@
       "approvedName": "Landlord",
       "approvedType": "Dodgy",
       "flavourText": "The deposit is safe, subject to an exciting interpretation of safe.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-034-T01",
-          "name": "Portfolio Enthusiasm",
-          "effectText": "While MLM Queen is among your Blokemon in play, ignore every Energy symbol in this Blokemon's Attack costs."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-034-B01",
-          "name": "Rent Review",
-          "effectText": "Your opponent's Active Blokemon is now Poisoned."
+          "name": "Thrash",
+          "effectText": "Flip a coin. If heads, this attack does 30 damage plus 10 more damage; if tails, this attack does 30 damage and Landlord does 10 damage to itself."
+        },
+        {
+          "mechanicalId": "BLK-034-B02",
+          "name": "Toxic",
+          "effectText": "The Defending Blokemon is now Poisoned. It now takes 20 Poison damage instead of 10 after each player's turn (even if it was already Poisoned)."
         }
       ],
       "rules": [],
@@ -1639,16 +1596,17 @@
       "approvedName": "First Bump",
       "approvedType": "Geeked",
       "flavourText": "One friendly bump and the entire evening changes direction.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-035-B01",
-          "name": "Come Outside",
-          "effectText": "Search your Deck and choose up to 3 First Bump cards. After selecting them, put them onto your Bench and shuffle your Deck."
+          "name": "Sing",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Asleep."
         },
         {
           "mechanicalId": "BLK-035-B02",
-          "name": "Friendly Tap"
+          "name": "Metronome",
+          "effectText": "Choose 1 of the Defending Blokemon's attacks. Metronome copies that attack except for its Energy costs and anything else required in order to use that attack, such as discarding Energy cards. (No matter what type the Defending Blokemon is, First Bump's type is still Colorless.)"
         }
       ],
       "rules": [],
@@ -1667,17 +1625,17 @@
       "approvedName": "Second Wind",
       "approvedType": "Geeked",
       "flavourText": "They said they were leaving two hours ago and have just found new energy.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-036-B01",
-          "name": "Over Here, Mate",
-          "effectText": "Choose 1 of your opponent's Benched Blokemon and switch it with their Active Blokemon."
+          "name": "Metronome",
+          "effectText": "Choose 1 of the Defending Blokemon's attacks. Metronome copies that attack except for its Energy costs and anything else required in order to use that attack, such as discarding Energy cards. (No matter what type the Defending Blokemon is, Second Wind's type is still Colorless.)"
         },
         {
           "mechanicalId": "BLK-036-B02",
-          "name": "Keep It Going",
-          "effectText": "If damage from this Attack Knocks Out your opponent's Active Blokemon, take 1 extra Prize Card."
+          "name": "Minimize",
+          "effectText": "All damage done by attacks to Second Wind during your opponent's next turn is reduced by 20 (after applying Weakness and Resistance)."
         }
       ],
       "rules": [],
@@ -1696,12 +1654,12 @@
       "approvedName": "Ruby Murray",
       "approvedType": "Curry",
       "flavourText": "Ruby can turn mild into a personal insult.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-037-B01",
-          "name": "Extra-Hot Glare",
-          "effectText": "Flip a coin. When it lands heads, your opponent's Active Blokemon is now Burned."
+          "name": "Confuse Ray",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Confused."
         }
       ],
       "rules": [],
@@ -1720,26 +1678,20 @@
       "approvedName": "Curry Mile",
       "approvedType": "Curry",
       "flavourText": "Every neon sign on the street seems to know her order.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-038-B01",
-          "name": "Rush-Hour Heat",
-          "effectText": "Your opponent's Active Blokemon is now Burned."
+          "name": "Lure",
+          "effectText": "If your opponent has any Benched Blokemon, choose 1 of them and switch it with his or her Active Blokemon."
         },
         {
           "mechanicalId": "BLK-038-B02",
-          "name": "Two Windows Lit",
-          "effectText": "If both hands contain the same number of cards, this Attack deals 140 more damage."
+          "name": "Fire Blast",
+          "effectText": "Discard 1 Fire Energy card attached to Curry Mile in order to use this attack."
         }
       ],
-      "rules": [
-        {
-          "mechanicalId": "BLK-038-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
-        }
-      ],
+      "rules": [],
       "illustration": {
         "brief": "A curry takeaway and paper bag overlook a wet, glowing Manchester restaurant strip threaded by saffron steam.",
         "prompt": "OBJECT-AND-PLACE ONLY; no person. Reimagine Manchester's Curry Mile as a low, clean night view down one physically coherent wet road. A single open takeaway curry container and folded paper bag sit on a foreground wall; one broad ribbon of saffron steam leads toward two simplified rows of South Asian restaurant windows and awnings receding down the road. Red and gold reflections, no readable shop names, no generic London landmark, no clutter.",
@@ -1755,17 +1707,17 @@
       "approvedName": "Karaoke Kev",
       "approvedType": "Local",
       "flavourText": "Kev calls it warming up until somebody hides the microphone.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-039-B01",
-          "name": "Take the Mic",
-          "effectText": "Search your Deck for 1 Supporter card, reveal it, and add it to your hand. Then shuffle your Deck."
+          "name": "Lullaby",
+          "effectText": "The Defending Blokemon is now Asleep."
         },
         {
           "mechanicalId": "BLK-039-B02",
-          "name": "Floorboard Stomp",
-          "effectText": "Flip 2 coins. This Attack deals 20 damage for each heads."
+          "name": "Pound",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -1784,17 +1736,17 @@
       "approvedName": "Karaoke Queen",
       "approvedType": "Local",
       "flavourText": "She does not need a duet, but she has recruited the whole room.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-040-B01",
           "name": "Lullaby",
-          "effectText": "Your opponent's Active Blokemon is now Asleep."
+          "effectText": "The Defending Blokemon is now Asleep."
         },
         {
           "mechanicalId": "BLK-040-B02",
           "name": "Do the Wave",
-          "effectText": "This Attack deals 10 more damage for each of your Benched Blokemon."
+          "effectText": "Does 10 damage plus 10 more damage for each of your Benched Blokemon."
         }
       ],
       "rules": [],
@@ -1813,17 +1765,17 @@
       "approvedName": "Balaclava",
       "approvedType": "Dodgy",
       "flavourText": "The face is covered; the trainers remain extremely recognisable.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-041-T01",
-          "name": "Echoes Under the Mask",
-          "effectText": "Once per turn, while this Blokemon is your Active Blokemon, you may make your opponent reveal their hand."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-041-B01",
-          "name": "Quick Nip"
+          "name": "Supersonic",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Confused."
+        },
+        {
+          "mechanicalId": "BLK-041-B02",
+          "name": "Leech Life",
+          "effectText": "Remove a number of damage counters from Balaclava equal to the damage done to the Defending Blokemon (after applying Weakness and Resistance). If Balaclava has fewer damage counters than that, remove all of them."
         }
       ],
       "rules": [],
@@ -1842,12 +1794,17 @@
       "approvedName": "Catalytic Converter",
       "approvedType": "Dodgy",
       "flavourText": "It was attached when he arrived and that is all he is prepared to say.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-042-B01",
-          "name": "Under-the-Bonnet Drop",
-          "effectText": "Choose 1 of your opponent's Benched Blokemon. This Attack deals 40 damage to that Blokemon. Do not apply Weakness or Resistance."
+          "name": "Wing Attack",
+          "effectText": null
+        },
+        {
+          "mechanicalId": "BLK-042-B02",
+          "name": "Leech Life",
+          "effectText": "Remove a number of damage counters from Catalytic Converter equal to the damage done to the Defending Blokemon (after applying Weakness and Resistance). If Catalytic Converter has fewer damage counters than that, remove all of them."
         }
       ],
       "rules": [],
@@ -1866,11 +1823,17 @@
       "approvedName": "Eighth",
       "approvedType": "Blazed",
       "flavourText": "An eighth is both a quantity and the opening topic.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-043-B01",
-          "name": "Trim the Edge"
+          "name": "Stun Spore",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
+        },
+        {
+          "mechanicalId": "BLK-043-B02",
+          "name": "Sprout",
+          "effectText": "Search your deck for a Basic Blokemon named Eighth and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)"
         }
       ],
       "rules": [],
@@ -1889,17 +1852,17 @@
       "approvedName": "Whitey",
       "approvedType": "Blazed",
       "flavourText": "He insisted he was fine right up to the moment the room tilted.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-044-T01",
-          "name": "Half-Lit Haze",
-          "effectText": "If this card evolves a Blokemon from your hand during your turn, you may examine your Deck\u2019s top 3 cards. Attach any number of Basic Energy cards you find to your Blokemon in any distribution, then shuffle the remaining cards into your Deck."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-044-B01",
-          "name": "Too Much Sauce"
+          "name": "Poisonpowder",
+          "effectText": "The Defending Blokemon is now Poisoned."
+        },
+        {
+          "mechanicalId": "BLK-044-B02",
+          "name": "Foul Odor",
+          "effectText": "Both the Defending Blokemon and Whitey are now Confused (after doing damage)."
         }
       ],
       "rules": [],
@@ -1918,17 +1881,18 @@
       "approvedName": "Growroom",
       "approvedType": "Blazed",
       "flavourText": "The spare room glows like a small, badly kept secret.",
-      "abilities": [
+      "pokemonPowers": [
         {
           "mechanicalId": "BLK-045-T01",
-          "name": "Full-Lit Haze",
-          "effectText": "If this card evolves a Blokemon from your hand during your turn, you may examine your Deck\u2019s top 8 cards. Attach any number of Basic Energy cards you find to your Blokemon in any distribution, then shuffle the remaining cards into your Deck."
+          "name": "Heal",
+          "effectText": "Once during your turn (before your attack), you may flip a coin. If heads, remove 1 damage counter from 1 of your Blokemon. This power can't be used if Growroom is Asleep, Confused, or Paralyzed."
         }
       ],
       "attacks": [
         {
           "mechanicalId": "BLK-045-B01",
-          "name": "Full-Spectrum Finish"
+          "name": "Petal Dance",
+          "effectText": "Flip 3 coins. This attack does 40 damage times the number of heads. Growroom is now Confused (after doing damage)."
         }
       ],
       "rules": [],
@@ -1947,16 +1911,17 @@
       "approvedName": "Fun Guy",
       "approvedType": "Blazed",
       "flavourText": "He introduces every mushroom as though they went to school together.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-046-B01",
-          "name": "Table Rush"
+          "name": "Scratch",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-046-B02",
-          "name": "Spore on the Score",
-          "effectText": "Your opponent's Active Blokemon is now Asleep."
+          "name": "Spore",
+          "effectText": "The Defending Blokemon is now Asleep."
         }
       ],
       "rules": [],
@@ -1975,16 +1940,17 @@
       "approvedName": "Magic Mushroom",
       "approvedType": "Blazed",
       "flavourText": "One portion in and the wallpaper has developed an opinion.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-047-B01",
-          "name": "Share the Mycelium",
-          "effectText": "Flip 2 coins. For each heads, search your Deck for up to 1 Blazed Basic Blokemon and put it onto your Bench. Shuffle your Deck afterward."
+          "name": "Spore",
+          "effectText": "The Defending Blokemon is now Asleep."
         },
         {
           "mechanicalId": "BLK-047-B02",
-          "name": "Late-Night Rake"
+          "name": "Slash",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -2003,15 +1969,17 @@
       "approvedName": "Red-Eye",
       "approvedType": "Blazed",
       "flavourText": "His eyes arrived at the party several minutes before the rest of him.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-048-B01",
-          "name": "Tiny Munch"
+          "name": "Stun Spore",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         },
         {
           "mechanicalId": "BLK-048-B02",
-          "name": "Eyes on Full Lamp"
+          "name": "Leech Life",
+          "effectText": "Remove a number of damage counters from Red-Eye equal to the damage done to the Defending Blokemon (after applying Weakness and Resistance)."
         }
       ],
       "rules": [],
@@ -2030,16 +1998,18 @@
       "approvedName": "Space Cadet",
       "approvedType": "Blazed",
       "flavourText": "He has a mission, but the mission keeps changing planets.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-049-T01",
+          "name": "Shift",
+          "effectText": "Once during your turn (before your attack), you may change the type of Space Cadet to the type of any other Blokemon in play other than Colorless. This power can't be used if Space Cadet is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-049-B01",
-          "name": "Wrong-Way Round",
-          "effectText": "Your opponent's Active Blokemon is now Confused. On your opponent's next turn, they cannot play Item cards from their hand."
-        },
-        {
-          "mechanicalId": "BLK-049-B02",
-          "name": "Fast Orbit"
+          "name": "Venom Powder",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Confused and Poisoned."
         }
       ],
       "rules": [],
@@ -2058,15 +2028,17 @@
       "approvedName": "You What?",
       "approvedType": "Lairy",
       "flavourText": "He heard a different sentence and is furious about that one.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-050-B01",
-          "name": "Forehead First"
+          "name": "Dig",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-050-B02",
-          "name": "Car-Park Splash"
+          "name": "Mud Slap",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -2085,15 +2057,17 @@
       "approvedName": "Me and My Mates",
       "approvedType": "Lairy",
       "flavourText": "The sentence always starts with me and my mates.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-051-B01",
-          "name": "Three Heads In"
+          "name": "Slash",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-051-B02",
-          "name": "Mates' Rate Mud"
+          "name": "Earthquake",
+          "effectText": "Does 10 damage to each of your own Benched Blokemon. (Don't apply Weakness and Resistance for Benched Blokemon.)"
         }
       ],
       "rules": [],
@@ -2112,16 +2086,12 @@
       "approvedName": "Bookies Brian",
       "approvedType": "Local",
       "flavourText": "He knows the odds, the owner and why the favourite looks nervous.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-052-B01",
-          "name": "Odds-On Summons",
-          "effectText": "Flip a coin. When it lands heads, choose 1 of your opponent's Benched Blokemon and switch it with their Active Blokemon."
-        },
-        {
-          "mechanicalId": "BLK-052-B02",
-          "name": "Mark the Slip"
+          "name": "Pay Day",
+          "effectText": "Flip a coin. If heads, draw a card."
         }
       ],
       "rules": [],
@@ -2140,17 +2110,17 @@
       "approvedName": "Golf Club Gary",
       "approvedType": "Local",
       "flavourText": "Gary treats the nineteenth hole as a members-only parliament.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-053-T01",
-          "name": "Clubhouse Call",
-          "effectText": "Once per turn, you may search your Deck for The Guv'nor, reveal it, and add it to your hand. Then shuffle your Deck."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-053-B01",
-          "name": "Member's Cut"
+          "name": "Scratch",
+          "effectText": null
+        },
+        {
+          "mechanicalId": "BLK-053-B02",
+          "name": "Pounce",
+          "effectText": "If the Defending Blokemon attacks Golf Club Gary during your next turn, any damage done by the attack is reduced by 10 (after applying Weakness and Resistance). (Benching either Blokemon ends this effect.)"
         }
       ],
       "rules": [],
@@ -2169,16 +2139,17 @@
       "approvedName": "Day Two",
       "approvedType": "Sober",
       "flavourText": "Day Two is mostly water, curtains and regretting punctuation.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-054-B01",
-          "name": "Rehearse the Worst",
-          "effectText": "On your opponent's next turn, treat every coin flip they make as tails."
+          "name": "Headache",
+          "effectText": "Your opponent can't play Trainer cards during his or her next turn."
         },
         {
           "mechanicalId": "BLK-054-B02",
-          "name": "Tap Water"
+          "name": "Fury Swipes",
+          "effectText": "Flip 3 coins. This attack does 10 damage times the number of heads."
         }
       ],
       "rules": [],
@@ -2197,16 +2168,17 @@
       "approvedName": "Clear Head",
       "approvedType": "Sober",
       "flavourText": "By lunchtime he can remember every promise he made.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-055-B01",
-          "name": "Fish Out a Mate",
-          "effectText": "Put up to 4 Blokemon from your discard pile into your hand."
+          "name": "Psyshock",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         },
         {
           "mechanicalId": "BLK-055-B02",
-          "name": "Clean Break"
+          "name": "Hyper Beam",
+          "effectText": "If the Defending Blokemon has any Energy cards attached to it, choose 1 of them and discard it."
         }
       ],
       "rules": [],
@@ -2225,12 +2197,18 @@
       "approvedName": "Shirt Off",
       "approvedType": "Lairy",
       "flavourText": "The shirt left first; good judgement followed shortly after.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-056-T01",
+          "name": "Peek",
+          "effectText": "Once during your turn (before your attack), you may look at one of the following: the top card of either player's deck, a random card from your opponent's hand, or one of either player's Prizes. This power can't be used if Shirt Off is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-056-B01",
-          "name": "Swing at Anything",
-          "effectText": "Flip a coin. When it lands heads, this Attack deals 20 more damage. If tails, this Blokemon also does 20 damage to itself."
+          "name": "Scratch",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -2249,17 +2227,17 @@
       "approvedName": "Ronnie Pickering",
       "approvedType": "Lairy",
       "flavourText": "He has supplied his full name twice and is building toward a third.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-057-B01",
-          "name": "Who Are You?",
-          "effectText": "This Blokemon is now Confused."
+          "name": "Fury Swipes",
+          "effectText": "Flip 3 coins. This attack does 20 damage times the number of heads."
         },
         {
           "mechanicalId": "BLK-057-B02",
-          "name": "Full-Volume Finish",
-          "effectText": "If this Blokemon is not Confused, this Attack deals nothing."
+          "name": "Tantrum",
+          "effectText": "Flip a coin. If tails, Ronnie Pickering is now Confused (after doing damage)."
         }
       ],
       "rules": [],
@@ -2278,12 +2256,12 @@
       "approvedName": "Balti Triangle",
       "approvedType": "Curry",
       "flavourText": "Steam, spice and three postcodes meet in the middle.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-058-B01",
-          "name": "Steam the Windows",
-          "effectText": "Discard 1 Sober Energy from your opponent's Active Blokemon."
+          "name": "Flare",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -2302,17 +2280,17 @@
       "approvedName": "Bradford",
       "approvedType": "Curry",
       "flavourText": "Bradford does not need to explain the size of the order.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-059-B01",
-          "name": "Bradford Deluge",
-          "effectText": "Attach up to 2 Basic Curry Energy from your discard pile to this Blokemon."
+          "name": "Flamethrower",
+          "effectText": "Discard 1 Fire Energy card attached to Bradford in order to use this attack."
         },
         {
           "mechanicalId": "BLK-059-B02",
-          "name": "Hotter Than Advertised",
-          "effectText": "Discard 2 Curry Energy from this Blokemon."
+          "name": "Take Down",
+          "effectText": "Bradford does 30 damage to itself."
         }
       ],
       "rules": [],
@@ -2331,12 +2309,12 @@
       "approvedName": "Lime and Soda",
       "approvedType": "Sober",
       "flavourText": "The lime is fresh, the story about driving is optional.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-060-B01",
-          "name": "Quiet Fizz",
-          "effectText": "Flip a coin. When it lands heads, your opponent's Active Blokemon is now Paralyzed."
+          "name": "Water Gun",
+          "effectText": "Does 10 damage plus 10 more damage for each Water Energy attached to Lime and Soda but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd don't count."
         }
       ],
       "rules": [],
@@ -2355,16 +2333,17 @@
       "approvedName": "Alcohol Free",
       "approvedType": "Sober",
       "flavourText": "He reads every label and still has a better time than you.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-061-B01",
-          "name": "Zero-Proof Wave"
+          "name": "Amnesia",
+          "effectText": "Choose 1 of the Defending Blokemon's attacks. That Blokemon can't use that attack during your opponent's next turn."
         },
         {
           "mechanicalId": "BLK-061-B02",
-          "name": "Clear-Headed Hop",
-          "effectText": "Flip a coin. When it lands heads, this Attack deals 60 more damage."
+          "name": "Doubleslap",
+          "effectText": "Flip 2 coins. This attack does 30 damage times the number of heads."
         }
       ],
       "rules": [],
@@ -2383,17 +2362,17 @@
       "approvedName": "Zero Point Zero",
       "approvedType": "Sober",
       "flavourText": "Zero point zero, maximum follow-through.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-062-B01",
-          "name": "Foam-Free Flash",
-          "effectText": "Flip a coin. When it lands heads, your opponent's Active Blokemon is now Paralyzed."
+          "name": "Water Gun",
+          "effectText": "Does 30 damage plus 10 more damage for each Water Energy attached to Zero Point Zero but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         },
         {
           "mechanicalId": "BLK-062-B02",
-          "name": "Strong Choice",
-          "effectText": "Flip a coin. When it lands heads, this Attack deals 150 more damage."
+          "name": "Whirlpool",
+          "effectText": "If the Defending Blokemon has any Energy cards attached to it, choose 1 of them and discard it."
         }
       ],
       "rules": [],
@@ -2412,11 +2391,12 @@
       "approvedName": "Jaw Swing",
       "approvedType": "Geeked",
       "flavourText": "The jaw has its own rhythm and nobody knows the tune.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-063-B01",
-          "name": "One Clean Thought"
+          "name": "Psyshock",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         }
       ],
       "rules": [],
@@ -2435,12 +2415,17 @@
       "approvedName": "Gurning",
       "approvedType": "Geeked",
       "flavourText": "Gurning can leave the room without moving a chair.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-064-B01",
-          "name": "Gone for a Minute",
-          "effectText": "Choose 1 of your Benched Blokemon and switch it with this Blokemon."
+          "name": "Recover",
+          "effectText": "Discard 1 Psychic Energy card attached to Gurning in order to use this attack. Remove all damage counters from Gurning."
+        },
+        {
+          "mechanicalId": "BLK-064-B02",
+          "name": "Super Psy",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -2459,26 +2444,21 @@
       "approvedName": "Ebeneezer Goode",
       "approvedType": "Geeked",
       "flavourText": "The room gets stranger whenever he folds his hands.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-065-T01",
+          "name": "Damage Swap",
+          "effectText": "As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Blokemon to another as long as you don't Knock Out that Blokemon. This power can't be used if Ebeneezer Goode is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-065-B01",
-          "name": "Read the Room",
-          "effectText": "This Attack deals 30 more damage for each Blokemon on your opponent's Bench."
-        },
-        {
-          "mechanicalId": "BLK-065-B02",
-          "name": "Hands from Nowhere",
-          "effectText": "This Attack can be used while this Blokemon is on your Bench."
+          "name": "Confuse Ray",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Confused."
         }
       ],
-      "rules": [
-        {
-          "mechanicalId": "BLK-065-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
-        }
-      ],
+      "rules": [],
       "illustration": {
         "brief": "A sharply dressed rave elder sits perfectly still amid blurred motion; centred seated portrait, patterned shirt and untouched glass, acid yellow controlled by deep violet.",
         "prompt": "Hold Ebeneezer Goode perfectly still at the centre of a seated portrait while surrounding shoulders and lights smear into motion. Patterned shirt, untouched glass and sharply dressed rave-elder posture should remain crisp in acid yellow and deep violet; use no psychedelic lettering, borrowed symbols or creature forms.",
@@ -2494,16 +2474,12 @@
       "approvedName": "Tiny",
       "approvedType": "Lairy",
       "flavourText": "Tiny chose the nickname and continues to enforce it.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-066-B01",
-          "name": "Move the Hill",
-          "effectText": "Discard 1 card from the top of your opponent's Deck."
-        },
-        {
-          "mechanicalId": "BLK-066-B02",
-          "name": "Small Bloke, Big Swing"
+          "name": "Low Kick",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -2522,12 +2498,17 @@
       "approvedName": "Bouncer",
       "approvedType": "Lairy",
       "flavourText": "He can spot a fake name before you reach the rope.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-067-B01",
-          "name": "Doorway Rush",
-          "effectText": "Discard 1 card from the top of your opponent's Deck."
+          "name": "Karate Chop",
+          "effectText": "Does 50 damage minus 10 damage for each damage counter on Bouncer."
+        },
+        {
+          "mechanicalId": "BLK-067-B02",
+          "name": "Submission",
+          "effectText": "Bouncer does 20 damage to itself."
         }
       ],
       "rules": [],
@@ -2546,18 +2527,18 @@
       "approvedName": "Head Doorman",
       "approvedType": "Lairy",
       "flavourText": "The head doorman can stop a queue by looking at it.",
-      "abilities": [
+      "pokemonPowers": [
         {
           "mechanicalId": "BLK-068-T01",
-          "name": "Doorman's Grit",
-          "effectText": "If damage from an Attack would Knock Out this Blokemon, flip a coin. If heads, this Blokemon remains in play with 10 HP."
+          "name": "Strikes Back",
+          "effectText": "Whenever your opponent's attack damages Head Doorman (even if Head Doorman is Knocked Out), this power does 10 damage to the attacking Blokemon. (Don't apply Weakness and Resistance.) This power can't be used if Head Doorman is Asleep, Confused, or Paralyzed when your opponent attacks."
         }
       ],
       "attacks": [
         {
           "mechanicalId": "BLK-068-B01",
-          "name": "Clear the Mountain",
-          "effectText": "Discard 2 cards from the top of your opponent's Deck."
+          "name": "Seismic Toss",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -2576,16 +2557,17 @@
       "approvedName": "Ten Bag",
       "approvedType": "Blazed",
       "flavourText": "Ten Bag has counted it twice and trusts neither result.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-069-B01",
-          "name": "Snip the Bag"
+          "name": "Vine Whip",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-069-B02",
-          "name": "Hold the Door",
-          "effectText": "On your opponent's next turn, your opponent's Active Blokemon can't Retreat."
+          "name": "Call for Family",
+          "effectText": "Search your deck for a Basic Blokemon named Ten Bag and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)"
         }
       ],
       "rules": [],
@@ -2604,15 +2586,17 @@
       "approvedName": "Half Ounce",
       "approvedType": "Blazed",
       "flavourText": "Half an ounce has turned the kitchen into a logistics hub.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-070-B01",
-          "name": "Measure Twice"
+          "name": "Poisonpowder",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Poisoned."
         },
         {
           "mechanicalId": "BLK-070-B02",
-          "name": "Mist the Room"
+          "name": "Razor Leaf",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -2631,16 +2615,17 @@
       "approvedName": "Full Ounce",
       "approvedType": "Blazed",
       "flavourText": "Full Ounce does not sell small talk.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-071-B01",
-          "name": "Empty the Lot"
+          "name": "Lure",
+          "effectText": "If your opponent has any Benched Blokemon, choose 1 of them and switch it with his or her Active Blokemon."
         },
         {
           "mechanicalId": "BLK-071-B02",
-          "name": "Creeping Regret",
-          "effectText": "After your opponent's next turn ends, put 12 damage counters on the Blokemon that was Defending when this Attack was used."
+          "name": "Acid",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon can't retreat during your next turn."
         }
       ],
       "rules": [],
@@ -2659,15 +2644,18 @@
       "approvedName": "Early Night",
       "approvedType": "Sober",
       "flavourText": "Early Night leaves before the playlist starts repeating.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-072-T01",
+          "name": "Cowardice",
+          "effectText": "At any time during your turn (before your attack), you may return Early Night to your hand. (Discard all cards attached to Early Night.) This power can't be used the turn you put Early Night into play or if Early Night is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-072-B01",
-          "name": "Phone on Silent"
-        },
-        {
-          "mechanicalId": "BLK-072-B02",
-          "name": "Top-Up the Glass"
+          "name": "Acid",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -2686,17 +2674,17 @@
       "approvedName": "Fresh as a Daisy",
       "approvedType": "Sober",
       "flavourText": "Fresh as a Daisy has already done the washing-up.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-073-B01",
-          "name": "Bad Ice",
-          "effectText": "Your opponent's Active Blokemon is now Poisoned."
+          "name": "Supersonic",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Confused."
         },
         {
           "mechanicalId": "BLK-073-B02",
-          "name": "Every Table at Once",
-          "effectText": "Keep flipping coins until tails appears. This Attack deals 90 damage per heads. If tails appears on the first flip, your opponent's Active Blokemon is now Confused."
+          "name": "Jellyfish Sting",
+          "effectText": "The Defending Blokemon is now Poisoned."
         }
       ],
       "rules": [],
@@ -2715,16 +2703,12 @@
       "approvedName": "Stone Island",
       "approvedType": "Lairy",
       "flavourText": "The badge is subtle; the stance is not.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-074-B01",
-          "name": "Zip It Up",
-          "effectText": "On your opponent's next turn, after applying Weakness and Resistance, reduce damage done to this Blokemon by Attacks by 30."
-        },
-        {
-          "mechanicalId": "BLK-074-B02",
-          "name": "Badge Check"
+          "name": "Stone Barrage",
+          "effectText": "Flip a coin until you get tails. This attack does 10 damage times the number of heads."
         }
       ],
       "rules": [],
@@ -2743,16 +2727,17 @@
       "approvedName": "Away Day",
       "approvedType": "Lairy",
       "flavourText": "Away Day has memorised every platform except the one home.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-075-B01",
-          "name": "Away-End Volley",
-          "effectText": "Flip coins until you get tails. This Attack deals 40 damage for each heads."
+          "name": "Harden",
+          "effectText": "During your opponent's next turn, whenever 30 or less damage is done to Away Day (after applying Weakness and Resistance), prevent that damage. (Any other effects of attacks still happen.)"
         },
         {
           "mechanicalId": "BLK-075-B02",
-          "name": "Turnstile Impact"
+          "name": "Rock Throw",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -2771,26 +2756,20 @@
       "approvedName": "The Firm",
       "approvedType": "Lairy",
       "flavourText": "The Firm arrives together and leaves no useful camera angle.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-076-B01",
-          "name": "Firm Momentum",
-          "effectText": "On your next turn, this Blokemon's Attacks deal 120 more damage before applying Weakness and Resistance."
+          "name": "Avalanche",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-076-B02",
-          "name": "Terrace Barrage",
-          "effectText": "Do not apply Resistance when working out damage from this Attack."
+          "name": "Selfdestruct",
+          "effectText": "Does 20 damage to each Blokemon on each player's Bench. (Don't apply Weakness and Resistance for Benched Blokemon.) The Firm does 100 damage to itself."
         }
       ],
-      "rules": [
-        {
-          "mechanicalId": "BLK-076-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
-        }
-      ],
+      "rules": [],
       "illustration": {
         "brief": "A disciplined group forms a dark wedge beneath stadium floodlights; distant low-angle tableau, plain scarves and identical boots, charcoal with hard white beams.",
         "prompt": "Arrange The Firm as several distinct men forming a dark wedge beneath stadium floodlights, the front pair still while others close ranks behind. Shoot from distant ground level so identical boots and plain scarves create discipline without cloning faces; no crest, chant, lettering or borrowed insignia appears.",
@@ -2806,16 +2785,17 @@
       "approvedName": "Southall",
       "approvedType": "Curry",
       "flavourText": "Southall collects the bill before anyone notices it landed.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-077-B01",
-          "name": "Pick Up the Tab",
-          "effectText": "Draw a card."
+          "name": "Smash Kick",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-077-B02",
-          "name": "Dramatic Collapse"
+          "name": "Flame Tail",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -2834,17 +2814,17 @@
       "approvedName": "Shish Mahal",
       "approvedType": "Curry",
       "flavourText": "Shish Mahal can turn a full dining room in one clean movement.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-078-B01",
-          "name": "Tandoor Spark",
-          "effectText": "Your opponent's Active Blokemon is now Burned."
+          "name": "Stomp",
+          "effectText": "Flip a coin. If heads, this attack does 20 damage plus 10 more damage; if tails, this attack does 20 damage."
         },
         {
           "mechanicalId": "BLK-078-B02",
-          "name": "Fast Table Turn",
-          "effectText": "Choose 1 of your Benched Blokemon and switch it with this Blokemon."
+          "name": "Agility",
+          "effectText": "Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to Shish Mahal."
         }
       ],
       "rules": [],
@@ -2863,16 +2843,17 @@
       "approvedName": "Coming Up",
       "approvedType": "Geeked",
       "flavourText": "Coming Up keeps checking whether everyone else feels warm.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-079-B01",
-          "name": "Wait for It",
-          "effectText": "Heal 30 damage from this Blokemon and clear all Special Conditions from it."
+          "name": "Spacing Out",
+          "effectText": "Flip a coin. If heads, remove a damage counter from Coming Up. This attack can't be used if Coming Up has no damage counters on it."
         },
         {
           "mechanicalId": "BLK-079-B02",
-          "name": "Temple Tap"
+          "name": "Scavenge",
+          "effectText": "Discard 1 Psychic Energy card attached to Coming Up in order to use this attack. Put a Trainer card from your discard pile into your hand."
         }
       ],
       "rules": [],
@@ -2891,17 +2872,18 @@
       "approvedName": "Still Coming Up",
       "approvedType": "Geeked",
       "flavourText": "Still Coming Up has been promised the next ten minutes since midnight.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-080-T01",
+          "name": "Strange Behavior",
+          "effectText": "As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Blokemon to Still Coming Up as long as you don't Knock Out Still Coming Up. This power can't be used if Still Coming Up is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-080-B01",
-          "name": "Still Not Ready",
-          "effectText": "Both Active Blokemon are now Asleep."
-        },
-        {
-          "mechanicalId": "BLK-080-B02",
-          "name": "Easy Does It",
-          "effectText": "If this Blokemon evolved during this turn, this Attack does nothing."
+          "name": "Psyshock",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         }
       ],
       "rules": [],
@@ -2920,16 +2902,17 @@
       "approvedName": "One-Pint Wonder",
       "approvedType": "Beer",
       "flavourText": "One pint creates confidence far larger than the glass.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-081-B01",
-          "name": "One More Volt"
+          "name": "Thunder Wave",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         },
         {
           "mechanicalId": "BLK-081-B02",
-          "name": "Can-Crusher Finale",
-          "effectText": "This Blokemon also does 60 damage to itself."
+          "name": "Selfdestruct",
+          "effectText": "Does 10 damage to each Blokemon on each player's Bench. (Don't apply Weakness and Resistance for Benched Blokemon.) One-Pint Wonder does 40 damage to itself."
         }
       ],
       "rules": [],
@@ -2948,16 +2931,17 @@
       "approvedName": "Three-Pint Hero",
       "approvedType": "Beer",
       "flavourText": "Three pints in, every lost object answers to him.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-082-B01",
-          "name": "Finders Keepers",
-          "effectText": "Choose up to 2 Item cards in your discard pile and add them to your hand."
+          "name": "Thunder Wave",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         },
         {
           "mechanicalId": "BLK-082-B02",
-          "name": "Three-Pint Forehead"
+          "name": "Selfdestruct",
+          "effectText": "Does 20 damage to each Blokemon on each player's Bench. (Don't apply Weakness and Resistance for Benched Blokemon.) Three-Pint Hero does 80 damage to itself."
         }
       ],
       "rules": [],
@@ -2976,16 +2960,17 @@
       "approvedName": "Allotment Alan",
       "approvedType": "Local",
       "flavourText": "The allotment produces leeks, opinions and occasional invoices.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-083-B01",
-          "name": "Shed Bundle",
-          "effectText": "Draw 2 cards."
+          "name": "Leek Slap",
+          "effectText": "Flip a coin. If tails, this attack does nothing. Either way, you can't use this attack again as long as Allotment Alan stays in play (even putting Allotment Alan on the Bench won't let you use it again)."
         },
         {
           "mechanicalId": "BLK-083-B02",
-          "name": "Prize Leek"
+          "name": "Pot Smash",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -3004,12 +2989,12 @@
       "approvedName": "The Twins",
       "approvedType": "Local",
       "flavourText": "The Twins finish each other's order and both deny doing it.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-084-B01",
-          "name": "Both at Once",
-          "effectText": "This Blokemon also does 10 damage to itself."
+          "name": "Fury Attack",
+          "effectText": "Flip 2 coins. This attack does 10 damage times the number of heads."
         }
       ],
       "rules": [],
@@ -3028,18 +3013,18 @@
       "approvedName": "The Lads",
       "approvedType": "Local",
       "flavourText": "The Lads can turn any straight path into a formation.",
-      "abilities": [
+      "pokemonPowers": [
         {
           "mechanicalId": "BLK-085-T01",
-          "name": "Quick Draw for Two",
-          "effectText": "You may use this Ability once per turn. Put 1 damage counter on this Blokemon to draw 1 card."
+          "name": "Retreat Aid",
+          "effectText": "As long as The Lads is Benched, pay Colorless less to retreat your Active Blokemon."
         }
       ],
       "attacks": [
         {
           "mechanicalId": "BLK-085-B01",
-          "name": "Two Beaks, No Brakes",
-          "effectText": "Count the damage counters on this Blokemon. This Attack deals 30 more damage for each one."
+          "name": "Rage",
+          "effectText": "Does 10 damage plus 10 more damage for each damage counter on The Lads."
         }
       ],
       "rules": [],
@@ -3058,11 +3043,12 @@
       "approvedName": "Cold Plunge",
       "approvedType": "Sober",
       "flavourText": "The first ten seconds are courage; the rest is breathing.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-086-B01",
-          "name": "Cold Enough"
+          "name": "Headbutt",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -3081,16 +3067,17 @@
       "approvedName": "Ice Bath",
       "approvedType": "Sober",
       "flavourText": "Ice Bath schedules discomfort with calendar precision.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-087-B01",
-          "name": "Two-Lane Splash",
-          "effectText": "Choose 2 of your opponent's Blokemon. This Attack deals 50 damage to each of them. Do not apply Weakness or Resistance to Benched Blokemon."
+          "name": "Aurora Beam",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-087-B02",
-          "name": "Blue-Hour Glow"
+          "name": "Ice Beam",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         }
       ],
       "rules": [],
@@ -3109,12 +3096,17 @@
       "approvedName": "Fly Tipper",
       "approvedType": "Dodgy",
       "flavourText": "The lay-by was clean before he arrived, allegedly.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-088-B01",
-          "name": "Sticky Fingerprints",
-          "effectText": "On your opponent's next turn, add 1 Colorless Energy to the Retreat Cost of their Active Blokemon."
+          "name": "Nasty Goo",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
+        },
+        {
+          "mechanicalId": "BLK-088-B02",
+          "name": "Minimize",
+          "effectText": "All damage done by attacks to Fly Tipper during your opponent's next turn is reduced by 20 (after applying Weakness and Resistance)."
         }
       ],
       "rules": [],
@@ -3133,16 +3125,18 @@
       "approvedName": "Waste Licence Pending",
       "approvedType": "Dodgy",
       "flavourText": "The paperwork exists in a location he cannot disclose.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-089-T01",
+          "name": "Toxic Gas",
+          "effectText": "Ignore all Blokemon Powers other than Toxic Gases. This power stops working while Waste Licence Pending is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-089-B01",
-          "name": "Clamp Notice",
-          "effectText": "On your opponent's next turn, add 1 Colorless Energy to each Attack cost and the Retreat Cost of their Active Blokemon."
-        },
-        {
-          "mechanicalId": "BLK-089-B02",
-          "name": "Unlicensed Sludge"
+          "name": "Sludge",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Poisoned."
         }
       ],
       "rules": [],
@@ -3161,12 +3155,17 @@
       "approvedName": "Recovery Meeting",
       "approvedType": "Sober",
       "flavourText": "Nobody has to speak, which is why he keeps coming back.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-090-B01",
-          "name": "Hold It Together",
-          "effectText": "On your opponent's next turn, after applying Weakness and Resistance, reduce damage done to this Blokemon by Attacks by 30."
+          "name": "Supersonic",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Confused."
+        },
+        {
+          "mechanicalId": "BLK-090-B02",
+          "name": "Hide in Shell",
+          "effectText": "Flip a coin. If heads, prevent all damage done to Recovery Meeting during your opponent's next turn. (Any other effects of attacks still happen.)"
         }
       ],
       "rules": [],
@@ -3185,12 +3184,17 @@
       "approvedName": "The Sponsor",
       "approvedType": "Sober",
       "flavourText": "The Sponsor answers at three in the morning without sounding surprised.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-091-B01",
-          "name": "Sponsor's Shield",
-          "effectText": "On your opponent's next turn, after applying Weakness and Resistance, reduce damage done to this Blokemon by Attacks by 80."
+          "name": "Clamp",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed. If tails, this attack does nothing (not even damage)."
+        },
+        {
+          "mechanicalId": "BLK-091-B02",
+          "name": "Spike Cannon",
+          "effectText": "Flip 2 coins. This attack does 30 damage times the number of heads."
         }
       ],
       "rules": [],
@@ -3209,11 +3213,17 @@
       "approvedName": "Kitchen Afterparty",
       "approvedType": "Geeked",
       "flavourText": "The kitchen door shut hours ago but the conversation did not.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-092-B01",
-          "name": "Open a Window"
+          "name": "Sleeping Gas",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Asleep."
+        },
+        {
+          "mechanicalId": "BLK-092-B02",
+          "name": "Destiny Bond",
+          "effectText": "Discard 1 Psychic Energy card attached to Kitchen Afterparty in order to use this attack. If a Blokemon Knocks Out Kitchen Afterparty during your opponent's next turn, Knock Out that Blokemon."
         }
       ],
       "rules": [],
@@ -3232,17 +3242,17 @@
       "approvedName": "Someone's Mate",
       "approvedType": "Geeked",
       "flavourText": "Nobody invited him, yet three people insist he came with them.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-093-T01",
-          "name": "Back from the Kitchen",
-          "effectText": "If this card evolves a Blokemon from your hand during your turn, you may return 1 Supporter card from your opponent's discard pile to their hand."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-093-B01",
-          "name": "Can't Hear You"
+          "name": "Hypnosis",
+          "effectText": "The Defending Blokemon is now Asleep."
+        },
+        {
+          "mechanicalId": "BLK-093-B02",
+          "name": "Dream Eater",
+          "effectText": "You can't use this attack unless the Defending Blokemon is Asleep."
         }
       ],
       "rules": [],
@@ -3261,17 +3271,18 @@
       "approvedName": "Sunrise Sesh",
       "approvedType": "Geeked",
       "flavourText": "The sun came up and nobody took it personally.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-094-T01",
+          "name": "Curse",
+          "effectText": "Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent's Blokemon to another (even if it would Knock Out the other Blokemon). This power can't be used if Sunrise Sesh is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-094-B01",
-          "name": "Check Their Pockets",
-          "effectText": "Your opponent reveals their hand. For each Trainer card there, this Attack deals 50 damage."
-        },
-        {
-          "mechanicalId": "BLK-094-B02",
-          "name": "Disappear Upstairs",
-          "effectText": "Put 3 damage counters on your opponent's Blokemon in any distribution you choose."
+          "name": "Dark Mind",
+          "effectText": "If your opponent has any Benched Blokemon, choose 1 of them and this attack does 10 damage to it. (Don't apply Weakness and Resistance for Benched Blokemon.)"
         }
       ],
       "rules": [],
@@ -3290,16 +3301,17 @@
       "approvedName": "Big Vern",
       "approvedType": "Lairy",
       "flavourText": "Vern does not climb the hill; the hill adjusts.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-095-B01",
-          "name": "Vernalanche",
-          "effectText": "Discard 5 cards from the top of your Deck. For each Blokemon discarded this way whose Retreat Cost is exactly 4, this Attack deals 80 damage."
+          "name": "Rock Throw",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-095-B02",
-          "name": "Heavy Landing"
+          "name": "Harden",
+          "effectText": "During your opponent's next turn, whenever 30 or less damage is done to Big Vern (after applying Weakness and Resistance), prevent that damage. (Any other effects of attacks still happen.)"
         }
       ],
       "rules": [],
@@ -3318,11 +3330,17 @@
       "approvedName": "No Sleep",
       "approvedType": "Geeked",
       "flavourText": "No Sleep has moved beyond tired into administrative calm.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-096-B01",
-          "name": "Forehead Zen"
+          "name": "Pound",
+          "effectText": null
+        },
+        {
+          "mechanicalId": "BLK-096-B02",
+          "name": "Confuse Ray",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Confused."
         }
       ],
       "rules": [],
@@ -3341,17 +3359,17 @@
       "approvedName": "Fourth Night",
       "approvedType": "Geeked",
       "flavourText": "On the fourth night, even the wallpaper is listening.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-097-T01",
-          "name": "You Look Tired",
-          "effectText": "You may make your opponent's Active Blokemon Asleep when you evolve 1 of your Blokemon into this card from your hand during your turn."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-097-B01",
-          "name": "Fourth-Night Flash"
+          "name": "Prophecy",
+          "effectText": "Look at up to 3 cards from the top of either player's deck and rearrange them as you like."
+        },
+        {
+          "mechanicalId": "BLK-097-B02",
+          "name": "Dark Mind",
+          "effectText": "If your opponent has any Benched Blokemon, choose 1 of them and this attack does 10 damage to it. (Don't apply Weakness and Resistance for Benched Blokemon.)"
         }
       ],
       "rules": [],
@@ -3370,16 +3388,17 @@
       "approvedName": "Crabby Before Coffee",
       "approvedType": "Sober",
       "flavourText": "Coffee comes first; diplomacy can apply afterwards.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-098-B01",
-          "name": "Salty Start",
-          "effectText": "Flip a coin. When it lands heads, search your Deck and choose up to 2 Basic Sober Energy cards. Attach them to this Blokemon, then shuffle your Deck."
+          "name": "Call for Family",
+          "effectText": "Search your deck for a Basic Blokemon named Crabby Before Coffee and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench if full.)"
         },
         {
           "mechanicalId": "BLK-098-B02",
-          "name": "Mug-Slam"
+          "name": "Irongrip",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -3398,16 +3417,17 @@
       "approvedName": "Black Coffee",
       "approvedType": "Sober",
       "flavourText": "Black Coffee has no milk, no sugar and no remaining patience.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-099-B01",
-          "name": "Double Espresso Swing",
-          "effectText": "Discard 1 card from the top of your opponent's Deck."
+          "name": "Flail",
+          "effectText": "Does 10 damage times the number of damage counters on Black Coffee."
         },
         {
           "mechanicalId": "BLK-099-B02",
-          "name": "Cut the Queue"
+          "name": "Crabhammer",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -3426,12 +3446,12 @@
       "approvedName": "Tinnie",
       "approvedType": "Beer",
       "flavourText": "The can rolls farther when nobody admits kicking it.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-100-B01",
-          "name": "Roll the Can",
-          "effectText": "Flip a coin. When it lands heads, this Attack deals 20 more damage."
+          "name": "Tackle",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -3450,16 +3470,18 @@
       "approvedName": "Kegstand",
       "approvedType": "Beer",
       "flavourText": "Kegstand believes consequences are mostly a balance problem.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-101-T01",
+          "name": "Buzzap",
+          "effectText": "At any time during your turn (before your attack), you may Knock Out Kegstand and attach it to 1 of your other Blokemon. If you do, choose a type of Energy. Kegstand is now an Energy card (instead of a Blokemon) that provides 2 energy of that type. You can't use this power if Kegstand is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-101-B01",
-          "name": "Chain Reaction",
-          "effectText": "You may discard any number of Tools from your Blokemon before this Attack deals damage. It deals 40 more damage per card discarded this way."
-        },
-        {
-          "mechanicalId": "BLK-101-B02",
-          "name": "Last-Orders Voltage"
+          "name": "Electric Shock",
+          "effectText": "Flip a coin. If tails, Kegstand does 10 damage to itself."
         }
       ],
       "rules": [],
@@ -3478,12 +3500,17 @@
       "approvedName": "Edibles",
       "approvedType": "Blazed",
       "flavourText": "The tray was divided equally until Edibles did the maths.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-102-B01",
-          "name": "Pass the Tray",
-          "effectText": "Flip coins until you get tails. This Attack deals 30 damage for each heads."
+          "name": "Hypnosis",
+          "effectText": "The Defending Blokemon is now Asleep."
+        },
+        {
+          "mechanicalId": "BLK-102-B02",
+          "name": "Leech Seed",
+          "effectText": "Unless all damage from this attack is prevented, you may remove 1 damage counter from Edibles."
         }
       ],
       "rules": [],
@@ -3502,16 +3529,17 @@
       "approvedName": "Space Cake",
       "approvedType": "Blazed",
       "flavourText": "Space Cake has been staring into the tin for a very long time.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-103-B01",
-          "name": "Room-Spinning Thought",
-          "effectText": "Count the Energy attached to your opponent's Active Blokemon. This Attack deals 30 more damage for each card counted."
+          "name": "Teleport",
+          "effectText": "Switch Space Cake with 1 of your Benched Blokemon."
         },
         {
           "mechanicalId": "BLK-103-B02",
-          "name": "Cake Tin Clout"
+          "name": "Big Eggsplosion",
+          "effectText": "Flip a number of coins equal to the number of Energy attached to Space Cake. This attack does 20 damage times the number of heads."
         }
       ],
       "rules": [],
@@ -3530,18 +3558,17 @@
       "approvedName": "Pool Cue",
       "approvedType": "Lairy",
       "flavourText": "The cue taps twice when encouragement has stopped working.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-104-T01",
-          "name": "Rail-Side Encouragement",
-          "effectText": "While this Blokemon is on your Bench, each Attack used by your Last Orders deals 30 more damage before Weakness and Resistance are applied."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-104-B01",
-          "name": "Double Tap",
-          "effectText": "Flip 2 coins. This Attack deals 10 damage for each heads."
+          "name": "Snivel",
+          "effectText": "If the Defending Blokemon attacks Pool Cue during your opponent's next turn, any damage done by the attack is reduced by 20 (after applying Weakness and Resistance). (Benching either Blokemon ends this effect.)"
+        },
+        {
+          "mechanicalId": "BLK-104-B02",
+          "name": "Rage",
+          "effectText": "Does 10 damage plus 10 more damage for each damage counter on Pool Cue."
         }
       ],
       "rules": [],
@@ -3560,17 +3587,17 @@
       "approvedName": "Last Orders",
       "approvedType": "Lairy",
       "flavourText": "Last Orders hears the bell as a personal attack.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-105-B01",
-          "name": "Chuck the Cue",
-          "effectText": "Choose 1 of your opponent's Benched Blokemon. This Attack deals 30 damage to that Blokemon. Do not apply Weakness or Resistance."
+          "name": "Bonemerang",
+          "effectText": "Flip 2 coins. This attack does 30 damage times the number of heads."
         },
         {
           "mechanicalId": "BLK-105-B02",
-          "name": "No Closing Time",
-          "effectText": "On your next turn, this Blokemon cannot use an Attack."
+          "name": "Call for Friend",
+          "effectText": "Search your deck for a Fighting Basic Blokemon card and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)"
         }
       ],
       "rules": [],
@@ -3589,16 +3616,17 @@
       "approvedName": "Barry Chuckle",
       "approvedType": "Lairy",
       "flavourText": "Barry always knows which way is to me.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-106-B01",
-          "name": "To Me, Then Away",
-          "effectText": "This Attack deals 10 damage to each of your opponent's Blokemon. Do not apply Weakness or Resistance to Benched Blokemon. Then choose 1 of your Benched Blokemon and switch it with this Blokemon."
+          "name": "Stretch Kick",
+          "effectText": "If your opponent has any Benched Blokemon, choose 1 of them and this attack does 20 damage to it. (Don't apply Weakness and Resistance for Benched Blokemon.)"
         },
         {
           "mechanicalId": "BLK-106-B02",
-          "name": "Long-Leg Sweep"
+          "name": "High Jump Kick",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -3617,18 +3645,17 @@
       "approvedName": "Paul Chuckle",
       "approvedType": "Lairy",
       "flavourText": "Paul knows exactly when it is to you.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-107-T01",
-          "name": "Chuckle Counter",
-          "effectText": "If an Attack damages this Blokemon while it is your Active Blokemon, put 3 damage counters on the attacking Blokemon, even if this Blokemon is Knocked Out."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-107-B01",
-          "name": "To You, Then Back",
-          "effectText": "On your next turn, add 60 damage to the damage done by To You, Then Back before applying Weakness and Resistance."
+          "name": "Jab",
+          "effectText": null
+        },
+        {
+          "mechanicalId": "BLK-107-B02",
+          "name": "Special Punch",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -3647,12 +3674,17 @@
       "approvedName": "Pub Bore",
       "approvedType": "Local",
       "flavourText": "The story has six beginnings and none has reached the point.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-108-B01",
-          "name": "Lose the Thread",
-          "effectText": "Your opponent's Active Blokemon cannot use an Attack during your opponent's next turn."
+          "name": "Tongue Wrap",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
+        },
+        {
+          "mechanicalId": "BLK-108-B02",
+          "name": "Supersonic",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Confused."
         }
       ],
       "rules": [],
@@ -3671,12 +3703,12 @@
       "approvedName": "Two-Pound Vape",
       "approvedType": "Dodgy",
       "flavourText": "Two pounds bought the vape; the cloud appears to own the building.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-109-B01",
-          "name": "Cloud of Doubt",
-          "effectText": "Your opponent's Active Blokemon is now Confused."
+          "name": "Foul Gas",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Poisoned; if tails, it is now Confused."
         }
       ],
       "rules": [],
@@ -3695,18 +3727,17 @@
       "approvedName": "Duty-Free",
       "approvedType": "Dodgy",
       "flavourText": "The allowance was generous until Duty-Free found the fireworks aisle.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-110-T01",
-          "name": "One Spark Too Many",
-          "effectText": "If damage from an Attack Knocks Out this Blokemon while it is your Active Blokemon, flip a coin. If heads, Knock Out the attacking Blokemon."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-110-B01",
-          "name": "Duty-Free Spin",
-          "effectText": "Each of your opponent's Benched Blokemon takes 10 damage from this Attack. Do not apply Weakness or Resistance."
+          "name": "Smog",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Poisoned."
+        },
+        {
+          "mechanicalId": "BLK-110-B02",
+          "name": "Selfdestruct",
+          "effectText": "Does 10 damage to each Blokemon on each player's Bench. (Don't apply Weakness and Resistance for Benched Blokemon.) Duty-Free does 60 damage to itself."
         }
       ],
       "rules": [],
@@ -3725,16 +3756,17 @@
       "approvedName": "Road Rage",
       "approvedType": "Lairy",
       "flavourText": "The horn sounded first, but that is not how he tells it.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-111-B01",
-          "name": "Out of My Lane",
-          "effectText": "Your opponent chooses 1 of their Benched Blokemon and switches it with their Active Blokemon."
+          "name": "Leer",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon can't attack Road Rage during your opponent's next turn. (Benching either Blokemon ends this effect.)"
         },
         {
           "mechanicalId": "BLK-111-B02",
-          "name": "Kerbside Crunch"
+          "name": "Horn Attack",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -3753,16 +3785,17 @@
       "approvedName": "Dashcam",
       "approvedType": "Lairy",
       "flavourText": "Dashcam has the footage cued before the argument begins.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-112-B01",
-          "name": "Replay the Impact"
+          "name": "Horn Attack",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-112-B02",
-          "name": "Main-Character Drill",
-          "effectText": "This Attack deals 140 more damage if you played The Guv'nor from your hand this turn."
+          "name": "Ram",
+          "effectText": "Dashcam does 20 damage to itself. If your opponent has any Benched Blokemon, he or she chooses 1 of them and switches it with the Defending Blokemon. (Do the damage before switching the Blokemon. Switch the Blokemon even if Dashcam is knocked out.)"
         }
       ],
       "rules": [],
@@ -3781,17 +3814,17 @@
       "approvedName": "Bingo Brenda",
       "approvedType": "Local",
       "flavourText": "Brenda calls luck what everyone else calls preparation.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-113-T01",
-          "name": "Eyes Down",
-          "effectText": "When you take this face-down card as a Prize Card during your turn, if your Bench has room, you may put it onto your Bench before adding it to your hand. If you do, flip a coin and take 1 extra Prize Card on heads."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-113-B01",
-          "name": "Polite Little Slap"
+          "name": "Scrunch",
+          "effectText": "Flip a coin. If heads, prevent all damage done to Bingo Brenda during your opponent's next turn. (Any other effects of attacks still happen.)"
+        },
+        {
+          "mechanicalId": "BLK-113-B02",
+          "name": "Double-edge",
+          "effectText": "Bingo Brenda does 80 damage to itself."
         }
       ],
       "rules": [],
@@ -3810,12 +3843,17 @@
       "approvedName": "Hotbox",
       "approvedType": "Blazed",
       "flavourText": "Hotbox can knot a room together without touching the door.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-114-B01",
-          "name": "Untangle This",
-          "effectText": "This Attack deals 60 more damage if you played The Matchmaker from your hand this turn."
+          "name": "Bind",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
+        },
+        {
+          "mechanicalId": "BLK-114-B02",
+          "name": "Poisonpowder",
+          "effectText": "The Defending Blokemon is now Poisoned."
         }
       ],
       "rules": [],
@@ -3834,26 +3872,20 @@
       "approvedName": "School-Run Sue",
       "approvedType": "Local",
       "flavourText": "The school run has three lanes and Sue controls all of them.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-115-B01",
-          "name": "School-Run Draw",
-          "effectText": "Draw 3 cards."
+          "name": "Fetch",
+          "effectText": "Draw a card."
         },
         {
           "mechanicalId": "BLK-115-B02",
-          "name": "Are We There Yet?",
-          "effectText": "Flip 4 coins. This Attack deals 100 damage for each heads."
+          "name": "Comet Punch",
+          "effectText": "Flip 4 coins. This attack does 20 damage times the number of heads."
         }
       ],
-      "rules": [
-        {
-          "mechanicalId": "BLK-115-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
-        }
-      ],
+      "rules": [],
       "illustration": {
         "brief": "School-Run Sue uses exactly two arms to direct two children while lunchboxes and bags rest securely on car and ground.",
         "prompt": "School-Run Sue is a formidable adult mother beside a practical car, with exactly two arms. Her left hand holds one travel mug; her right arm points toward two children who stand on the pavement. Three closed lunchboxes rest visibly on the car bonnet and two school bags rest on the ground. Nothing floats, no duplicate limbs, and every object has clear support.",
@@ -3869,15 +3901,12 @@
       "approvedName": "One Day at a Time",
       "approvedType": "Sober",
       "flavourText": "One day is easier to carry when it is the only one on the list.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-116-B01",
-          "name": "Rain on the Window"
-        },
-        {
-          "mechanicalId": "BLK-116-B02",
-          "name": "Sharp Turn"
+          "name": "Smokescreen",
+          "effectText": "If the Defending Blokemon tries to attack during your opponent's next turn, your opponent flips a coin. If tails, that attack does nothing."
         }
       ],
       "rules": [],
@@ -3896,12 +3925,17 @@
       "approvedName": "One Year Chip",
       "approvedType": "Sober",
       "flavourText": "The chip is small; the year behind it is not.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-117-B01",
-          "name": "One-Year Glare",
-          "effectText": "On your opponent's next turn, when the Blokemon that was Defending when this Attack was used tries to use an Attack, your opponent flips 2 coins. Cancel that Attack if either coin is tails."
+          "name": "Water Gun",
+          "effectText": "Does 20 damage plus 10 more damage for each Water Energy attached to One Year Chip but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
+        },
+        {
+          "mechanicalId": "BLK-117-B02",
+          "name": "Agility",
+          "effectText": "Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to One Year Chip."
         }
       ],
       "rules": [],
@@ -3920,16 +3954,12 @@
       "approvedName": "Sunday Swim",
       "approvedType": "Sober",
       "flavourText": "Sunday Swim reaches the water before the gulls.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-118-B01",
-          "name": "Three Lengths",
-          "effectText": "Flip 3 coins. This Attack deals 10 damage for each heads."
-        },
-        {
-          "mechanicalId": "BLK-118-B02",
-          "name": "Gentle Sprinkle"
+          "name": "Horn Attack",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -3948,17 +3978,17 @@
       "approvedName": "Channel Crossing",
       "approvedType": "Sober",
       "flavourText": "The channel looks shorter once the support boat starts moving.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-119-B01",
-          "name": "Open Water",
-          "effectText": "Flip a coin. When it lands heads, prevent all damage and effects of Attacks affecting this Blokemon until the end of your opponent's next turn."
+          "name": "Horn Attack",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-119-B02",
-          "name": "Channel Horn",
-          "effectText": "This Attack deals 30 more damage for each Sober Energy attached to this Blokemon."
+          "name": "Waterfall",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -3977,12 +4007,12 @@
       "approvedName": "Couch to 5K",
       "approvedType": "Sober",
       "flavourText": "The sofa remembers the first week better than he does.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-120-B01",
-          "name": "Negative Split",
-          "effectText": "Do not apply Weakness, Resistance or effects on your opponent's Active Blokemon when working out this Attack's damage."
+          "name": "Slap",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -4001,17 +4031,17 @@
       "approvedName": "Marathon",
       "approvedType": "Sober",
       "flavourText": "A marathon is just five kilometres refusing to stop.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-121-T01",
-          "name": "Five-K Mystery",
-          "effectText": "Once per turn, you may choose 1 of your opponent's Blokemon and put 2 damage counters on it. If you do, discard this Blokemon and all attached cards."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-121-B01",
-          "name": "Race Pace"
+          "name": "Recover",
+          "effectText": "Discard 1 Water Energy card attached to Marathon in order to use this attack. Remove all damage counters from Marathon."
+        },
+        {
+          "mechanicalId": "BLK-121-B02",
+          "name": "Star Freeze",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         }
       ],
       "rules": [],
@@ -4030,18 +4060,18 @@
       "approvedName": "Big Fish Little Fish",
       "approvedType": "Geeked",
       "flavourText": "The hands tell one story while the face tells another.",
-      "abilities": [
+      "pokemonPowers": [
         {
           "mechanicalId": "BLK-122-T01",
-          "name": "Invisible Rope",
-          "effectText": "If both Active Blokemon have equal numbers of attached Energy, prevent all damage done to this Blokemon by your opponent's Attacks."
+          "name": "Invisible Wall",
+          "effectText": "Whenever an attack (including your own) does 30 or more damage to Big Fish Little Fish (after applying Weakness and Resistance), prevent that damage. (Any other effects of attacks still happen.) This power can't be used if Big Fish Little Fish is Asleep, Confused, or Paralyzed."
         }
       ],
       "attacks": [
         {
           "mechanicalId": "BLK-122-B01",
-          "name": "Little Push, Big Result",
-          "effectText": "Distribute 3 damage counters among your opponent's Blokemon using any distribution you choose."
+          "name": "Meditate",
+          "effectText": "Does 10 damage plus 10 more damage for each damage counter on the Defending Blokemon."
         }
       ],
       "rules": [],
@@ -4060,16 +4090,17 @@
       "approvedName": "Cropper",
       "approvedType": "Blazed",
       "flavourText": "Cropper lends a blade only after inspecting your technique.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-123-B01",
-          "name": "Lend a Blade",
-          "effectText": "Choose 1 of your Benched Blokemon, then attach a Basic Blazed Energy card to it from your discard pile."
+          "name": "Swords Dance",
+          "effectText": "During your next turn, Cropper's Slash attack's base damage is 60 instead of 30."
         },
         {
           "mechanicalId": "BLK-123-B02",
-          "name": "Clean Crop"
+          "name": "Slash",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -4088,26 +4119,20 @@
       "approvedName": "Hen Night Mum",
       "approvedType": "Sober",
       "flavourText": "One look from Hen Night Mum can stop the whole minibus.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-124-B01",
-          "name": "Mum's Death Stare",
-          "effectText": "If your opponent's Active Blokemon is Asleep, it is Knocked Out."
+          "name": "Doubleslap",
+          "effectText": "Flip 2 coins. This attack does 10 damage times the number of heads."
         },
         {
           "mechanicalId": "BLK-124-B02",
-          "name": "Cold Shoulder",
-          "effectText": "Your opponent's Active Blokemon is now Asleep."
+          "name": "Meditate",
+          "effectText": "Does 20 damage plus 10 more damage for each damage counter on the Defending Blokemon."
         }
       ],
-      "rules": [
-        {
-          "mechanicalId": "BLK-124-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
-        }
-      ],
+      "rules": [],
       "illustration": {
         "brief": "A glamorous matriarch turns from a frosted pavement with a devastating stare; close windblown portrait, sash without writing and faux-fur coat, icy blue with hot pink.",
         "prompt": "Catch Hen Night Mum turning into a winter gust on frosted pavement, faux-fur coat and blank sash sweeping one way while her devastating stare cuts back toward camera. Hot pink should strike icy blue in a close windblown portrait; no party wording, crown, brand or written joke appears.",
@@ -4123,16 +4148,17 @@
       "approvedName": "Pub Buzz",
       "approvedType": "Beer",
       "flavourText": "The buzz starts in the glass and finishes in both elbows.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-125-B01",
-          "name": "Three-Part Buzz",
-          "effectText": "If Mr Vesta is on your Bench, this Attack deals 40 more damage."
+          "name": "Thundershock",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         },
         {
           "mechanicalId": "BLK-125-B02",
-          "name": "Tiny Spark"
+          "name": "Thunderpunch",
+          "effectText": "Flip a coin. If heads, this attack does 30 damage plus 10 more damage; if tails, this attack does 30 damage plus Pub Buzz does 10 damage to itself."
         }
       ],
       "rules": [],
@@ -4151,16 +4177,17 @@
       "approvedName": "Mr Vesta",
       "approvedType": "Curry",
       "flavourText": "Mr Vesta can keep a curry warm through a power cut.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-126-B01",
-          "name": "Keep the Ember"
+          "name": "Fire Punch",
+          "effectText": null
         },
         {
           "mechanicalId": "BLK-126-B02",
-          "name": "Vesta Three-Step",
-          "effectText": "If Pub Buzz is on your Bench, this Attack deals 80 more damage."
+          "name": "Flamethrower",
+          "effectText": "Discard 1 Fire Energy card attached to Mr Vesta in order to use this attack."
         }
       ],
       "rules": [],
@@ -4179,16 +4206,17 @@
       "approvedName": "Roach Clip",
       "approvedType": "Blazed",
       "flavourText": "The roach is tiny, but the engineering is unnecessarily proud.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-127-B01",
-          "name": "Clip and Hold"
+          "name": "Irongrip",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         },
         {
           "mechanicalId": "BLK-127-B02",
-          "name": "Chuck It Anyway",
-          "effectText": "If your remaining Prize Card count exceeds your opponent's, this Attack deals 90 more damage."
+          "name": "Guillotine",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -4207,17 +4235,17 @@
       "approvedName": "White Van Dan",
       "approvedType": "Local",
       "flavourText": "Dan does not fill the van; he assembles a crew around it.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-128-B01",
-          "name": "Get the Lads In",
-          "effectText": "Search your Deck for 1 Basic Blokemon and move it to your Bench. Then shuffle your Deck."
+          "name": "Stomp",
+          "effectText": "Flip a coin. If heads, this attack does 20 damage plus 10 more damage; if tails, this attack does 20 damage."
         },
         {
           "mechanicalId": "BLK-128-B02",
-          "name": "Van-Door Fury",
-          "effectText": "Count the damage counters on this Blokemon. This Attack deals 10 more damage for each one."
+          "name": "Rampage",
+          "effectText": "Does 20 damage plus 10 more damage for each damage counter on White Van Dan. Flip a coin. If tails, White Van Dan is now Confused (after doing damage)."
         }
       ],
       "rules": [],
@@ -4236,12 +4264,17 @@
       "approvedName": "Rock Bottom",
       "approvedType": "Sober",
       "flavourText": "Rock Bottom is quiet enough to hear the first better idea.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-129-B01",
-          "name": "One Small Splash",
-          "effectText": "Flip coins until you get tails. Draw 1 card for each heads."
+          "name": "Tackle",
+          "effectText": null
+        },
+        {
+          "mechanicalId": "BLK-129-B02",
+          "name": "Flail",
+          "effectText": "Does 10 damage times the number of damage counters on Rock Bottom."
         }
       ],
       "rules": [],
@@ -4260,18 +4293,17 @@
       "approvedName": "Comeback Story",
       "approvedType": "Sober",
       "flavourText": "The comeback starts before anyone else has noticed the fall.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-130-T01",
-          "name": "Never Written Off",
-          "effectText": "If this card evolves a Blokemon from your hand during your turn, discard 5 cards from the top of your Deck."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-130-B01",
-          "name": "One Last Surge",
-          "effectText": "Discard 1 Energy from your opponent's Active Blokemon."
+          "name": "Dragon Rage",
+          "effectText": null
+        },
+        {
+          "mechanicalId": "BLK-130-B02",
+          "name": "Bubblebeam",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         }
       ],
       "rules": [],
@@ -4290,16 +4322,17 @@
       "approvedName": "Last Bus Home",
       "approvedType": "Sober",
       "flavourText": "The last bus waits exactly as long as he keeps everyone moving.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-131-B01",
-          "name": "Everybody Aboard",
-          "effectText": "Search your Deck for up to 2 Blokemon, reveal them, and add them to your hand. Then shuffle your Deck."
+          "name": "Water Gun",
+          "effectText": "Does 10 damage plus 10 more damage for each Water Energy attached to Last Bus Home but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
         },
         {
           "mechanicalId": "BLK-131-B02",
-          "name": "Night-Bus Edge"
+          "name": "Confuse Ray",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Confused."
         }
       ],
       "rules": [],
@@ -4318,19 +4351,14 @@
       "approvedName": "Steve",
       "approvedType": "Local",
       "flavourText": "Steve becomes whoever the room needs, usually before introductions.",
-      "abilities": [
+      "pokemonPowers": [
         {
           "mechanicalId": "BLK-132-T01",
-          "name": "First Face You See",
-          "effectText": "Once during your first turn, while this Blokemon is your Active Blokemon, you may search your Deck for a Basic Blokemon other than Steve. Discard this Blokemon and all attached cards, put the chosen Blokemon into your Active Spot, then shuffle your Deck."
+          "name": "Transform",
+          "effectText": "If Steve is your Active Blokemon, treat it as if it were the same card as the Defending Blokemon, including type, Hit Points, Weakness, and so on, except Steve can't evolve, always has this Blokemon Power, and you may treat any Energy attached to Steve as Energy of any type. Steve isn't a copy of any other Blokemon while Steve is Asleep, Confused, or Paralyzed."
         }
       ],
-      "attacks": [
-        {
-          "mechanicalId": "BLK-132-B01",
-          "name": "Steve Noise"
-        }
-      ],
+      "attacks": [],
       "rules": [],
       "illustration": {
         "brief": "An ordinary-looking bloke stands between three mirrors that reflect distinct postures; clean triptych composition, plain grey jumper and neutral stool, local beige with subtle colour shifts.",
@@ -4347,16 +4375,17 @@
       "approvedName": "Apprentice",
       "approvedType": "Local",
       "flavourText": "The apprentice has tried every trade and mastered leaving early.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-133-B01",
-          "name": "Bring the Trades",
-          "effectText": "Search your Deck and choose up to 3 Blokemon of different types. Reveal them, add them to your hand, then shuffle your Deck."
+          "name": "Tail Wag",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon can't attack Apprentice during your opponent's next turn. (Benching either Blokemon ends this effect.)"
         },
         {
           "mechanicalId": "BLK-133-B02",
-          "name": "Clock Off Early"
+          "name": "Quick Attack",
+          "effectText": "Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage."
         }
       ],
       "rules": [],
@@ -4375,17 +4404,17 @@
       "approvedName": "Teetotal Terry",
       "approvedType": "Sober",
       "flavourText": "Terry drains a room of drama as neatly as a glass of water.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-134-B01",
-          "name": "Clear the Head",
-          "effectText": "Heal 30 damage from this Blokemon."
+          "name": "Quick Attack",
+          "effectText": "Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage."
         },
         {
           "mechanicalId": "BLK-134-B02",
-          "name": "Sober Whirlpool",
-          "effectText": "If your opponent's Active Blokemon is a Two-Prize Blokemon, this Attack deals 90 more damage."
+          "name": "Water Gun",
+          "effectText": "Does 30 damage plus 10 more damage for each Water Energy attached to Teetotal Terry but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         }
       ],
       "rules": [],
@@ -4404,17 +4433,17 @@
       "approvedName": "Snakebite",
       "approvedType": "Beer",
       "flavourText": "Snakebite goes straight down the bar and rarely in a straight line home.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-135-B01",
-          "name": "Straight Down the Bar",
-          "effectText": "Choose 1 of your opponent's Blokemon. This Attack deals 30 damage to it. If that Blokemon is Benched, do not apply Weakness or Resistance."
+          "name": "Quick Attack",
+          "effectText": "Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage."
         },
         {
           "mechanicalId": "BLK-135-B02",
-          "name": "Lairy Voltage",
-          "effectText": "If your opponent's Active Blokemon is a Two-Prize Blokemon, this Attack deals 90 more damage."
+          "name": "Pin Missile",
+          "effectText": "Flip 4 coins. This attack does 20 damage times the number of heads."
         }
       ],
       "rules": [],
@@ -4433,17 +4462,17 @@
       "approvedName": "Bombay Bandit",
       "approvedType": "Curry",
       "flavourText": "The Bandit leaves the table empty and the room noticeably warmer.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-136-B01",
-          "name": "Clear the Table",
-          "effectText": "Flip a coin. When it lands heads, discard 1 Energy from your opponent's Active Blokemon."
+          "name": "Quick Attack",
+          "effectText": "Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage."
         },
         {
           "mechanicalId": "BLK-136-B02",
-          "name": "Curry Courage",
-          "effectText": "If your opponent's Active Blokemon is a Two-Prize Blokemon, this Attack deals 90 more damage."
+          "name": "Flamethrower",
+          "effectText": "Discard 1 Fire Energy card attached to Bombay Bandit in order to use this attack."
         }
       ],
       "rules": [],
@@ -4462,12 +4491,17 @@
       "approvedName": "Facebook Dad",
       "approvedType": "Local",
       "flavourText": "Facebook Dad has a type for every situation and a post for none of them.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-137-B01",
-          "name": "Pick a New Crowd",
-          "effectText": "Choose Blazed, Curry, Sober, Beer, Geeked, Lairy, Dodgy, Roadie, or Legend. Until your opponent's Active Blokemon leaves the Active Spot, replace its Weakness type with your choice without changing the multiplier."
+          "name": "Conversion 1",
+          "effectText": "If the Defending Blokemon has a Weakness, you may change it to a type of your choice other than Colorless."
+        },
+        {
+          "mechanicalId": "BLK-137-B02",
+          "name": "Conversion 2",
+          "effectText": "Change Facebook Dad's Resistance to a type of your choice other than Colorless."
         }
       ],
       "rules": [],
@@ -4486,12 +4520,18 @@
       "approvedName": "Old Habit",
       "approvedType": "Sober",
       "flavourText": "Old Habit knows the route even after the destination changes.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-138-T01",
+          "name": "Clairvoyance",
+          "effectText": "Your opponent plays with his or her hand face up. This power stops working while Old Habit is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-138-B01",
-          "name": "Back to the Same Seat",
-          "effectText": "Move 1 Energy from your opponent's Active Blokemon to your opponent's hand."
+          "name": "Water Gun",
+          "effectText": "Does 10 damage plus 10 more damage for each Water Energy attached to Old Habit but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
         }
       ],
       "rules": [],
@@ -4510,18 +4550,17 @@
       "approvedName": "New Life",
       "approvedType": "Sober",
       "flavourText": "New Life grows around the routines worth keeping.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-139-T01",
-          "name": "Old Roots, New Life",
-          "effectText": "While this Blokemon is your Active Blokemon, your opponent's Active Blokemon cannot Retreat."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-139-B01",
-          "name": "Split the Water",
-          "effectText": "Choose 2 of your opponent's Benched Blokemon. This Attack deals 30 damage to each of them. Do not apply Weakness or Resistance."
+          "name": "Water Gun",
+          "effectText": "Does 20 damage plus 10 more damage for each Water Energy attached to New Life but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
+        },
+        {
+          "mechanicalId": "BLK-139-B02",
+          "name": "Spike Cannon",
+          "effectText": "Flip 2 coins. This attack does 30 damage times the number of heads."
         }
       ],
       "rules": [],
@@ -4540,12 +4579,18 @@
       "approvedName": "Flat Cap",
       "approvedType": "Lairy",
       "flavourText": "The cap is flat; the temper has two sharp edges.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-140-T01",
+          "name": "Kabuto Armor",
+          "effectText": "Whenever an attack (even your own) does damage to Flat Cap (after applying Weakness and Resistance), that attack does half the damage to Flat Cap (rounded down to the nearest 10). (Any other effects of attacks still happen.) This power stops working while Flat Cap is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-140-B01",
-          "name": "Two Quick Scratches",
-          "effectText": "Flip 2 coins. This Attack deals 70 damage for each heads."
+          "name": "Scratch",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -4564,18 +4609,17 @@
       "approvedName": "Peaky Blinder",
       "approvedType": "Lairy",
       "flavourText": "The room follows his order because the coat already has.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-141-T01",
-          "name": "By Order of the Old Ways",
-          "effectText": "Apply your opponent's Active Blokemon's Weakness as \u00d74 instead of its printed multiplier."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-141-B01",
-          "name": "Peaky Cut",
-          "effectText": "Heal 30 damage from this Blokemon."
+          "name": "Sharp Sickle",
+          "effectText": null
+        },
+        {
+          "mechanicalId": "BLK-141-B02",
+          "name": "Absorb",
+          "effectText": "Remove a number of damage counters from Peaky Blinder equal to half the damage done to the Defending Blokemon (after applying Weakness and Resistance) (rounded up to the nearest 10). If Peaky Blinder has fewer damage counters than that, remove all of them."
         }
       ],
       "rules": [],
@@ -4594,16 +4638,18 @@
       "approvedName": "Old Boy",
       "approvedType": "Local",
       "flavourText": "Old Boy remembers when the stairs were steeper and promotions simpler.",
-      "abilities": [],
+      "pokemonPowers": [
+        {
+          "mechanicalId": "BLK-142-T01",
+          "name": "Prehistoric Power",
+          "effectText": "No more Evolution cards can be played. This power stops working while Old Boy is Asleep, Confused, or Paralyzed."
+        }
+      ],
       "attacks": [
         {
           "mechanicalId": "BLK-142-B01",
-          "name": "Catch the Air"
-        },
-        {
-          "mechanicalId": "BLK-142-B02",
-          "name": "Back to Basics",
-          "effectText": "If your opponent's Active Blokemon is evolved, return its highest-stage Evolution card to your opponent's hand."
+          "name": "Wing Attack",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -4622,18 +4668,18 @@
       "approvedName": "Big Dave",
       "approvedType": "Local",
       "flavourText": "Big Dave eats first, asks later and lands with complete finality.",
-      "abilities": [
+      "pokemonPowers": [
         {
           "mechanicalId": "BLK-143-T01",
-          "name": "Big Dave's Appetite",
-          "effectText": "Once per turn, choose up to 2 Closing-Time Regular cards in your discard pile and add them to your hand."
+          "name": "Thick Skinned",
+          "effectText": "Big Dave can't become Asleep, Confused, Paralyzed, or Poisoned. This power can't be used if Big Dave is already Asleep, Confused, or Paralyzed."
         }
       ],
       "attacks": [
         {
           "mechanicalId": "BLK-143-B01",
-          "name": "Dave Lands",
-          "effectText": "This Blokemon also does 30 damage to itself."
+          "name": "Body Slam",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
         }
       ],
       "rules": [],
@@ -4652,18 +4698,17 @@
       "approvedName": "Cold Turkey",
       "approvedType": "Sober",
       "flavourText": "Cold Turkey can float past temptation if the water is cold enough.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-144-T01",
-          "name": "Below Zero Fare",
-          "effectText": "While this Blokemon has any Sober Energy attached, its Retreat Cost is zero."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-144-B01",
-          "name": "Cold Front",
-          "effectText": "Each of your opponent's Benched Blokemon takes 10 damage from this Attack. Do not apply Weakness or Resistance."
+          "name": "Freeze Dry",
+          "effectText": "Flip a coin. If heads, the Defending Blokemon is now Paralyzed."
+        },
+        {
+          "mechanicalId": "BLK-144-B02",
+          "name": "Blizzard",
+          "effectText": "Flip a coin. If heads, this attack does 10 damage to each of your opponent's Benched Blokemon. If tails, this attack does 10 damage to each of your own Benched Blokemon. (Don't apply Weakness and Resistance for Benched Blokemon.)"
         }
       ],
       "rules": [],
@@ -4682,27 +4727,20 @@
       "approvedName": "Beer Baron",
       "approvedType": "Beer",
       "flavourText": "The Baron pays no Taxi fare while the whole bar keeps his tab aloft.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-145-T01",
-          "name": "Bar Tab Levitation",
-          "effectText": "While this Blokemon has any Beer Energy attached, its Retreat Cost is zero."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-145-B01",
-          "name": "Baronial Barrage",
-          "effectText": "Choose 1 of your opponent's Benched Blokemon that has any damage counters. This Attack deals 90 damage to that Blokemon. Do not apply Weakness or Resistance."
-        }
-      ],
-      "rules": [
+          "name": "Thunder",
+          "effectText": "Flip a coin. If tails, Beer Baron does 30 damage to itself."
+        },
         {
-          "mechanicalId": "BLK-145-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
+          "mechanicalId": "BLK-145-B02",
+          "name": "Thunderbolt",
+          "effectText": "Discard all Energy cards attached to Beer Baron in order to use this attack."
         }
       ],
+      "rules": [],
       "illustration": {
         "brief": "A grand drinker hovers theatrically above a brass foot rail as sparks jump between raised glasses; sweeping low-angle scene, tailored waistcoat and six coasters, electric blue with lager gold.",
         "prompt": "Sweep low beneath Beer Baron as the grand drinker seems to hover just above a brass foot rail, six plain coasters and raised glasses carrying blue-gold sparks around his waistcoat. Keep contact shadow and ordinary anatomy visible so the levitation remains theatrical, not supernatural; glassware and clothing show no brands or words.",
@@ -4718,18 +4756,17 @@
       "approvedName": "Fat Les",
       "approvedType": "Curry",
       "flavourText": "Fat Les rises with the heat and lands wherever the chorus peaks.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-146-T01",
-          "name": "Rising Curry Heat",
-          "effectText": "While this Blokemon has any Curry Energy attached, its Retreat Cost is zero."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-146-B01",
-          "name": "Heat Rises",
-          "effectText": "Discard 2 Curry Energy from this Blokemon. Then choose 1 of your opponent's Benched Blokemon. This Attack deals 120 damage to it. Do not apply Weakness or Resistance."
+          "name": "Wildfire",
+          "effectText": "You may discard any number of Fire Energy cards attached to Fat Les when you use this attack. If you do, discard that many cards from the top of your opponent's deck."
+        },
+        {
+          "mechanicalId": "BLK-146-B02",
+          "name": "Dive Bomb",
+          "effectText": "Flip a coin. If tails, this attack does nothing."
         }
       ],
       "rules": [],
@@ -4748,15 +4785,12 @@
       "approvedName": "Reginald Kray",
       "approvedType": "Legend",
       "flavourText": "Reginald Kray begins quietly because the threat has already arrived.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-147-B01",
-          "name": "Kray Tap"
-        },
-        {
-          "mechanicalId": "BLK-147-B02",
-          "name": "Silk-Wrapped Threat"
+          "name": "Pound",
+          "effectText": null
         }
       ],
       "rules": [],
@@ -4775,16 +4809,17 @@
       "approvedName": "Golden Boy",
       "approvedType": "Legend",
       "flavourText": "Golden Boy wears the room like it was tailored with the suit.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-148-B01",
-          "name": "Golden Tap"
+          "name": "Slam",
+          "effectText": "Flip 2 coins. This attack does 30 damage times the number of heads."
         },
         {
           "mechanicalId": "BLK-148-B02",
-          "name": "Blue-Ribbon Cut",
-          "effectText": "On your next turn, this Blokemon cannot use an Attack."
+          "name": "Hyper Beam",
+          "effectText": "If the Defending Blokemon has any Energy cards attached to it, choose 1 of them and discard it."
         }
       ],
       "rules": [],
@@ -4803,18 +4838,18 @@
       "approvedName": "Gazza",
       "approvedType": "Legend",
       "flavourText": "Gazza can carry a whole night on one impossible run.",
-      "abilities": [
+      "pokemonPowers": [
         {
           "mechanicalId": "BLK-149-T01",
-          "name": "Cruise Control",
-          "effectText": "Your Blokemon in play have a Retreat Cost of zero."
+          "name": "Step In",
+          "effectText": "Once during your turn (before your attack), if Gazza is on your Bench, you may switch it with your Active Blokemon."
         }
       ],
       "attacks": [
         {
           "mechanicalId": "BLK-149-B01",
-          "name": "Gazza Pulse",
-          "effectText": "Discard 2 cards from the top of your Deck."
+          "name": "Slam",
+          "effectText": "Flip 2 coins. This attack does 40 damage times the number of heads."
         }
       ],
       "rules": [],
@@ -4833,17 +4868,17 @@
       "approvedName": "Super Hans",
       "approvedType": "Geeked",
       "flavourText": "Super Hans builds a barrier out of confidence and somebody else's plan.",
-      "abilities": [],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-150-B01",
-          "name": "Mirror the Mood",
-          "effectText": "On your opponent's next turn, whenever an Attack damages this Blokemon, put the same number of damage counters on the attacking Blokemon, even if this Blokemon is Knocked Out."
+          "name": "Psychic",
+          "effectText": "Does 10 damage plus 10 more damage for each Energy card attached to the Defending Blokemon."
         },
         {
           "mechanicalId": "BLK-150-B02",
-          "name": "Hans Cut",
-          "effectText": "Discard 2 Energy from this Blokemon."
+          "name": "Barrier",
+          "effectText": "Discard 1 Psychic Energy card attached to Super Hans in order to prevent all effects of attacks, including damage, done to Super Hans during your opponent's next turn."
         }
       ],
       "rules": [],
@@ -4862,27 +4897,20 @@
       "approvedName": "Bez",
       "approvedType": "Geeked",
       "flavourText": "Bez resets the room by entering it sideways.",
-      "abilities": [
-        {
-          "mechanicalId": "BLK-151-T01",
-          "name": "Reset the Sesh",
-          "effectText": "During your turn, once only, you may draw from your Deck until your hand contains 3 cards."
-        }
-      ],
+      "pokemonPowers": [],
       "attacks": [
         {
           "mechanicalId": "BLK-151-B01",
-          "name": "Borrow Their Best",
-          "effectText": "Choose 1 Attack belonging to your opponent's Active Blokemon and use it as this Attack."
-        }
-      ],
-      "rules": [
+          "name": "Psywave",
+          "effectText": "Does 10 damage times the number of Energy cards attached to the Defending Blokemon."
+        },
         {
-          "mechanicalId": "BLK-151-R01",
-          "name": "Two-Prize Rule",
-          "effectText": "Your opponent takes 2 Prize Cards when this Blokemon is Knocked Out."
+          "mechanicalId": "BLK-151-B02",
+          "name": "Devolution Beam",
+          "effectText": "Choose an evolved Blokemon (your own or your opponent's). Return the highest Stage Evolution card on that Blokemon to its player's hand. That Blokemon is no longer Asleep, Confused, Paralyzed, or Poisoned, or anything else that might be the result of an attack (just as if you had evolved it)."
         }
       ],
+      "rules": [],
       "illustration": {
         "brief": "A maraca-free dancer erupts into a fresh circle as scattered cards lift in the wake; wide fish-eye composition, bucket hat and loose shirt, hot magenta colliding with acid yellow.",
         "prompt": "Curve Bez through a wide fish-eye dance circle, bucket-hatted figure erupting sideways as loose cards and several varied friends lift in the wake. Hot magenta and acid yellow should collide around a recognisably human body with empty hands, avoiding copied dance icons, lettering, logos and any readable card face.",
@@ -4894,308 +4922,407 @@
       }
     }
   ],
-  "supports": [
+  "trainers": [
     {
       "id": "KIT-001",
       "name": "The Reenactor",
-      "categoryTermId": "TERM-CATEGORY-001",
       "effects": [
         {
-          "mechanicalId": "KIT-001-T01",
-          "name": "Hard as the Old Days",
-          "effectText": "After applying Weakness and Resistance, reduce damage from Attacks done to this Blokemon by 30."
-        },
-        {
           "mechanicalId": "KIT-001-R01",
-          "name": "Stand-In Basic",
-          "effectText": "Play this Item as a Basic Local Blokemon with 60 HP. It cannot be affected by Special Conditions or Retreat. During your turn, you may discard it from play."
-        },
-        {
-          "mechanicalId": "KIT-001-R02",
-          "name": "Item Rule",
-          "effectText": "During your turn, you may play Item cards without a category limit."
+          "name": "Clefairy Doll",
+          "effectText": "Play Clefairy Doll as if it were a Basic Pokémon. While in play, Clefairy Doll counts as a Pokémon (instead of a Trainer card). Clefairy Doll has no attacks, can't retreat, and can't be Asleep, Confused, Paralyzed, or Poisoned. If Clefairy Doll is Knocked Out, it doesn't count as a Knocked Out Pokémon. At any time during your turn before your attack, you may discard Clefairy Doll."
         }
       ]
     },
     {
       "id": "KIT-002",
       "name": "The Spiral-Eyed Regular",
-      "categoryTermId": "TERM-CATEGORY-001",
       "effects": [
         {
-          "mechanicalId": "KIT-002-T01",
-          "name": "No New Locals",
-          "effectText": "While this Blokemon is your Active Blokemon, your opponent cannot play a Stadium card from their hand."
-        },
-        {
           "mechanicalId": "KIT-002-R01",
-          "name": "Stand-In Basic",
-          "effectText": "Play this Item as a Basic Local Blokemon with 60 HP. It cannot be affected by Special Conditions or Retreat. During your turn, you may discard it from play."
-        },
-        {
-          "mechanicalId": "KIT-002-R02",
-          "name": "Item Rule",
-          "effectText": "During your turn, you may play Item cards without a category limit."
+          "name": "Mysterious Fossil",
+          "effectText": "Play Mysterious Fossil as if it were a Basic Pokémon. While in play, Mysterious Fossil counts as a Pokémon (instead of a Trainer card). Mysterious Fossil has no attacks, can't retreat, and can't be Asleep, Confused, Paralyzed, or Poisoned. If Mysterious Fossil is Knocked Out, it doesn't count as a Knocked Out Pokémon. (Discard it anyway.) At any time during your turn before your attack, you may discard Mysterious Fossil from play."
         }
       ]
     },
     {
       "id": "KIT-003",
       "name": "The Relic Hunter",
-      "categoryTermId": "TERM-CATEGORY-001",
       "effects": [
         {
-          "mechanicalId": "KIT-003-T01",
-          "name": "Ability Proof",
-          "effectText": "Prevent all effects of your opponent's Abilities affecting this Blokemon."
-        },
-        {
           "mechanicalId": "KIT-003-R01",
-          "name": "Stand-In Basic",
-          "effectText": "Play this Item as a Basic Local Blokemon with 60 HP. It cannot be affected by Special Conditions or Retreat. During your turn, you may discard it from play."
-        },
-        {
-          "mechanicalId": "KIT-003-R02",
-          "name": "Item Rule",
-          "effectText": "During your turn, you may play Item cards without a category limit."
+          "name": "Item Finder",
+          "effectText": "Discard 2 of the other cards from your hand in order to put a Trainer card from your discard pile into your hand."
         }
       ]
     },
     {
       "id": "KIT-004",
       "name": "The Chauffeur",
-      "categoryTermId": "TERM-CATEGORY-002",
       "effects": [
         {
           "mechanicalId": "KIT-004-R01",
-          "name": "Fare on the House",
-          "effectText": "The Stage 2 Blokemon this Tool is attached to has no Retreat Cost."
-        },
-        {
-          "mechanicalId": "KIT-004-R02",
-          "name": "Tool Rule",
-          "effectText": "You may attach any number of Tools during your turn, but each Blokemon may have only 1 Tool attached."
+          "name": "Switch",
+          "effectText": "Switch 1 of your own Benched Pokémon with your Active Pokémon."
         }
       ]
     },
     {
       "id": "KIT-005",
       "name": "Talent Scout",
-      "categoryTermId": "TERM-CATEGORY-003",
       "effects": [
         {
           "mechanicalId": "KIT-005-R01",
-          "name": "Eight-Card Audition",
-          "effectText": "Look at 8 cards from the top of your Deck. Reveal any number of Blokemon you find and add them to your hand. Shuffle every other card back into your Deck."
-        },
-        {
-          "mechanicalId": "KIT-005-R02",
-          "name": "Supporter Rule",
-          "effectText": "No more than 1 Supporter card may be played during your turn."
+          "name": "Pokémon Trader",
+          "effectText": "Trade 1 of the Basic Pokémon or Evolution cards in your hand for 1 of the Basic Pokémon or Evolution cards from your deck. Show both cards to your opponent. Shuffle your deck afterward."
         }
       ]
     },
     {
       "id": "KIT-006",
       "name": "The Ring Road",
-      "categoryTermId": "TERM-CATEGORY-004",
       "effects": [
         {
           "mechanicalId": "KIT-006-R01",
-          "name": "Trade Energy for a Card",
-          "effectText": "Once during each participant\u2019s turn, that participant may discard 1 Basic Energy card from their hand to draw 1 card."
-        },
-        {
-          "mechanicalId": "KIT-006-R02",
-          "name": "Stadium Rule",
-          "effectText": "No more than 1 Stadium card may be played during your turn. Playing a new Stadium discards the current one. You cannot play another copy of the Stadium already in play."
+          "name": "Maintenance",
+          "effectText": "Shuffle 2 of the other cards from your hand into your deck in order to draw a card."
         }
       ]
     },
     {
       "id": "KIT-007",
       "name": "Auntie at the Door",
-      "categoryTermId": "TERM-CATEGORY-003",
       "effects": [
         {
           "mechanicalId": "KIT-007-R01",
-          "name": "Two Cards and a Peek",
-          "effectText": "Draw 2 cards, then look at your face-down Prize Cards without changing their order."
-        },
-        {
-          "mechanicalId": "KIT-007-R02",
-          "name": "Supporter Rule",
-          "effectText": "No more than 1 Supporter card may be played during your turn."
+          "name": "Bill",
+          "effectText": "Draw 2 cards."
         }
       ]
     },
     {
       "id": "KIT-008",
       "name": "The Optimist",
-      "categoryTermId": "TERM-CATEGORY-001",
       "effects": [
         {
           "mechanicalId": "KIT-008-R01",
-          "name": "Badge-Side Lift",
-          "effectText": "Flip a coin. When it lands heads, choose 1 Basic Energy card in your discard pile and attach it to 1 of your Benched Blokemon."
-        },
-        {
-          "mechanicalId": "KIT-008-R02",
-          "name": "Item Rule",
-          "effectText": "During your turn, you may play Item cards without a category limit."
+          "name": "Recycle",
+          "effectText": "Flip a coin. If heads, put a card in your discard pile on top of your deck."
         }
       ]
     },
     {
       "id": "KIT-009",
       "name": "The Matchmaker",
-      "categoryTermId": "TERM-CATEGORY-003",
       "effects": [
         {
           "mechanicalId": "KIT-009-R01",
-          "name": "Bring Them Forward",
-          "effectText": "Your opponent reveals their hand. Choose 1 Basic Blokemon there and put it onto their Bench, then switch it with their Active Blokemon."
-        },
-        {
-          "mechanicalId": "KIT-009-R02",
-          "name": "Supporter Rule",
-          "effectText": "No more than 1 Supporter card may be played during your turn."
+          "name": "Pokémon Flute",
+          "effectText": "Choose 1 Basic Pokémon card from your opponent's discard pile and put it onto his or her Bench. (You can't play Pokémon Flute if your opponent's Bench is full.)"
         }
       ]
     },
     {
       "id": "KIT-010",
       "name": "The Guv'nor",
-      "categoryTermId": "TERM-CATEGORY-003",
       "effects": [
         {
           "mechanicalId": "KIT-010-R01",
-          "name": "Return and Refill",
-          "effectText": "Return 1 Energy card from your opponent's Active Blokemon to their hand. If you do, choose 1 Energy card in your hand and attach it to your Active Blokemon."
-        },
-        {
-          "mechanicalId": "KIT-010-R02",
-          "name": "Supporter Rule",
-          "effectText": "No more than 1 Supporter card may be played during your turn."
+          "name": "Energy Removal",
+          "effectText": "Choose 1 Energy card attached to 1 of your opponent's Pokémon and discard it."
         }
       ]
     },
     {
       "id": "KIT-011",
       "name": "The Door Staff",
-      "categoryTermId": "TERM-CATEGORY-001",
       "effects": [
         {
           "mechanicalId": "KIT-011-R01",
-          "name": "Back of the Deck",
-          "effectText": "Your opponent reveals their hand. Choose 1 Blokemon there and put it on the bottom of their Deck."
-        },
-        {
-          "mechanicalId": "KIT-011-R02",
-          "name": "Item Rule",
-          "effectText": "During your turn, you may play Item cards without a category limit."
+          "name": "Lass",
+          "effectText": "You and your opponent show each other your hands, then shuffle all the Trainer cards from your hands into your decks."
         }
       ]
     },
     {
       "id": "KIT-012",
       "name": "Closing-Time Regular",
-      "categoryTermId": "TERM-CATEGORY-002",
       "effects": [
         {
           "mechanicalId": "KIT-012-R01",
-          "name": "One Last Recovery",
-          "effectText": "At the end of your turn, heal 20 damage from the attached Blokemon if it is your Active Blokemon."
-        },
-        {
-          "mechanicalId": "KIT-012-R02",
-          "name": "Tool Rule",
-          "effectText": "You may attach any number of Tools during your turn, but each Blokemon may have only 1 Tool attached."
+          "name": "Potion",
+          "effectText": "Remove up to 2 damage counters from 1 of your Pokémon."
         }
       ]
     },
     {
       "id": "KIT-013",
       "name": "Health-and-Safety Rep",
-      "categoryTermId": "TERM-CATEGORY-002",
       "effects": [
         {
           "mechanicalId": "KIT-013-R01",
-          "name": "No Weakness",
-          "effectText": "The Basic Blokemon this Tool is attached to has no Weakness."
-        },
-        {
-          "mechanicalId": "KIT-013-R02",
-          "name": "Tool Rule",
-          "effectText": "You may attach any number of Tools during your turn, but each Blokemon may have only 1 Tool attached."
+          "name": "Full Heal",
+          "effectText": "Your Active Pokémon is no longer Asleep, Confused, Paralyzed, or Poisoned."
         }
       ]
     },
     {
       "id": "KIT-014",
       "name": "Old-School Bouncer",
-      "categoryTermId": "TERM-CATEGORY-002",
       "effects": [
         {
           "mechanicalId": "KIT-014-R01",
-          "name": "Take Thirty Off",
-          "effectText": "After applying Weakness and Resistance, reduce damage from Attacks done to the attached Stage 1 Blokemon by 30."
-        },
+          "name": "Defender",
+          "effectText": "Attach Defender to 1 of your Pokémon. At the end of your opponent's next turn, discard Defender. Damage done to that Pokémon by attacks is reduced by 20 (after applying Weakness and Resistance)."
+        }
+      ]
+    },
+    {
+      "id": "KIT-015",
+      "name": "Ask Around",
+      "effects": [
         {
-          "mechanicalId": "KIT-014-R02",
-          "name": "Tool Rule",
-          "effectText": "You may attach any number of Tools during your turn, but each Blokemon may have only 1 Tool attached."
+          "mechanicalId": "KIT-015-R01",
+          "name": "Computer Search",
+          "effectText": "Discard 2 of the other cards from your hand in order to search your deck for any card and put it into your hand. Shuffle your deck afterward."
+        }
+      ]
+    },
+    {
+      "id": "KIT-016",
+      "name": "Cold Shower",
+      "effects": [
+        {
+          "mechanicalId": "KIT-016-R01",
+          "name": "Devolution Spray",
+          "effectText": "Choose 1 of your own Pokémon in play and a Stage of Evolution. Discard all Evolution cards of that Stage or higher attached to that Pokémon. That Pokémon is no longer Asleep, Confused, Paralyzed, Poisoned, or anything else that might be the result of an attack (just as if you had evolved it)."
+        }
+      ]
+    },
+    {
+      "id": "KIT-017",
+      "name": "New Deal",
+      "effects": [
+        {
+          "mechanicalId": "KIT-017-R01",
+          "name": "Impostor Professor Oak",
+          "effectText": "Your opponent shuffles his or her hand into his or her deck, then draws 7 cards."
+        }
+      ]
+    },
+    {
+      "id": "KIT-018",
+      "name": "Fast Track",
+      "effects": [
+        {
+          "mechanicalId": "KIT-018-R01",
+          "name": "Pokémon Breeder",
+          "effectText": "Put a Stage 2 Evolution card from your hand on the matching Basic Pokémon. You can only play this card when you would be allowed to evolve that Pokémon anyway."
+        }
+      ]
+    },
+    {
+      "id": "KIT-019",
+      "name": "Last Train Home",
+      "effects": [
+        {
+          "mechanicalId": "KIT-019-R01",
+          "name": "Scoop Up",
+          "effectText": "Choose 1 of your Pokémon in play and return its Basic Pokémon card to your hand. (Discard all cards attached to that card.)"
+        }
+      ]
+    },
+    {
+      "id": "KIT-020",
+      "name": "Cut Off",
+      "effects": [
+        {
+          "mechanicalId": "KIT-020-R01",
+          "name": "Super Energy Removal",
+          "effectText": "Discard 1 Energy card attached to 1 of your Pokémon in order to choose 1 of your opponent's Pokémon and up to 2 Energy cards attached to it. Discard those Energy cards."
+        }
+      ]
+    },
+    {
+      "id": "KIT-021",
+      "name": "Hair of the Dog",
+      "effects": [
+        {
+          "mechanicalId": "KIT-021-R01",
+          "name": "Energy Retrieval",
+          "effectText": "Trade 1 of the other cards in your hand for up to 2 basic Energy cards from your discard pile."
+        }
+      ]
+    },
+    {
+      "id": "KIT-022",
+      "name": "Double Shot",
+      "effects": [
+        {
+          "mechanicalId": "KIT-022-R01",
+          "name": "PlusPower",
+          "effectText": "Attach PlusPower to your Active Pokémon. At the end of your turn, discard PlusPower. If this Pokémon's attack does damage to the Defending Pokémon (after applying Weakness and Resistance), the attack does 10 more damage to the Defending Pokémon."
+        }
+      ]
+    },
+    {
+      "id": "KIT-023",
+      "name": "Walk-In Centre",
+      "effects": [
+        {
+          "mechanicalId": "KIT-023-R01",
+          "name": "Pokémon Center",
+          "effectText": "Remove all damage counters from all of your own Pokémon with damage counters on them, then discard all Energy cards attached to those Pokémon."
+        }
+      ]
+    },
+    {
+      "id": "KIT-024",
+      "name": "Racing Form",
+      "effects": [
+        {
+          "mechanicalId": "KIT-024-R01",
+          "name": "Pokédex",
+          "effectText": "Look at up to 5 cards from the top of your deck and rearrange them as you like."
+        }
+      ]
+    },
+    {
+      "id": "KIT-025",
+      "name": "Quizmaster",
+      "effects": [
+        {
+          "mechanicalId": "KIT-025-R01",
+          "name": "Professor Oak",
+          "effectText": "Discard your hand, then draw 7 cards."
+        }
+      ]
+    },
+    {
+      "id": "KIT-026",
+      "name": "Defibrillator",
+      "effects": [
+        {
+          "mechanicalId": "KIT-026-R01",
+          "name": "Revive",
+          "effectText": "Put 1 Basic Pokémon card from your discard pile onto your Bench. Put damage counters on that Pokémon equal to half its HP (rounded down to the nearest 10). (You can't play Revive if your Bench is full.)"
+        }
+      ]
+    },
+    {
+      "id": "KIT-027",
+      "name": "Full English",
+      "effects": [
+        {
+          "mechanicalId": "KIT-027-R01",
+          "name": "Super Potion",
+          "effectText": "Discard 1 Energy card attached to your own Pokémon in order to remove up to 4 damage counters from that Pokémon."
+        }
+      ]
+    },
+    {
+      "id": "KIT-028",
+      "name": "You’re Up",
+      "effects": [
+        {
+          "mechanicalId": "KIT-028-R01",
+          "name": "Gust of Wind",
+          "effectText": "Choose 1 of your opponent's Benched Pokémon and switch it with his or her Active Pokémon."
+        }
+      ]
+    },
+    {
+      "id": "KIT-029",
+      "name": "Lucky Dip",
+      "effects": [
+        {
+          "mechanicalId": "KIT-029-R01",
+          "name": "Poké Ball",
+          "effectText": "Flip a coin. If heads, you may search your deck for any Basic Pokémon or Evolution card. Show that card to your opponent, then put it into your hand. Shuffle your deck afterward."
+        }
+      ]
+    },
+    {
+      "id": "KIT-030",
+      "name": "Home Safe",
+      "effects": [
+        {
+          "mechanicalId": "KIT-030-R01",
+          "name": "Mr. Fuji",
+          "effectText": "Choose a Pokémon on your Bench. Shuffle it and any cards attached to it into your deck."
+        }
+      ]
+    },
+    {
+      "id": "KIT-031",
+      "name": "Top Up",
+      "effects": [
+        {
+          "mechanicalId": "KIT-031-R01",
+          "name": "Energy Search",
+          "effectText": "Search your deck for a basic Energy card and put it into your hand. Shuffle your deck afterward."
+        }
+      ]
+    },
+    {
+      "id": "KIT-032",
+      "name": "Fruit Machine",
+      "effects": [
+        {
+          "mechanicalId": "KIT-032-R01",
+          "name": "Gambler",
+          "effectText": "Shuffle your hand into your deck. Flip a coin. If heads, draw 8 cards. If tails, draw 1 card."
         }
       ]
     }
   ],
-  "basicEnergy": [
+  "energy": [
     {
       "id": "ENERGY-DODGY",
       "name": "Side Hustle",
-      "definition": "Basic Dodgy Energy. Attach it to a Blokemon to provide 1 Dodgy Energy.",
+      "definition": "Special Energy. While attached to a Blokemon, it provides 2 Local Energy and does not count as Basic Energy.",
       "symbolKey": "energy-dodgy",
-      "accessibleLabel": "Side Hustle, Basic Energy"
+      "accessibleLabel": "Side Hustle, Special Energy"
     },
     {
       "id": "ENERGY-LAIRY",
       "name": "Front",
-      "definition": "Basic Lairy Energy. Attach it to a Blokemon to provide 1 Lairy Energy.",
+      "definition": "Basic Fighting Energy. Attach it to a Blokemon to provide 1 Fighting Energy.",
       "symbolKey": "energy-lairy",
       "accessibleLabel": "Front, Basic Energy"
     },
     {
       "id": "ENERGY-CURRY",
       "name": "Heat",
-      "definition": "Basic Curry Energy. Attach it to a Blokemon to provide 1 Curry Energy.",
+      "definition": "Basic Fire Energy. Attach it to a Blokemon to provide 1 Fire Energy.",
       "symbolKey": "energy-curry",
       "accessibleLabel": "Heat, Basic Energy"
     },
     {
       "id": "ENERGY-BLAZED",
       "name": "Haze",
-      "definition": "Basic Blazed Energy. Attach it to a Blokemon to provide 1 Blazed Energy.",
+      "definition": "Basic Grass Energy. Attach it to a Blokemon to provide 1 Grass Energy.",
       "symbolKey": "energy-blazed",
       "accessibleLabel": "Haze, Basic Energy"
     },
     {
       "id": "ENERGY-BEER",
       "name": "Dutch Courage",
-      "definition": "Basic Beer Energy. Attach it to a Blokemon to provide 1 Beer Energy.",
+      "definition": "Basic Lightning Energy. Attach it to a Blokemon to provide 1 Lightning Energy.",
       "symbolKey": "energy-beer",
       "accessibleLabel": "Dutch Courage, Basic Energy"
     },
     {
       "id": "ENERGY-GEEKED",
       "name": "Rush",
-      "definition": "Basic Geeked Energy. Attach it to a Blokemon to provide 1 Geeked Energy.",
+      "definition": "Basic Psychic Energy. Attach it to a Blokemon to provide 1 Psychic Energy.",
       "symbolKey": "energy-geeked",
       "accessibleLabel": "Rush, Basic Energy"
     },
     {
       "id": "ENERGY-SOBER",
       "name": "Resolve",
-      "definition": "Basic Sober Energy. Attach it to a Blokemon to provide 1 Sober Energy.",
+      "definition": "Basic Water Energy. Attach it to a Blokemon to provide 1 Water Energy.",
       "symbolKey": "energy-sober",
       "accessibleLabel": "Resolve, Basic Energy"
     }

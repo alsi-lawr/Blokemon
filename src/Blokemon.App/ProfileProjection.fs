@@ -144,11 +144,12 @@ module internal ProfileProjection =
                         currentCards[entry.CardId].Kind = CardKindView.Blokemon)
                     |> Seq.sumBy _.Quantity,
                     deck.Entries
-                    |> Seq.filter (fun entry -> currentCards[entry.CardId].Kind = CardKindView.Kit)
+                    |> Seq.filter (fun entry ->
+                        currentCards[entry.CardId].Kind = CardKindView.Trainer)
                     |> Seq.sumBy _.Quantity,
                     deck.Entries
                     |> Seq.filter (fun entry ->
-                        currentCards[entry.CardId].Kind = CardKindView.BasicVim)
+                        currentCards[entry.CardId].Kind = CardKindView.Energy)
                     |> Seq.sumBy _.Quantity,
                     claimedIds.Contains deck.Id
                 ))

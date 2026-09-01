@@ -1,5 +1,5 @@
 {
-  "version": "blokemon-printing-1.0.0",
+  "version": "blokemon-printing-1999-1.0.0",
   "collectibles": [
     {
       "id": "BLK-001",
@@ -89,7 +89,7 @@
     {
       "id": "BLK-018",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-019",
@@ -154,7 +154,7 @@
     {
       "id": "BLK-031",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-032",
@@ -179,7 +179,7 @@
     {
       "id": "BLK-036",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-037",
@@ -199,7 +199,7 @@
     {
       "id": "BLK-040",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-041",
@@ -224,7 +224,7 @@
     {
       "id": "BLK-045",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-046",
@@ -244,7 +244,7 @@
     {
       "id": "BLK-049",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-050",
@@ -354,7 +354,7 @@
     {
       "id": "BLK-071",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-072",
@@ -444,7 +444,7 @@
     {
       "id": "BLK-089",
       "gen1Set": "Fossil",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-090",
@@ -469,7 +469,7 @@
     {
       "id": "BLK-094",
       "gen1Set": "Fossil",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-095",
@@ -484,7 +484,7 @@
     {
       "id": "BLK-097",
       "gen1Set": "Fossil",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-098",
@@ -529,7 +529,7 @@
     {
       "id": "BLK-106",
       "gen1Set": "Fossil",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-107",
@@ -574,7 +574,7 @@
     {
       "id": "BLK-115",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-116",
@@ -609,12 +609,12 @@
     {
       "id": "BLK-122",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-123",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-124",
@@ -634,7 +634,7 @@
     {
       "id": "BLK-127",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-128",
@@ -654,12 +654,12 @@
     {
       "id": "BLK-131",
       "gen1Set": "Fossil",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-132",
       "gen1Set": "Fossil",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-133",
@@ -669,17 +669,17 @@
     {
       "id": "BLK-134",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-135",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-136",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-137",
@@ -704,22 +704,22 @@
     {
       "id": "BLK-141",
       "gen1Set": "Fossil",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-142",
       "gen1Set": "Fossil",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-143",
       "gen1Set": "Jungle",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-144",
       "gen1Set": "Fossil",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-145",
@@ -729,7 +729,7 @@
     {
       "id": "BLK-146",
       "gen1Set": "Fossil",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-147",
@@ -744,7 +744,7 @@
     {
       "id": "BLK-149",
       "gen1Set": "Fossil",
-      "gen1Rarity": "Rare Holo"
+      "gen1Rarity": "Rare"
     },
     {
       "id": "BLK-150",

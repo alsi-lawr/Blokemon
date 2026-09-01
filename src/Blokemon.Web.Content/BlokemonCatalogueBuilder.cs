@@ -52,18 +52,18 @@ public static class BlokemonCatalogueBuilder
         }
 
         var publicCollectibles = publicContent.Collectibles.ToDictionary(static card => card.Id);
-        var publicKits = publicContent.Supports.ToDictionary(static card => card.Id);
-        var publicVim = publicContent.BasicEnergy.ToDictionary(static card =>
+        var publicTrainers = publicContent.Trainers.ToDictionary(static card => card.Id);
+        var publicEnergy = publicContent.Energy.ToDictionary(static card =>
             $"VIM-{card.Id["ENERGY-".Length..]}"
         );
         var effects = publicContent
             .Collectibles.SelectMany(static card =>
-                card.Abilities.Concat(card.Attacks).Concat(card.Rules)
+                card.PokemonPowers.Concat(card.Attacks).Concat(card.Rules)
             )
-            .Concat(publicContent.Supports.SelectMany(static card => card.Effects))
+            .Concat(publicContent.Trainers.SelectMany(static card => card.Effects))
             .ToDictionary(static effect => effect.MechanicalId, StringComparer.Ordinal);
         var printedCards = printedSet
-            .Blokemon.Concat(printedSet.Supports)
+            .Blokemon.Concat(printedSet.Trainers)
             .Concat(printedSet.Energy)
             .ToDictionary(RuntimeCardId, StringComparer.Ordinal);
         var cards = new Dictionary<string, CardView>(StringComparer.Ordinal);
@@ -88,15 +88,15 @@ public static class BlokemonCatalogueBuilder
         }
         foreach (var mechanical in mechanics.Kits)
         {
-            var presentation = publicKits[mechanical.Id];
+            var presentation = publicTrainers[mechanical.Id];
             cards.Add(
                 mechanical.Id,
                 new(
                     mechanical.Id,
                     presentation.Name,
-                    CardKindView.Kit,
-                    "Kit",
-                    "Kit",
+                    CardKindView.Trainer,
+                    "Trainer",
+                    "Trainer",
                     cardDocument.BuildMarkup(printedCards[mechanical.Id]),
                     KitRules(mechanics, mechanical, presentation),
                     0,
@@ -106,27 +106,20 @@ public static class BlokemonCatalogueBuilder
         }
         foreach (var mechanical in mechanics.BasicVim)
         {
-            var presentation = publicVim[mechanical.Id];
+            var presentation = publicEnergy[mechanical.Id];
+            var energyKind = mechanical.IsBasic ? "Basic Energy" : "Special Energy";
             cards.Add(
                 mechanical.Id,
                 new(
                     mechanical.Id,
                     presentation.Name,
-                    CardKindView.BasicVim,
+                    CardKindView.Energy,
                     BlokemonMechanicalDisplay
                         .ApprovedLabel(mechanics, mechanical.MechanicalType)
                         .ToString(),
-                    "Basic Energy",
+                    energyKind,
                     cardDocument.BuildMarkup(printedCards[mechanical.Id]),
-                    [
-                        new(
-                            CardRuleKindView.Energy,
-                            "Basic Energy",
-                            presentation.Definition,
-                            [],
-                            null
-                        ),
-                    ],
+                    [new(CardRuleKindView.Energy, energyKind, presentation.Definition, [], null)],
                     0,
                     mechanical.FreelyAvailable
                 )
@@ -161,8 +154,8 @@ public static class BlokemonCatalogueBuilder
         );
         return
         [
-            .. presentation.Abilities.Select(static effect =>
-                PublicRule(CardRuleKindView.Ability, effect)
+            .. presentation.PokemonPowers.Select(static effect =>
+                PublicRule(CardRuleKindView.PokemonPower, effect)
             ),
             .. presentation.Attacks.Select(effect =>
                 AttackRule(mechanics, effect, attacks[effect.MechanicalId])
@@ -176,10 +169,10 @@ public static class BlokemonCatalogueBuilder
     private static CardRuleView[] KitRules(
         BlokemonRuntimeManifest mechanics,
         BlokemonKit mechanical,
-        BlokemonPublicSupport presentation
+        BlokemonPublicTrainer presentation
     )
     {
-        var abilities = mechanical
+        var powers = mechanical
             .PartyTricks.Select(static effect => effect.MechanicalId)
             .ToHashSet(StringComparer.Ordinal);
         var attacks = mechanical.Attacks.ToDictionary(
@@ -192,9 +185,9 @@ public static class BlokemonCatalogueBuilder
         return presentation
             .Effects.Select(effect =>
             {
-                if (abilities.Contains(effect.MechanicalId))
+                if (powers.Contains(effect.MechanicalId))
                 {
-                    return PublicRule(CardRuleKindView.Ability, effect);
+                    return PublicRule(CardRuleKindView.PokemonPower, effect);
                 }
                 if (attacks.TryGetValue(effect.MechanicalId, out var attack))
                 {

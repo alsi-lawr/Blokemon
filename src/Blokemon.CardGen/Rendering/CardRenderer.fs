@@ -107,7 +107,7 @@ module CardRenderer =
     let private noteEntry (entry: CardEntry) =
         let kind, effect =
             match entry with
-            | CardEntry.Ability(effectText = effectText) -> "Ability", effectText
+            | CardEntry.PokemonPower(effectText = effectText) -> "Blokemon Power", effectText
             | CardEntry.Rule(effectText = effectText) -> "Rule", effectText
             | _ -> raise (ArgumentOutOfRangeException(nameof entry))
 
@@ -117,7 +117,7 @@ module CardRenderer =
         match entry with
         | CardEntry.Attack(energyCost = energyCost; damage = damage; effectText = effectText) ->
             attackEntry entry energyCost damage effectText
-        | CardEntry.Ability _
+        | CardEntry.PokemonPower _
         | CardEntry.Rule _ -> noteEntry entry
 
     let private mechanics entries =

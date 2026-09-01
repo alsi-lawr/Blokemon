@@ -100,8 +100,8 @@ else
             <div class="progress" aria-label="@($"{CardCount()} of 60 cards")"><i style="@($"width:{Math.Min(100, CardCount() * 100 / 60)}%")"></i></div>
             <div class="composition">
                 <div><span>Blokemon</span><b>@KindCount(CardKindView.Blokemon)</b></div>
-                <div><span>Trainer cards</span><b>@KindCount(CardKindView.Kit)</b></div>
-                <div><span>Basic Energy</span><b>@KindCount(CardKindView.BasicVim)</b></div>
+                <div><span>Trainer cards</span><b>@KindCount(CardKindView.Trainer)</b></div>
+                <div><span>Energy</span><b>@KindCount(CardKindView.Energy)</b></div>
             </div>
 
             @if (_hasUnsavedChanges)
@@ -127,8 +127,8 @@ else
             <div class="filters" aria-label="Card type filters">
                 <button class="filter @(_kindFilter is null ? "active" : null)" @onclick="() => Filter(null)">All available <b>@AvailableCount(null)</b></button>
                 <button class="filter @(_kindFilter == CardKindView.Blokemon ? "active" : null)" @onclick="() => Filter(CardKindView.Blokemon)">Blokemon <b>@AvailableCount(CardKindView.Blokemon)</b></button>
-                <button class="filter @(_kindFilter == CardKindView.Kit ? "active" : null)" @onclick="() => Filter(CardKindView.Kit)">Trainer <b>@AvailableCount(CardKindView.Kit)</b></button>
-                <button class="filter @(_kindFilter == CardKindView.BasicVim ? "active" : null)" @onclick="() => Filter(CardKindView.BasicVim)">Basic Energy <b>@AvailableCount(CardKindView.BasicVim)</b></button>
+                <button class="filter @(_kindFilter == CardKindView.Trainer ? "active" : null)" @onclick="() => Filter(CardKindView.Trainer)">Trainer <b>@AvailableCount(CardKindView.Trainer)</b></button>
+                <button class="filter @(_kindFilter == CardKindView.Energy ? "active" : null)" @onclick="() => Filter(CardKindView.Energy)">Energy <b>@AvailableCount(CardKindView.Energy)</b></button>
             </div>
         </aside>
 
@@ -424,7 +424,7 @@ else
 
     private bool CanAdd(CardView card) =>
         CardCount() < 60
-        && (card.Kind == CardKindView.BasicVim || Quantity(card.Id) < 4)
+        && (IsBasicEnergy(card) || Quantity(card.Id) < 4)
         && (card.FreelyAvailable || Quantity(card.Id) < card.OwnedQuantity);
 
     private void Change(CardView card, int delta)
@@ -452,7 +452,10 @@ else
                 : "Fix deck";
 
     private static string MaximumLabel(CardView card) =>
-        card.Kind == CardKindView.BasicVim ? "∞" : "4";
+        IsBasicEnergy(card) ? "∞" : "4";
+
+    private static bool IsBasicEnergy(CardView card) =>
+        card.Kind == CardKindView.Energy && card.Detail == "Basic Energy";
 
     // As on the collection page: the last arm printed the enum's own name, so an unnamed kind would
     // show a player the code's private vocabulary instead of the game's. The suppression is for the
@@ -463,8 +466,8 @@ else
         kind switch
         {
             CardKindView.Blokemon => "Blokemon",
-            CardKindView.Kit => "Trainer",
-            CardKindView.BasicVim => "Basic Energy",
+            CardKindView.Trainer => "Trainer",
+            CardKindView.Energy => "Energy",
         };
 #pragma warning restore CS8524
 

@@ -149,9 +149,13 @@ public sealed class MatchCardReadingTests
 
     private static readonly CardView Blocke = Card("blocke", "Blocke", CardKindView.Blokemon);
 
-    private static readonly CardView Spanner = Card("spanner", "Rusty Spanner", CardKindView.Kit);
+    private static readonly CardView Spanner = Card(
+        "spanner",
+        "Rusty Spanner",
+        CardKindView.Trainer
+    );
 
-    private static readonly CardView Beer = Card("beer", "Beer Vim", CardKindView.BasicVim);
+    private static readonly CardView Beer = Card("beer", "Beer Vim", CardKindView.Energy);
 
     private static ParameterView HostParameters(RenderFragment child) =>
         ParameterView.FromDictionary(

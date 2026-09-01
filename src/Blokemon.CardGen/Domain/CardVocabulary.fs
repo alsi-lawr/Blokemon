@@ -28,13 +28,6 @@ type Rarity =
     | Rare = 2
     | RareHolo = 3
 
-/// The category of a Support card.
-type SupportCategory =
-    | Item = 0
-    | Tool = 1
-    | Supporter = 2
-    | Stadium = 3
-
 /// The printed forms of the type vocabulary.
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module BlokemonType =

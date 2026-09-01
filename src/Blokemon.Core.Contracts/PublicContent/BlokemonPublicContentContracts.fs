@@ -51,19 +51,18 @@ type BlokemonPublicCollectible =
       ApprovedName: string
       ApprovedType: BlokemonApprovedType
       FlavourText: string
-      Abilities: BlokemonPublicEffect array
+      PokemonPowers: BlokemonPublicEffect array
       Attacks: BlokemonPublicEffect array
       Rules: BlokemonPublicEffect array
       Illustration: BlokemonPublicIllustration
       Art: BlokemonPublicArtReference }
 
-type BlokemonPublicSupport =
+type BlokemonPublicTrainer =
     { Id: string
       Name: string
-      CategoryTermId: string
       Effects: BlokemonPublicEffect array }
 
-type BlokemonPublicBasicEnergy =
+type BlokemonPublicEnergy =
     { Id: string
       Name: string
       Definition: string
@@ -78,8 +77,8 @@ type BlokemonPublicContentManifest =
       HumanApprovalStatus: BlokemonPublicContentApprovalStatus
       Terminology: BlokemonPublicTerm array
       Collectibles: BlokemonPublicCollectible array
-      Supports: BlokemonPublicSupport array
-      BasicEnergy: BlokemonPublicBasicEnergy array }
+      Trainers: BlokemonPublicTrainer array
+      Energy: BlokemonPublicEnergy array }
 
 type BlokemonPublicContentIssue = { Code: string; Message: string }
 

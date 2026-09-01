@@ -11,13 +11,13 @@ open Blokemon.Core.SetDesign
 module BlokemonPublicContentValidator =
 
     [<Literal>]
-    let SchemaVersion = "blokemon-public-content-schema-2.0.0-candidate.5"
+    let SchemaVersion = "blokemon-public-content-schema-1999-candidate.1"
 
     [<Literal>]
-    let ContentVersion = "blokemon-public-content-2.0.0-candidate.10"
+    let ContentVersion = "blokemon-public-content-1999-candidate.1"
 
     [<Literal>]
-    let TerminologyVersion = "blokemon-public-terminology-2.0.0-candidate.6"
+    let TerminologyVersion = "blokemon-public-terminology-1999-candidate.1"
 
     [<Literal>]
     let private ArtAuthority = "Blokemon"
@@ -57,14 +57,14 @@ module BlokemonPublicContentValidator =
     let private termCounts =
         [| BlokemonPublicTermCategory.Type, 10
            BlokemonPublicTermCategory.Stage, 3
-           BlokemonPublicTermCategory.Category, 4
-           BlokemonPublicTermCategory.Status, 5
-           BlokemonPublicTermCategory.Target, 17
+           BlokemonPublicTermCategory.Category, 1
+           BlokemonPublicTermCategory.Status, 4
+           BlokemonPublicTermCategory.Target, 16
            BlokemonPublicTermCategory.Choice, 8
            BlokemonPublicTermCategory.Quantity, 11
            BlokemonPublicTermCategory.Cost, 4
            BlokemonPublicTermCategory.Timing, 12
-           BlokemonPublicTermCategory.Core, 22 |]
+           BlokemonPublicTermCategory.Core, 21 |]
 
     let private effectTextOf (effect: BlokemonPublicEffect) = Option.ofObj effect.EffectText
 
@@ -86,6 +86,10 @@ module BlokemonPublicContentValidator =
             $@"(?<![A-Za-z]){Regex.Escape(term)}(?:s)?(?![A-Za-z])",
             RegexOptions.IgnoreCase ||| RegexOptions.CultureInvariant
         )
+
+    let private isCompleteSentence (value: string) =
+        let ending = value.TrimEnd([| ')' |])
+        ending.Length > 0 && ".!?".Contains(ending[ending.Length - 1])
 
     let private expectedFrom (mechanicalId: string) program canOmitText canBeUsedFromBench =
         { MechanicalId = mechanicalId
@@ -144,7 +148,7 @@ module BlokemonPublicContentValidator =
                 | text when String.IsNullOrWhiteSpace(text) -> ()
                 | text ->
                     check
-                        (Char.IsUpper(text[0]) && ".!?".Contains(text[text.Length - 1]))
+                        (Char.IsUpper(text[0]) && isCompleteSentence text)
                         "effect.grammar"
                         $"{effect.MechanicalId} effect text must be a complete, capitalised sentence."
                         issues
@@ -209,7 +213,7 @@ module BlokemonPublicContentValidator =
 
         let requiredTerms =
             [| "HP"
-               "Ability"
+               "Blokemon Power"
                "Attack"
                "Damage"
                "Energy"
@@ -222,10 +226,7 @@ module BlokemonPublicContentValidator =
                "Prize Card"
                "Knocked Out"
                "Evolution"
-               "Item"
-               "Tool"
-               "Supporter"
-               "Stadium" |]
+               "Trainer" |]
 
         let publicLabels =
             manifest.Terminology
@@ -282,8 +283,8 @@ module BlokemonPublicContentValidator =
 
             validateEffects
                 content.Id
-                "ability"
-                content.Abilities
+                "Blokemon Power"
+                content.PokemonPowers
                 (mechanical.PartyTricks
                  |> Array.map (fun effect ->
                      expectedFrom effect.MechanicalId effect.Program false false))
@@ -308,18 +309,6 @@ module BlokemonPublicContentValidator =
                 content.Rules
                 (expectedCollectibleRules mechanics mechanical)
                 issues
-
-        let namedEffects =
-            manifest.Collectibles
-            |> Array.collect (fun card -> Array.append card.Abilities card.Attacks)
-
-        check
-            (namedEffects
-             |> Array.map (fun effect -> effect.Name)
-             |> distinctCount StringComparer.OrdinalIgnoreCase = namedEffects.Length)
-            "collectible.effect-name"
-            "Every Blokemon Ability and Attack name must remain individually authored and unique."
-            issues
 
         check
             (manifest.Collectibles
@@ -353,31 +342,25 @@ module BlokemonPublicContentValidator =
             "Every alt intent must be individually authored."
             issues
 
-    let private validateSupports
+    let private validateTrainers
         (manifest: BlokemonPublicContentManifest)
         (mechanics: BlokemonRuntimeManifest)
         (issues: ResizeArray<BlokemonPublicContentIssue>)
         =
         check
-            (manifest.Supports.Length = 14)
-            "support.count"
-            "There must be exactly 14 public support entries."
+            (manifest.Trainers.Length = 32)
+            "trainer.count"
+            "There must be exactly 32 public Trainer entries."
             issues
 
-        for index in 0 .. Math.Min(manifest.Supports.Length, mechanics.Kits.Length) - 1 do
-            let content = manifest.Supports[index]
+        for index in 0 .. Math.Min(manifest.Trainers.Length, mechanics.Kits.Length) - 1 do
+            let content = manifest.Trainers[index]
             let mechanical = mechanics.Kits[index]
 
             check
                 (content.Id = mechanical.Id)
-                "support.id"
-                $"Support {index + 1} is not bound to the locked ID."
-                issues
-
-            check
-                (content.CategoryTermId = "TERM-CATEGORY-001")
-                "support.category"
-                $"{content.Id} is not presented as a single vintage Trainer card."
+                "trainer.id"
+                $"Trainer {index + 1} is not bound to the locked ID."
                 issues
 
             let expectedEffects =
@@ -397,64 +380,66 @@ module BlokemonPublicContentValidator =
             validateEffects content.Id "effect" content.Effects expectedEffects issues
 
         check
-            (manifest.Supports
-             |> Array.map (fun support -> support.Name)
-             |> distinctCount StringComparer.OrdinalIgnoreCase = 14)
-            "support.name"
-            "Every support must retain an individually authored name."
+            (manifest.Trainers
+             |> Array.map (fun trainer -> trainer.Name)
+             |> distinctCount StringComparer.OrdinalIgnoreCase = 32)
+            "trainer.name"
+            "Every Trainer must retain an individually authored name."
             issues
 
-    let private validateBasicEnergy
+    let private validateEnergy
         (manifest: BlokemonPublicContentManifest)
         (mechanics: BlokemonRuntimeManifest)
         (issues: ResizeArray<BlokemonPublicContentIssue>)
         =
         check
-            (manifest.BasicEnergy.Length = 7)
+            (manifest.Energy.Length = 7)
             "energy.count"
-            "There must be exactly seven Basic Energy entries."
+            "There must be exactly seven public Energy entries."
             issues
 
-        for index in 0 .. Math.Min(manifest.BasicEnergy.Length, mechanics.BasicVim.Length) - 1 do
-            let content = manifest.BasicEnergy[index]
+        for index in 0 .. Math.Min(manifest.Energy.Length, mechanics.BasicVim.Length) - 1 do
+            let content = manifest.Energy[index]
             let mechanical = mechanics.BasicVim[index]
 
-            let approvedLabel =
-                BlokemonMechanicalDisplay.ApprovedLabel mechanics mechanical.MechanicalType
-                |> _.ToString()
+            let stableSuffix = mechanical.Id.Substring("VIM-".Length)
+            let energyKind = if mechanical.IsBasic then "Basic" else "Special"
 
             check
-                (content.Id = $"ENERGY-{approvedLabel.ToUpperInvariant()}")
+                (content.Id = $"ENERGY-{stableSuffix}")
                 "energy.id"
-                $"Basic Energy {index + 1} has the wrong public ID."
+                $"Energy {index + 1} has the wrong public ID."
                 issues
 
             check
-                (content.SymbolKey = $"energy-{approvedLabel.ToLowerInvariant()}")
+                (content.SymbolKey = $"energy-{stableSuffix.ToLowerInvariant()}")
                 "energy.symbol"
                 $"{content.Id} has the wrong public symbol key."
                 issues
 
             check
-                (content.AccessibleLabel.EndsWith(", Basic Energy", StringComparison.Ordinal))
+                (content.AccessibleLabel.EndsWith(
+                    $", {energyKind} Energy",
+                    StringComparison.Ordinal
+                ))
                 "energy.accessibility"
-                $"{content.Id} does not use the standard Basic Energy accessibility label."
+                $"{content.Id} does not use its mechanical Energy classification."
                 issues
 
         check
-            (manifest.BasicEnergy
+            (manifest.Energy
              |> Array.map (fun energy -> energy.Name)
              |> distinctCount StringComparer.OrdinalIgnoreCase = 7)
             "energy.name"
-            "Every Basic Energy entry must retain an individually authored name."
+            "Every Energy entry must retain an individually authored name."
             issues
 
         check
-            (manifest.BasicEnergy
+            (manifest.Energy
              |> Array.map (fun energy -> energy.SymbolKey)
              |> distinctCount StringComparer.Ordinal = 7)
             "energy.symbol"
-            "Every Basic Energy entry must have a unique symbol key."
+            "Every Energy entry must have a unique symbol key."
             issues
 
     let private publicStrings (manifest: BlokemonPublicContentManifest) =
@@ -475,7 +460,7 @@ module BlokemonPublicContentValidator =
                 yield card.ApprovedName
                 yield card.FlavourText
 
-                for effect in Array.concat [ card.Abilities; card.Attacks; card.Rules ] do
+                for effect in Array.concat [ card.PokemonPowers; card.Attacks; card.Rules ] do
                     yield effect.MechanicalId
                     yield effect.Name
 
@@ -486,18 +471,17 @@ module BlokemonPublicContentValidator =
                 yield card.Illustration.AltIntent
                 yield card.Art.Authority
 
-            for support in manifest.Supports do
-                yield support.Id
-                yield support.Name
-                yield support.CategoryTermId
+            for trainer in manifest.Trainers do
+                yield trainer.Id
+                yield trainer.Name
 
-                for effect in support.Effects do
+                for effect in trainer.Effects do
                     yield effect.MechanicalId
                     yield effect.Name
 
                     yield! effectTextOf effect |> Option.toList
 
-            for energy in manifest.BasicEnergy do
+            for energy in manifest.Energy do
                 yield energy.Id
                 yield energy.Name
                 yield energy.Definition
@@ -516,12 +500,12 @@ module BlokemonPublicContentValidator =
             yield!
                 manifest.Collectibles
                 |> Seq.collect (fun card ->
-                    effectTexts (Array.concat [ card.Abilities; card.Attacks; card.Rules ]))
+                    effectTexts (Array.concat [ card.PokemonPowers; card.Attacks; card.Rules ]))
 
-            yield! manifest.Supports |> Seq.collect (fun support -> effectTexts support.Effects)
+            yield! manifest.Trainers |> Seq.collect (fun trainer -> effectTexts trainer.Effects)
 
             yield!
-                manifest.BasicEnergy
+                manifest.Energy
                 |> Seq.collect (fun energy -> [| energy.Definition; energy.AccessibleLabel |])
         }
 
@@ -564,19 +548,19 @@ module BlokemonPublicContentValidator =
         check
             (manifest.SchemaVersion = SchemaVersion)
             "document.schema"
-            "The public schema version is not candidate.5."
+            "The public schema version is not the approved 1999 schema."
             issues
 
         check
             (manifest.ContentVersion = ContentVersion)
             "document.version"
-            "The public content version is not candidate.10."
+            "The public content version is not the approved 1999 version."
             issues
 
         check
             (manifest.TerminologyVersion = TerminologyVersion)
             "document.terminology-version"
-            "The terminology version is not candidate.6."
+            "The terminology version is not the approved 1999 version."
             issues
 
         check
@@ -588,13 +572,13 @@ module BlokemonPublicContentValidator =
         check
             (manifest.HumanApprovalStatus = BlokemonPublicContentApprovalStatus.Accepted)
             "document.approval"
-            "Candidate.10 must carry exact human acceptance."
+            "The 1999 public authority must carry exact human acceptance."
             issues
 
         validateTerminology manifest issues
         validateCollectibles manifest mechanics issues
-        validateSupports manifest mechanics issues
-        validateBasicEnergy manifest mechanics issues
+        validateTrainers manifest mechanics issues
+        validateEnergy manifest mechanics issues
         validatePublicStrings manifest issues
         validateMechanicsVocabulary manifest issues
 

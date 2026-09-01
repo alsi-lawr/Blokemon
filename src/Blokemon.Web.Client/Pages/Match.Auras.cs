@@ -28,7 +28,7 @@ public partial class Match
         MatchActionKindView.PlayBlokemon,
         MatchActionKindView.Evolve,
         MatchActionKindView.PlayTrainer,
-        MatchActionKindView.UseAbility,
+        MatchActionKindView.UsePokemonPower,
         MatchActionKindView.Attack,
         MatchActionKindView.Retreat,
         MatchActionKindView.DiscardFossil,
