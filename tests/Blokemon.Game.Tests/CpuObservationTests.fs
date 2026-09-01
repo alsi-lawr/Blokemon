@@ -112,9 +112,9 @@ module private CpuObservationScenarios =
         (engine: MatchEngine)
         (state: MatchState)
         (actor: PlayerId)
-        (observation: CpuObservation)
+        (candidates: CpuLegalCandidate seq)
         =
-        for candidate in observation.Candidates do
+        for candidate in candidates do
             match engine.TryMaterializeCpuCommand(state, actor, candidate.Id) with
             | ValueNone -> failwith $"Candidate {candidate.Id.Value} could not be materialized."
             | ValueSome command ->
@@ -144,7 +144,16 @@ type CpuObservationTests() =
                 CpuObservationMode.Fair
             )
 
-        repeatedAfterSubstitution |> should equal fair
+        repeatedAfterSubstitution.Actor |> should equal fair.Actor
+        repeatedAfterSubstitution.State |> should equal fair.State
+
+        repeatedAfterSubstitution.Candidates
+        |> Seq.toArray
+        |> should equal (fair.Candidates |> Seq.toArray)
+
+        repeatedAfterSubstitution.AuthoritativeState
+        |> should equal fair.AuthoritativeState
+
         fair.AuthoritativeState.IsNone |> should be True
 
         fair.State.Cards |> Seq.map _.Id |> should contain (CardInstanceId "pokedex")
@@ -217,7 +226,7 @@ type CpuObservationTests() =
               [ vims[1]; vims[2] ]
               [ vims[2] ] ]
 
-        assertCandidatesApply engine state MatchScenario.FirstPlayer observation
+        assertCandidatesApply engine state MatchScenario.FirstPlayer observation.Candidates
         state |> should equal (wildfireState ())
 
         engine.TryMaterializeCpuCommand(
@@ -356,16 +365,7 @@ type CpuObservationTests() =
         healedAmounts |> should equal [ 0; 1; 2; 3 ]
         potionCandidates |> Seq.length |> should equal 4
 
-        assertCandidatesApply
-            engine
-            potionState
-            MatchScenario.FirstPlayer
-            { engine.GetCpuObservation(
-                  potionState,
-                  MatchScenario.FirstPlayer,
-                  CpuObservationMode.Fair
-              ) with
-                Candidates = ImmutableArray.CreateRange potionCandidates }
+        assertCandidatesApply engine potionState MatchScenario.FirstPlayer potionCandidates
 
     [<Test>]
     member _.``ordered hidden deck choices stay opaque while authoritative choices include every order``
@@ -463,9 +463,4 @@ type CpuObservationTests() =
         |> Set.ofSeq
         |> should equal (set [ [ CardInstanceId "vim-0" ]; [ CardInstanceId "vim-1" ] ])
 
-        assertCandidatesApply
-            engine
-            state
-            MatchScenario.FirstPlayer
-            { observation with
-                Candidates = ImmutableArray.CreateRange taxiCandidates }
+        assertCandidatesApply engine state MatchScenario.FirstPlayer taxiCandidates

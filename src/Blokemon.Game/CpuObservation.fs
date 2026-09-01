@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System
 open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 
@@ -89,10 +90,24 @@ type CpuLegalCandidate =
 type CpuObservation =
     { Actor: PlayerId
       State: CpuPublicMatchState
-      Candidates: ImmutableArray<CpuLegalCandidate>
+      Candidates: CpuLegalCandidate seq
       AuthoritativeState: MatchState voption }
 
 module internal CpuCandidateIds =
 
-    let forIndex (state: MatchState) index =
-        CpuCandidateId $"cpu-candidate:{state.Revision.Value}:%06d{index}"
+    let forChoice (state: MatchState) (baseIndex: int) (choiceIndex: int64) =
+        CpuCandidateId $"cpu-candidate:{state.Revision.Value}:%06d{baseIndex}:%018d{choiceIndex}"
+
+    let tryParse (state: MatchState) (candidate: CpuCandidateId) =
+        let prefix = $"cpu-candidate:{state.Revision.Value}:"
+
+        if not (candidate.Value.StartsWith(prefix, StringComparison.Ordinal)) then
+            ValueNone
+        else
+            match candidate.Value[prefix.Length ..].Split(':') with
+            | [| baseText; choiceText |] ->
+                match Int32.TryParse baseText, Int64.TryParse choiceText with
+                | (true, baseIndex), (true, choiceIndex) when baseIndex >= 0 && choiceIndex >= 0L ->
+                    ValueSome(baseIndex, choiceIndex)
+                | _ -> ValueNone
+            | _ -> ValueNone

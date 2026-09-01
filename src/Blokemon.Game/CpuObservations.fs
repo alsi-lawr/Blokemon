@@ -1,5 +1,6 @@
 namespace Blokemon.Game
 
+open System.Collections.Generic
 open System.Collections.Immutable
 open Blokemon.Game.CpuCandidateIds
 
@@ -67,6 +68,7 @@ module internal CpuObservations =
                 { KnownCards = ImmutableArray.CreateRange known
                   HiddenCardCount = cards.Length - known.Length }
             )
+
         | EffectChoice.MechanicalType(id, mechanicalType) ->
             CpuChoiceCandidate.MechanicalType(id, mechanicalType)
         | EffectChoice.Attack(id, effect) -> CpuChoiceCandidate.Attack(id, effect)
@@ -88,6 +90,28 @@ module internal CpuObservations =
                                 ValueNone })
                 )
             )
+
+    let private interleave (sources: seq<#seq<'value>>) =
+        seq {
+            let active = Queue<System.Collections.Generic.IEnumerator<'value>>()
+
+            try
+                for source in sources do
+                    active.Enqueue(source.GetEnumerator())
+
+                while active.Count > 0 do
+                    let current = active.Dequeue()
+
+                    if current.MoveNext() then
+                        let value = current.Current
+                        active.Enqueue current
+                        yield value
+                    else
+                        current.Dispose()
+            finally
+                while active.Count > 0 do
+                    active.Dequeue().Dispose()
+        }
 
     let private publicState
         (state: MatchState)
@@ -160,7 +184,7 @@ module internal CpuObservations =
         (actor: PlayerId)
         (mode: CpuObservationMode)
         (canRevealHand: PlayerId -> bool)
-        (actions: ImmutableArray<LegalAction>)
+        (actionSources: seq<int * seq<int64 * LegalAction>>)
         =
         let knownForCandidate =
             match mode with
@@ -177,10 +201,11 @@ module internal CpuObservations =
         { Actor = actor
           State = publicState state actor canRevealHand
           Candidates =
-            ImmutableArray.CreateRange(
+            actionSources
+            |> Seq.map (fun (baseIndex, actions) ->
                 actions
-                |> Seq.mapi (fun index action ->
-                    { Id = forIndex state index
+                |> Seq.map (fun (choiceIndex, action) ->
+                    { Id = forChoice state baseIndex choiceIndex
                       Kind = action.Kind
                       Action = action.Command.Action
                       Choices =
@@ -192,8 +217,8 @@ module internal CpuObservations =
                             action.ChoiceRequirements
                             |> Seq.map (redactRequirement knownForCandidate)
                         )
-                      Affordability = action.Affordability })
-            )
+                      Affordability = action.Affordability }))
+            |> interleave
           AuthoritativeState =
             match mode with
             | CpuObservationMode.Fair -> ValueNone

@@ -206,7 +206,16 @@ module internal MatchLegalActions =
         | MatchPhase.Complete -> Seq.empty
         | other -> failwithf "Unhandled match phase %A." other
 
-    let materialize (state: MatchState) (action: LegalAction) =
+    let private indexed (values: seq<'value>) =
+        seq {
+            let mutable index = 0L
+
+            for value in values do
+                yield index, value
+                index <- index + 1L
+        }
+
+    let materializeWithIndex (state: MatchState) (action: LegalAction) =
         let variants =
             match action.Command.Action with
             | MatchAction.ChooseOpening(oche, _) ->
@@ -245,31 +254,23 @@ module internal MatchLegalActions =
             | current ->
                 choiceCombinations action.ChoiceRequirements action.Command.Actor
                 |> Seq.map (fun choices -> current, choices)
-            |> Seq.toArray
 
         variants
-        |> Seq.mapi (fun index (matchAction, choices) ->
-            let hasVariants = variants.Length > 1
-
-            let stableKey =
-                if hasVariants then
-                    $"{action.StableKey}:choice:%06d{index}"
-                else
-                    action.StableKey
-
-            let commandId =
-                if hasVariants then
-                    CommandId $"{action.Command.Id.Value}:choice:%06d{index}"
-                else
-                    action.Command.Id
-
+        |> indexed
+        |> Seq.map (fun (index, (matchAction, choices)) ->
+            index,
             { action with
-                StableKey = stableKey
+                StableKey = $"{action.StableKey}:choice:%018d{index}"
                 Command =
                     { action.Command with
-                        Id = commandId
+                        Id = CommandId $"{action.Command.Id.Value}:choice:%018d{index}"
                         Choices = choices
                         Action = matchAction } })
+
+    let tryMaterializeAt state action choiceIndex =
+        materializeWithIndex state action
+        |> Seq.tryFind (fun (index, _) -> index = choiceIndex)
+        |> Option.map snd
 
     let order (actions: LegalAction seq) =
         actions
@@ -280,3 +281,21 @@ module internal MatchLegalActions =
                 byKind
             else
                 String.CompareOrdinal(left.StableKey, right.StableKey))
+
+    let cpuOrder (actions: LegalAction seq) =
+        actions
+        |> Seq.sortWith (fun left right ->
+            let priority (action: LegalAction) =
+                if action.Kind = LegalActionKind.EndRound then 0 else 1
+
+            let byPriority = compare (priority left) (priority right)
+
+            if byPriority <> 0 then
+                byPriority
+            else
+                let byKind = compare left.Kind right.Kind
+
+                if byKind <> 0 then
+                    byKind
+                else
+                    String.CompareOrdinal(left.StableKey, right.StableKey))

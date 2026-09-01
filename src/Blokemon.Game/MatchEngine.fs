@@ -14,6 +14,7 @@ open Blokemon.Game.MatchTriggerHandlers
 open Blokemon.Game.MatchLegalActions
 open Blokemon.Game.CpuObservations
 open Blokemon.Game.CpuCandidateIds
+open Blokemon.Game.CpuPolicyLimits
 
 /// The one place a match state is ever advanced: a validated start request produces the first
 /// state, and each command produces exactly one successor from exactly one predecessor.
@@ -205,14 +206,12 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
             && (matchEvent.Effect.IsNone || matchEvent.Actor = ValueSome viewer)
             || this.CanRevealCard(state, viewer, cardId))
 
-    member private this.GetValidatedActions
-        (state: MatchState, actor: PlayerId, materializeChoices: bool)
-        =
+    member private _.GetProposedActions(state: MatchState, actor: PlayerId) =
         if
             not (state.Players |> Seq.exists (fun player -> player.Id = actor))
             || state.Phase = MatchPhase.Complete
         then
-            ImmutableArray<_>.Empty
+            Seq.empty
         else
             // Apply recomputes the same continuous effects before dispatch, so proposal and
             // validation read equivalent state without sharing a mutable builder.
@@ -224,18 +223,21 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
                 else
                     state
 
-            let proposedActions = proposed catalog interpreter legalState actor
-
-            let proposedActions =
-                if materializeChoices then
-                    proposedActions |> Seq.collect (materialize state)
-                else
-                    proposedActions
-
             // Resignation sits outside the phase switch: it is legal for either player in every
             // phase this method still serves, because Complete already returned above.
+            Seq.append
+                (proposed catalog interpreter legalState actor)
+                (Seq.singleton (resignAction state actor))
+
+    member private this.GetValidatedActions(state: MatchState, actor: PlayerId) =
+        if
+            not (state.Players |> Seq.exists (fun player -> player.Id = actor))
+            || state.Phase = MatchPhase.Complete
+        then
+            ImmutableArray<_>.Empty
+        else
             ImmutableArray.CreateRange(
-                Seq.append proposedActions (Seq.singleton (resignAction state actor))
+                this.GetProposedActions(state, actor)
                 |> Seq.filter (fun action ->
                     match this.Apply(state, action.Command) with
                     | CommandOutcome.Applied _ -> true
@@ -252,32 +254,94 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
             )
 
     member this.GetLegalActions(state: MatchState, actor: PlayerId) =
-        this.GetValidatedActions(state, actor, false)
+        this.GetValidatedActions(state, actor)
 
     member this.GetCpuObservation(state: MatchState, actor: PlayerId, mode: CpuObservationMode) =
         if not (state.Players |> Seq.exists (fun player -> player.Id = actor)) then
             invalidArg (nameof actor) "A CPU observation requires a player in this match."
 
-        let actions =
-            ImmutableArray.CreateRange(
-                this.GetValidatedActions(state, actor, true)
-                |> Seq.filter (fun action -> action.Affordability = ActionAffordability.Payable)
-            )
+        let actionSources =
+            this.GetProposedActions(state, actor)
+            |> cpuOrder
+            |> Seq.mapi (fun baseIndex action ->
+                let actions =
+                    materializeWithIndex state action
+                    |> Seq.filter (fun (_, materialized) ->
+                        materialized.Affordability = ActionAffordability.Payable
+                        && (match this.Apply(state, materialized.Command) with
+                            | CommandOutcome.Applied _ -> true
+                            | CommandOutcome.Rejected _ -> false))
 
-        create state actor mode (fun owner -> this.CanRevealHand(state, actor, owner)) actions
+                baseIndex, actions)
+
+        create state actor mode (fun owner -> this.CanRevealHand(state, actor, owner)) actionSources
 
     member internal this.TryMaterializeCpuAction
         (state: MatchState, actor: PlayerId, candidate: CpuCandidateId)
         =
-        this.GetValidatedActions(state, actor, true)
-        |> Seq.filter (fun action -> action.Affordability = ActionAffordability.Payable)
-        |> Seq.mapi (fun index action -> forIndex state index, action)
-        |> Seq.tryFind (fun (id, _) -> id = candidate)
-        |> Option.map snd
-        |> ValueOption.ofOption
+        match tryParse state candidate with
+        | ValueNone -> ValueNone
+        | ValueSome(baseIndex, choiceIndex) ->
+            this.GetProposedActions(state, actor)
+            |> cpuOrder
+            |> Seq.tryItem baseIndex
+            |> Option.bind (fun action -> tryMaterializeAt state action choiceIndex)
+            |> Option.bind (fun action ->
+                if action.Affordability <> ActionAffordability.Payable then
+                    None
+                else
+                    match this.Apply(state, action.Command) with
+                    | CommandOutcome.Applied _ -> Some action
+                    | CommandOutcome.Rejected _ -> None)
+            |> ValueOption.ofOption
 
     member this.TryMaterializeCpuCommand
         (state: MatchState, actor: PlayerId, candidate: CpuCandidateId)
         =
         this.TryMaterializeCpuAction(state, actor, candidate)
         |> ValueOption.map _.Command
+
+    member internal this.CreateCpuPlanningState
+        (
+            state: MatchState,
+            observation: CpuObservation,
+            mode: CpuObservationMode,
+            seed: uint64,
+            sampleIndex: uint64
+        ) =
+        match mode with
+        | CpuObservationMode.Fair ->
+            CpuPlanning.createFairState catalog state observation seed sampleIndex
+        | CpuObservationMode.Authoritative -> state
+
+    member internal _.ScoreCpuTransition
+        (
+            actor: PlayerId,
+            kind: LegalActionKind,
+            before: MatchState,
+            beforeObservation: CpuObservation,
+            after: MatchState,
+            afterObservation: CpuObservation
+        ) =
+        let readyAttacks (observation: CpuObservation) =
+            observation.Candidates
+            |> Seq.truncate rootCandidateLimit
+            |> Seq.choose (fun action ->
+                match action.Action with
+                | MatchAction.Attack(attacker, attack) ->
+                    catalog.Attack attack
+                    |> ValueOption.map (fun details -> attacker, details.PrintedDamage)
+                    |> ValueOption.toOption
+                | _ -> None)
+            |> Seq.groupBy fst
+            |> Seq.map (fun (attacker, attacks) -> attacker, attacks |> Seq.map snd |> Seq.max)
+            |> Map.ofSeq
+
+        CpuEvaluation.transitionScore
+            catalog
+            (readyAttacks beforeObservation)
+            (readyAttacks afterObservation)
+            actor
+            kind
+            before
+            after
