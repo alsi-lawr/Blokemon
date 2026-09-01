@@ -465,15 +465,25 @@ public sealed class MatchMigrationTests
     [Test]
     [Arguments(false)]
     [Arguments(true)]
-    public async Task CorruptSupportedMatch_IsTypedAndPreservedWithoutABackup(bool sqlite)
+    public async Task CorruptSupportedMatch_CanBeAbandonedWithoutChangingOtherData(bool sqlite)
     {
         await using var fixture = await DocumentStoreFixture.Create(sqlite);
         var catalogue = Catalogue();
         var profile = Profile(catalogue);
+        await fixture.Store.Create(
+            "profile",
+            CurrentProfileDocument(catalogue, "historical-profile.json")
+        );
+        await fixture.Store.Create(
+            "match-history",
+            EmptyCurrentHistory(catalogue.Mechanics.ManifestVersion)
+        );
         var corrupt = JsonNode.Parse(MatchAtVersion(2, "sv151-candidate.16"))!.AsObject();
         corrupt.Remove("commands");
         await fixture.Store.Create("match", corrupt.ToJsonString());
         var source = (await fixture.Store.Read("match"))!;
+        var savedProfile = (await fixture.Store.Read("profile"))!;
+        var history = (await fixture.Store.Read("match-history"))!;
 
         var service = new LocalMatchService(catalogue, fixture.Store);
         var restored = await service.State(profile, profile.DisplayName.Value);
@@ -485,9 +495,60 @@ public sealed class MatchMigrationTests
 
         restored.View.ShouldBeNull();
         restored.Error!.Code.ShouldBe("match.document_corrupt");
-        projection.Recovery.ShouldBeNull();
+        projection.Recovery!.Kind.ShouldBe(MatchRecoveryKindView.ActiveMatchCorrupt);
         (await fixture.Store.Read("match")).ShouldBe(source);
         (await fixture.Store.Read(BackupKey("match", source))).ShouldBeNull();
+
+        var abandoned = await service.AbandonSavedMatch(
+            profile,
+            new(projection.Recovery.Revision, projection.Recovery.ContentIdentity),
+            CancellationToken.None
+        );
+
+        abandoned.IsOk.ShouldBeTrue();
+        (await fixture.Store.Read("match")).ShouldBeNull();
+        (await fixture.Store.Read("profile")).ShouldBe(savedProfile);
+        (await fixture.Store.Read("match-history")).ShouldBe(history);
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task UnsupportedCpuPolicy_CanBeAbandonedAfterReplayRejectsTheSavedBattle(
+        bool sqlite
+    )
+    {
+        await using var fixture = await DocumentStoreFixture.Create(sqlite);
+        var catalogue = Catalogue();
+        var profile = Profile(catalogue);
+        var current = await CreateCurrentActiveMatch(catalogue, fixture.Store, profile);
+        var document = JsonNode.Parse(current.Json)!.AsObject();
+        document["cpuPolicy"]!["version"] = 999;
+        (
+            await fixture.Store.Update("match", current.Revision, document.ToJsonString())
+        ).ShouldBeOfType<DocumentWriteResult.Written>();
+        var source = (await fixture.Store.Read("match"))!;
+        var service = new LocalMatchService(catalogue, fixture.Store);
+
+        var projection = await service.StateProjection(
+            profile,
+            profile.DisplayName.Value,
+            CancellationToken.None
+        );
+
+        projection.View.ShouldBeNull();
+        projection.Error!.Code.ShouldBe("match.cpu_policy_version");
+        projection.Recovery!.Kind.ShouldBe(MatchRecoveryKindView.ActiveMatchUnsupportedVersion);
+        (await fixture.Store.Read("match")).ShouldBe(source);
+
+        var abandoned = await service.AbandonSavedMatch(
+            profile,
+            new(projection.Recovery.Revision, projection.Recovery.ContentIdentity),
+            CancellationToken.None
+        );
+
+        abandoned.IsOk.ShouldBeTrue();
+        (await fixture.Store.Read("match")).ShouldBeNull();
     }
 
     [Test]

@@ -291,6 +291,7 @@ public enum MatchRecoveryKindView
     ActiveMatchIncompatibleWithCurrentRules = 1,
     MatchHistoryUnsupportedVersion = 2,
     MatchHistoryIncompatibleWithCurrentRules = 3,
+    ActiveMatchCorrupt = 4,
 }
 
 public sealed record MatchRecoveryView(

@@ -143,6 +143,8 @@ module internal MatchMigration =
     let recoveryView (requirement: MatchRecoveryRequirement) =
         let kind =
             match requirement.Document, requirement.Reason with
+            | MatchRecoveryDocument.ActiveMatch, MatchRecoveryReason.Corrupt ->
+                Some MatchRecoveryKindView.ActiveMatchCorrupt
             | MatchRecoveryDocument.ActiveMatch, MatchRecoveryReason.UnsupportedVersion ->
                 Some MatchRecoveryKindView.ActiveMatchUnsupportedVersion
             | MatchRecoveryDocument.ActiveMatch, MatchRecoveryReason.IncompatibleWithCurrentRules ->
@@ -151,7 +153,7 @@ module internal MatchMigration =
                 Some MatchRecoveryKindView.MatchHistoryUnsupportedVersion
             | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.IncompatibleWithCurrentRules ->
                 Some MatchRecoveryKindView.MatchHistoryIncompatibleWithCurrentRules
-            | _, MatchRecoveryReason.Corrupt -> None
+            | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.Corrupt -> None
 
         kind
         |> Option.map (fun value ->
@@ -161,6 +163,19 @@ module internal MatchMigration =
                 DocumentIdentity.ofText requirement.Stored.Json
             ))
         |> Option.toObj
+
+    let activeReplayRecovery (stored: StoredDocument) (error: ApiError) =
+        let reason =
+            match error.Code with
+            | "match.authority_changed" -> MatchRecoveryReason.IncompatibleWithCurrentRules
+            | "match.document_version"
+            | "match.cpu_policy_version" -> MatchRecoveryReason.UnsupportedVersion
+            | _ -> MatchRecoveryReason.Corrupt
+
+        { Document = MatchRecoveryDocument.ActiveMatch
+          Key = matchKey
+          Reason = reason
+          Stored = stored }
 
     let private persist
         (documentKind: MatchRecoveryDocument)

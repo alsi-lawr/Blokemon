@@ -5,6 +5,7 @@ open System.Threading
 open Blokemon.App.Contracts
 open Blokemon.App.MatchFailures
 open Blokemon.App.MatchMigration
+open Blokemon.App.MatchReplay
 open Blokemon.Product
 
 module internal MatchRecovery =
@@ -95,6 +96,30 @@ module internal MatchRecovery =
         (request: AbandonSavedMatchRequest)
         (cancellationToken: CancellationToken)
         =
+        let resolve context profile source cancellationToken =
+            task {
+                let! resolved = resolveMatch context profile source cancellationToken
+
+                match resolved with
+                | MatchMigrationOutcome.Ready ready ->
+                    let replayed =
+                        replayDocument context profile ready.Stored.Revision ready.Document
+
+                    match replayed.Match, replayed.Error with
+                    | NonNull _, Null -> return resolved
+                    | _, NonNull error ->
+                        return
+                            MatchMigrationOutcome.RecoveryRequired(
+                                activeReplayRecovery ready.Stored error
+                            )
+                    | Null, Null ->
+                        return
+                            MatchMigrationOutcome.RecoveryRequired(
+                                activeReplayRecovery ready.Stored (invalidReplayError ())
+                            )
+                | _ -> return resolved
+            }
+
         recover
             context
             profile
@@ -102,7 +127,7 @@ module internal MatchRecovery =
             matchKey
             request.ExpectedRevision
             request.ContentIdentity
-            resolveMatch
+            resolve
             true
             cancellationToken
 

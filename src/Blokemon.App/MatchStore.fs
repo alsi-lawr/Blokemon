@@ -64,12 +64,21 @@ module internal MatchStore =
                     | MatchMigrationOutcome.Ready ready ->
                         let replayed = replayDocument profile ready.Stored.Revision ready.Document
 
-                        context.Cached <- replayed.Match
+                        match replayed.Error with
+                        | NonNull error ->
+                            context.Cached <- null
 
-                        return
-                            { Match = replayed.Match
-                              Error = replayed.Error
-                              Recovery = None }
+                            return
+                                { Match = null
+                                  Error = error
+                                  Recovery = Some(activeReplayRecovery ready.Stored error) }
+                        | Null ->
+                            context.Cached <- replayed.Match
+
+                            return
+                                { Match = replayed.Match
+                                  Error = null
+                                  Recovery = None }
         }
 
     let historyRecovery

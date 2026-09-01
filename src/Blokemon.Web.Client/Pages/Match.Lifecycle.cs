@@ -91,7 +91,8 @@ public partial class Match
     private static bool ActiveRecovery(MatchRecoveryView recovery) =>
         recovery.Kind
             is MatchRecoveryKindView.ActiveMatchUnsupportedVersion
-                or MatchRecoveryKindView.ActiveMatchIncompatibleWithCurrentRules;
+                or MatchRecoveryKindView.ActiveMatchIncompatibleWithCurrentRules
+                or MatchRecoveryKindView.ActiveMatchCorrupt;
 
     private void BeginRecoveryConfirmation()
     {
