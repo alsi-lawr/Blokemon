@@ -83,7 +83,7 @@ else if (_view.Profile.StarterDeckId is null)
     <header class="topline"><div><span class="eyebrow">Battle</span><h1>Choose a starter first.</h1></div></header>
     <div class="panel hero"><div class="hero-copy"><h2>You need a complete deck.</h2><p>Claim one of the three 60-card starters before taking on the CPU.</p><div class="actions"><a class="primary button" href="/">Choose a starter</a></div></div></div>
 }
-else if (_view.Match is null)
+else if (_view.Match is null || _selectingBattle)
 {
     var readyDecks = ReadyDecks();
     <header class="topline"><div><span class="eyebrow">Local battle</span><h1>Start a battle.</h1></div></header>
@@ -139,7 +139,7 @@ else if (!_animating && _view.Match.Frame.IsComplete)
         <FailurePanel Message="@_operationError" />
     }
     <div class="grid two">
-        <div class="panel hero"><div class="hero-copy"><h2>Battle complete.</h2><p>This battle is saved on this device.</p>@if (ReadyDecks().Length > 0){<div class="actions"><button class="primary" @onclick="StartSelected" disabled="@_working">@(_working ? "Starting…" : "Battle again")</button></div>}</div></div>
+        <div class="panel hero"><div class="hero-copy"><h2>Battle complete.</h2><p>This battle is saved on this device.</p>@if (ReadyDecks().Length > 0){<div class="actions"><button class="primary" @onclick="BeginAnotherBattle">Battle again</button></div>}</div></div>
         <div class="panel match-log"><span class="eyebrow">Recent events</span><ol>@foreach (var entry in match.RecentEvents){<li>@PublicText(entry)</li>}</ol></div>
     </div>
 }
@@ -314,6 +314,7 @@ else
     private string? _focusedSurfaceKey;
     private bool _dockOpen;
     private bool _confirmingRecovery;
+    private bool _selectingBattle;
 
     // Every surface the table can show is one of these, and the stage decides all three of the
     // things a frame is made of: which cards glow, which sheet is open, and where a tap goes.

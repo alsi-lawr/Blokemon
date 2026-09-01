@@ -100,9 +100,9 @@ internal sealed class ComponentHarness : Renderer
     }
 
     // Activates the one rendered button a player reaches by this accessible name. This goes
-    // through the event-handler id Blazor gave the browser rather than through a component method,
-    // so the element reference captured for that exact button is the one the event carries into
-    // the component lifecycle.
+    // through the event-handler id Blazor gave the browser rather than through a component method.
+    // Where the button captures an element reference, that exact reference is the one the event
+    // carries into the component lifecycle.
     public async Task<string> ActivateButton(string accessibleName)
     {
         var matches = new List<(ulong HandlerId, string ReferenceId)>();
@@ -130,6 +130,34 @@ internal sealed class ComponentHarness : Renderer
         );
         Rethrow();
         return match.ReferenceId;
+    }
+
+    public async Task ChangeSelect(string elementId, string value)
+    {
+        var matches = new List<ulong>();
+        await Dispatcher.InvokeAsync(() =>
+        {
+            foreach (var component in _cast.Instances)
+            {
+                ArrayRange<RenderTreeFrame> frames;
+                try
+                {
+                    frames = GetCurrentRenderTreeFrames(GetComponentState(component).ComponentId);
+                }
+                catch (ArgumentException)
+                {
+                    continue;
+                }
+
+                FindSelects(frames, elementId, matches);
+            }
+        });
+
+        var handler = matches.ShouldHaveSingleItem(elementId);
+        await Dispatcher.InvokeAsync(() =>
+            DispatchEventAsync(handler, default, new ChangeEventArgs { Value = value })
+        );
+        Rethrow();
     }
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
@@ -173,6 +201,7 @@ internal sealed class ComponentHarness : Renderer
             ulong handlerId = 0;
             string? label = null;
             string? referenceId = null;
+            var text = new List<string>();
             for (var child = index + 1; child < end; child++)
             {
                 var candidate = frames.Array[child];
@@ -191,11 +220,58 @@ internal sealed class ComponentHarness : Renderer
                 {
                     referenceId = candidate.ElementReferenceCaptureId;
                 }
+                else if (candidate.FrameType == RenderTreeFrameType.Text)
+                {
+                    text.Add(candidate.TextContent);
+                }
             }
 
-            if (label == accessibleName && handlerId != 0 && referenceId is not null)
+            label ??= string.Concat(text).Trim();
+            if (label == accessibleName && handlerId != 0)
             {
-                matches.Add((handlerId, referenceId));
+                matches.Add((handlerId, referenceId ?? string.Empty));
+            }
+        }
+    }
+
+    private static void FindSelects(
+        ArrayRange<RenderTreeFrame> frames,
+        string elementId,
+        List<ulong> matches
+    )
+    {
+        for (var index = 0; index < frames.Count; index++)
+        {
+            var frame = frames.Array[index];
+            if (frame.FrameType != RenderTreeFrameType.Element || frame.ElementName != "select")
+            {
+                continue;
+            }
+
+            var end = index + frame.ElementSubtreeLength;
+            ulong handlerId = 0;
+            string? id = null;
+            for (var child = index + 1; child < end; child++)
+            {
+                var candidate = frames.Array[child];
+                if (candidate.FrameType != RenderTreeFrameType.Attribute)
+                {
+                    continue;
+                }
+
+                if (candidate.AttributeName == "id")
+                {
+                    id = candidate.AttributeValue as string;
+                }
+                else if (candidate.AttributeName == "onchange")
+                {
+                    handlerId = candidate.AttributeEventHandlerId;
+                }
+            }
+
+            if (id == elementId && handlerId != 0)
+            {
+                matches.Add(handlerId);
             }
         }
     }

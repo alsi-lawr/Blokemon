@@ -75,6 +75,13 @@ public partial class Match
     private Task StartSelected() =>
         SelectedDeck() is { } deck ? Start(deck.Id) : Task.CompletedTask;
 
+    private void BeginAnotherBattle()
+    {
+        _operationError = null;
+        _commandId = null;
+        _selectingBattle = true;
+    }
+
     private async Task Start(Guid deckId)
     {
         _working = true;
@@ -82,6 +89,10 @@ public partial class Match
         var response = await MatchOperations.StartMatch(
             new(_commandId.Value, deckId, _selectedDifficulty)
         );
+        if (response.Succeeded && response.Value is not null)
+        {
+            _selectingBattle = false;
+        }
         // A new game is not a move that can be seen happening: what came before it is the game
         // before. So it is presented over an empty table rather than over whatever the last battle
         // left standing, and the opening hands are dealt onto it.
