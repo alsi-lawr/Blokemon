@@ -608,9 +608,7 @@ type CpuPolicyTests() =
                 failwith $"{difficulty} engine-issued EndRound was rejected with {rejection.Code}."
 
     [<Test>]
-    member _.``Hard should ignore hidden identities while Impossible should search for the strongest hidden card``
-        ()
-        =
+    member _.``fair policies should ignore hidden identities while Impossible should use them``() =
         let trainer =
             MatchScenario.PlainCard "top-up" "KIT-015" MatchScenario.FirstPlayer CardZone.Mitt -1
 
@@ -636,6 +634,14 @@ type CpuPolicyTests() =
                 CardZone.Mitt
                 -1
 
+        let hiddenOpponentCard =
+            MatchScenario.PlainCard
+                "opponent-hidden"
+                "BLK-113"
+                MatchScenario.SecondPlayer
+                CardZone.Mitt
+                -1
+
         let state =
             { MatchScenario.BattleStateWith
                   "BLK-004"
@@ -649,7 +655,9 @@ type CpuPolicyTests() =
                     { RoundUsage.Empty MatchScenario.FirstPlayer with
                         VimAttachments = 1 } }
             |> fun table ->
-                MatchScenario.WithCards table [ trainer; strong; energy; discardOne; discardTwo ]
+                MatchScenario.WithCards
+                    table
+                    [ trainer; strong; energy; discardOne; discardTwo; hiddenOpponentCard ]
 
         let substituted =
             MatchScenario.WithCards
@@ -661,12 +669,20 @@ type CpuPolicyTests() =
                   { energy with
                       MechanicalId = strong.MechanicalId
                       Kind = strong.Kind
-                      StackPosition = strong.StackPosition } ]
+                      StackPosition = strong.StackPosition }
+                  { hiddenOpponentCard with
+                      MechanicalId = MechanicalCardId "VIM-GEEKED"
+                      Kind = CardKind.Vim } ]
 
-        let hard = choose CpuDifficulty.Hard 31UL state
-        let repeatedHard = choose CpuDifficulty.Hard 31UL substituted
+        let assertFairInvariant difficulty =
+            let original = choose difficulty 31UL state
+            let afterSubstitution = choose difficulty 31UL substituted
 
-        repeatedHard.Evidence.Candidate |> should equal hard.Evidence.Candidate
+            afterSubstitution.Evidence.Candidate |> should equal original.Evidence.Candidate
+
+        assertFairInvariant CpuDifficulty.Easy
+        assertFairInvariant CpuDifficulty.Normal
+        assertFairInvariant CpuDifficulty.Hard
 
         let impossible = selected (choose CpuDifficulty.Impossible 31UL state)
         let repeatedImpossible = selected (choose CpuDifficulty.Impossible 31UL substituted)
