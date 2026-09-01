@@ -22,46 +22,64 @@ module internal MatchReplay =
     let advanceCpu
         (context: MatchContext)
         (initial: MatchState)
+        (initialPolicy: CpuPolicyDocument)
         (commands: List<MatchCommand>)
         (events: List<MatchEvent>)
         (presentation: List<PendingPresentation>)
         : CpuAdvance =
         let engine = context.Engine
-        let cpu = context.Cpu
 
         let mutable state = initial
+        let mutable policy = initialPolicy
         let mutable settled: CpuAdvance | null = null
         let mutable count = 0
 
         while isNull (box settled) && count < maximumCpuCommandsPerRequest do
-            match cpu.Choose(engine, state, cpuPlayer) with
+            match MatchCpuPolicy.choose context state cpuPlayer policy with
             | CpuDecision.Selected action ->
                 match engine.Apply(state, action.Command) with
                 | CommandOutcome.Applied(appliedState, appliedEvents) ->
-                    commands.Add action.Command
-                    events.AddRange appliedEvents
+                    match MatchCpuPolicy.tryAdvance policy with
+                    | None ->
+                        settled <-
+                            { State = state
+                              Policy = policy
+                              Error = invalidReplayError () }
+                    | Some advancedPolicy ->
+                        commands.Add action.Command
+                        events.AddRange appliedEvents
 
-                    presentation.Add
-                        { State = appliedState
-                          Events = appliedEvents }
+                        presentation.Add
+                            { State = appliedState
+                              Events = appliedEvents }
 
-                    state <- appliedState
+                        state <- appliedState
+                        policy <- advancedPolicy
                 | _ ->
                     settled <-
                         { State = state
+                          Policy = policy
                           Error =
                             ApiError("match.cpu_rejected", "The computer made an invalid move.") }
-            | _ -> settled <- { State = state; Error = null }
+            | _ ->
+                settled <-
+                    { State = state
+                      Policy = policy
+                      Error = null }
 
             count <- count + 1
 
         match settled with
         | null ->
-            match cpu.Choose(engine, state, cpuPlayer) with
+            match MatchCpuPolicy.choose context state cpuPlayer policy with
             | CpuDecision.Selected _ ->
                 { State = state
+                  Policy = policy
                   Error = ApiError("match.cpu_limit", "The computer could not complete its turn.") }
-            | _ -> { State = state; Error = null }
+            | _ ->
+                { State = state
+                  Policy = policy
+                  Error = null }
         | finished -> finished
 
     let validateDocument
@@ -82,6 +100,27 @@ module internal MatchReplay =
                 "match.authority_changed",
                 "The card rules changed after this battle started. Start a new battle."
             )
+        elif isMissing document.StartCommand.CpuPolicy || isMissing document.CpuPolicy then
+            invalidReplayError ()
+        elif
+            not (MatchCpuPolicy.isSupportedVersion document.StartCommand.CpuPolicy.Version)
+            || not (MatchCpuPolicy.isSupportedVersion document.CpuPolicy.Version)
+        then
+            ApiError(
+                "match.cpu_policy_version",
+                "This saved battle uses an unsupported computer policy. No data changed."
+            )
+        elif
+            not (MatchCpuPolicy.isValid document.StartCommand.CpuPolicy)
+            || not (MatchCpuPolicy.isValid document.CpuPolicy)
+            || document.StartCommand.CpuPolicy.DecisionIndex <> 0UL
+            || document.StartCommand.CpuPolicy.Version <> document.CpuPolicy.Version
+            || document.StartCommand.CpuPolicy.Difficulty <> document.CpuPolicy.Difficulty
+            || document.StartCommand.CpuPolicy.Seed <> document.CpuPolicy.Seed
+            || document.StartCommand.CpuPolicy.Search <> document.CpuPolicy.Search
+            || document.StartCommand.CpuPolicy.Seed <> document.Start.Seed.Value
+        then
+            invalidReplayError ()
         elif
             isMissing document.Start.FirstDeck
             || isMissing document.Start.SecondDeck
@@ -89,15 +128,16 @@ module internal MatchReplay =
             || document.StartCommand.DeckId = Guid.Empty
             || String.IsNullOrWhiteSpace document.StartCommand.Fingerprint
             || document.StartCommand.Fingerprint
-               <> startFingerprint (
-                   StartMatchRequest(
+               <> startFingerprint
+                   (StartMatchRequest(
                        document.StartCommand.ClientCommandId,
-                       document.StartCommand.DeckId
-                   )
-               )
+                       document.StartCommand.DeckId,
+                       document.StartCommand.CpuPolicy.Difficulty
+                   ))
+                   document.StartCommand.CpuPolicy
             || String.IsNullOrWhiteSpace document.StartCommand.StartRequestFingerprint
             || document.StartCommand.StartRequestFingerprint
-               <> gameStartFingerprint document.Start
+               <> gameStartFingerprint document.Start document.StartCommand.CpuPolicy
             || document.Start.MatchId.Value
                <> document.StartCommand.ClientCommandId.ToString "D"
             || document.Start.Seed
@@ -145,7 +185,6 @@ module internal MatchReplay =
         (document: MatchDocument)
         : MatchLoad =
         let engine = context.Engine
-        let cpu = context.Cpu
         let validateDocument = validateDocument context.Catalogue
 
         if isMissing document.StartCommand || isMissing document.Start then
@@ -166,6 +205,7 @@ module internal MatchReplay =
                         document.ClientCommands.ToDictionary(fun receipt -> receipt.AppliedCommand)
 
                     let mutable state = startedState
+                    let mutable policy = document.StartCommand.CpuPolicy
                     let events = List<MatchEvent>(startedEvents)
                     let mutable pendingReceipt: MatchClientCommandReceipt | null = null
                     let mutable rejected = false
@@ -176,8 +216,11 @@ module internal MatchReplay =
                         let command = commands[index]
 
                         if command.Actor = cpuPlayer then
-                            match cpu.Choose(engine, state, cpuPlayer) with
-                            | CpuDecision.Selected action when action.Command = command -> ()
+                            match MatchCpuPolicy.choose context state cpuPlayer policy with
+                            | CpuDecision.Selected action when action.Command = command ->
+                                match MatchCpuPolicy.tryAdvance policy with
+                                | Some advancedPolicy -> policy <- advancedPolicy
+                                | None -> rejected <- true
                             | _ -> rejected <- true
                         elif command.Actor = human then
                             if
@@ -245,12 +288,13 @@ module internal MatchReplay =
                     else
 
                         let cpuStillMoves =
-                            match cpu.Choose(engine, state, cpuPlayer) with
+                            match MatchCpuPolicy.choose context state cpuPlayer policy with
                             | CpuDecision.Selected _ -> true
                             | _ -> false
 
                         if
-                            cpuStillMoves
+                            policy <> document.CpuPolicy
+                            || cpuStillMoves
                             || (match pendingReceipt with
                                 | NonNull pending -> pending.ResultRevision <> state.Revision
                                 | Null -> false)

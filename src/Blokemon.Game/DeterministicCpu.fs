@@ -9,12 +9,47 @@ open Blokemon.Game.CpuPolicyLimits
 /// candidate boundary; only bounded planning snapshots are advanced between those two points.
 type DeterministicCpu() =
 
+    static let legacyPriority =
+        dict
+            [ LegalActionKind.ChooseMulliganBonus, 0
+              LegalActionKind.ChooseOpening, 1
+              LegalActionKind.ChooseBonusPlacement, 2
+              LegalActionKind.ChooseReplacement, 3
+              LegalActionKind.ResolveEffectChoice, 4
+              LegalActionKind.ResolveKnockoutTrigger, 5
+              LegalActionKind.ResolveBarChitTrigger, 6
+              LegalActionKind.PlayBloke, 7
+              LegalActionKind.Promote, 8
+              LegalActionKind.AttachVim, 9
+              LegalActionKind.PlayKit, 10
+              LegalActionKind.UsePartyTrick, 11
+              LegalActionKind.Attack, 12
+              LegalActionKind.Taxi, 13
+              LegalActionKind.ChuckFossil, 14
+              LegalActionKind.EndRound, 15 ]
+
     member this.Choose(engine: MatchEngine, state: MatchState, actor: PlayerId) =
         let input =
             { CpuPolicyInput.normal with
                 DecisionIndex = uint64 (max 0L state.Revision.Value) }
 
         this.Choose(engine, state, actor, input).Decision
+
+    member _.ChooseLegacy(engine: MatchEngine, state: MatchState, actor: PlayerId) =
+        engine.GetLegalActions(state, actor)
+        |> Seq.filter (fun action ->
+            action.Kind <> LegalActionKind.Resign
+            && action.Affordability = ActionAffordability.Payable)
+        |> Seq.sortWith (fun left right ->
+            let byPriority = compare legacyPriority[left.Kind] legacyPriority[right.Kind]
+
+            if byPriority <> 0 then
+                byPriority
+            else
+                String.CompareOrdinal(left.StableKey, right.StableKey))
+        |> Seq.tryHead
+        |> Option.map CpuDecision.Selected
+        |> Option.defaultValue CpuDecision.NoLegalAction
 
     member _.Choose
         (engine: MatchEngine, state: MatchState, actor: PlayerId, input: CpuPolicyInput)

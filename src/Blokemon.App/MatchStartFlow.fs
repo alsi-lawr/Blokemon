@@ -38,11 +38,19 @@ module internal MatchStartFlow =
         let advanceCpu = advanceCpu context
         let archiveCompletedMatch = archiveCompletedMatch context
         let reconcileStartConflict = reconcileStartConflict context
+        let matchSeed = matchSeedFor profile request.CommandId
+        // The seed is part of the policy version: changing it changes fair planning samples and
+        // therefore the commands replay must reproduce. A different seed belongs to a new policy.
+        let requestedPolicy = MatchCpuPolicy.initial request.Difficulty matchSeed.Value
 
         task {
             if request.CommandId = Guid.Empty then
                 return failed "match.command_id" "Select the action again."
+            elif requestedPolicy.IsNone then
+                return failed "match.cpu_difficulty" "Select a supported computer difficulty."
             else
+
+                let initialPolicy = requestedPolicy.Value
 
                 let! loaded = load profile cancellationToken
 
@@ -58,7 +66,7 @@ module internal MatchStartFlow =
                           DocumentIdentity = noDocumentProjection }
                 else
 
-                    let requestFingerprint = startFingerprint request
+                    let requestFingerprint = startFingerprint request initialPolicy
 
                     let existingConflict =
                         match loaded.Match with
@@ -161,7 +169,7 @@ module internal MatchStartFlow =
 
                                 let start =
                                     { MatchId = MatchId(request.CommandId.ToString "D")
-                                      Seed = matchSeedFor profile request.CommandId
+                                      Seed = matchSeed
                                       FirstDeck = FrozenDeckSnapshot.Create(human, cards)
                                       SecondDeck =
                                         FrozenDeckSnapshot.Create(
@@ -181,7 +189,12 @@ module internal MatchStartFlow =
                                         )
 
                                     let advanced =
-                                        advanceCpu startedState commands events presentation
+                                        advanceCpu
+                                            startedState
+                                            initialPolicy
+                                            commands
+                                            events
+                                            presentation
 
                                     if not (isNull (box advanced.Error)) then
                                         return
@@ -200,8 +213,10 @@ module internal MatchStartFlow =
                                                   DeckId = request.DeckId
                                                   Fingerprint = requestFingerprint
                                                   StartRequestFingerprint =
-                                                    gameStartFingerprint start }
+                                                    gameStartFingerprint start initialPolicy
+                                                  CpuPolicy = initialPolicy }
                                               Start = start
+                                              CpuPolicy = advanced.Policy
                                               Commands = ImmutableArray.CreateRange commands
                                               ClientCommands =
                                                 ImmutableArray<MatchClientCommandReceipt>.Empty }

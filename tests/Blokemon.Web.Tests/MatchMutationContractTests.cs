@@ -9,6 +9,20 @@ public sealed class MatchMutationContractTests
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     [Test]
+    public void StartRequestWithoutDifficulty_DefaultsToNormal()
+    {
+        var request = JsonSerializer.Deserialize<StartMatchRequest>(
+            """
+            {"commandId":"30000000-0000-0000-0000-000000000001","deckId":"20000000-0000-0000-0000-000000000001"}
+            """,
+            Json
+        );
+
+        request.ShouldNotBeNull();
+        request.Difficulty.ShouldBe(CpuDifficultyView.Normal);
+    }
+
+    [Test]
     public void AppliedMutation_PreservesTheTwoArgumentConstructorAndOriginalWireShape()
     {
         var application = Application();

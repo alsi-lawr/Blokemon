@@ -109,6 +109,17 @@ else if (_view.Match is null)
                         <option value="@deck.Id">@deck.Name · @deck.CardCount cards</option>
                     }
                 </select>
+                <label for="match-difficulty">Computer difficulty</label>
+                <select id="match-difficulty" class="choice-select" @bind="_selectedDifficulty">
+                    <option value="@CpuDifficultyView.Easy">Easy</option>
+                    <option value="@CpuDifficultyView.Normal">Normal</option>
+                    <option value="@CpuDifficultyView.Hard">Hard</option>
+                    <option value="@CpuDifficultyView.Impossible">Impossible</option>
+                </select>
+                @if (_selectedDifficulty == CpuDifficultyView.Impossible)
+                {
+                    <p class="difficulty-disclosure" role="note" data-cpu-knowledge="all-cards">Impossible knows every card in both hands and decks.</p>
+                }
                 @if (SelectedDeck()?.Warnings.Length > 0)
                 {
                     <div class="deck-validation is-warning"><strong>This deck is legal, but may struggle</strong><ul>@foreach (var warning in SelectedDeck()!.Warnings){<li>@warning</li>}</ul></div>
@@ -148,6 +159,7 @@ else
              style="@MotionStyle()" aria-label="Blokemon match table" @ref="_battleScreen">
       <div class="battle-canvas">
         <MatchHud Frame="frame"
+                  Difficulty="match.Difficulty"
                   Animating="_animating"
                   Busy="Busy()"
                   EndTurn="@GlobalAction(match, MatchActionKindView.EndTurn)"
@@ -290,6 +302,7 @@ else
     private double _pace = 1;
     private Guid? _commandId;
     private Guid? _selectedDeckId;
+    private CpuDifficultyView _selectedDifficulty = CpuDifficultyView.Normal;
     private int _choiceStep = -1;
     private bool _benchDestination;
     private bool _hadDestinationStep;

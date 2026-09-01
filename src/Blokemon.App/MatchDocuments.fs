@@ -44,6 +44,19 @@ type internal MatchProjectionResult =
 // ("Deserialization of types without a parameterless constructor ... is not supported"). These
 // carry no behaviour and are named as documents so the widening reads as what it is.
 [<CLIMutable>]
+type CpuPolicyDocument =
+    { [<property: JsonRequired>]
+      Version: int
+      [<property: JsonRequired>]
+      Difficulty: CpuDifficultyView
+      [<property: JsonRequired>]
+      Seed: uint64
+      [<property: JsonRequired>]
+      DecisionIndex: uint64
+      [<property: JsonRequired>]
+      Search: CpuSearchConfiguration }
+
+[<CLIMutable>]
 type MatchStartReceipt =
     { [<property: JsonRequired>]
       ClientCommandId: Guid
@@ -52,7 +65,9 @@ type MatchStartReceipt =
       [<property: JsonRequired>]
       Fingerprint: string
       [<property: JsonRequired>]
-      StartRequestFingerprint: string }
+      StartRequestFingerprint: string
+      [<property: JsonRequired>]
+      CpuPolicy: CpuPolicyDocument }
 
 [<CLIMutable>]
 type MatchClientCommandReceipt =
@@ -77,6 +92,8 @@ type MatchDocument =
       StartCommand: MatchStartReceipt
       [<property: JsonRequired>]
       Start: MatchStartRequest
+      [<property: JsonRequired>]
+      CpuPolicy: CpuPolicyDocument
       [<property: JsonRequired>]
       Commands: ImmutableArray<MatchCommand>
       [<property: JsonRequired>]
@@ -117,6 +134,7 @@ type internal MatchLoad =
 
 type internal CpuAdvance =
     { State: MatchState
+      Policy: CpuPolicyDocument
       Error: ApiError | null }
 
 type internal PendingPresentation =

@@ -4,12 +4,15 @@ open System
 open System.Collections.Generic
 open System.Text.Json
 open System.Text.Json.Nodes
+open Blokemon.App.Contracts
 open Blokemon.App.MatchFailures
+open Blokemon.App.MatchIdentity
 open Blokemon.App.MatchMigrationRegistry
+open Blokemon.Game
 
 /// Converts only persisted schema and authority pairs found in source history. The registry order
-/// is part of the migration: reshape schema 1 first, then bind the result to the checked-out
-/// authority before it is deserialised and replayed.
+/// is part of the migration: reshape schema 1, pin schema 2 to its legacy CPU policy, then bind the
+/// result to the checked-out authority before it is deserialised and replayed.
 module internal MatchMigrationJson =
 
     let private corrupt = Error MatchRecoveryReason.Corrupt
@@ -35,6 +38,16 @@ module internal MatchMigrationJson =
         | memberValue ->
             try
                 Ok(memberValue.GetValue<int>())
+            with
+            | :? InvalidOperationException -> corrupt
+            | :? FormatException -> corrupt
+
+    let private uint64Member (name: string) (value: JsonObject) =
+        match value[name] with
+        | null -> corrupt
+        | memberValue ->
+            try
+                Ok(memberValue.GetValue<uint64>())
             with
             | :? InvalidOperationException -> corrupt
             | :? FormatException -> corrupt
@@ -162,8 +175,91 @@ module internal MatchMigrationJson =
                 document["commands"] <- migrated
                 Ok()
 
-    let private matchSchemaTransition source =
-        let target = current source.Authority
+    let private policyNode (policy: CpuPolicyDocument) =
+        JsonSerializer.SerializeToNode(policy, MatchJson.Options)
+
+    let private migrateCpuPolicy (document: JsonObject) =
+        let startNode: JsonNode | null = document["start"]
+        let startCommandNode: JsonNode | null = document["startCommand"]
+        let commandsNode: JsonNode | null = document["commands"]
+
+        match startNode, startCommandNode, commandsNode with
+        | (:? JsonObject as start), (:? JsonObject as startCommand), (:? JsonArray as commands) when
+            not (document.ContainsKey "cpuPolicy")
+            && not (startCommand.ContainsKey "cpuPolicy")
+            ->
+            let seedNode: JsonNode | null = start["seed"]
+
+            match seedNode with
+            | :? JsonObject as seedValue ->
+                match
+                    uint64Member "value" seedValue,
+                    stringMember "clientCommandId" startCommand,
+                    stringMember "deckId" startCommand
+                with
+                | Ok seed, Ok commandIdValue, Ok deckIdValue ->
+                    match Guid.TryParse commandIdValue, Guid.TryParse deckIdValue with
+                    | (true, commandId), (true, deckId) ->
+                        try
+                            let gameStart =
+                                start.Deserialize<Blokemon.Game.MatchStartRequest>(
+                                    MatchJson.Options
+                                )
+
+                            match gameStart with
+                            | null -> corrupt
+                            | gameStart ->
+                                let cpuCommands =
+                                    commands
+                                    |> Seq.filter (fun command ->
+                                        match command with
+                                        | :? JsonObject as value ->
+                                            match value["actor"] with
+                                            | :? JsonObject as actor ->
+                                                match stringMember "value" actor with
+                                                | Ok value ->
+                                                    String.Equals(
+                                                        value,
+                                                        cpuPlayerId,
+                                                        StringComparison.Ordinal
+                                                    )
+                                                | Error _ -> false
+                                            | _ -> false
+                                        | _ -> false)
+                                    |> Seq.length
+
+                                let initial = MatchCpuPolicy.legacy seed 0UL
+                                let current = MatchCpuPolicy.legacy seed (uint64 cpuCommands)
+
+                                let request =
+                                    Blokemon.App.Contracts.StartMatchRequest(
+                                        commandId,
+                                        deckId,
+                                        CpuDifficultyView.Normal
+                                    )
+
+                                startCommand["fingerprint"] <-
+                                    JsonValue.Create(startFingerprint request initial)
+
+                                startCommand["startRequestFingerprint"] <-
+                                    JsonValue.Create(gameStartFingerprint gameStart initial)
+
+                                startCommand["cpuPolicy"] <- policyNode initial
+                                document["cpuPolicy"] <- policyNode current
+                                Ok()
+                        with
+                        | :? JsonException -> corrupt
+                        | :? NotSupportedException -> corrupt
+                        | :? InvalidOperationException -> corrupt
+                    | _ -> corrupt
+                | Error reason, _, _
+                | _, Error reason, _
+                | _, _, Error reason -> Error reason
+            | _ -> corrupt
+        | _ -> corrupt
+
+    let private matchSchemaOneTransition source =
+        let target = schemaTwo source.Authority
 
         { Identity = identity "match" "schema" source target
           Source = source
@@ -172,6 +268,21 @@ module internal MatchMigrationJson =
           Apply =
             fun document ->
                 match migrateCommands document with
+                | Ok() ->
+                    document["schemaVersion"] <- JsonValue.Create target.Schema
+                    Ok()
+                | Error reason -> Error reason }
+
+    let private matchSchemaTwoTransition source =
+        let target = current source.Authority
+
+        { Identity = identity "match" "cpu-policy" source target
+          Source = source
+          Target = target
+          RebindsAuthority = false
+          Apply =
+            fun document ->
+                match migrateCpuPolicy document with
                 | Ok() ->
                     document["schemaVersion"] <- JsonValue.Create target.Schema
                     Ok()
@@ -189,7 +300,7 @@ module internal MatchMigrationJson =
                 document["authorityVersion"] <- JsonValue.Create target.Authority
                 Ok() }
 
-    let private migrateHistorySchema source target (history: JsonObject) =
+    let private migrateHistoryCommands source target (history: JsonObject) =
         match arrayMember "matches" history with
         | Error reason -> Error reason
         | Ok matches ->
@@ -202,6 +313,31 @@ module internal MatchMigrationJson =
                         match version document with
                         | Ok nested when sameVersion nested source ->
                             match migrateCommands document with
+                            | Ok() -> document["schemaVersion"] <- JsonValue.Create target.Schema
+                            | Error reason -> failure <- Some reason
+                        | Ok _ -> failure <- Some MatchRecoveryReason.Corrupt
+                        | Error reason -> failure <- Some reason
+                    | _ -> failure <- Some MatchRecoveryReason.Corrupt
+
+            match failure with
+            | Some reason -> Error reason
+            | None ->
+                history["schemaVersion"] <- JsonValue.Create target.Schema
+                Ok()
+
+    let private migrateHistoryCpuPolicy source target (history: JsonObject) =
+        match arrayMember "matches" history with
+        | Error reason -> Error reason
+        | Ok matches ->
+            let mutable failure = None
+
+            for archived: JsonNode in matches do
+                if failure.IsNone then
+                    match archived with
+                    | :? JsonObject as document ->
+                        match version document with
+                        | Ok nested when sameVersion nested source ->
+                            match migrateCpuPolicy document with
                             | Ok() -> document["schemaVersion"] <- JsonValue.Create target.Schema
                             | Error reason -> failure <- Some reason
                         | Ok _ -> failure <- Some MatchRecoveryReason.Corrupt
@@ -237,14 +373,23 @@ module internal MatchMigrationJson =
                 history["authorityVersion"] <- JsonValue.Create target.Authority
                 Ok()
 
-    let private historySchemaTransition source =
-        let target = current source.Authority
+    let private historySchemaOneTransition source =
+        let target = schemaTwo source.Authority
 
         { Identity = identity "match-history" "schema" source target
           Source = source
           Target = target
           RebindsAuthority = false
-          Apply = migrateHistorySchema source target }
+          Apply = migrateHistoryCommands source target }
+
+    let private historySchemaTwoTransition source =
+        let target = current source.Authority
+
+        { Identity = identity "match-history" "cpu-policy" source target
+          Source = source
+          Target = target
+          RebindsAuthority = false
+          Apply = migrateHistoryCpuPolicy source target }
 
     let private historyAuthorityTransition authority source =
         let target = current authority
@@ -290,7 +435,8 @@ module internal MatchMigrationJson =
         match version root with
         | Error reason -> Error reason
         | Ok current when sameVersion current target -> Ok []
-        | Ok current when supportedSources |> List.exists (sameVersion current) -> apply current []
+        | Ok current when supportedSources target.Authority |> List.exists (sameVersion current) ->
+            apply current []
         | Ok _ -> Error MatchRecoveryReason.UnsupportedVersion
 
     let private deserialize<'Document> (normalise: 'Document -> 'Document) (root: JsonObject) =
@@ -332,10 +478,21 @@ module internal MatchMigrationJson =
                               ReboundAuthority = applied |> List.exists _.RebindsAuthority }
 
     let prepareMatch authority json =
-        let registry = ordered matchSchemaTransition matchAuthorityTransition authority
+        let registry =
+            ordered
+                matchSchemaOneTransition
+                matchSchemaTwoTransition
+                matchAuthorityTransition
+                authority
+
         prepare registry MatchDocumentNormalization.matchDocument authority json
 
     let prepareHistory authority json =
-        let registry = ordered historySchemaTransition historyAuthorityTransition authority
+        let registry =
+            ordered
+                historySchemaOneTransition
+                historySchemaTwoTransition
+                historyAuthorityTransition
+                authority
 
         prepare registry MatchDocumentNormalization.historyDocument authority json

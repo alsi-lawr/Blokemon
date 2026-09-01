@@ -18,6 +18,7 @@
       and the two flows the service surface delegates to.
     -->
     <Compile Include="MatchDocuments.fs" />
+    <Compile Include="MatchCpuPolicy.fs" />
     <Compile Include="ApplicationViewIsolation.fs" />
     <Compile Include="MatchDocumentNormalization.fs" />
     <Compile Include="MatchFailures.fs" />

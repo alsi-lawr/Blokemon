@@ -14,6 +14,7 @@ public partial class Match
         {
             _view = response.Value;
             _selectedDeckId = ReadyDecks().FirstOrDefault()?.Id;
+            _selectedDifficulty = _view?.Match?.Difficulty ?? CpuDifficultyView.Normal;
             EnsureCardSelection(selectDefault: true);
             // A battle resumed from this device can already be waiting on such a decision.
             await ResolveAutomaticDecisions();
@@ -78,7 +79,9 @@ public partial class Match
     {
         _working = true;
         _commandId ??= Guid.NewGuid();
-        var response = await MatchOperations.StartMatch(new(_commandId.Value, deckId));
+        var response = await MatchOperations.StartMatch(
+            new(_commandId.Value, deckId, _selectedDifficulty)
+        );
         // A new game is not a move that can be seen happening: what came before it is the game
         // before. So it is presented over an empty table rather than over whatever the last battle
         // left standing, and the opening hands are dealt onto it.

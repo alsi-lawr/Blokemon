@@ -218,6 +218,7 @@ module internal MatchActionFlow =
                                                         let advanced =
                                                             advanceCpu
                                                                 appliedState
+                                                                current.Document.CpuPolicy
                                                                 commands
                                                                 events
                                                                 presentation
@@ -248,6 +249,7 @@ module internal MatchActionFlow =
 
                                                             let document =
                                                                 { current.Document with
+                                                                    CpuPolicy = advanced.Policy
                                                                     Commands =
                                                                         ImmutableArray.CreateRange
                                                                             commands

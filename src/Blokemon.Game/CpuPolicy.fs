@@ -20,14 +20,47 @@ module CpuPolicyInput =
           Seed = 0UL
           DecisionIndex = 0UL }
 
+type CpuSearchConfiguration =
+    { RootCandidateLimit: int
+      NormalNodeLimit: int
+      HardNodeLimit: int
+      HardDepthLimit: int
+      HardSamples: int
+      BeamWidth: int }
+
+[<RequireQualifiedAccess>]
+module CpuSearchConfiguration =
+
+    let legacy =
+        { RootCandidateLimit = 0
+          NormalNodeLimit = 0
+          HardNodeLimit = 0
+          HardDepthLimit = 0
+          HardSamples = 0
+          BeamWidth = 0 }
+
+    let strategic =
+        { RootCandidateLimit = 256
+          NormalNodeLimit = 256
+          HardNodeLimit = 512
+          HardDepthLimit = 4
+          HardSamples = 2
+          BeamWidth = 8 }
+
+[<RequireQualifiedAccess>]
+module CpuPolicyVersion =
+
+    let legacy = 1
+    let strategic = 2
+
 module internal CpuPolicyLimits =
 
-    let rootCandidateLimit = 256
-    let normalNodeLimit = 256
-    let hardNodeLimit = 512
-    let hardDepthLimit = 4
-    let hardSamples = 2
-    let beamWidth = 8
+    let rootCandidateLimit = CpuSearchConfiguration.strategic.RootCandidateLimit
+    let normalNodeLimit = CpuSearchConfiguration.strategic.NormalNodeLimit
+    let hardNodeLimit = CpuSearchConfiguration.strategic.HardNodeLimit
+    let hardDepthLimit = CpuSearchConfiguration.strategic.HardDepthLimit
+    let hardSamples = CpuSearchConfiguration.strategic.HardSamples
+    let beamWidth = CpuSearchConfiguration.strategic.BeamWidth
 
 [<RequireQualifiedAccess>]
 type CpuDecision =

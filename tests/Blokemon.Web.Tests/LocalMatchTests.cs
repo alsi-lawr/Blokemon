@@ -371,11 +371,17 @@ public sealed class LocalMatchTests
         var retried = Value(await fixture.Application.StartMatch(request));
         var afterRetry = await fixture.Store.Read("match");
         var beforeConflict = await fixture.Store.Read("match");
+        var difficultyConflict = await fixture.Application.StartMatch(
+            new(_matchCommand, _firstDeckCommand, CpuDifficultyView.Hard)
+        );
+        var afterDifficultyConflict = await fixture.Store.Read("match");
         var conflict = await fixture.Application.StartMatch(new(_matchCommand, _secondDeckCommand));
         var afterConflict = await fixture.Store.Read("match");
 
         await AssertEquivalent(retried.Match!, started.Match!);
         afterRetry.ShouldBe(afterStart);
+        Error(difficultyConflict).Code.ShouldBe("match.command_conflict");
+        afterDifficultyConflict.ShouldBe(beforeConflict);
         Error(conflict).Code.ShouldBe("match.command_conflict");
         afterConflict.ShouldBe(beforeConflict);
     }
@@ -711,6 +717,58 @@ public sealed class LocalMatchTests
     }
 
     [Test]
+    [Arguments(CpuDifficultyView.Easy)]
+    [Arguments(CpuDifficultyView.Normal)]
+    [Arguments(CpuDifficultyView.Hard)]
+    [Arguments(CpuDifficultyView.Impossible)]
+    public async Task SelectedCpuDifficulty_SurvivesRefreshColdReplayAndLeavesTheProfileUnchanged(
+        CpuDifficultyView difficulty
+    )
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = await ReadyFixture.Create(database);
+        var profile = await fixture.Store.Read("profile");
+
+        var started = Value(
+            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand, difficulty))
+        );
+        var stored = (await fixture.Store.Read("match"))!;
+        var document = StoredMatch(stored);
+        var refreshed = Value(await fixture.Application.State());
+        var restarted = Value(await fixture.Restart().State());
+
+        started.Match!.Difficulty.ShouldBe(difficulty);
+        document.StartCommand.CpuPolicy.Difficulty.ShouldBe(difficulty);
+        document.CpuPolicy.Difficulty.ShouldBe(difficulty);
+        document.StartCommand.CpuPolicy.Seed.ShouldBe(document.Start.Seed.Value);
+        document.CpuPolicy.Seed.ShouldBe(document.Start.Seed.Value);
+        document.StartCommand.CpuPolicy.DecisionIndex.ShouldBe(0UL);
+        document.CpuPolicy.DecisionIndex.ShouldBe(
+            (ulong)document.Commands.Count(static command => command.Actor.Value == "cpu:local")
+        );
+        document.CpuPolicy.DecisionIndex.ShouldBeGreaterThan(0UL);
+        MatchCpuPolicy.isValid(document.StartCommand.CpuPolicy).ShouldBeTrue();
+        MatchCpuPolicy.isValid(document.CpuPolicy).ShouldBeTrue();
+        await AssertEquivalent(refreshed.Match!, started.Match);
+        await AssertEquivalent(restarted.Match!, started.Match);
+        (await fixture.Store.Read("match")).ShouldBe(stored);
+        (await fixture.Store.Read("profile")).ShouldBe(profile);
+    }
+
+    [Test]
+    public async Task MatchStart_DefaultsToNormalDifficulty()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = await ReadyFixture.Create(database);
+
+        var started = Value(
+            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
+        );
+
+        started.Match!.Difficulty.ShouldBe(CpuDifficultyView.Normal);
+    }
+
+    [Test]
     public async Task SameProfileAndSeed_ProduceTheSameCpuLogAndState()
     {
         await using var firstDatabase = await TestDatabase.Create();
@@ -735,6 +793,30 @@ public sealed class LocalMatchTests
     }
 
     [Test]
+    public async Task DifferentMatchCommands_DeriveDifferentPersistedPolicySeeds()
+    {
+        await using var firstDatabase = await TestDatabase.Create();
+        await using var secondDatabase = await TestDatabase.Create();
+        var first = await ReadyFixture.Create(firstDatabase);
+        var profileDocument = await first.Store.Read("profile");
+        var secondStore = new StateDocumentStore(secondDatabase);
+        await secondStore.Create("profile", profileDocument!.Json);
+        var second = ReadyFixture.FromExisting(secondDatabase, first.Catalogue);
+        var otherMatchCommand = Guid.Parse("30000000-0000-0000-0000-000000000002");
+
+        Value(await first.Application.StartMatch(new(_matchCommand, _firstDeckCommand)));
+        Value(await second.Application.StartMatch(new(otherMatchCommand, _firstDeckCommand)));
+        var firstDocument = StoredMatch((await first.Store.Read("match"))!);
+        var secondDocument = StoredMatch((await second.Store.Read("match"))!);
+
+        firstDocument.StartCommand.CpuPolicy.Seed.ShouldBe(firstDocument.Start.Seed.Value);
+        secondDocument.StartCommand.CpuPolicy.Seed.ShouldBe(secondDocument.Start.Seed.Value);
+        secondDocument.StartCommand.CpuPolicy.Seed.ShouldNotBe(
+            firstDocument.StartCommand.CpuPolicy.Seed
+        );
+    }
+
+    [Test]
     [Arguments("{broken", "match.document_corrupt")]
     [Arguments("version", "match.document_version")]
     public async Task InvalidMatchJson_IsTypedAndNonMutating(string corruption, string errorCode)
@@ -745,7 +827,7 @@ public sealed class LocalMatchTests
         var original = await fixture.Store.Read("match");
         var invalidJson =
             corruption == "version"
-                ? original!.Json.Replace("\"schemaVersion\":2", "\"schemaVersion\":999")[..^1]
+                ? original!.Json.Replace("\"schemaVersion\":3", "\"schemaVersion\":999")[..^1]
                     + ",\"futureField\":true}"
                 : corruption;
         await fixture.Store.Update("match", original!.Revision, invalidJson);
@@ -759,6 +841,28 @@ public sealed class LocalMatchTests
         after.ShouldBe(invalid);
         state.Profile.ShouldNotBeNull();
         state.Decks.ShouldHaveSingleItem();
+    }
+
+    [Test]
+    public async Task UnsupportedCpuPolicyVersion_IsTypedAndPreservesTheMatchAndProfile()
+    {
+        await using var database = await TestDatabase.Create();
+        var fixture = await ReadyFixture.Create(database);
+        Value(await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand)));
+        var original = (await fixture.Store.Read("match"))!;
+        var profile = await fixture.Store.Read("profile");
+        var future = JsonNode.Parse(original.Json)!.AsObject();
+        future["startCommand"]!["cpuPolicy"]!["version"] = 999;
+        future["cpuPolicy"]!["version"] = 999;
+        await fixture.Store.Update("match", original.Revision, future.ToJsonString());
+        var savedFuture = await fixture.Store.Read("match");
+
+        var state = Value(await fixture.Restart().State());
+
+        state.Match.ShouldBeNull();
+        state.MatchError!.Code.ShouldBe("match.cpu_policy_version");
+        (await fixture.Store.Read("match")).ShouldBe(savedFuture);
+        (await fixture.Store.Read("profile")).ShouldBe(profile);
     }
 
     [Test]
@@ -1461,6 +1565,10 @@ public sealed class LocalMatchTests
     {
         JsonSerializer.Serialize(actual).ShouldBe(JsonSerializer.Serialize(expected));
     }
+
+    private static MatchDocument StoredMatch(StoredDocument stored) =>
+        JsonSerializer.Deserialize<MatchDocument>(stored.Json, MatchJson.Options)
+        ?? throw new InvalidOperationException("The saved match document did not deserialize.");
 
     private sealed record PersistedProfileDocument(
         int SchemaVersion,

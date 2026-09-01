@@ -1402,6 +1402,55 @@ def reduced_motion_representatives(devtools, origin, viewer):
     )
 
 
+def difficulty_evidence(devtools, origin):
+    devtools.set_viewport(1440, 900)
+    devtools.navigate(origin, "/match")
+    devtools.wait_for(
+        "[...document.querySelectorAll('button')].some(candidate => candidate.textContent.trim() === 'Start battle')",
+        "difficulty Match start state",
+        timeout=30,
+    )
+    selected = devtools.evaluate(
+        """
+        (() => {
+          const difficulty = document.querySelector('#match-difficulty');
+          if (!difficulty) return false;
+          difficulty.value = 'Impossible';
+          difficulty.dispatchEvent(new Event('change', { bubbles: true }));
+          return true;
+        })()
+        """
+    )
+    require(selected, "changed the rendered match-start difficulty control")
+    devtools.wait_for(
+        "document.querySelector('#match-difficulty')?.value === 'Impossible'",
+        "Impossible selected in the rendered match-start control",
+    )
+    devtools.wait_for(
+        "document.querySelector('[data-cpu-knowledge=\"all-cards\"]')?.checkVisibility() === true",
+        "Impossible all-card-knowledge disclosure is visible",
+    )
+    started = devtools.evaluate(
+        """
+        (() => {
+          const button = [...document.querySelectorAll('button')]
+            .find(candidate => candidate.textContent.trim() === 'Start battle');
+          if (!button) return false;
+          button.click();
+          return true;
+        })()
+        """
+    )
+    require(started, "started an Impossible battle through the checked-out game")
+    devtools.wait_for("document.querySelector('.battle-screen') !== null", "Impossible Match table", timeout=30)
+    require(
+        devtools.evaluate(
+            "document.querySelector('.battle-screen [data-cpu-difficulty=\"Impossible\"]')?.checkVisibility() === true"
+        ),
+        "the active table shows its selected Impossible difficulty",
+    )
+
+
 def energy_match_route(devtools, origin):
     devtools.set_viewport(1440, 900)
     devtools.set_reduced_motion(True)
@@ -1564,6 +1613,8 @@ def main():
                 "-m:1",
                 "-p:BuildInParallel=false",
                 "-nr:false",
+                "-p:UseSharedCompilation=false",
+                "-p:UseRazorBuildServer=false",
                 "--output",
                 str(game_output),
                 "-p:StandaloneBrowser=true",
@@ -1583,6 +1634,8 @@ def main():
                 "-m:1",
                 "-p:BuildInParallel=false",
                 "-nr:false",
+                "-p:UseSharedCompilation=false",
+                "-p:UseRazorBuildServer=false",
                 "--output",
                 str(projection_output),
                 "-p:StandaloneBrowser=true",
@@ -1603,6 +1656,8 @@ def main():
                 "-m:1",
                 "-p:BuildInParallel=false",
                 "-nr:false",
+                "-p:UseSharedCompilation=false",
+                "-p:UseRazorBuildServer=false",
                 "--output",
                 str(cue_output),
                 "-p:PublishTrimmed=false",
@@ -1612,6 +1667,16 @@ def main():
         with HostedRoot(published_root(game_output)) as game, HostedRoot(
             published_root(projection_output)
         ) as projection, HostedRoot(published_root(cue_output)) as cue:
+            difficulty_root = temporary_root / "difficulty-profile"
+            difficulty_root.mkdir()
+            difficulty_chrome = Chrome(difficulty_root)
+            try:
+                difficulty_viewer = ViewerEvidence(difficulty_chrome.devtools)
+                setup_player(difficulty_chrome.devtools, game.origin, difficulty_viewer)
+                difficulty_evidence(difficulty_chrome.devtools, game.origin)
+            finally:
+                difficulty_chrome.close()
+
             chrome = Chrome(temporary_root)
             try:
                 viewer = ViewerEvidence(chrome.devtools)

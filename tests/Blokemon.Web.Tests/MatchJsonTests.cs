@@ -177,7 +177,7 @@ public sealed class MatchJsonTests
     // snapshots inside the start request, and a command's choices. Everything the document type
     // itself declares is present, because each of those members carries JsonRequired.
     private const string DocumentWithAbsentCollectionMembers = """
-        {"schemaVersion":2,"authorityVersion":"authority-1","startCommand":{"clientCommandId":"30000000-0000-0000-0000-000000000001","deckId":"20000000-0000-0000-0000-000000000001","fingerprint":"start","startRequestFingerprint":"game-start"},"start":{"matchId":{"value":"match"},"seed":{"value":7},"firstDeck":{"owner":{"value":"player"}},"secondDeck":{"owner":{"value":"cpu"}}},"commands":[{"id":{"value":"resign"},"matchId":{"value":"match"},"actor":{"value":"player"},"expectedRevision":{"value":0},"action":{"$command":"resign"}}],"clientCommands":[]}
+        {"schemaVersion":3,"authorityVersion":"authority-1","startCommand":{"clientCommandId":"30000000-0000-0000-0000-000000000001","deckId":"20000000-0000-0000-0000-000000000001","fingerprint":"start","startRequestFingerprint":"game-start","cpuPolicy":{"version":1,"difficulty":"Normal","seed":7,"decisionIndex":0,"search":{"rootCandidateLimit":0,"normalNodeLimit":0,"hardNodeLimit":0,"hardDepthLimit":0,"hardSamples":0,"beamWidth":0}}},"start":{"matchId":{"value":"match"},"seed":{"value":7},"firstDeck":{"owner":{"value":"player"}},"secondDeck":{"owner":{"value":"cpu"}}},"cpuPolicy":{"version":1,"difficulty":"Normal","seed":7,"decisionIndex":0,"search":{"rootCandidateLimit":0,"normalNodeLimit":0,"hardNodeLimit":0,"hardDepthLimit":0,"hardSamples":0,"beamWidth":0}},"commands":[{"id":{"value":"resign"},"matchId":{"value":"match"},"actor":{"value":"player"},"expectedRevision":{"value":0},"action":{"$command":"resign"}}],"clientCommands":[]}
         """;
 
     [Test]
@@ -205,7 +205,7 @@ public sealed class MatchJsonTests
     public async Task HistoryWithAbsentCollectionMembers_NormalizesEveryArchivedBattle()
     {
         var history = $$"""
-            {"schemaVersion":2,"authorityVersion":"authority-1","matches":[{{DocumentWithAbsentCollectionMembers}}]}
+            {"schemaVersion":3,"authorityVersion":"authority-1","matches":[{{DocumentWithAbsentCollectionMembers}}]}
             """;
 
         var normalized = MatchDocumentNormalization.historyDocument(
@@ -235,7 +235,7 @@ public sealed class MatchJsonTests
         // stored schema unchanged when a normalized document is written back out.
         json.ShouldBe(
             """
-            {"schemaVersion":2,"authorityVersion":"authority-1","startCommand":{"clientCommandId":"30000000-0000-0000-0000-000000000001","deckId":"20000000-0000-0000-0000-000000000001","fingerprint":"start","startRequestFingerprint":"game-start"},"start":{"matchId":{"value":"match"},"seed":{"value":7},"firstDeck":{"owner":{"value":"player"},"cards":[]},"secondDeck":{"owner":{"value":"cpu"},"cards":[]}},"commands":[{"id":{"value":"resign"},"matchId":{"value":"match"},"actor":{"value":"player"},"expectedRevision":{"value":0},"choices":[],"action":{"$command":"resign"}}],"clientCommands":[]}
+            {"schemaVersion":3,"authorityVersion":"authority-1","startCommand":{"clientCommandId":"30000000-0000-0000-0000-000000000001","deckId":"20000000-0000-0000-0000-000000000001","fingerprint":"start","startRequestFingerprint":"game-start","cpuPolicy":{"version":1,"difficulty":"Normal","seed":7,"decisionIndex":0,"search":{"rootCandidateLimit":0,"normalNodeLimit":0,"hardNodeLimit":0,"hardDepthLimit":0,"hardSamples":0,"beamWidth":0}}},"start":{"matchId":{"value":"match"},"seed":{"value":7},"firstDeck":{"owner":{"value":"player"},"cards":[]},"secondDeck":{"owner":{"value":"cpu"},"cards":[]}},"cpuPolicy":{"version":1,"difficulty":"Normal","seed":7,"decisionIndex":0,"search":{"rootCandidateLimit":0,"normalNodeLimit":0,"hardNodeLimit":0,"hardDepthLimit":0,"hardSamples":0,"beamWidth":0}},"commands":[{"id":{"value":"resign"},"matchId":{"value":"match"},"actor":{"value":"player"},"expectedRevision":{"value":0},"choices":[],"action":{"$command":"resign"}}],"clientCommands":[]}
             """
         );
         await Task.CompletedTask;

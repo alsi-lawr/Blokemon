@@ -278,3 +278,7 @@
   font-weight: 700;
 }
 
+.difficulty-disclosure {
+  margin: 10px 0 0;
+  color: var(--gold-soft);
+}

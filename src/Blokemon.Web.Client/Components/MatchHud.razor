@@ -4,9 +4,9 @@
     hands it the actions that are legal and hears back which one was pressed.
 *@
 <div class="battle-hud">
-    @* Whose turn it is is written across the middle of the table, so on a phone the chip
-       keeps only the round number and the HUD stays one row deep. *@
-    <span class="round-chip"><span class="eyebrow">Turn @Frame.Round</span><span class="round-status"> · @TurnStatus(Frame)</span></span>
+    @* Whose turn it is is written across the middle of the table, so the round and selected
+       difficulty stay first when a phone has to clip the trailing status. *@
+    <span class="round-chip"><span class="eyebrow">Turn @Frame.Round</span><span class="difficulty-status" data-cpu-difficulty="@Difficulty"> · @Difficulty CPU</span><span class="round-status"> · @TurnStatus(Frame)</span></span>
     @if (Animating)
     {
         <button class="secondary skip-animation" @onclick="SkipRequested">Skip animation</button>
@@ -30,6 +30,9 @@
 @code {
     [Parameter, EditorRequired]
     public required MatchFrameView Frame { get; set; }
+
+    [Parameter, EditorRequired]
+    public required CpuDifficultyView Difficulty { get; set; }
 
     [Parameter]
     public bool Animating { get; set; }

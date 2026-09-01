@@ -232,11 +232,20 @@ public sealed record MatchFrameView(
     string? Winner
 );
 
+public enum CpuDifficultyView
+{
+    Normal = 0,
+    Easy = 1,
+    Hard = 2,
+    Impossible = 3,
+}
+
 public sealed record MatchView(
     MatchFrameView Frame,
     MatchActionView[] LegalActions,
     MatchAttackView[] Attacks,
-    string[] RecentEvents
+    string[] RecentEvents,
+    CpuDifficultyView Difficulty = CpuDifficultyView.Normal
 );
 
 public enum MatchAnimationKindView
@@ -336,7 +345,11 @@ public sealed record SaveDeckRequest(
 
 public sealed record DeleteDeckRequest(Guid CommandId, Guid DeckId);
 
-public sealed record StartMatchRequest(Guid CommandId, Guid DeckId);
+public sealed record StartMatchRequest(
+    Guid CommandId,
+    Guid DeckId,
+    CpuDifficultyView Difficulty = CpuDifficultyView.Normal
+);
 
 public sealed record ApplyMatchActionRequest(
     Guid CommandId,

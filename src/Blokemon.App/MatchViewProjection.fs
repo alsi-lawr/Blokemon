@@ -262,5 +262,6 @@ module internal MatchViewProjection =
                 .Where(isPublicEvent)
                 .TakeLast(16)
                 .Select(fun matchEvent -> eventLabel loaded.State human displayName matchEvent)
-                .ToArray()
+                .ToArray(),
+            loaded.Document.CpuPolicy.Difficulty
         )

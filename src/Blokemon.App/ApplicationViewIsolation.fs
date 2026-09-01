@@ -188,7 +188,8 @@ module internal ApplicationViewIsolation =
                 matchFrame current.Frame,
                 current.LegalActions |> Array.map action,
                 current.Attacks |> Array.map attack,
-                strings current.RecentEvents
+                strings current.RecentEvents,
+                current.Difficulty
             )
 
     let private eventCue (value: MatchEventCueView) =

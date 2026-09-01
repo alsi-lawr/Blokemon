@@ -32,21 +32,34 @@ module internal MatchMigrationRegistry =
         { Schema = 1
           Authority = "sv151-candidate.14" }
 
+    let schemaTwo authority = { Schema = 2; Authority = authority }
+
     let current authority =
         { Schema = matchSchemaVersion
           Authority = authority }
 
-    let supportedSources =
+    let supportedSources authority =
         [ schemaOneCandidate12
           schemaOneCandidate14
+          schemaTwo "sv151-candidate.14"
+          schemaTwo "sv151-candidate.15"
+          schemaTwo "sv151-candidate.16"
+          schemaTwo "sv151-candidate.17"
+          schemaTwo authority
           current "sv151-candidate.14"
           current "sv151-candidate.15"
           current "sv151-candidate.16"
           current "sv151-candidate.17" ]
 
-    let ordered schemaTransition authorityTransition authority =
-        [ schemaTransition schemaOneCandidate12
-          schemaTransition schemaOneCandidate14
+    let ordered schemaOneTransition schemaTwoTransition authorityTransition authority =
+        [ schemaOneTransition schemaOneCandidate12
+          schemaOneTransition schemaOneCandidate14
+          schemaTwoTransition (schemaTwo "sv151-candidate.12")
+          schemaTwoTransition (schemaTwo "sv151-candidate.14")
+          schemaTwoTransition (schemaTwo "sv151-candidate.15")
+          schemaTwoTransition (schemaTwo "sv151-candidate.16")
+          schemaTwoTransition (schemaTwo "sv151-candidate.17")
+          schemaTwoTransition (schemaTwo authority)
           authorityTransition authority (current "sv151-candidate.12")
           authorityTransition authority (current "sv151-candidate.14")
           authorityTransition authority (current "sv151-candidate.15")

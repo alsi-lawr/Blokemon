@@ -1,6 +1,7 @@
 namespace Blokemon.App
 
 open System
+open System.Globalization
 open System.Security.Cryptography
 open System.Text
 open System.Text.Json
@@ -26,10 +27,30 @@ module internal MatchIdentity =
     let fingerprint (payload: string) =
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes payload)).ToLowerInvariant()
 
-    let startFingerprint (request: StartMatchRequest) = fingerprint $"start:{request.DeckId:D}"
+    let private policyFingerprintPayload (policy: CpuPolicyDocument) =
+        let invariant (value: IFormattable) =
+            value.ToString(null, CultureInfo.InvariantCulture)
 
-    let gameStartFingerprint (start: MatchStartRequest) =
-        fingerprint (JsonSerializer.Serialize(start, MatchJson.Options))
+        String.Join(
+            ":",
+            [| invariant policy.Version
+               invariant (int policy.Difficulty)
+               invariant policy.Seed
+               invariant policy.DecisionIndex
+               invariant policy.Search.RootCandidateLimit
+               invariant policy.Search.NormalNodeLimit
+               invariant policy.Search.HardNodeLimit
+               invariant policy.Search.HardDepthLimit
+               invariant policy.Search.HardSamples
+               invariant policy.Search.BeamWidth |]
+        )
+
+    let startFingerprint (request: StartMatchRequest) (policy: CpuPolicyDocument) =
+        fingerprint $"start:{request.DeckId:D}:{policyFingerprintPayload policy}"
+
+    let gameStartFingerprint (start: MatchStartRequest) (policy: CpuPolicyDocument) =
+        let startPayload = JsonSerializer.Serialize(start, MatchJson.Options)
+        fingerprint $"{startPayload}:{policyFingerprintPayload policy}"
 
     let matchSeedFor (profile: LocalProfile) (commandId: Guid) =
         let hash =

@@ -9,10 +9,10 @@ module internal MatchFailures =
 
     let matchKey = "match"
     let matchHistoryKey = "match-history"
-    // Bumped 1 -> 2 by the D3 schema break: the persisted MatchCommand shape moved to the
-    // envelope+payload layout, so a pre-break document is refused by the existing version gates.
-    let matchSchemaVersion = 2
-    let matchHistorySchemaVersion = 2
+    // Schema 3 pins the policy that authored every CPU command. Schema 2 is migrated through the
+    // fixed policy it actually used, rather than being replayed as a strategic difficulty.
+    let matchSchemaVersion = 3
+    let matchHistorySchemaVersion = 3
     let maximumCpuCommandsPerRequest = 256
     let cpuPlayerId = "cpu:local"
     let cpuName = "The Regular"

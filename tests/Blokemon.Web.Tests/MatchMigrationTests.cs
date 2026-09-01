@@ -45,7 +45,7 @@ public sealed class MatchMigrationTests
         restored.View.ShouldNotBeNull();
         migrated.Revision.ShouldBe(source.Revision + 1);
         var migratedJson = JsonNode.Parse(migrated.Json)!.AsObject();
-        migratedJson["schemaVersion"]!.GetValue<int>().ShouldBe(2);
+        migratedJson["schemaVersion"]!.GetValue<int>().ShouldBe(3);
         migratedJson["authorityVersion"]!
             .GetValue<string>()
             .ShouldBe(catalogue.Mechanics.ManifestVersion);
@@ -65,6 +65,53 @@ public sealed class MatchMigrationTests
         (await fixture.Store.Read("match")).ShouldBe(migrated);
         (await fixture.Store.Read(BackupKey("match", source))).ShouldBe(backup);
         (await fixture.Store.Read("profile")).ShouldBeNull();
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task PublishedSchemaTwoMatch_MigratesToItsPinnedLegacyCpuPolicy(bool sqlite)
+    {
+        await using var fixture = await DocumentStoreFixture.Create(sqlite);
+        var catalogue = Catalogue();
+        var profile = Profile(catalogue);
+        var current = await CreateCurrentActiveMatch(catalogue, fixture.Store, profile);
+        var legacyJson = LegacyDocument(
+            current.Json,
+            catalogue.Mechanics.ManifestVersion,
+            catalogue
+        );
+        await fixture.Store.Delete("match");
+        await fixture.Store.Create("match", legacyJson);
+        var source = (await fixture.Store.Read("match"))!;
+
+        var restored = await new LocalMatchService(catalogue, fixture.Store).State(
+            profile,
+            profile.DisplayName.Value
+        );
+        var migrated = (await fixture.Store.Read("match"))!;
+        var document = JsonSerializer.Deserialize<MatchDocument>(migrated.Json, MatchJson.Options)!;
+
+        restored.Error.ShouldBeNull();
+        restored.View.ShouldNotBeNull();
+        document.SchemaVersion.ShouldBe(3);
+        document.StartCommand.CpuPolicy.Version.ShouldBe(1);
+        document.CpuPolicy.Version.ShouldBe(1);
+        document.CpuPolicy.Difficulty.ShouldBe(CpuDifficultyView.Normal);
+        document.CpuPolicy.DecisionIndex.ShouldBe(
+            (ulong)document.Commands.Count(static command => command.Actor.Value == "cpu:local")
+        );
+        AssertBackup(
+            (await fixture.Store.Read(BackupKey("match", source)))!,
+            "match",
+            source,
+            MigrationIdentity(
+                "match",
+                2,
+                catalogue.Mechanics.ManifestVersion,
+                catalogue.Mechanics.ManifestVersion
+            )
+        );
     }
 
     [Test]
@@ -90,7 +137,7 @@ public sealed class MatchMigrationTests
         started.View!.Frame.Id.ShouldBe(Guid.Parse("30000000-0000-0000-0000-000000000003"));
         history.Revision.ShouldBe(historySource.Revision + 1);
         var migratedJson = JsonNode.Parse(history.Json)!.AsObject();
-        migratedJson["schemaVersion"]!.GetValue<int>().ShouldBe(2);
+        migratedJson["schemaVersion"]!.GetValue<int>().ShouldBe(3);
         migratedJson["authorityVersion"]!
             .GetValue<string>()
             .ShouldBe(catalogue.Mechanics.ManifestVersion);
@@ -527,7 +574,7 @@ public sealed class MatchMigrationTests
         await fixture.Store.Create("match", MatchAtVersion(2, "arbitrary-authority"));
         await fixture.Store.Create(
             "match-history",
-            HistoryAtVersion(2, catalogue.Mechanics.ManifestVersion)
+            EmptyCurrentHistory(catalogue.Mechanics.ManifestVersion)
         );
         await fixture.Store.Create("match-migration-backup/sentinel", "backup-sentinel");
         var source = (await fixture.Store.Read("match"))!;
@@ -576,7 +623,7 @@ public sealed class MatchMigrationTests
         await fixture.Store.Create("match", MatchAtVersion(2, "arbitrary-authority"));
         await fixture.Store.Create(
             "match-history",
-            HistoryAtVersion(2, catalogue.Mechanics.ManifestVersion)
+            EmptyCurrentHistory(catalogue.Mechanics.ManifestVersion)
         );
         var documents = new RecordingDeleteStore(fixture.Store);
         var application = Application(catalogue, documents);
@@ -887,7 +934,7 @@ public sealed class MatchMigrationTests
         await fixture.Store.Create("match", MatchAtVersion(2, "arbitrary-authority"));
         await fixture.Store.Create(
             "match-history",
-            HistoryAtVersion(2, catalogue.Mechanics.ManifestVersion)
+            EmptyCurrentHistory(catalogue.Mechanics.ManifestVersion)
         );
         await fixture.Store.Create("match-migration-backup/sentinel", "backup-sentinel");
         var source = (await fixture.Store.Read("match"))!;
@@ -947,7 +994,7 @@ public sealed class MatchMigrationTests
         await fixture.Store.Create("match", MatchAtVersion(2, "arbitrary-authority"));
         await fixture.Store.Create(
             "match-history",
-            HistoryAtVersion(2, catalogue.Mechanics.ManifestVersion)
+            EmptyCurrentHistory(catalogue.Mechanics.ManifestVersion)
         );
         await fixture.Store.Create("match-migration-backup/sentinel", "backup-sentinel");
         var history = (await fixture.Store.Read("match-history"))!;
@@ -1000,7 +1047,7 @@ public sealed class MatchMigrationTests
         await fixture.Store.Create("match", MatchAtVersion(2, "arbitrary-authority"));
         await fixture.Store.Create(
             "match-history",
-            HistoryAtVersion(2, catalogue.Mechanics.ManifestVersion)
+            EmptyCurrentHistory(catalogue.Mechanics.ManifestVersion)
         );
         await fixture.Store.Create("match-migration-backup/sentinel", "backup-sentinel");
         var history = (await fixture.Store.Read("match-history"))!;
@@ -1034,7 +1081,7 @@ public sealed class MatchMigrationTests
     )
     {
         var current = await CreateCurrentActiveMatch(catalogue, documents, profile);
-        var legacyJson = DocumentAtVersion(current.Json, 2, CompatibleLegacyAuthority);
+        var legacyJson = LegacyDocument(current.Json, CompatibleLegacyAuthority, catalogue);
         await documents.Delete("match");
         (await documents.Create("match", legacyJson)).ShouldBeOfType<DocumentWriteResult.Written>();
         return (await documents.Read("match"))!;
@@ -1048,6 +1095,9 @@ public sealed class MatchMigrationTests
     {
         var completed = await CreateCurrentCompletedMatch(catalogue, documents, profile);
         var archived = JsonNode.Parse(completed.Json)!.AsObject();
+        archived = JsonNode
+            .Parse(LegacyDocument(archived.ToJsonString(), CompatibleLegacyAuthority, catalogue))!
+            .AsObject();
         archived["authorityVersion"] = CompatibleLegacyAuthority;
         var history = new JsonObject
         {
@@ -1157,6 +1207,14 @@ public sealed class MatchMigrationTests
             authority
         );
 
+    private static string EmptyCurrentHistory(string authority) =>
+        new JsonObject
+        {
+            ["schemaVersion"] = 3,
+            ["authorityVersion"] = authority,
+            ["matches"] = new JsonArray(),
+        }.ToJsonString();
+
     private static string HistoryFixtureAtVersion(string fixture, int schema, string authority)
     {
         var document = JsonNode.Parse(Fixture(fixture))!.AsObject();
@@ -1178,6 +1236,73 @@ public sealed class MatchMigrationTests
         return document.ToJsonString();
     }
 
+    private static string LegacyDocument(string json, string authority, BlokemonCatalogue catalogue)
+    {
+        var document = JsonSerializer.Deserialize<MatchDocument>(json, MatchJson.Options)!;
+        var engine = new Blokemon.Game.MatchEngine(catalogue.Mechanics);
+        var cpu = new Blokemon.Game.DeterministicCpu();
+        var cpuPlayer = new Blokemon.Game.PlayerId("cpu:local");
+        var started = (Blokemon.Game.MatchStartOutcome.Started)engine.Start(document.Start);
+        var state = started.state;
+        var commands = new List<Blokemon.Game.MatchCommand>();
+
+        void SettleCpu()
+        {
+            for (var count = 0; count < 256; count++)
+            {
+                if (
+                    cpu.ChooseLegacy(engine, state, cpuPlayer)
+                    is not Blokemon.Game.CpuDecision.Selected selected
+                )
+                {
+                    return;
+                }
+                if (
+                    engine.Apply(state, selected.action.Command)
+                    is not Blokemon.Game.CommandOutcome.Applied applied
+                )
+                {
+                    throw new InvalidOperationException(
+                        "The legacy CPU fixture command was rejected."
+                    );
+                }
+                commands.Add(selected.action.Command);
+                state = applied.state;
+            }
+            throw new InvalidOperationException("The legacy CPU fixture did not settle.");
+        }
+
+        foreach (
+            var command in document.Commands.Where(command => !command.Actor.Equals(cpuPlayer))
+        )
+        {
+            SettleCpu();
+            if (engine.Apply(state, command) is not Blokemon.Game.CommandOutcome.Applied applied)
+            {
+                throw new InvalidOperationException(
+                    "The legacy fixture player command was rejected."
+                );
+            }
+            commands.Add(command);
+            state = applied.state;
+        }
+        SettleCpu();
+
+        var root = JsonNode.Parse(json)!.AsObject();
+        root["schemaVersion"] = 2;
+        root["authorityVersion"] = authority;
+        root["commands"] = JsonSerializer.SerializeToNode(commands, MatchJson.Options);
+        root.Remove("cpuPolicy");
+        var startCommand = root["startCommand"]!.AsObject();
+        startCommand.Remove("cpuPolicy");
+        var deckId = Guid.Parse(startCommand["deckId"]!.GetValue<string>());
+        startCommand["fingerprint"] = MatchIdentity.fingerprint($"start:{deckId:D}");
+        startCommand["startRequestFingerprint"] = MatchIdentity.fingerprint(
+            JsonSerializer.Serialize(document.Start, MatchJson.Options)
+        );
+        return root.ToJsonString();
+    }
+
     private static string MigrationIdentity(
         string key,
         int sourceSchema,
@@ -1190,9 +1315,13 @@ public sealed class MatchMigrationTests
         {
             transitions.Add($"{key}-schema-1-{sourceAuthority}-to-2-{sourceAuthority}");
         }
+        if (sourceSchema <= 2)
+        {
+            transitions.Add($"{key}-cpu-policy-2-{sourceAuthority}-to-3-{sourceAuthority}");
+        }
         if (!StringComparer.Ordinal.Equals(sourceAuthority, targetAuthority))
         {
-            transitions.Add($"{key}-authority-2-{sourceAuthority}-to-2-{targetAuthority}");
+            transitions.Add($"{key}-authority-3-{sourceAuthority}-to-3-{targetAuthority}");
         }
         return string.Join('+', transitions);
     }
