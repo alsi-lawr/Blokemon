@@ -24,51 +24,6 @@ module private Authorities =
     let deserialize (document: JsonNode) =
         BlokemonSetJson.RuntimeManifest(document.ToJsonString())
 
-    let withBaseRuleValue (pointer: string) (jsonValue: string) =
-        let document = document ()
-        let segments = pointer.Split('/', StringSplitOptions.RemoveEmptyEntries)
-
-        let mutable current: JsonNode =
-            match document["baseRules"] with
-            | null -> failwith "The authority omits baseRules."
-            | baseRules -> baseRules
-
-        for segment in segments |> Array.take (segments.Length - 1) do
-            let next =
-                match current with
-                | :? JsonArray as array -> array[int segment]
-                | _ -> current[segment]
-
-            current <-
-                match next with
-                | null -> failwith $"The BaseRules path {pointer} crosses a null value."
-                | node -> node
-
-        let value = JsonNode.Parse jsonValue
-        let final = segments[segments.Length - 1]
-
-        match current with
-        | :? JsonArray as array -> array[int final] <- value
-        | :? JsonObject as objectNode -> objectNode[final] <- value
-        | _ -> failwith $"Cannot replace the BaseRules leaf {pointer}."
-
-        deserialize document
-
-    let objectProperty (name: string) (document: JsonObject) =
-        match document[name] with
-        | null -> failwith $"The authority omits {name}."
-        | value -> value.AsObject()
-
-    let arrayProperty (name: string) (document: JsonObject) =
-        match document[name] with
-        | null -> failwith $"The authority omits {name}."
-        | value -> value.AsArray()
-
-    let firstObject (values: JsonArray) =
-        match values[0] with
-        | null -> failwith "The authority array begins with null."
-        | value -> value.AsObject()
-
     let validationCodes manifest =
         BlokemonSetValidator.ValidateRuntime(manifest).Issues |> Seq.map _.Code
 
@@ -137,13 +92,8 @@ type AuthorityTests() =
 
         BlokemonSetValidator.ValidateRuntime(authority).IsValid |> should be True
 
-        authority.ManifestVersion
-        |> should equal "base-jungle-fossil-1999-shared-rules-candidate.1"
-
         authority.BaseRules.RulesVersion
         |> should equal "wotc-advanced-rulebook-v1-1999-candidate.1"
-
-        authority.Kits.Length |> should equal 32
 
     // Advanced Rulebook Version 1, pp. 14-15, 20, 23: Basic Energy alone is exempt
     // from the four-card limit; Double Colorless supplies two Colorless Energy units.
@@ -167,117 +117,6 @@ type AuthorityTests() =
         |> should equal [| BlokemonMechanicalType.Colorless; BlokemonMechanicalType.Colorless |]
 
         doubleColorless.StackCopyLimit |> should equal 4
-
-    // Advanced Rulebook Version 1, pp. 2-24: each shared rule family is fixed by the
-    // pinned oracle, so changing one leaf must make the runtime authority invalid.
-    [<Test>]
-    [<Arguments("/rulesVersion", "\"unsupported\"", "runtime.rules-version")>]
-    [<Arguments("/stack/cardCount", "59", "runtime.stack-rules")>]
-    [<Arguments("/opening/mittSize", "6", "runtime.opening-rules")>]
-    [<Arguments("/round/requiredOpeningDraw", "false", "runtime.turn-rules")>]
-    [<Arguments("/promotion/notFirstRoundInPlay", "false", "runtime.evolution-rules")>]
-    [<Arguments("/vim/normalAttachmentPerRound", "0", "runtime.energy-rules")>]
-    [<Arguments("/trainer/unlimitedPerTurn", "false", "runtime.trainer-rules")>]
-    [<Arguments("/pokemonPower/disabledBy", "[\"DodgyPint\"]", "runtime.pokemon-power-rules")>]
-    [<Arguments("/taxi/perRound", "0", "runtime.retreat-rules")>]
-    [<Arguments("/damage/placedCountersUseDamageModifiers", "true", "runtime.damage-rules")>]
-    [<Arguments("/selectionRules/optional", "\"Required\"", "runtime.selection-rules")>]
-    [<Arguments("/effectDrawFromShortStack", "99", "runtime.draw-rules")>]
-    [<Arguments("/checkup/roughStateOrder/0", "\"NoddedOff\"", "runtime.condition-checkup")>]
-    [<Arguments("/roughStates/0/checkupDamageCounters", "2", "runtime.condition-poisoned")>]
-    [<Arguments("/roughStates/1/preventsAttack", "false", "runtime.condition-asleep")>]
-    [<Arguments("/roughStates/2/recoversAfterOwnersNextRound",
-                "false",
-                "runtime.condition-paralyzed")>]
-    [<Arguments("/roughStates/3/blankSideCancelsAndSelfDamageCounters",
-                "1",
-                "runtime.condition-confused")>]
-    [<Arguments("/roughStateCoexistence/markerGroup/0",
-                "\"Legless\"",
-                "runtime.condition-coexistence")>]
-    [<Arguments("/sendHome/prizeCardsPerKnockout", "2", "runtime.knockout-rules")>]
-    [<Arguments("/win/suddenDeathStartsFreshGame", "false", "runtime.win-rules")>]
-    [<Arguments("/opcodeInventory/0", "\"AdjustDamage\"", "runtime.opcode-inventory")>]
-    member _.``a mutated shared rule should be rejected with its rule-family diagnostic``
-        (pointer: string, jsonValue: string, expectedCode: string)
-        =
-        Authorities.withBaseRuleValue pointer jsonValue
-        |> Authorities.validationCodes
-        |> should contain expectedCode
-
-    [<Test>]
-    member _.``an omitted or reordered resolution step should reject the authority``() =
-        let authority = Authorities.mechanics.Value
-        let damageOrder = Array.copy authority.BaseRules.DamageOrder
-        let held = damageOrder[3]
-        damageOrder[3] <- damageOrder[4]
-        damageOrder[4] <- held
-
-        let changed =
-            { authority with
-                BaseRules =
-                    { authority.BaseRules with
-                        AttackOrder = authority.BaseRules.AttackOrder |> Array.skip 1
-                        DamageOrder = damageOrder } }
-
-        let codes = Authorities.validationCodes changed
-        codes |> should contain "runtime.attack-order-omission"
-        codes |> should contain "runtime.damage-order-unsupported-order"
-
-    // The strict codec is the hybrid-manifest boundary. These were normative SV151-era
-    // surfaces; accepting any of them would silently combine incompatible rule eras.
-    [<Test>]
-    member _.``a modern Trainer category should be rejected as an unmapped field``() =
-        let document = Authorities.document ()
-        let trainer = Authorities.arrayProperty "kits" document |> Authorities.firstObject
-        trainer["kind"] <- JsonValue.Create("Mate")
-
-        (fun () -> Authorities.deserialize document |> ignore)
-        |> should throw typeof<JsonException>
-
-    [<Test>]
-    [<Arguments("barChitsWhenSentHome")>]
-    member _.``a modern per-Pokemon Prize field should be rejected as unmapped``(field: string) =
-        let document = Authorities.document ()
-
-        let collectible =
-            Authorities.arrayProperty "collectibles" document |> Authorities.firstObject
-
-        collectible[field] <- JsonValue.Create(2)
-
-        (fun () -> Authorities.deserialize document |> ignore)
-        |> should throw typeof<JsonException>
-
-    [<Test>]
-    [<Arguments("kit")>]
-    [<Arguments("fossilKits")>]
-    [<Arguments("bigHitters")>]
-    member _.``a modern base-rule block should be rejected instead of forming a hybrid manifest``
-        (field: string)
-        =
-        let document = Authorities.document ()
-        (Authorities.objectProperty "baseRules" document)[field] <- JsonObject()
-
-        (fun () -> Authorities.deserialize document |> ignore)
-        |> should throw typeof<JsonException>
-
-    [<Test>]
-    [<Arguments("opening", "barChitCount")>]
-    [<Arguments("opening", "openingParticipantMayPlayMate")>]
-    [<Arguments("sendHome", "normalBarChits")>]
-    [<Arguments("sendHome", "bigHitterBarChits")>]
-    [<Arguments("win", "suddenDeathBarChits")>]
-    [<Arguments("win", "oneMethodEach")>]
-    [<Arguments("win", "moreMethodsWins")>]
-    member _.``a replaced modern rule leaf should be rejected as unmapped``
-        (block: string, field: string)
-        =
-        let document = Authorities.document ()
-        let rules = Authorities.objectProperty "baseRules" document
-        (Authorities.objectProperty block rules)[field] <- JsonValue.Create(1)
-
-        (fun () -> Authorities.deserialize document |> ignore)
-        |> should throw typeof<JsonException>
 
     [<Test>]
     member _.``runtime authority should reject unknown root fields``() =

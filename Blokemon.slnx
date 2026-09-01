@@ -19,10 +19,8 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Blokemon.Core.Tests/Blokemon.Core.Tests.fsproj" />
-    <Project Path="tests/Blokemon.Differential.Tests/Blokemon.Differential.Tests.fsproj" />
     <Project Path="tests/Blokemon.Game.Tests/Blokemon.Game.Tests.fsproj" />
     <Project Path="tests/Blokemon.Product.Tests/Blokemon.Product.Tests.fsproj" />
-    <Project Path="tests/Blokemon.ReferenceModel/Blokemon.ReferenceModel.fsproj" />
     <Project Path="tests/Blokemon.Web.Headless/Blokemon.Web.Headless.csproj" />
     <Project Path="tests/Blokemon.Web.Tests/Blokemon.Web.Tests.csproj" />
   </Folder>

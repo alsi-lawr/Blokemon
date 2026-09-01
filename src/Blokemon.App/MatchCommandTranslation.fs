@@ -24,8 +24,6 @@ module internal MatchCommandTranslation =
             ValueNone
         else
             match requirement.Kind with
-            | ChoiceRequirementKind.Optional when selection.Accepted.HasValue ->
-                ValueSome(EffectChoice.Optional(requirement.Id, selection.Accepted.Value))
             | ChoiceRequirementKind.Amount when selection.Amount.HasValue ->
                 ValueSome(EffectChoice.Amount(requirement.Id, selection.Amount.Value))
             | ChoiceRequirementKind.Cards ->
@@ -46,18 +44,6 @@ module internal MatchCommandTranslation =
                 match selection.EffectId with
                 | null -> ValueNone
                 | effectId -> ValueSome(EffectChoice.Attack(requirement.Id, EffectId effectId))
-            | ChoiceRequirementKind.Distribution ->
-                ValueSome(
-                    EffectChoice.Distribution(
-                        requirement.Id,
-                        ImmutableArray.CreateRange(
-                            orEmpty selection.Distribution
-                            |> Seq.map (fun allocation ->
-                                { Card = CardInstanceId allocation.CardInstanceId
-                                  Counters = allocation.Counters })
-                        )
-                    )
-                )
             | ChoiceRequirementKind.Attachments ->
                 ValueSome(
                     EffectChoice.Attachments(

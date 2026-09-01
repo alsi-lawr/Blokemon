@@ -214,7 +214,7 @@ module internal MatchBasicHandlers =
                 elif
                     vim.Kind <> CardKind.Vim
                     || vim.Zone <> CardZone.Mitt
-                    || target.Kind <> CardKind.Bloke
+                    || not (catalog.CountsAsPokemon target)
                     || not (isInPlay target)
                     || builder.RoundUsage.VimAttachments
                        >= catalog.Manifest.BaseRules.Vim.NormalAttachmentPerRound
@@ -262,12 +262,30 @@ module internal MatchBasicHandlers =
                     HandlerResult.accepted
 
     let chuckFossil
-        (_catalog: AuthorityCatalog)
-        (_builder: MatchBuilder)
-        (_actor: PlayerId)
-        (_fossilId: CardInstanceId)
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (actor: PlayerId)
+        (fossilId: CardInstanceId)
         =
-        HandlerResult.reject CommandRejectionCode.EffectUnavailable
+        match validatePlayingTurn builder actor with
+        | ValueSome rejection -> HandlerResult.reject rejection
+        | ValueNone ->
+            match builder.FindCard fossilId with
+            | ValueSome card when
+                card.Owner = actor
+                && card.Kind = CardKind.Kit
+                && catalog.CountsAsPokemon card
+                && isInPlay card
+                ->
+                let wasOche = card.Zone = CardZone.Oche
+                builder.ChuckBloke card.Id |> ignore
+
+                if wasOche then
+                    assignReplacement catalog builder actor
+
+                resolveWins catalog builder ValueNone
+                HandlerResult.accepted
+            | _ -> HandlerResult.reject CommandRejectionCode.EffectUnavailable
 
     let endRound
         (catalog: AuthorityCatalog)
@@ -297,11 +315,11 @@ module internal MatchBasicHandlers =
             match builder.FindCard boothBloke with
             | ValueSome replacement when
                 replacement.Owner = actor
-                && replacement.Kind = CardKind.Bloke
+                && catalog.CountsAsPokemon replacement
                 && replacement.Zone = CardZone.Booth
                 ->
                 builder.MoveCard(replacement.Id, CardZone.Oche)
-                builder.ReplacementPlayer <- nextReplacement builder
+                builder.ReplacementPlayer <- nextReplacement catalog builder
 
                 if builder.ReplacementPlayer.IsNone then
                     if builder.PendingRoundEnd then

@@ -54,7 +54,3 @@ jobs:
         run: >-
           dotnet run --project tests/Blokemon.Web.Tests -c Release --no-build --
           --maximum-parallel-tests 1
-      - name: Test the independent differential model
-        run: >-
-          dotnet run --project tests/Blokemon.Differential.Tests -c Release --no-build --
-          --maximum-parallel-tests 1

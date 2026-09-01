@@ -39,7 +39,6 @@ module internal EffectViability =
             isHouseRule,
             HashSet<EffectId>(),
             ImmutableArray<bool>.Empty,
-            ValueNone,
             ResolutionTrace.none
         )
 
@@ -48,15 +47,13 @@ module internal EffectViability =
         (runtime: EffectRuntime)
         (instruction: BlokemonEffectInstruction)
         =
-        resolveCandidates catalog runtime.Builder runtime.Actor runtime.Source instruction ValueNone
+        resolveCandidates catalog runtime.Builder runtime.Actor runtime.Source instruction
 
     /// How many cards a draw would take. A draw counted off the beer mats cannot be known before
     /// they are tossed, so it is read at its printed size and left to the run.
     let private drawCount (runtime: EffectRuntime) (instruction: BlokemonEffectInstruction) =
         if instruction.Selection = BlokemonSelection.UntilBlankSide then
             instruction.Amount
-        elif instruction.ValueSource = BlokemonValueSource.MittCardsNeeded then
-            resolveValue runtime instruction
         else
             instruction.Amount
 
@@ -77,7 +74,6 @@ module internal EffectViability =
         | BlokemonOpcode.OncePerRound -> false
         | BlokemonOpcode.HealDamage ->
             instruction.Amount > 0 && cards () |> Seq.exists (fun card -> card.Damage > 0)
-        | BlokemonOpcode.PlaceDamageCounters -> instruction.Amount > 0 && anyCandidate ()
         | BlokemonOpcode.DrawFromStack ->
             drawCount runtime instruction > 0
             && runtime.Builder.CardsIn(runtime.Actor, CardZone.Stack) |> Seq.isEmpty |> not
@@ -85,7 +81,6 @@ module internal EffectViability =
         // one: a search that shuffles and finds nothing has still found nothing.
         | BlokemonOpcode.ShuffleStack -> false
         | BlokemonOpcode.SearchStack
-        | BlokemonOpcode.TransformFromStack
         | BlokemonOpcode.ChuckVim
         | BlokemonOpcode.ChuckCards -> anyCandidate ()
         // Once a selection is running these two work on it rather than on a set of their own, so
@@ -96,13 +91,9 @@ module internal EffectViability =
             instruction.Amount > 0
             && (hasDeclaredSources instruction || not runtime.HasCardSelection)
             && anyCandidate ()
-        // A house rule's own card is not its to throw away, and the run skips it.
-        | BlokemonOpcode.ChuckSelf -> not runtime.IsHouseRule
         | _ -> true
 
-    /// Whether a conditional would take the branch that does the work. The Optional predicate is
-    /// the player's own answer and never a gate: it is the difference between a trick that may be
-    /// declined and one that could not have worked whatever the player said.
+    /// Whether a conditional would take the branch that does the work.
     let private conditionHolds
         (catalog: AuthorityCatalog)
         (runtime: EffectRuntime)
@@ -110,7 +101,6 @@ module internal EffectViability =
         (path: string)
         =
         instruction.Predicates
-        |> Array.filter (fun predicate -> predicate.Condition <> BlokemonCondition.Optional)
         |> Array.forall (fun predicate -> evaluatePredicate catalog runtime predicate path)
 
     /// The instructions that leave a running card selection behind them, exactly as the executor

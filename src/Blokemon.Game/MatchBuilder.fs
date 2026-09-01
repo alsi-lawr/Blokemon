@@ -135,21 +135,44 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
         effects.RemoveAll(fun effect ->
             effect.Duration <> EffectDuration.WhileSourceInPlay
             && effect.Duration <> EffectDuration.WhileTargetInPlay
-            && effect.Duration <> EffectDuration.CurrentResolution
             && effect.ExpiresAfterRound <= completedRound)
         |> ignore
 
-    member _.RemoveEffectsFor(card: CardInstanceId, preserveDelayedTarget: bool) =
+    member _.RemoveEffectsFor(card: CardInstanceId, _: bool) =
         effects.RemoveAll(fun effect ->
-            (effect.SourceCard = card
-             && effect.Kind <> TemporaryEffectKind.EndRoundEffect
-             && effect.Kind <> TemporaryEffectKind.ForceBeerMatBlank
-             && effect.Duration <> EffectDuration.WhileTargetInPlay)
-            || (effect.TargetCard = ValueSome card
-                && (not preserveDelayedTarget || effect.Kind <> TemporaryEffectKind.EndRoundEffect)))
+            (effect.SourceCard = card && effect.Duration <> EffectDuration.WhileTargetInPlay)
+            || effect.TargetCard = ValueSome card)
         |> ignore
 
     member this.RemoveEffectsFor(card: CardInstanceId) = this.RemoveEffectsFor(card, false)
+
+    member this.ClearPokemonEffects(card: CardInstanceId) =
+        effects.RemoveAll(fun effect ->
+            effect.SourceCard = card
+            || (effect.TargetCard = ValueSome card
+                && not (
+                    match this.FindCard effect.SourceCard with
+                    | ValueSome source ->
+                        source.Kind = CardKind.Kit && source.Zone = CardZone.Attached
+                    | ValueNone -> false
+                )))
+        |> ignore
+
+    member this.ClearAndRetargetPokemonEffects(card: CardInstanceId, replacement: CardInstanceId) =
+        for index in effects.Count - 1 .. -1 .. 0 do
+            let effect = effects[index]
+
+            if effect.SourceCard = card then
+                effects.RemoveAt index
+            elif effect.TargetCard = ValueSome card then
+                match this.FindCard effect.SourceCard with
+                | ValueSome source when
+                    source.Kind = CardKind.Kit && source.Zone = CardZone.Attached
+                    ->
+                    effects[index] <-
+                        { effect with
+                            TargetCard = ValueSome replacement }
+                | _ -> effects.RemoveAt index
 
     member _.RetargetEffects(fromCard: CardInstanceId, toCard: CardInstanceId) =
         for index in 0 .. effects.Count - 1 do
@@ -212,6 +235,18 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
         )
 
     member this.MoveCard(id: CardInstanceId, zone: CardZone) = this.MoveCard(id, zone, ValueNone)
+
+    member this.MoveToTopOfStack(id: CardInstanceId) =
+        let card = this.Card id
+
+        for stacked in this.CardsIn(card.Owner, CardZone.Stack) |> Seq.toArray do
+            this.SetCard
+                { stacked with
+                    StackPosition = stacked.StackPosition + 1 }
+
+        this.MoveCard(id, CardZone.Stack)
+
+        this.SetCard { this.Card id with StackPosition = 0 }
 
     member this.ExchangeCards
         (
@@ -533,20 +568,7 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
     member this.ClearRoughStates(actor: PlayerId, targetId: CardInstanceId) =
         this.ClearRoughStates(actor, targetId, ValueNone)
 
-    member this.TossBeerMat(player: PlayerId, applyPlayerEffects: bool) =
-        let badge = random.NextInt 2 = 1
-
-        if
-            applyPlayerEffects
-            && effects
-               |> Seq.exists (fun effect ->
-                   effect.Owner <> player
-                   && effect.Kind = TemporaryEffectKind.ForceBeerMatBlank
-                   && effect.AppliesFromRound <= this.RoundNumber)
-        then
-            false
-        else
-            badge
+    member _.TossBeerMat(_: PlayerId, _: bool) = random.NextInt 2 = 1
 
     member this.TossBeerMat(player: PlayerId) = this.TossBeerMat(player, true)
 

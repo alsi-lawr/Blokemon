@@ -41,7 +41,7 @@ type KnockoutResolutionTests() =
             MatchScenario.BattleState
                 "BLK-003"
                 "BLK-003"
-                [ "VIM-BLAZED"; "VIM-BLAZED"; "VIM-SOBER" ]
+                [ "VIM-BLAZED"; "VIM-BLAZED"; "VIM-BLAZED"; "VIM-BLAZED" ]
                 29UL
 
         let defender =
@@ -80,7 +80,7 @@ type KnockoutResolutionTests() =
         let engine = MatchScenario.Engine()
 
         let original =
-            MatchScenario.BattleState "BLK-001" "BLK-003" [ "VIM-BLAZED"; "VIM-SOBER" ] 29UL
+            MatchScenario.BattleState "BLK-001" "BLK-003" [ "VIM-BLAZED"; "VIM-BLAZED" ] 29UL
 
         let state =
             MatchScenario.WithCards
@@ -120,43 +120,13 @@ type KnockoutResolutionTests() =
         applied.SuddenDeathCount |> should be (greaterThan state.SuddenDeathCount)
 
     [<Test>]
-    member _.``a retaliating defender should take the attacker home in the same resolution``() =
-        let engine = MatchScenario.Engine()
-
-        let original =
-            MatchScenario.BattleState
-                "BLK-076"
-                "BLK-110"
-                [ "VIM-LAIRY"; "VIM-SOBER"; "VIM-SOBER" ]
-                41UL
-
-        // A retaliatory double Knock Out is a tied game, so provide complete decks for the
-        // fresh-game setup that follows it (Advanced Rulebook v1, p. 24).
-        let state = MatchScenario.WithRestartableDecks original
-
-        let applied, events =
-            MatchScenario.AppliedWith(
-                engine.Apply(state, MatchScenario.AttackCommand state "BLK-076-B02")
-            )
-
-        // The retaliation names the attacker only once the defender it belongs to has already been
-        // worked through, so the attacker leaves because the candidates grow while they are being
-        // resolved rather than because it was one of them to begin with.
-        LeftTheOche applied "defender" |> should be True
-        LeftTheOche applied "attacker" |> should be True
-
-        Decisions events
-        |> List.truncate 2
-        |> should equal [ MatchEventKind.BlokeSentHome; MatchEventKind.BlokeSentHome ]
-
-    [<Test>]
     member _.``sending home the only bloke a player has left should win the match for the other player``
         ()
         =
         let engine = MatchScenario.Engine()
 
         let state =
-            MatchScenario.BattleState "BLK-001" "BLK-003" [ "VIM-BLAZED"; "VIM-SOBER" ] 31UL
+            MatchScenario.BattleState "BLK-001" "BLK-003" [ "VIM-BLAZED"; "VIM-BLAZED" ] 31UL
 
         let state =
             MatchScenario.WithCards
@@ -182,7 +152,7 @@ type KnockoutResolutionTests() =
         let engine = MatchScenario.Engine()
 
         let state =
-            MatchScenario.BattleState "BLK-001" "BLK-003" [ "VIM-BLAZED"; "VIM-SOBER" ] 37UL
+            MatchScenario.BattleState "BLK-001" "BLK-003" [ "VIM-BLAZED"; "VIM-BLAZED" ] 37UL
 
         let booth =
             MatchScenario.PlainCard "booth" "BLK-004" MatchScenario.SecondPlayer CardZone.Booth 0

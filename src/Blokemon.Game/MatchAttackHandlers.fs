@@ -7,6 +7,8 @@ open Blokemon.Game.MatchRules
 open Blokemon.Game.MatchKnockouts
 open Blokemon.Game.MatchRounds
 open Blokemon.Game.MatchPending
+open Blokemon.Game.PokemonPowers
+open Blokemon.Game.MatchWins
 
 /// Declaring and resolving an attack: the beer mats the declaration has to survive, and the damage,
 /// reactions and knockouts that follow it.
@@ -98,7 +100,6 @@ module internal MatchAttackHandlers =
                     ValueNone
                     false
                     ImmutableArray<_>.Empty
-                    0
                 |> ignore
 
                 if
@@ -185,7 +186,7 @@ module internal MatchAttackHandlers =
                 if
                     attacker.Owner <> command.Actor
                     || not (
-                        catalog.Attacks attacker
+                        effectiveAttacks catalog builder attacker
                         |> Seq.exists (fun candidate -> candidate.MechanicalId = attackId.Value)
                     )
                     || (attacker.Zone <> CardZone.Oche
@@ -198,7 +199,10 @@ module internal MatchAttackHandlers =
                     || builder.Effects
                        |> Seq.exists (fun effect ->
                            effect.TargetCard = ValueSome attacker.Id
-                           && effect.Kind = TemporaryEffectKind.RestrictAttack)
+                           && effect.Kind = TemporaryEffectKind.RestrictAttack
+                           && (effect.RelatedCards.Length = 0
+                               || effect.RelatedCards
+                                  |> Seq.exists (fun related -> related.Value = attackId.Value)))
                 then
                     HandlerResult.reject CommandRejectionCode.EffectUnavailable
                 elif not (canPayAttack catalog builder attacker attack) then
@@ -349,7 +353,6 @@ module internal MatchAttackHandlers =
                                         false,
                                         ValueNone,
                                         beerMatResults,
-                                        ValueNone,
                                         deferAttackDamage = true
                                     )
 
@@ -382,6 +385,9 @@ module internal MatchAttackHandlers =
                                     defendingCard
                                     defendingDamageBefore
                                     attackDamageTargets
+
+                                for player in builder.Players do
+                                    assignReplacement catalog builder player.Id
                             | BlokemonAttackResolutionStep.CheckAllSentHome ->
                                 match execution with
                                 | ValueSome prepared ->
@@ -389,7 +395,7 @@ module internal MatchAttackHandlers =
                                         findSendHomeCandidates
                                             catalog
                                             builder
-                                            prepared.ForcedSendHome
+                                            ImmutableArray<_>.Empty
                                 | ValueNone ->
                                     result <-
                                         HandlerResult.reject CommandRejectionCode.AuthorityMismatch
@@ -407,7 +413,6 @@ module internal MatchAttackHandlers =
                                             (ValueSome attacker.Id)
                                             true
                                             attackDamageTargets
-                                            prepared.DeferredAttackKnockoutBarChits
 
                                     if not sendHomeResolved then
                                         continueResolution <- false

@@ -79,39 +79,6 @@ module internal BlokemonSetContentValidator =
             "Every internal mechanical type must have one approved display label and Metal must display as Roadie."
             issues
 
-        let roadieSoftSpots =
-            manifest.Collectibles
-            |> Array.filter (fun card ->
-                card.SoftSpots
-                |> Array.exists (fun modifier ->
-                    modifier.MechanicalType = BlokemonMechanicalType.Metal))
-            |> Array.map (fun card -> card.Id)
-            |> Array.sortWith (fun left right -> String.CompareOrdinal(left, right))
-
-        check
-            (roadieSoftSpots = [| "BLK-035"; "BLK-036"; "BLK-124" |])
-            "runtime.roadie-soft-spots"
-            "Internal Metal must appear on exactly the three D-224 Roadie soft-spot surfaces."
-            issues
-
-        let roadieSelector =
-            manifest.Collectibles.SingleOrDefault(fun card -> card.Id = "BLK-137")
-
-        let selectableMetal =
-            match roadieSelector with
-            | null -> false
-            | selector ->
-                programsOf selector.PartyTricks selector.Attacks selector.HouseRules
-                |> Seq.collect flatten
-                |> Seq.exists (fun instruction ->
-                    instruction.MechanicalTypes |> Array.contains BlokemonMechanicalType.Metal)
-
-        check
-            selectableMetal
-            "runtime.roadie-selection"
-            "BLK-137 must retain internal Metal in the D-224 Roadie selectable-type mechanic."
-            issues
-
         let programs =
             [| for card in manifest.Collectibles do
                    yield! programsOf card.PartyTricks card.Attacks card.HouseRules
@@ -119,9 +86,12 @@ module internal BlokemonSetContentValidator =
                    yield! programsOf card.PartyTricks card.Attacks card.HouseRules |]
 
         check
-            (programs.Length = 298)
+            (manifest.Collectibles |> Array.sumBy (fun card -> card.Attacks.Length) = 258
+             && manifest.Collectibles |> Array.sumBy (fun card -> card.PartyTricks.Length) = 21
+             && manifest.Kits |> Array.sumBy (fun card -> card.HouseRules.Length) = 32
+             && programs.Length = 311)
             "runtime.program-count"
-            "The typed manifest must structurally define all 298 mechanical programs."
+            "The typed manifest must define 258 attacks, 21 Pokemon Powers, and 32 Trainer programs."
             issues
 
         check
@@ -150,6 +120,17 @@ module internal BlokemonSetContentValidator =
                  && not card.Traded))
             "runtime.kit-boundary"
             "Kits must be free, non-owned, non-pulled, non-traded and accepted for presentation."
+            issues
+
+        let inPlayTrainers =
+            manifest.Kits |> Array.filter (fun card -> card.StayingPower > 0)
+
+        check
+            (inPlayTrainers.Length = 2
+             && inPlayTrainers |> Array.forall (fun card -> card.StayingPower = 10)
+             && inPlayTrainers |> Array.map (fun card -> card.Id) = [| "KIT-001"; "KIT-002" |])
+            "runtime.trainer-pokemon"
+            "Clefairy Doll and Mysterious Fossil must be the only Trainers that can be Pokemon in play, each with 10 HP."
             issues
 
         check

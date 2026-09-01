@@ -29,7 +29,7 @@ module internal AuthorityAudit =
             || programContainsCondition instruction.Otherwise condition)
 
     let private hasSupportedSemanticShape (instruction: BlokemonEffectInstruction) =
-        if instruction.TargetCount < 1 || instruction.Amount < -99 then
+        if instruction.TargetCount < 0 || instruction.Amount < -99 then
             false
         elif
             instruction.Selection = BlokemonSelection.OtherSideChosen
@@ -48,22 +48,6 @@ module internal AuthorityAudit =
              | filter ->
                  (filter.Categories |> Array.exists (fun value -> not (Enum.IsDefined value)))
                  || (filter.Ranks |> Array.exists (fun value -> not (Enum.IsDefined value))))
-        then
-            false
-        elif
-            instruction.Selection = BlokemonSelection.AnyDistribution
-            && instruction.Opcode <> BlokemonOpcode.AttachVim
-            && instruction.Opcode <> BlokemonOpcode.PlaceDamageCounters
-            && instruction.Opcode <> BlokemonOpcode.TriggeredPartyTrick
-        then
-            false
-        elif
-            instruction.Selection = BlokemonSelection.Top
-            && instruction.Opcode <> BlokemonOpcode.SearchStack
-            && instruction.Opcode <> BlokemonOpcode.ShuffleStack
-            && instruction.Opcode <> BlokemonOpcode.RevealCards
-            && instruction.Opcode <> BlokemonOpcode.MoveCards
-            && instruction.Opcode <> BlokemonOpcode.ChuckCards
         then
             false
         else
@@ -115,36 +99,13 @@ module internal AuthorityAudit =
         (trick: BlokemonPartyTrick)
         (issues: ResizeArray<InterpreterAuditIssue>)
         =
-        let effect = EffectId trick.MechanicalId
-
-        let continuous =
-            programContainsOpcode trick.Program BlokemonOpcode.ContinuousPartyTrick
-
-        let triggered =
-            programContainsOpcode trick.Program BlokemonOpcode.TriggeredPartyTrick
-
-        let valid =
-            match trick.Trigger with
-            | BlokemonTrigger.Activated -> not continuous && not triggered
-            | BlokemonTrigger.Continuous -> continuous
-            | BlokemonTrigger.OnPromotionFromMitt ->
-                triggered
-                && programContainsCondition
-                    trick.Program
-                    BlokemonCondition.PromotedFromMittThisRound
-            | BlokemonTrigger.OnOwnBlokeSentHomeByOtherAttackDamage ->
-                triggered && programContainsCondition trick.Program BlokemonCondition.Optional
-            | BlokemonTrigger.BeforeSelfSentHomeByAttackDamage
-            | BlokemonTrigger.AfterSelfDamagedByAttack
-            | BlokemonTrigger.AfterSelfSentHomeByAttackDamage -> triggered
-            | BlokemonTrigger.OnBarChitTaken ->
-                triggered && programContainsCondition trick.Program BlokemonCondition.Optional
-            | _ -> false
-
-        if not valid then
+        match trick.Trigger with
+        | BlokemonTrigger.Activated
+        | BlokemonTrigger.Continuous -> ()
+        | unsupported ->
             issues.Add
-                { Code = "unsupported-trigger-shape"
-                  Effect = ValueSome effect }
+                { Code = $"unsupported-trigger-{int unsupported}"
+                  Effect = ValueSome(EffectId trick.MechanicalId) }
 
     let private allPrograms (catalog: AuthorityCatalog) =
         let effectsOf

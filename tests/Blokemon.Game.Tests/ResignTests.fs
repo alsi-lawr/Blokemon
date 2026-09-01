@@ -16,189 +16,43 @@ module private ResignFixtures =
             ImmutableArray<_>.Empty
             MatchAction.Resign
 
-    let private suddenDeathState () =
-        let state = MatchScenario.BattleState "BLK-003" "BLK-001" [ "VIM-BLAZED" ] 11UL
-
-        { state with
-            SuddenDeathCount = 1
-            Players =
-                ImmutableArray.CreateRange(
-                    state.Players |> Seq.map (fun player -> { player with BarChitsRemaining = 1 })
-                ) }
+    let private baseState () =
+        MatchScenario.BattleState "BLK-039" "BLK-001" [ "VIM-DODGY" ] 11UL
 
     let private pendingEffectChoiceState () =
-        let engine = MatchScenario.Engine()
-        let initial = MatchScenario.BattleState "BLK-012" "BLK-001" [ "VIM-BLAZED" ] 81UL
+        let state = baseState ()
+        let command = resignCommand state MatchScenario.FirstPlayer
 
-        let bench =
-            MatchScenario.PlainCard
-                "defender-bench"
-                "BLK-004"
-                MatchScenario.SecondPlayer
-                CardZone.Booth
-                -1
-
-        let initial = MatchScenario.WithCards initial [ bench ]
-
-        let requested =
-            MatchScenario.Applied(
-                engine.Apply(initial, MatchScenario.AttackCommand initial "BLK-012-B01")
-            )
-
-        requested.Phase |> should equal MatchPhase.AwaitingEffectChoice
-        requested.PendingEffect.IsSome |> should be True
-        requested
-
-    let private pendingKnockoutTriggerState () =
-        let engine = MatchScenario.Engine()
-
-        let state =
-            MatchScenario.BattleState
-                "BLK-003"
-                "BLK-001"
-                [ "VIM-BLAZED"; "VIM-BLAZED"; "VIM-SOBER" ]
-                103UL
-
-        let triggerSource =
-            MatchScenario.PlainCard
-                "trigger-source"
-                "BLK-026"
-                MatchScenario.SecondPlayer
-                CardZone.Booth
-                -1
-
-        let movableVim =
-            MatchScenario.AttachedCard
-                "movable-vim"
-                "VIM-BEER"
-                MatchScenario.SecondPlayer
-                CardZone.Attached
-                -1
-                (CardInstanceId "defender")
-
-        let prize =
-            MatchScenario.PlainCard "prize" "VIM-LAIRY" MatchScenario.FirstPlayer CardZone.BarChit 0
-
-        let defender =
-            { state.Card(CardInstanceId "defender") with
-                Attachments = ImmutableArray.Create(CardInstanceId "movable-vim") }
-
-        let state =
-            MatchScenario.WithCards state [ defender; triggerSource; movableVim; prize ]
-
-        let state = MatchScenario.WithBarChits state MatchScenario.FirstPlayer 1
-
-        let attacked =
-            MatchScenario.Applied(
-                engine.Apply(state, MatchScenario.AttackCommand state "BLK-003-B01")
-            )
-
-        attacked.Phase |> should equal MatchPhase.AwaitingTriggerChoice
-        attacked.PendingKnockout.IsSome |> should be True
-        attacked
-
-    let private pendingBarChitTriggerState () =
-        let engine = MatchScenario.Engine()
-
-        let state =
-            MatchScenario.BattleState
-                "BLK-003"
-                "BLK-001"
-                [ "VIM-BLAZED"; "VIM-BLAZED"; "VIM-SOBER" ]
-                0UL
-
-        let triggeredPrize =
-            MatchScenario.PlainCard
-                "triggered-prize"
-                "BLK-113"
-                MatchScenario.FirstPlayer
-                CardZone.BarChit
-                0
-
-        let extraPrize =
-            MatchScenario.PlainCard
-                "extra-prize"
-                "VIM-LAIRY"
-                MatchScenario.FirstPlayer
-                CardZone.BarChit
-                1
-
-        let defenderBench =
-            MatchScenario.PlainCard
-                "defender-bench"
-                "BLK-004"
-                MatchScenario.SecondPlayer
-                CardZone.Booth
-                -1
-
-        let state =
-            MatchScenario.WithCards state [ triggeredPrize; extraPrize; defenderBench ]
-
-        let state = MatchScenario.WithBarChits state MatchScenario.FirstPlayer 2
-
-        let attacked =
-            MatchScenario.Applied(
-                engine.Apply(state, MatchScenario.AttackCommand state "BLK-003-B01")
-            )
-
-        attacked.Phase |> should equal MatchPhase.AwaitingTriggerChoice
-        attacked.PendingBarChits.Length |> should be (greaterThan 0)
-        attacked
+        { state with
+            Phase = MatchPhase.AwaitingEffectChoice
+            PendingEffect =
+                ValueSome
+                    { Command = command
+                      Source = CardInstanceId "attacker"
+                      Effect = EffectId "BLK-012-B01"
+                      Chooser = MatchScenario.SecondPlayer
+                      Requirements = ImmutableArray<_>.Empty
+                      BeerMatResults = ImmutableArray<_>.Empty
+                      AttackStarted = true } }
 
     let private pendingReplacementState () =
-        let engine = MatchScenario.Engine()
+        let state = baseState ()
 
-        let state =
-            MatchScenario.BattleState
-                "BLK-026"
-                "BLK-151"
-                [ "VIM-BEER"; "VIM-BEER"; "VIM-SOBER" ]
-                97UL
+        let bench =
+            MatchScenario.PlainCard "bench" "BLK-004" MatchScenario.SecondPlayer CardZone.Booth 0
 
-        let firstPrize =
-            MatchScenario.PlainCard
-                "prize-1"
-                "VIM-LAIRY"
-                MatchScenario.FirstPlayer
-                CardZone.BarChit
-                0
-
-        let secondPrize =
-            MatchScenario.PlainCard
-                "prize-2"
-                "VIM-SOBER"
-                MatchScenario.FirstPlayer
-                CardZone.BarChit
-                1
-
-        let defenderBench =
-            MatchScenario.PlainCard
-                "defender-bench"
-                "BLK-004"
-                MatchScenario.SecondPlayer
-                CardZone.Booth
-                -1
-
-        let state = MatchScenario.WithCards state [ firstPrize; secondPrize; defenderBench ]
-
-        let attacked =
-            MatchScenario.Applied(
-                engine.Apply(state, MatchScenario.AttackCommand state "BLK-026-B01")
-            )
-
-        attacked.Phase |> should equal MatchPhase.AwaitingReplacement
-
-        attacked.ReplacementPlayer
-        |> should equal (ValueSome MatchScenario.SecondPlayer)
-
-        attacked
+        { MatchScenario.WithCards state [ bench ] with
+            Phase = MatchPhase.AwaitingReplacement
+            ReplacementPlayer = ValueSome MatchScenario.SecondPlayer }
 
     let livePhases () =
-        [ "own turn", MatchScenario.BattleState "BLK-003" "BLK-001" [ "VIM-BLAZED" ] 5UL
-          "sudden death", suddenDeathState ()
+        let suddenDeath =
+            { baseState () with
+                SuddenDeathCount = 1 }
+
+        [ "own turn", baseState ()
+          "sudden death", suddenDeath
           "pending effect choice", pendingEffectChoiceState ()
-          "pending knockout trigger", pendingKnockoutTriggerState ()
-          "pending bar chit trigger", pendingBarChitTriggerState ()
           "pending replacement", pendingReplacementState () ]
 
     let bothPlayers = [ MatchScenario.FirstPlayer; MatchScenario.SecondPlayer ]

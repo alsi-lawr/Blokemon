@@ -5,6 +5,7 @@ open System.Linq
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
 open Blokemon.Game.MatchLegalChoices
+open Blokemon.Game.PokemonPowers
 
 /// What the active player could submit during their own turn: everything the phase switch delegates
 /// to once the match is actually being played.
@@ -50,6 +51,25 @@ module internal MatchPlayingActions =
                     (stableChoices requirements)
                     (MatchAction.Promote(promotion.Id, target.Id))))
 
+    let private chuckFossilActions
+        (catalog: AuthorityCatalog)
+        (state: MatchState)
+        (actor: PlayerId)
+        =
+        state.Cards
+        |> Seq.filter (fun card ->
+            card.Owner = actor
+            && card.Kind = CardKind.Kit
+            && catalog.CountsAsPokemon card
+            && isInPlay card)
+        |> Seq.map (fun card ->
+            simple
+                LegalActionKind.ChuckFossil
+                state
+                actor
+                $"chuck-pokemon:{card.Id.Value}"
+                (MatchAction.ChuckFossil card.Id))
+
     let private playBlokeActions (catalog: AuthorityCatalog) (state: MatchState) (actor: PlayerId) =
         state.CardsIn(actor, CardZone.Mitt)
         |> Seq.filter (fun card ->
@@ -80,8 +100,7 @@ module internal MatchPlayingActions =
                 ImmutableArray.CreateRange(
                     kit.HouseRules
                     |> Seq.filter (fun rule ->
-                        not (containsOpcode rule.Program BlokemonOpcode.OncePerRound)
-                        && not (isDeclarativeHouseRule rule))
+                        not (containsOpcode rule.Program BlokemonOpcode.OncePerRound))
                     |> Seq.collect (fun rule ->
                         invocationRequirements
                             interpreter
@@ -123,10 +142,13 @@ module internal MatchPlayingActions =
         inPlay
         |> Seq.collect (fun source ->
             let tricks =
-                catalog.PartyTricks source
+                effectivePartyTricks catalog (MatchBuilder(state, catalog)) source
                 |> Seq.filter (fun trick ->
                     trick.Trigger = BlokemonTrigger.Activated
-                    && pokemonPowerIsEnabled catalog source
+                    && PokemonPowers.pokemonPowerIsEnabled
+                        catalog
+                        (MatchBuilder(state, catalog))
+                        source
                     // An activation that could not change anything is not a move to offer: the
                     // card would glow, the player would take it, and the table would sit still.
                     && EffectViability.activationCanAct
@@ -161,7 +183,7 @@ module internal MatchPlayingActions =
                         (MatchAction.UsePartyTrick(source.Id, effect)))
 
             let attacks =
-                catalog.Attacks source
+                effectiveAttacks catalog (MatchBuilder(state, catalog)) source
                 |> Seq.map (fun attack ->
                     let effect = EffectId attack.MechanicalId
 
@@ -192,16 +214,21 @@ module internal MatchPlayingActions =
     let private taxiActions (catalog: AuthorityCatalog) (state: MatchState) (actor: PlayerId) =
         match state.Oche actor with
         | ValueNone -> Seq.empty
+        | ValueSome oche when oche.Kind = CardKind.Kit -> Seq.empty
         | ValueSome oche ->
-            let fare = effectiveTaxiFare catalog (MatchBuilder(state, catalog)) oche
+            let fare = MatchRules.effectiveTaxiFare catalog (MatchBuilder(state, catalog)) oche
 
             let attached =
                 oche.Attachments
                 |> Seq.map state.Card
-                |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
+                |> Seq.filter (fun card ->
+                    effectiveEnergy catalog (MatchBuilder(state, catalog)) oche card
+                    |> Seq.isEmpty
+                    |> not)
                 |> Seq.toArray
 
-            let vim, canPay = defaultRetreatPayment catalog attached fare
+            let vim, canPay =
+                defaultRetreatPayment catalog (MatchBuilder(state, catalog)) oche attached fare
 
             let affordability =
                 if canPay then
@@ -210,7 +237,7 @@ module internal MatchPlayingActions =
                     ActionAffordability.ShortOfTaxiFare fare
 
             state.CardsIn(actor, CardZone.Booth)
-            |> Seq.filter (fun card -> card.Kind = CardKind.Bloke)
+            |> Seq.filter catalog.CountsAsPokemon
             |> Seq.map (fun booth ->
                 { simple
                       LegalActionKind.Taxi
@@ -269,7 +296,7 @@ module internal MatchPlayingActions =
             let inPlay =
                 state.Cards
                 |> Seq.filter (fun card ->
-                    card.Owner = actor && card.Kind = CardKind.Bloke && isInPlay card)
+                    card.Owner = actor && catalog.CountsAsPokemon card && isInPlay card)
                 |> Seq.toArray
 
             Seq.concat
@@ -277,6 +304,7 @@ module internal MatchPlayingActions =
                   promoteActions catalog interpreter state actor inPlay
                   playBlokeActions catalog state actor
                   playKitActions catalog interpreter state actor inPlay
+                  chuckFossilActions catalog state actor
                   inPlayEffectActions catalog interpreter state actor inPlay
                   taxiActions catalog state actor
                   localActions catalog interpreter state actor

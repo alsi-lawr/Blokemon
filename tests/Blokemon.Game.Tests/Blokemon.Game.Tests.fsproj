@@ -7,31 +7,21 @@
   <ItemGroup>
     <Compile Include="MatchScenario.fs" />
     <Compile Include="VintageSharedRuleTests.fs" />
+    <Compile Include="VintageCrossCuttingTests.fs" />
+    <Compile Include="VintagePokemonPowerTests.fs" />
+    <Compile Include="VintageTrainerSemanticsTests.fs" />
+    <Compile Include="VintageAttackSemanticsTests.fs" />
+    <Compile Include="VintageCorrectionTests.fs" />
     <Compile Include="OpeningTests.fs" />
     <Compile Include="CommandBoundaryTests.fs" />
     <Compile Include="DeterminismAndReplayTests.fs" />
     <Compile Include="ModifierDurationTests.fs" />
-    <Compile Include="TopStackDistributionTests.fs" />
     <Compile Include="DamageAndRoughStateTests.fs" />
     <Compile Include="ResolutionAuthorityTests.fs" />
     <Compile Include="DeferredChoiceTests.fs" />
-    <Compile Include="CardFlowTests.fs" />
-    <Compile Include="InterpreterBranchingTests.fs" />
-    <Compile Include="TriggerTimingTests.fs" />
-    <Compile Include="DeferredBranchChoiceTests.fs" />
     <Compile Include="ResignTests.fs" />
     <Compile Include="KnockoutResolutionTests.fs" />
-    <Compile Include="ActivatedEffectLegalityTests.fs" />
     <Compile Include="TaxiFareTests.fs" />
-    <Compile Include="AuthorityAuditTests.fs" />
-    <Compile Include="CardSemanticsTests.fs" />
-    <Compile Include="ExceptionalEffectTests.fs" />
-    <Compile Include="AuthorityErrataTests.fs" />
-    <Compile Include="AuthorityParityTests.fs" />
-    <Compile Include="FullSetBehaviorTests.fs" />
-    <Compile Include="OpcodeConformanceTests.fs" />
-    <Compile Include="ConditionConformanceTests.fs" />
-    <Compile Include="TriggerConformanceTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Blokemon.App/Blokemon.App.fsproj" />

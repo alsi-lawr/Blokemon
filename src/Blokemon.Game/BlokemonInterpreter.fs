@@ -9,6 +9,7 @@ open Blokemon.Game.ChoiceInspection
 open Blokemon.Game.ChoiceValidation
 open Blokemon.Game.EffectDamage
 open Blokemon.Game.EffectExecution
+open Blokemon.Game.VintageEffects
 
 /// Runs one printed effect against the staging area: works out what it must ask, refuses answers
 /// that do not fit, then applies the instructions in order.
@@ -30,20 +31,9 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             actor: PlayerId,
             source: CardState,
             effect: EffectId,
-            program: BlokemonEffectInstruction array,
-            triggerContext: TriggerContext voption
-        ) =
-        inspectChoices catalog builder actor source effect program triggerContext
-
-    member internal this.InspectChoices
-        (
-            builder: MatchBuilder,
-            actor: PlayerId,
-            source: CardState,
-            effect: EffectId,
             program: BlokemonEffectInstruction array
         ) =
-        this.InspectChoices(builder, actor, source, effect, program, ValueNone)
+        inspectChoices catalog builder actor source effect program
 
     member internal _.FindProgram(effect: EffectId) =
         match catalog.Attack effect with
@@ -65,14 +55,7 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             | ValueSome program ->
                 let builder = MatchBuilder(state, catalog)
 
-                inspectChoices
-                    catalog
-                    builder
-                    invocation.Actor
-                    source
-                    invocation.Effect
-                    program
-                    ValueNone
+                inspectChoices catalog builder invocation.Actor source invocation.Effect program
 
     member internal _.Execute
         (
@@ -86,12 +69,10 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             isHouseRule: bool,
             copyStack: HashSet<EffectId> voption,
             beerMatResults: ImmutableArray<bool>,
-            triggerContext: TriggerContext voption,
             ?deferAttackDamage: bool,
             ?resolutionTraceOverride: ResolutionTrace
         ) =
-        let requirements =
-            inspectChoices catalog builder actor source effect program triggerContext
+        let requirements = inspectChoices catalog builder actor source effect program
 
         let scopedChoices =
             ImmutableArray.CreateRange(
@@ -125,7 +106,6 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
                      | ValueSome stack -> stack
                      | ValueNone -> HashSet<EffectId>()),
                     beerMatResults,
-                    triggerContext,
                     defaultArg resolutionTraceOverride resolutionTrace
                 )
 
@@ -149,6 +129,7 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             else
                 let completeAttackDamage () =
                     resolveDamage catalog runtime
+                    resolvePostDamage catalog runtime
 
                     ImmutableArray.CreateRange(runtime.AttackDamageTargets |> Seq.sort)
 
@@ -161,11 +142,9 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
                 { IsApplied = true
                   Rejection = ValueNone
                   Requirements = requirements
-                  ForcedSendHome = ImmutableArray.CreateRange(runtime.ForcedSendHome |> Seq.sort)
-                  SourceChucked = runtime.SourceChucked
+                  SourceLeftPlay = runtime.SourceLeftPlay
                   BeerMatResults = runtime.BeerMatResults
                   AttackDamageTargets = attackDamageTargets
-                  DeferredAttackKnockoutBarChits = runtime.DeferredAttackKnockoutBarChits
                   CompleteAttackDamage = completion }
 
     member internal this.Execute
@@ -188,62 +167,7 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             isAttack,
             false,
             ValueNone,
-            ImmutableArray<_>.Empty,
-            ValueNone
-        )
-
-    member internal this.ExecuteTriggered
-        (
-            builder: MatchBuilder,
-            actor: PlayerId,
-            source: CardState,
-            effect: EffectId,
-            program: BlokemonEffectInstruction array,
-            choices: ImmutableArray<EffectChoice>,
-            triggerContext: TriggerContext voption
-        ) =
-        this.Execute(
-            builder,
-            actor,
-            source,
-            effect,
-            program,
-            choices,
-            false,
-            false,
-            ValueNone,
-            ImmutableArray<_>.Empty,
-            triggerContext
-        )
-
-    member internal this.Plan
-        (
-            builder: MatchBuilder,
-            actor: PlayerId,
-            source: CardState,
-            effect: EffectId,
-            program: BlokemonEffectInstruction array,
-            choices: ImmutableArray<EffectChoice>,
-            isAttack: bool,
-            isHouseRule: bool,
-            beerMatResults: ImmutableArray<bool>,
-            triggerContext: TriggerContext voption
-        ) =
-        let simulation = MatchBuilder(builder.Snapshot(), catalog)
-
-        this.Execute(
-            simulation,
-            actor,
-            simulation.Card source.Id,
-            effect,
-            program,
-            choices,
-            isAttack,
-            isHouseRule,
-            ValueNone,
-            beerMatResults,
-            triggerContext,
-            resolutionTraceOverride = ResolutionTrace.none
+            ImmutableArray<_>.Empty
         )
 
     member internal this.Plan
@@ -258,17 +182,20 @@ type BlokemonInterpreter(authority: BlokemonRuntimeManifest) =
             isHouseRule: bool,
             beerMatResults: ImmutableArray<bool>
         ) =
-        this.Plan(
-            builder,
+        let simulation = MatchBuilder(builder.Snapshot(), catalog)
+
+        this.Execute(
+            simulation,
             actor,
-            source,
+            simulation.Card source.Id,
             effect,
             program,
             choices,
             isAttack,
             isHouseRule,
+            ValueNone,
             beerMatResults,
-            ValueNone
+            resolutionTraceOverride = ResolutionTrace.none
         )
 
     member internal _.ValidateChoiceSubmission

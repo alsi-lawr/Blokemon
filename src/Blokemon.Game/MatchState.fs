@@ -22,10 +22,6 @@ type TemporaryEffect =
       AppliesFromRound: int
       ExpiresAfterRound: int }
 
-type internal TriggerContext =
-    { KnockedOutBloke: CardInstanceId voption
-      AttackingBloke: CardInstanceId voption }
-
 type PendingEffectResolution =
     { Command: MatchCommand
       Source: CardInstanceId
@@ -45,8 +41,7 @@ type PendingKnockoutResolution =
       EligibleVim: ImmutableArray<CardInstanceId>
       AttackingCard: CardInstanceId
       FinishRoundAfterResolution: bool
-      AttackDamageTargets: ImmutableArray<CardInstanceId>
-      ExtraBarChits: int }
+      AttackDamageTargets: ImmutableArray<CardInstanceId> }
 
 type PendingBarChitResolution =
     { Player: PlayerId

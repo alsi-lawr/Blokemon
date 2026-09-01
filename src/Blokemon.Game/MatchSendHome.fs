@@ -9,49 +9,6 @@ open Blokemon.Game.MatchWins
 /// attacker with it.
 module internal MatchSendHome =
 
-    let queueBarChitTriggers
-        (catalog: AuthorityCatalog)
-        (builder: MatchBuilder)
-        (player: PlayerId)
-        (cards: ImmutableArray<CardInstanceId>)
-        (finishRoundAfterResolution: bool)
-        =
-        for cardId in cards do
-            let card = builder.Card cardId
-
-            let trick =
-                catalog.PartyTricks card
-                |> Seq.tryFind (fun value -> value.Trigger = BlokemonTrigger.OnBarChitTaken)
-
-            match trick with
-            | Some trick when
-                (builder.CardsIn(player, CardZone.Booth) |> Seq.length) < catalog.Manifest.BaseRules.Opening.BoothLimit
-                ->
-                let pending =
-                    { Player = player
-                      Card = cardId
-                      Effect = EffectId trick.MechanicalId
-                      FinishRoundAfterResolution = finishRoundAfterResolution }
-
-                builder.QueueBarChit pending
-
-                builder.Events.Add
-                    { PendingMatchEvent.forCard MatchEventKind.TriggerQueued player cardId with
-                        Effect = ValueSome pending.Effect }
-            | _ -> ()
-
-    let takeExtraBarChits
-        (catalog: AuthorityCatalog)
-        (builder: MatchBuilder)
-        (attackingCard: CardInstanceId)
-        (count: int)
-        (finishRoundAfterResolution: bool)
-        =
-        if count > 0 then
-            let attacker = builder.Card attackingCard
-            let taken = builder.TakeBarChits(attacker.Owner, count, attackingCard)
-            queueBarChitTriggers catalog builder attacker.Owner taken finishRoundAfterResolution
-
     let sendHomeOne
         (catalog: AuthorityCatalog)
         (interpreter: BlokemonInterpreter)
@@ -60,13 +17,13 @@ module internal MatchSendHome =
         (attackingCard: CardInstanceId voption)
         (finishRoundAfterResolution: bool)
         =
-        let retaliation =
-            if attackingCard.IsSome && current.Zone = CardZone.Oche then
-                catalog.PartyTricks current
-                |> Seq.tryFind (fun trick ->
-                    trick.Trigger = BlokemonTrigger.AfterSelfSentHomeByAttackDamage)
-            else
-                None
+        let destinyBond =
+            attackingCard.IsSome
+            && builder.Effects
+               |> Seq.exists (fun effect ->
+                   effect.TargetCard = ValueSome current.Id
+                   && effect.Kind = TemporaryEffectKind.DestinyBond
+                   && effect.AppliesFromRound <= builder.RoundNumber)
 
         let wasOche = current.Zone = CardZone.Oche
         builder.ChuckBloke current.Id |> ignore
@@ -80,39 +37,13 @@ module internal MatchSendHome =
         )
 
         let takingPlayer = builder.Other current.Owner
-        let taken = builder.TakeBarChits(takingPlayer, catalog.BarChits current, current.Id)
-        queueBarChitTriggers catalog builder takingPlayer taken finishRoundAfterResolution
 
-        let retaliates =
-            match retaliation, attackingCard with
-            | Some retaliation, ValueSome attacker ->
-                let effect = EffectId retaliation.MechanicalId
+        builder.TakeBarChits(takingPlayer, catalog.BarChits current, current.Id)
+        |> ignore
 
-                let execution =
-                    interpreter.ExecuteTriggered(
-                        builder,
-                        current.Owner,
-                        current,
-                        effect,
-                        retaliation.Program,
-                        ImmutableArray<_>.Empty,
-                        ValueSome
-                            { KnockedOutBloke = ValueSome current.Id
-                              AttackingBloke = ValueSome attacker }
-                    )
-
-                builder.Events.Add
-                    { PendingMatchEvent.forCards
-                          MatchEventKind.TriggerResolved
-                          current.Owner
-                          current.Id
-                          execution.ForcedSendHome with
-                        Effect = ValueSome effect }
-
-                Seq.contains attacker execution.ForcedSendHome
-            | _ -> false
+        let retaliates = destinyBond
 
         if wasOche then
-            assignReplacement builder current.Owner
+            assignReplacement catalog builder current.Owner
 
         retaliates

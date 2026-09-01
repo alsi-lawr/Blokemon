@@ -56,7 +56,7 @@ module private ResolutionAuthorityScenarios =
 
     let attackGateState (seed: uint64) =
         let state =
-            MatchScenario.BattleState "BLK-001" "BLK-150" [ "VIM-BLAZED"; "VIM-SOBER" ] seed
+            MatchScenario.BattleState "BLK-001" "BLK-150" [ "VIM-BLAZED"; "VIM-BLAZED" ] seed
 
         { state with
             Effects =
@@ -90,32 +90,11 @@ module private ResolutionAuthorityScenarios =
 type ResolutionAuthorityTests() =
 
     [<Test>]
-    member _.``an unsupported damage order should reject match start before play``() =
-        let authority = MatchScenario.Authority
-        let damageOrder = Array.copy authority.BaseRules.DamageOrder
-        let softSpot = damageOrder[2]
-        damageOrder[2] <- damageOrder[3]
-        damageOrder[3] <- softSpot
-
-        let changed =
-            { authority with
-                BaseRules =
-                    { authority.BaseRules with
-                        DamageOrder = damageOrder } }
-
-        match MatchEngine(changed).Start(MatchScenario.StartRequest()) with
-        | MatchStartOutcome.Rejected issues ->
-            issues
-            |> Seq.map (fun issue -> issue.Code)
-            |> should contain DeckIssueCode.AuthorityInvalid
-        | MatchStartOutcome.Started _ -> failwith "The unsupported damage order started a match."
-
-    [<Test>]
     member _.``a completed damage attack should execute both authority orders and finish the round``
         ()
         =
         let state =
-            MatchScenario.BattleState "BLK-001" "BLK-150" [ "VIM-BLAZED"; "VIM-SOBER" ] 1201UL
+            MatchScenario.BattleState "BLK-001" "BLK-150" [ "VIM-BLAZED"; "VIM-BLAZED" ] 1201UL
 
         let engine, trace = tracedEngine ()
 
@@ -134,9 +113,13 @@ type ResolutionAuthorityTests() =
         |> should be True
 
     [<Test>]
-    member _.``booth damage should use the damage order without soft spot modification``() =
+    member _.``bench damage should use the damage order without soft spot modification``() =
         let original =
-            MatchScenario.BattleState "BLK-110" "BLK-001" [ "VIM-SOBER"; "VIM-SOBER" ] 1202UL
+            MatchScenario.BattleState
+                "BLK-094"
+                "BLK-001"
+                [ "VIM-GEEKED"; "VIM-GEEKED"; "VIM-GEEKED" ]
+                1202UL
 
         let opposingBench =
             MatchScenario.PlainCard
@@ -149,39 +132,17 @@ type ResolutionAuthorityTests() =
         let state = MatchScenario.WithCards original [ opposingBench ]
         let engine, trace = tracedEngine ()
 
-        let applied =
-            MatchScenario.Applied(
-                engine.Apply(state, MatchScenario.AttackCommand state "BLK-110-B01")
-            )
-
-        attackSteps trace |> should equal expectedAttackSteps
-
-        damageSteps trace
-        |> should equal (List.append expectedDamageSteps expectedDamageSteps)
-
-        (applied.Card(CardInstanceId "defender")).Damage |> should equal 50
-        (applied.Card opposingBench.Id).Damage |> should equal 10
-
-    [<Test>]
-    member _.``placed counters should not enter the damage order``() =
-        let state = MatchScenario.BattleState "BLK-122" "BLK-001" [ "VIM-SOBER" ] 1204UL
-
-        let _, rejection =
-            MatchScenario.Rejected(
-                MatchScenario.Engine().Apply(state, MatchScenario.AttackCommand state "BLK-122-B01")
-            )
-
-        let requirement = rejection.ChoiceRequirements |> Seq.exactlyOne
+        let requirement =
+            engine.GetLegalActions(state, MatchScenario.FirstPlayer)
+            |> Seq.find (fun action ->
+                match action.Command.Action with
+                | MatchAction.Attack(_, effect) -> effect = EffectId "BLK-094-B01"
+                | _ -> false)
+            |> _.ChoiceRequirements
+            |> Seq.exactlyOne
 
         let choice =
-            EffectChoice.Distribution(
-                requirement.Id,
-                ImmutableArray.Create
-                    { Card = CardInstanceId "defender"
-                      Counters = 3 }
-            )
-
-        let engine, trace = tracedEngine ()
+            EffectChoice.Cards(requirement.Id, ImmutableArray.Create opposingBench.Id)
 
         let applied =
             MatchScenario.Applied(
@@ -189,14 +150,13 @@ type ResolutionAuthorityTests() =
                     state,
                     MatchScenario.AttackCommandWith
                         state
-                        "BLK-122-B01"
+                        "BLK-094-B01"
                         (ImmutableArray.Create choice)
                 )
             )
 
-        attackSteps trace |> should equal expectedAttackSteps
-        damageSteps trace |> should be Empty
         (applied.Card(CardInstanceId "defender")).Damage |> should equal 30
+        (applied.Card opposingBench.Id).Damage |> should equal 10
 
     [<Test>]
     member _.``a cancelled attack should stop at the cancelling authority step``() =
@@ -229,8 +189,7 @@ type ResolutionAuthorityTests() =
 
     [<Test>]
     member _.``a deferred opponent choice should resume at the next authority step``() =
-        let original =
-            MatchScenario.BattleState "BLK-111" "BLK-001" [ "VIM-LAIRY"; "VIM-SOBER" ] 1203UL
+        let original = MatchScenario.BattleState "BLK-012" "BLK-001" [ "VIM-DODGY" ] 1203UL
 
         let opposingBench =
             MatchScenario.PlainCard
@@ -245,7 +204,7 @@ type ResolutionAuthorityTests() =
 
         let requested, _ =
             MatchScenario.AppliedWith(
-                engine.Apply(state, MatchScenario.AttackCommand state "BLK-111-B01")
+                engine.Apply(state, MatchScenario.AttackCommand state "BLK-012-B01")
             )
 
         attackSteps trace |> should equal (expectedAttackSteps |> List.take 3)

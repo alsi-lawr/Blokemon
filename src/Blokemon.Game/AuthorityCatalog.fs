@@ -89,6 +89,8 @@ type internal AuthorityCatalog(manifest: BlokemonRuntimeManifest) =
     member this.StayingPower(card: CardState) =
         if card.Kind = CardKind.Bloke then
             this.Bloke(card.MechanicalId).StayingPower
+        elif card.Kind = CardKind.Kit && this.Kit(card.MechanicalId).StayingPower > 0 then
+            this.Kit(card.MechanicalId).StayingPower
         else
             invalidOp "Only Pokemon in play have Hit Points."
 
@@ -103,6 +105,10 @@ type internal AuthorityCatalog(manifest: BlokemonRuntimeManifest) =
             manifest.BaseRules.SendHome.PrizeCardsPerKnockout
         else
             0
+
+    member this.CountsAsPokemon(card: CardState) =
+        card.Kind = CardKind.Bloke
+        || (card.Kind = CardKind.Kit && this.Kit(card.MechanicalId).StayingPower > 0)
 
     member this.MechanicalTypes(card: CardState) =
         if card.Kind = CardKind.Bloke then

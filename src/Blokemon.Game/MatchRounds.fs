@@ -8,6 +8,24 @@ open Blokemon.Game.MatchKnockouts
 /// Ending a round: the checkup, the effects that come due, and handing the table over.
 module internal MatchRounds =
 
+    let private discardExpiredAttachedTrainers (builder: MatchBuilder) =
+        let sources =
+            builder.Effects
+            |> Seq.filter (fun effect ->
+                effect.Kind = TemporaryEffectKind.AttachedTrainer
+                && effect.ExpiresAfterRound <= builder.RoundNumber)
+            |> Seq.map (fun effect -> effect.SourceCard, effect.SourceEffect)
+            |> Seq.distinct
+            |> Seq.toArray
+
+        for source, effect in sources do
+            match builder.FindCard source with
+            | ValueSome card when card.Zone = CardZone.Attached ->
+                builder.DetachTo(source, CardZone.EmptiesTray)
+            | _ -> ()
+
+            builder.RemoveEffects(effect, source)
+
     let private tossCheckup (builder: MatchBuilder) (player: PlayerId) (card: CardInstanceId) =
         let badge = builder.TossBeerMat(player, false)
 
@@ -35,12 +53,17 @@ module internal MatchRounds =
                         let rule = catalog.RoughState roughState
 
                         if rule.CheckupDamageCounters > 0 then
-                            builder.PlaceDamage(
-                                player,
-                                current.Id,
-                                rule.CheckupDamageCounters * 10,
-                                DamageKind.RoughState
-                            )
+                            let damage =
+                                builder.Effects
+                                |> Seq.filter (fun effect ->
+                                    roughState = BlokemonRoughState.DodgyPint
+                                    && effect.TargetCard = ValueSome current.Id
+                                    && effect.Kind = TemporaryEffectKind.EnhancedPoison)
+                                |> Seq.tryLast
+                                |> Option.map (fun effect -> effect.Amount)
+                                |> Option.defaultValue (rule.CheckupDamageCounters * 10)
+
+                            builder.PlaceDamage(player, current.Id, damage, DamageKind.RoughState)
 
                         if rule.CheckupBeerMat then
                             if rule.BadgeSideRecovers && tossCheckup builder player current.Id then
@@ -57,36 +80,6 @@ module internal MatchRounds =
                                 (builder.Player player).RoundsStarted > entry.AppliedAtOwnerRound
                             then
                                 builder.ClearRoughStates(player, current.Id, ValueSome roughState)
-
-        for effect in
-            builder.Effects
-            |> Seq.filter (fun effect -> effect.Kind = TemporaryEffectKind.EndRoundEffect)
-            |> Seq.toArray do
-            let kit = builder.FindCard effect.SourceCard
-
-            let attachedTo =
-                match kit with
-                | ValueSome card -> card.AttachedTo
-                | ValueNone -> ValueNone
-
-            match attachedTo with
-            | ValueSome targetId when
-                effect.Owner = completedPlayer && (builder.Card targetId).Zone = CardZone.Oche
-                ->
-                builder.Heal(effect.Owner, targetId, effect.Amount, ValueSome effect.SourceCard)
-            | _ ->
-                match effect.TargetCard with
-                | ValueSome deferredTarget when effect.ExpiresAfterRound <= builder.RoundNumber ->
-                    builder.PlaceDamage(
-                        effect.Owner,
-                        deferredTarget,
-                        effect.Amount * 10,
-                        DamageKind.PlacedCounter,
-                        ValueSome effect.SourceCard
-                    )
-
-                    builder.RemoveEffect effect
-                | _ -> ()
 
     let rec completeRound
         (catalog: AuthorityCatalog)
@@ -105,15 +98,17 @@ module internal MatchRounds =
             ValueNone
             false
             ImmutableArray<_>.Empty
-            0
         |> ignore
 
         if builder.Phase = MatchPhase.Complete then
             builder.PendingRoundEnd <- false
         elif builder.ReplacementPlayer.IsSome then
             builder.Phase <- MatchPhase.AwaitingReplacement
+        elif builder.Phase <> MatchPhase.Playing then
+            builder.PendingRoundEnd <- false
         else
             builder.PendingRoundEnd <- false
+            discardExpiredAttachedTrainers builder
             builder.ExpireEffects builder.RoundNumber
             startRound catalog builder (builder.Other completedPlayer)
 

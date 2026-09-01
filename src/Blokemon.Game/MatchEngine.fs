@@ -172,6 +172,37 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
                 builder.RecordCommand command.Id
                 commitCommand builder
 
+    member _.CanRevealHand(state: MatchState, viewer: PlayerId, owner: PlayerId) =
+        if viewer = owner then
+            true
+        else
+            let builder = MatchBuilder(state, catalog)
+
+            state.Cards
+            |> Seq.exists (fun source ->
+                source.Owner = viewer
+                && PokemonPowers.hasActivePower catalog builder source BlokemonOpcode.Clairvoyance)
+
+    member this.CanRevealCard(state: MatchState, viewer: PlayerId, cardId: CardInstanceId) =
+        match state.Cards |> Seq.tryFind (fun card -> card.Id = cardId) with
+        | None -> false
+        | Some card ->
+            match card.Zone with
+            | CardZone.Oche
+            | CardZone.Booth
+            | CardZone.Attached
+            | CardZone.EmptiesTray -> true
+            | CardZone.Mitt -> card.Owner = viewer || this.CanRevealHand(state, viewer, card.Owner)
+            | _ -> false
+
+    member this.CanRevealEventCard
+        (state: MatchState, matchEvent: MatchEvent, viewer: PlayerId, cardId: CardInstanceId)
+        =
+        matchEvent.TargetCards |> Seq.contains cardId
+        && (matchEvent.Kind = MatchEventKind.CardsRevealed
+            && (matchEvent.Effect.IsNone || matchEvent.Actor = ValueSome viewer)
+            || this.CanRevealCard(state, viewer, cardId))
+
     member this.GetLegalActions(state: MatchState, actor: PlayerId) =
         if
             not (state.Players |> Seq.exists (fun player -> player.Id = actor))
@@ -179,24 +210,8 @@ type MatchEngine(authority: BlokemonRuntimeManifest) =
         then
             ImmutableArray<_>.Empty
         else
-            // Actions are proposed against a refreshed view and trial-applied against the state as
-            // it stands, which looks like reasoning under one set of continuous effects and
-            // validating under another. It is not: Apply refreshes on its own builder before it
-            // dispatches to any handler, from this same state and by this same function, so the
-            // view a handler tests against is the view proposed against, recomputed rather than
-            // shared.
-            //
-            // Demonstrated rather than assumed. A Bloke whose printed fare is 2 stands at the Oche
-            // with a card on the Booth carrying an unconditional continuous trick over its owner's
-            // Blokes, and nothing in Effects, because only a refresh puts it there. A Taxi is
-            // proposed chucking no Vim - the refreshed fare - and applying it succeeds, which it
-            // could not do if the handler were reading the printed 2. Take the refresh out of
-            // Apply and the same case proposes the same action and then deletes it, which is what
-            // a genuine split would look like.
-            //
-            // The refresh here is skipped outside Playing while Apply's is not, so the proposal
-            // can see less than the handler will. That cannot be observed either: nothing any
-            // other phase proposes reads a temporary effect at all.
+            // Apply recomputes the same continuous effects before dispatch, so proposal and
+            // validation read equivalent state without sharing a mutable builder.
             let legalState =
                 if state.Phase = MatchPhase.Playing then
                     let builder = MatchBuilder(state, catalog)

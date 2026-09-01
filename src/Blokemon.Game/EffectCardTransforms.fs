@@ -7,8 +7,7 @@ open Blokemon.Game.EffectSelection
 open Blokemon.Game.EffectDamage
 open Blokemon.Game.EffectRegistration
 
-/// Turning a card into something else, or changing what is already on it: swap, demote, transform,
-/// the placed counters and the scaled damage.
+/// Swapping Active Pokemon, playing a Doll or Fossil, and resolving scaled damage.
 module internal EffectCardTransforms =
 
     let executeSwap
@@ -25,10 +24,10 @@ module internal EffectCardTransforms =
                 resolveSelectedTargets catalog runtime instruction path |> Seq.tryHead)
 
         match incoming with
-        | Some incoming when incoming.Kind = CardKind.Bloke && incoming.Zone = CardZone.Booth ->
+        | Some incoming when catalog.CountsAsPokemon incoming && incoming.Zone = CardZone.Booth ->
             match runtime.Builder.Oche incoming.Owner with
             | ValueSome outgoing when
-                outgoing.Kind = CardKind.Bloke && not (effectIsPrevented runtime outgoing)
+                catalog.CountsAsPokemon outgoing && not (effectIsPrevented runtime outgoing)
                 ->
                 resolvePendingDamageFor catalog runtime outgoing.Id
                 let outgoing = runtime.Builder.Card outgoing.Id
@@ -58,67 +57,6 @@ module internal EffectCardTransforms =
             | _ -> ()
         | _ -> ()
 
-    let demote (catalog: AuthorityCatalog) (runtime: EffectRuntime) (target: CardState) =
-        if target.UnderlyingCards.Length > 0 then
-            resolvePendingDamageFor catalog runtime target.Id
-            let target = runtime.Builder.Card target.Id
-            let underlyingId = target.UnderlyingCards[target.UnderlyingCards.Length - 1]
-            let underlying = runtime.Builder.Card underlyingId
-            runtime.Builder.RemoveEffectsFor target.Id
-            runtime.Builder.MoveCard(target.Id, CardZone.Mitt)
-
-            runtime.Builder.SetCard
-                { runtime.Builder.Card target.Id with
-                    AttachedTo = ValueNone
-                    Attachments = ImmutableArray<_>.Empty
-                    UnderlyingCards = ImmutableArray<_>.Empty
-                    Damage = 0
-                    RoughStates = ImmutableArray<_>.Empty }
-
-            runtime.Builder.SetCard
-                { underlying with
-                    Zone = target.Zone
-                    Damage = target.Damage
-                    Attachments = target.Attachments
-                    UnderlyingCards =
-                        ImmutableArray.CreateRange(
-                            target.UnderlyingCards
-                            |> Seq.truncate (target.UnderlyingCards.Length - 1)
-                        )
-                    AttachedTo = ValueNone }
-
-            for attachmentId in target.Attachments do
-                let attachment = runtime.Builder.Card attachmentId
-
-                runtime.Builder.SetCard
-                    { attachment with
-                        AttachedTo = ValueSome underlyingId }
-
-    let executeTransform
-        (catalog: AuthorityCatalog)
-        (runtime: EffectRuntime)
-        (instruction: BlokemonEffectInstruction)
-        (path: string)
-        =
-        let replacement =
-            runtime.LastSelectedCards
-            |> Seq.map runtime.Builder.Card
-            |> Seq.tryFind (fun card -> card.Zone = CardZone.Stack)
-            |> Option.orElseWith (fun () ->
-                resolveSelectedTargets catalog runtime instruction path |> Seq.tryHead)
-
-        match replacement with
-        | Some replacement when replacement.Zone = CardZone.Stack ->
-            let source = runtime.Builder.Card runtime.Source.Id
-            runtime.Builder.MoveCard(source.Id, CardZone.EmptiesTray)
-
-            runtime.Builder.SetCard
-                { replacement with
-                    Zone = source.Zone
-                    Damage = source.Damage
-                    EnteredAtOwnerRound = (runtime.Builder.Player runtime.Actor).RoundsStarted }
-        | _ -> ()
-
     let playAsBloke (runtime: EffectRuntime) =
         let source = runtime.Builder.Card runtime.Source.Id
 
@@ -137,43 +75,6 @@ module internal EffectCardTransforms =
                 runtime.Rejection <- ValueSome CommandRejectionCode.RuleLimitReached
             else
                 runtime.Builder.MoveCard(source.Id, zone)
-
-    let executePlacedCounters
-        (catalog: AuthorityCatalog)
-        (runtime: EffectRuntime)
-        (instruction: BlokemonEffectInstruction)
-        (path: string)
-        =
-        if instruction.Selection = BlokemonSelection.AnyDistribution then
-            if
-                resolveCandidates
-                    catalog
-                    runtime.Builder
-                    runtime.Actor
-                    runtime.Source
-                    instruction
-                    ValueNone
-                |> Seq.isEmpty
-                |> not
-            then
-                match runtime.DistributionChoice(choiceId runtime.Effect path "distribution") with
-                | ValueNone -> runtime.Rejection <- ValueSome CommandRejectionCode.ChoiceRequired
-                | ValueSome allocations ->
-                    for allocation in allocations do
-                        if
-                            not (effectIsPrevented runtime (runtime.Builder.Card allocation.Card))
-                        then
-                            runtime.PendingOtherDamage.Add
-                                { Target = allocation.Card
-                                  Amount = allocation.Counters * 10
-                                  Kind = DamageKind.PlacedCounter }
-        else
-            for target in resolveSelectedTargets catalog runtime instruction path |> Seq.toArray do
-                if not (effectIsPrevented runtime target) then
-                    runtime.PendingOtherDamage.Add
-                        { Target = target.Id
-                          Amount = instruction.Amount * 10
-                          Kind = DamageKind.PlacedCounter }
 
     let executeScaleDamage
         (catalog: AuthorityCatalog)

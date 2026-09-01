@@ -65,9 +65,6 @@ type internal EffectChoiceJsonConverter() =
         let choiceId = UnionPayload.field<EffectChoiceId> "choiceId" options
 
         match UnionPayload.discriminator "$choice" payload with
-        | "optional" ->
-            let payload = UnionPayload.expect 2 payload
-            EffectChoice.Optional(choiceId payload, UnionPayload.field "isAccepted" options payload)
         | "amount" ->
             let payload = UnionPayload.expect 2 payload
             EffectChoice.Amount(choiceId payload, UnionPayload.field "value" options payload)
@@ -84,9 +81,6 @@ type internal EffectChoiceJsonConverter() =
         | "attack" ->
             let payload = UnionPayload.expect 2 payload
             EffectChoice.Attack(choiceId payload, UnionPayload.field "value" options payload)
-        | "distribution" ->
-            let payload = UnionPayload.expect 2 payload
-            EffectChoice.Distribution(choiceId payload, UnionPayload.field "values" options payload)
         | "attachments" ->
             let payload = UnionPayload.expect 2 payload
             EffectChoice.Attachments(choiceId payload, UnionPayload.field "values" options payload)
@@ -105,9 +99,6 @@ type internal EffectChoiceJsonConverter() =
         writer.WriteStartObject()
 
         match value with
-        | EffectChoice.Optional(_, isAccepted) ->
-            case "optional"
-            writer.WriteBoolean("isAccepted", isAccepted)
         | EffectChoice.Amount(_, amount) ->
             case "amount"
             writer.WriteNumber("value", amount)
@@ -120,9 +111,6 @@ type internal EffectChoiceJsonConverter() =
         | EffectChoice.Attack(_, attack) ->
             case "attack"
             write "value" attack
-        | EffectChoice.Distribution(_, allocations) ->
-            case "distribution"
-            write "values" allocations
         | EffectChoice.Attachments(_, placements) ->
             case "attachments"
             write "values" placements

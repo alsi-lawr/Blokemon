@@ -16,58 +16,11 @@ module private DeferredChoiceFixtures =
 type DeferredChoiceTests() =
 
     [<Test>]
-    member _.``an opponent-chosen discard should wait until the opponent picks their own mitt cards``
-        ()
-        =
-        let engine = MatchScenario.Engine()
-
-        let initial =
-            MatchScenario.BattleState
-                "BLK-024"
-                "BLK-150"
-                [ "VIM-DODGY"; "VIM-DODGY"; "VIM-DODGY" ]
-                79UL
-
-        let first =
-            MatchScenario.PlainCard
-                "other-mitt-1"
-                "BLK-004"
-                MatchScenario.SecondPlayer
-                CardZone.Mitt
-                -1
-
-        let second =
-            MatchScenario.PlainCard
-                "other-mitt-2"
-                "VIM-SOBER"
-                MatchScenario.SecondPlayer
-                CardZone.Mitt
-                -1
-
-        let initial = MatchScenario.WithCards initial [ first; second ]
-
-        let requested =
-            MatchScenario.Applied(
-                engine.Apply(initial, MatchScenario.AttackCommand initial "BLK-024-B02")
-            )
-
-        let requirement = requested.PendingEffect.Value.Requirements |> Seq.exactlyOne
-        let cpu = DeterministicCpu()
-        let decision = selected (cpu.Choose(engine, requested, MatchScenario.SecondPlayer))
-        let resolved = MatchScenario.Applied(engine.Apply(requested, decision.Command))
-
-        requested.Phase |> should equal MatchPhase.AwaitingEffectChoice
-        requirement.Chooser |> should equal MatchScenario.SecondPlayer
-        requirement.Minimum |> should equal 2
-        (resolved.Card first.Id).Zone |> should equal CardZone.EmptiesTray
-        (resolved.Card second.Id).Zone |> should equal CardZone.EmptiesTray
-
-    [<Test>]
     member _.``an opponent-chosen switch should wait until the opponent chooses and should refuse the wrong chooser``
         ()
         =
         let engine = MatchScenario.Engine()
-        let initial = MatchScenario.BattleState "BLK-012" "BLK-001" [ "VIM-BLAZED" ] 81UL
+        let initial = MatchScenario.BattleState "BLK-012" "BLK-001" [ "VIM-DODGY" ] 81UL
 
         let bench =
             MatchScenario.PlainCard

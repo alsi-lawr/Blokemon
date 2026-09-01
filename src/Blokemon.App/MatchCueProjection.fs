@@ -14,6 +14,7 @@ module internal MatchCueProjection =
 
     let cue
         (catalogue: BlokemonCatalogue)
+        (engine: MatchEngine)
         (state: MatchState)
         (human: PlayerId)
         (displayName: string)
@@ -37,7 +38,7 @@ module internal MatchCueProjection =
                     | ValueNone -> ValueNone
 
             let source: string | null =
-                if eventSource.IsSome && canReveal state human eventSource.Value then
+                if eventSource.IsSome && engine.CanRevealCard(state, human, eventSource.Value) then
                     eventSource.Value.Value
                 else
                     null
@@ -55,11 +56,16 @@ module internal MatchCueProjection =
             let rulesReveal =
                 matchEvent.Kind = MatchEventKind.CardsRevealed && matchEvent.Effect.IsNone
 
+            let effectReveal =
+                matchEvent.Kind = MatchEventKind.CardsRevealed
+                && matchEvent.Effect.IsSome
+                && matchEvent.Actor = ValueSome human
+
             let visibleTargets =
-                if rulesReveal then
-                    matchEvent.TargetCards |> Seq.toArray
-                else
-                    matchEvent.TargetCards |> Seq.filter (canReveal state human) |> Seq.toArray
+                matchEvent.TargetCards
+                |> Seq.filter (fun card ->
+                    engine.CanRevealEventCard(state, matchEvent, human, card))
+                |> Seq.toArray
 
             // A returned hand is nowhere any more, so where its cards have since landed is the
             // wrong question to ask of it: the reshuffle deals some of them straight back out, and
@@ -71,12 +77,15 @@ module internal MatchCueProjection =
                 if rulesReveal then
                     visibleTargets
                     |> Array.map (fun card -> catalogue.Card (state.Card card).MechanicalId.Value)
-                elif matchEvent.Kind = MatchEventKind.CardsRevealed && matchEvent.Effect.IsSome then
+                elif effectReveal then
                     visibleTargets
                     |> Array.filter (fun card ->
-                        match (state.Card card).Zone with
+                        let revealedCard = state.Card card
+
+                        match revealedCard.Zone with
                         | CardZone.Stack
                         | CardZone.BarChit -> true
+                        | CardZone.Mitt -> revealedCard.Owner <> human
                         | _ -> false)
                     |> Array.map (fun card -> catalogue.Card (state.Card card).MechanicalId.Value)
                 else
@@ -110,7 +119,7 @@ module internal MatchCueProjection =
         (pending: PendingPresentation seq)
         =
         let frame = frame context
-        let cue = cue context.Catalogue
+        let cue = cue context.Catalogue context.Engine
 
         let human = document.Start.FirstDeck.Owner
 

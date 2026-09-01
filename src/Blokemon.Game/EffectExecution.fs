@@ -19,6 +19,22 @@ open Blokemon.Game.EffectCardTransforms
 /// together; every opcode that does not re-enter the runner lives in the modules above.
 module internal EffectExecution =
 
+    let rec private copiedAttackProgram (program: BlokemonEffectInstruction array) =
+        program
+        |> Array.choose (fun instruction ->
+            let isUseRequirement =
+                instruction.Opcode = BlokemonOpcode.RequireDefenderCondition
+                || (instruction.Opcode = BlokemonOpcode.ChuckVim
+                    && Array.contains BlokemonTarget.Self instruction.Targets)
+
+            if isUseRequirement then
+                None
+            else
+                Some
+                    { instruction with
+                        Then = copiedAttackProgram instruction.Then
+                        Otherwise = copiedAttackProgram instruction.Otherwise })
+
     let private requirementsFor
         (runtime: EffectRuntime)
         (branch: BlokemonEffectInstruction array)
@@ -36,7 +52,6 @@ module internal EffectExecution =
             branchPath
             ValueNone
             requirements
-            runtime.TriggerContext
 
         ImmutableArray.CreateRange(requirements |> Seq.distinctBy (fun value -> value.Id))
 
@@ -165,9 +180,10 @@ module internal EffectExecution =
             | ValueSome attack ->
                 runtime.CopyStack.Add chosen |> ignore
                 let copyPath = path + "/copy"
+                let program = copiedAttackProgram attack.Program
 
-                if requireBranchChoices runtime attack.Program copyPath then
-                    executeProgram catalog runtime attack.Program copyPath
+                if requireBranchChoices runtime program copyPath then
+                    executeProgram catalog runtime program copyPath
 
                 runtime.CopyStack.Remove chosen |> ignore
 
@@ -229,56 +245,11 @@ module internal EffectExecution =
                 | BlokemonOpcode.Conditional ->
                     executeConditional catalog runtime instruction path
                     false
-                | BlokemonOpcode.SendHome ->
-                    for target in selectedTargets () do
-                        if not (effectIsPrevented runtime target) then
-                            runtime.ForcedSendHome.Add target.Id |> ignore
-
-                    true
-                | BlokemonOpcode.RecoverFromSendHome ->
-                    let recovered = builder.Card runtime.Source.Id
-
-                    builder.SetCard
-                        { recovered with
-                            Damage = max 0 (catalog.StayingPower recovered - instruction.Amount) }
-
-                    true
                 | BlokemonOpcode.CopyAttack ->
                     executeCopyAttack catalog runtime path
                     true
-                | BlokemonOpcode.Demote ->
-                    for target in selectedTargets () do
-                        if not (effectIsPrevented runtime target) then
-                            demote catalog runtime target
-
-                    true
-                | BlokemonOpcode.TransformFromStack ->
-                    executeTransform catalog runtime instruction path
-                    true
-                | BlokemonOpcode.TakeExtraBarChit ->
-                    if runtime.IsAttack then
-                        runtime.DeferredAttackKnockoutBarChits <-
-                            runtime.DeferredAttackKnockoutBarChits + instruction.Amount
-                    else
-                        takeBarChits
-                            catalog
-                            builder
-                            runtime.Actor
-                            instruction.Amount
-                            runtime.Source.Id
-
-                    true
                 | BlokemonOpcode.PlayAsBloke ->
                     playAsBloke runtime
-                    true
-                | BlokemonOpcode.ChuckSelf ->
-                    if not runtime.IsHouseRule then
-                        builder.ChuckBloke runtime.Source.Id |> ignore
-                        runtime.SourceChucked <- true
-
-                    true
-                | BlokemonOpcode.ContinuousPartyTrick ->
-                    register TemporaryEffectKind.ContinuousPartyTrick
                     true
                 | BlokemonOpcode.OncePerRound ->
                     builder.RoundUsage <-
@@ -290,11 +261,9 @@ module internal EffectExecution =
                                 ) }
 
                     true
-                | BlokemonOpcode.EndRoundEffect ->
-                    register TemporaryEffectKind.EndRoundEffect
-                    runtime.DeferringEndRound <- true
-                    true
-                | _ -> true
+                | _ ->
+                    runtime.Rejection <- ValueSome CommandRejectionCode.AuthorityMismatch
+                    false
 
         if runThen then
             executeProgram catalog runtime instruction.Then (path + "/then")

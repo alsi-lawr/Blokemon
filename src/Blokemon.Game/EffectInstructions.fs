@@ -13,12 +13,14 @@ open Blokemon.Game.EffectRegistration
 open Blokemon.Game.EffectCardMoves
 open Blokemon.Game.EffectVimOperations
 open Blokemon.Game.EffectCardTransforms
+open Blokemon.Game.VintageEffects
+open Blokemon.Game.PokemonPowers
 
 /// Every opcode that never re-enters the program runner. Keeping them here leaves the recursive
 /// core small enough to read in one go; ValueNone means the instruction belongs to that core.
 module internal EffectInstructions =
 
-    let executeSimple
+    let private executeLegacySimple
         (catalog: AuthorityCatalog)
         (runtime: EffectRuntime)
         (instruction: BlokemonEffectInstruction)
@@ -53,11 +55,6 @@ module internal EffectInstructions =
                 DamageKind.BoothAttack
 
             ValueSome true
-        | BlokemonOpcode.PlaceDamageCounters ->
-            if not runtime.DeferringEndRound then
-                executePlacedCounters catalog runtime instruction path
-
-            ValueSome true
         | BlokemonOpcode.DealSelfDamage ->
             runtime.PendingOtherDamage.Add
                 { Target = runtime.Source.Id
@@ -66,19 +63,23 @@ module internal EffectInstructions =
 
             ValueSome true
         | BlokemonOpcode.HealDamage ->
-            if not runtime.DeferringEndRound then
-                for target in selectedTargets () do
-                    builder.Heal(
-                        runtime.Actor,
-                        target.Id,
-                        instruction.Amount,
-                        ValueSome runtime.Source.Id
-                    )
+            for target in selectedTargets () do
+                builder.Heal(
+                    runtime.Actor,
+                    target.Id,
+                    instruction.Amount,
+                    ValueSome runtime.Source.Id
+                )
 
             ValueSome true
         | BlokemonOpcode.ApplyRoughState ->
             for target in selectedTargets () do
-                if not (effectIsPrevented runtime target) then
+                if
+                    not (effectIsPrevented runtime target)
+                    && not (
+                        hasActivePower catalog runtime.Builder target BlokemonOpcode.ThickSkinned
+                    )
+                then
                     for state in instruction.RoughStates do
                         builder.ApplyRoughState(
                             runtime.Actor,
@@ -87,10 +88,34 @@ module internal EffectInstructions =
                             ValueSome runtime.Source.Id
                         )
 
+                        if state = BlokemonRoughState.DodgyPint && instruction.Amount > 1 then
+                            builder.AddEffect
+                                { SourceEffect = runtime.Effect
+                                  SourceCard = runtime.Source.Id
+                                  Owner = runtime.Actor
+                                  TargetCard = ValueSome target.Id
+                                  Kind = TemporaryEffectKind.EnhancedPoison
+                                  Amount = instruction.Amount * 10
+                                  MechanicalTypes = ImmutableArray<_>.Empty
+                                  RoughStates = ImmutableArray<_>.Empty
+                                  RelatedCards = ImmutableArray<_>.Empty
+                                  Conditions = ImmutableArray<_>.Empty
+                                  Duration = EffectDuration.WhileTargetInPlay
+                                  AppliesFromRound = builder.RoundNumber
+                                  ExpiresAfterRound = System.Int32.MaxValue }
+
             ValueSome true
         | BlokemonOpcode.ClearRoughState ->
             for target in selectedTargets () do
                 builder.ClearRoughStates(runtime.Actor, target.Id)
+
+                for effect in
+                    builder.Effects
+                    |> Seq.filter (fun effect ->
+                        effect.TargetCard = ValueSome target.Id
+                        && effect.Kind = TemporaryEffectKind.EnhancedPoison)
+                    |> Seq.toArray do
+                    builder.RemoveEffect effect
 
             ValueSome true
         | BlokemonOpcode.DrawFromStack ->
@@ -142,8 +167,7 @@ module internal EffectInstructions =
                 else
                     runtime.Actor
 
-            if runtime.HasCardSelection then
-                builder.Shuffle(stackOwner, runtime.LastSelectedCards)
+            builder.Shuffle stackOwner
 
             ValueSome true
         | BlokemonOpcode.RevealCards ->
@@ -167,18 +191,6 @@ module internal EffectInstructions =
         | BlokemonOpcode.ChuckCards ->
             executeChuckCards catalog runtime instruction path
             ValueSome true
-        | BlokemonOpcode.AttachVim ->
-            if
-                (match catalog.PartyTrick runtime.Effect with
-                 | ValueSome trick -> trick.Trigger <> BlokemonTrigger.Continuous
-                 | ValueNone -> true)
-            then
-                executeAttachVim catalog runtime instruction path
-
-            ValueSome true
-        | BlokemonOpcode.MoveVim ->
-            executeMoveVim catalog runtime instruction path
-            ValueSome true
         | BlokemonOpcode.ChuckVim ->
             executeChuckVim catalog runtime instruction path
             ValueSome true
@@ -194,14 +206,18 @@ module internal EffectInstructions =
         | BlokemonOpcode.ReduceDamage ->
             register TemporaryEffectKind.ReduceDamage
             ValueSome true
-        | BlokemonOpcode.ModifyAttackCost ->
-            register TemporaryEffectKind.ModifyAttackCost
-            ValueSome true
         | BlokemonOpcode.ModifyTaxiFare ->
             register TemporaryEffectKind.ModifyTaxiFare
             ValueSome true
         | BlokemonOpcode.ModifySoftSpot ->
-            if not runtime.IsAttack || instruction.MechanicalTypes.Length > 1 then
+            let targetHasWeakness =
+                resolveCandidates catalog runtime.Builder runtime.Actor runtime.Source instruction
+                |> Seq.exists (hasEffectiveSoftSpot catalog runtime.Builder)
+
+            if
+                targetHasWeakness
+                && (not runtime.IsAttack || instruction.MechanicalTypes.Length > 1)
+            then
                 registerEffect
                     catalog
                     runtime
@@ -209,13 +225,6 @@ module internal EffectInstructions =
                     TemporaryEffectKind.ModifySoftSpot
                     (ValueSome path)
 
-            ValueSome true
-        | BlokemonOpcode.IgnoreStubbornStreak ->
-            runtime.IgnoreStubbornStreak <- true
-            ValueSome true
-        | BlokemonOpcode.IgnoreSoftSpotAndStubbornStreak ->
-            runtime.IgnoreSoftSpot <- true
-            runtime.IgnoreStubbornStreak <- true
             ValueSome true
         | BlokemonOpcode.RestrictAttack ->
             register (
@@ -232,16 +241,15 @@ module internal EffectInstructions =
         | BlokemonOpcode.RestrictKit ->
             register TemporaryEffectKind.RestrictKit
             ValueSome true
-        | BlokemonOpcode.RestrictLocal ->
-            register TemporaryEffectKind.RestrictLocal
-            ValueSome true
-        | BlokemonOpcode.RestrictEmptiesRecovery ->
-            register TemporaryEffectKind.RestrictEmptiesRecovery
-            ValueSome true
-        | BlokemonOpcode.ForceBeerMatBlank ->
-            registerPlayerEffect runtime TemporaryEffectKind.ForceBeerMatBlank
-            ValueSome true
-        | BlokemonOpcode.ReflectAttackDamage ->
-            register TemporaryEffectKind.ReflectAttackDamage
-            ValueSome true
+        | BlokemonOpcode.ReflectAttackDamage -> ValueSome true
         | _ -> ValueNone
+
+    let executeSimple
+        (catalog: AuthorityCatalog)
+        (runtime: EffectRuntime)
+        (instruction: BlokemonEffectInstruction)
+        (path: string)
+        : bool voption =
+        match execute catalog runtime instruction path with
+        | ValueSome handled -> ValueSome handled
+        | ValueNone -> executeLegacySimple catalog runtime instruction path

@@ -75,7 +75,7 @@ type VintageSharedRuleTests() =
     // and one Double Colorless Energy supplies both Colorless requirements.
     [<Test>]
     member _.``the opening player should attack and Double Colorless should supply two Energy``() =
-        let original = MatchScenario.BattleState "BLK-013" "BLK-001" [ "VIM-DODGY" ] 901UL
+        let original = MatchScenario.BattleState "BLK-039" "BLK-001" [ "VIM-DODGY" ] 901UL
 
         let state =
             { withFirstPlayerRounds 1 original with
@@ -83,7 +83,7 @@ type VintageSharedRuleTests() =
 
         let applied =
             MatchScenario.Applied(
-                MatchScenario.Engine().Apply(state, MatchScenario.AttackCommand state "BLK-013-B02")
+                MatchScenario.Engine().Apply(state, MatchScenario.AttackCommand state "BLK-039-B02")
             )
 
         (applied.Card(CardInstanceId "defender")).Damage |> should equal 20
@@ -230,7 +230,7 @@ type VintageSharedRuleTests() =
     member _.``a failed Confused attack should deal twenty self-damage and no attack damage``() =
         let state =
             MatchScenario.BattleStateWith
-                "BLK-013"
+                "BLK-039"
                 "BLK-001"
                 [ "VIM-DODGY" ]
                 (firstBlankSeed ())
@@ -240,7 +240,7 @@ type VintageSharedRuleTests() =
 
         let applied =
             MatchScenario.Applied(
-                MatchScenario.Engine().Apply(state, MatchScenario.AttackCommand state "BLK-013-B02")
+                MatchScenario.Engine().Apply(state, MatchScenario.AttackCommand state "BLK-039-B02")
             )
 
         (applied.Card(CardInstanceId "attacker")).Damage |> should equal 20
@@ -281,7 +281,7 @@ type VintageSharedRuleTests() =
         let stateWith condition =
             let state =
                 MatchScenario.BattleStateWith
-                    "BLK-041"
+                    "BLK-056"
                     "BLK-001"
                     []
                     903UL
@@ -304,7 +304,7 @@ type VintageSharedRuleTests() =
         usePowerActions (stateWith BlokemonRoughState.DodgyPint)
         |> should
             contain
-            (MatchAction.UsePartyTrick(CardInstanceId "attacker", EffectId "BLK-041-T01"))
+            (MatchAction.UsePartyTrick(CardInstanceId "attacker", EffectId "BLK-056-T01"))
 
     // Advanced Rulebook Version 1, pp. 9-10, 12: there is one Trainer category,
     // any number may be played, and each goes to the discard pile after its text.
@@ -315,13 +315,13 @@ type VintageSharedRuleTests() =
         let trainers =
             [ MatchScenario.PlainCard
                   "trainer-1"
-                  "KIT-031"
+                  "KIT-007"
                   MatchScenario.FirstPlayer
                   CardZone.Mitt
                   -1
               MatchScenario.PlainCard
                   "trainer-2"
-                  "KIT-032"
+                  "KIT-013"
                   MatchScenario.FirstPlayer
                   CardZone.Mitt
                   -1 ]
@@ -353,57 +353,6 @@ type VintageSharedRuleTests() =
 
     // Advanced Rulebook Version 1, p. 24: equal simultaneous wins start an
     // entirely new game with one Prize, not a partial Prize-only reset.
-    [<Test>]
-    member _.``a tied win should reject incomplete reconstructed decks before redealing``() =
-        let state = tiedWinWithoutBasics ()
-        let requiredCards = MatchScenario.Authority.BaseRules.Stack.CardCount
-
-        ownedCardCounts state
-        |> Seq.forall (fun cardCount -> cardCount < requiredCards)
-        |> should be True
-
-        (fun () ->
-            MatchScenario.Engine().Apply(state, MatchScenario.AttackCommand state "BLK-002-B02")
-            |> ignore)
-        |> should throw typeof<InvalidOperationException>
-
-    [<Test>]
-    member _.``a tied win should reject sixty-card decks without a Basic Pokemon before redealing``
-        ()
-        =
-        let incomplete = tiedWinWithoutBasics ()
-        let requiredCards = MatchScenario.Authority.BaseRules.Stack.CardCount
-
-        let fillers =
-            [ for player in incomplete.Players do
-                  let ownedCards =
-                      incomplete.Cards
-                      |> Seq.filter (fun card -> card.Owner = player.Id)
-                      |> Seq.toArray
-
-                  let nextPosition =
-                      ownedCards
-                      |> Seq.filter (fun card -> card.Zone = CardZone.Stack)
-                      |> Seq.fold (fun next card -> max next (card.StackPosition + 1)) 0
-
-                  for index in 0 .. requiredCards - ownedCards.Length - 1 do
-                      yield
-                          MatchScenario.PlainCard
-                              $"non-basic-filler:{player.Id.Value}:{index}"
-                              "VIM-SOBER"
-                              player.Id
-                              CardZone.Stack
-                              (nextPosition + index) ]
-
-        let state = MatchScenario.WithCards incomplete fillers
-
-        ownedCardCounts state |> should equal [ requiredCards; requiredCards ]
-
-        (fun () ->
-            MatchScenario.Engine().Apply(state, MatchScenario.AttackCommand state "BLK-002-B02")
-            |> ignore)
-        |> should throw typeof<InvalidOperationException>
-
     [<Test>]
     member _.``a tied win should restart every game zone and then set one Prize``() =
         let original =

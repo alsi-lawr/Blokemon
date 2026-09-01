@@ -21,29 +21,10 @@ module internal EffectRegistration =
                     not runtime.IsHouseRule
                     && (runtime.Builder.Card effect.SourceCard).Kind = CardKind.Kit))
 
-    let registerPlayerEffect (runtime: EffectRuntime) (kind: TemporaryEffectKind) =
-        runtime.Builder.AddEffect
-            { SourceEffect = runtime.Effect
-              SourceCard = runtime.Source.Id
-              Owner = runtime.Actor
-              TargetCard = ValueNone
-              Kind = kind
-              Amount = 0
-              MechanicalTypes = ImmutableArray<_>.Empty
-              RoughStates = ImmutableArray<_>.Empty
-              RelatedCards = ImmutableArray<_>.Empty
-              Conditions = ImmutableArray<_>.Empty
-              Duration = EffectDuration.UntilEndOfOpponentsNextRound
-              AppliesFromRound = runtime.Builder.RoundNumber + 1
-              ExpiresAfterRound = runtime.Builder.RoundNumber + 1 }
-
     let private durationFor (runtime: EffectRuntime) (kind: TemporaryEffectKind) =
         if kind = TemporaryEffectKind.ModifySoftSpot && runtime.IsAttack then
             EffectDuration.WhileTargetInPlay
-        elif
-            kind = TemporaryEffectKind.ContinuousPartyTrick
-            || kind = TemporaryEffectKind.ModifySoftSpot
-        then
+        elif kind = TemporaryEffectKind.ModifySoftSpot then
             EffectDuration.WhileSourceInPlay
         else
             EffectDuration.UntilEndOfOpponentsNextRound
@@ -84,9 +65,9 @@ module internal EffectRegistration =
                              runtime.Actor
                              runtime.Source
                              instruction
-                             ValueNone
                      | ValueSome path -> resolveSelectedTargets catalog runtime instruction path)
                 |> Seq.filter isInPlay
+                |> Seq.filter (fun target -> not (effectIsPrevented runtime target))
                 |> Seq.toArray
 
             if targets.Length = 0 then
@@ -109,7 +90,7 @@ module internal EffectRegistration =
                 targets <-
                     targets
                     |> Array.filter (fun target ->
-                        attachedVim runtime.Builder target.Id
+                        attachedVim catalog runtime.Builder target.Id
                         |> Seq.exists (fun vim ->
                             Array.contains
                                 (catalog.Vim vim.MechanicalId).MechanicalType
@@ -118,7 +99,15 @@ module internal EffectRegistration =
                 abandoned <- targets.Length = 0
 
             if not abandoned then
-                let duration = durationFor runtime kind
+                let duration =
+                    if
+                        kind = TemporaryEffectKind.RestrictAttack
+                        && instruction.RelatedIds.Length > 0
+                        && targets |> Array.exists (fun target -> target.Id = runtime.Source.Id)
+                    then
+                        EffectDuration.WhileSourceInPlay
+                    else
+                        durationFor runtime kind
 
                 // DefaultIfEmpty: an effect with no card target still registers, owned by nobody.
                 let places =
@@ -146,9 +135,23 @@ module internal EffectRegistration =
                           MechanicalTypes = ImmutableArray.CreateRange mechanicalTypes
                           RoughStates = ImmutableArray.CreateRange instruction.RoughStates
                           RelatedCards =
-                            ImmutableArray.CreateRange(
-                                instruction.RelatedIds |> Array.map MechanicalCardId
-                            )
+                            if
+                                kind = TemporaryEffectKind.RestrictAttack
+                                && instruction.Selection = BlokemonSelection.Chosen
+                                && path.IsSome
+                            then
+                                match
+                                    runtime.AttackChoice(
+                                        choiceId runtime.Effect path.Value "attack"
+                                    )
+                                with
+                                | ValueSome selected ->
+                                    ImmutableArray.Create(MechanicalCardId selected.Value)
+                                | ValueNone -> ImmutableArray<_>.Empty
+                            else
+                                ImmutableArray.CreateRange(
+                                    instruction.RelatedIds |> Array.map MechanicalCardId
+                                )
                           Conditions =
                             ImmutableArray.CreateRange(
                                 instruction.Predicates
@@ -156,41 +159,4 @@ module internal EffectRegistration =
                             )
                           Duration = duration
                           AppliesFromRound = runtime.Builder.RoundNumber
-                          ExpiresAfterRound =
-                            if kind = TemporaryEffectKind.EndRoundEffect then
-                                runtime.Builder.RoundNumber + 1
-                            else
-                                runtime.Builder.RoundNumber + 2 }
-
-    let takeBarChits
-        (catalog: AuthorityCatalog)
-        (builder: MatchBuilder)
-        (actor: PlayerId)
-        (count: int)
-        (source: CardInstanceId)
-        =
-        let taken = builder.TakeBarChits(actor, count, source)
-
-        for cardId in taken do
-            let card = builder.Card cardId
-
-            let trick =
-                catalog.PartyTricks card
-                |> Seq.tryFind (fun value -> value.Trigger = BlokemonTrigger.OnBarChitTaken)
-
-            match trick with
-            | Some trick when
-                (builder.CardsIn(actor, CardZone.Booth) |> Seq.length) < catalog.Manifest.BaseRules.Opening.BoothLimit
-                ->
-                let pending =
-                    { Player = actor
-                      Card = cardId
-                      Effect = EffectId trick.MechanicalId
-                      FinishRoundAfterResolution = true }
-
-                builder.QueueBarChit pending
-
-                builder.Events.Add
-                    { PendingMatchEvent.forCard MatchEventKind.TriggerQueued actor cardId with
-                        Effect = ValueSome pending.Effect }
-            | _ -> ()
+                          ExpiresAfterRound = runtime.Builder.RoundNumber + 2 }

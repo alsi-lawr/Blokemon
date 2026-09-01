@@ -7,24 +7,22 @@ open Blokemon.Game.MatchSetup
 /// Who has won, who still owes a replacement, and how a round begins.
 module internal MatchWins =
 
-    let assignReplacement (builder: MatchBuilder) (player: PlayerId) =
+    let assignReplacement (catalog: AuthorityCatalog) (builder: MatchBuilder) (player: PlayerId) =
         if
             (builder.Oche player).IsNone
-            && (builder.CardsIn(player, CardZone.Booth)
-                |> Seq.exists (fun card -> card.Kind = CardKind.Bloke))
+            && (builder.CardsIn(player, CardZone.Booth) |> Seq.exists catalog.CountsAsPokemon)
         then
             if builder.ReplacementPlayer.IsNone then
                 builder.ReplacementPlayer <- ValueSome player
 
             builder.Phase <- MatchPhase.AwaitingReplacement
 
-    let nextReplacement (builder: MatchBuilder) =
+    let nextReplacement (catalog: AuthorityCatalog) (builder: MatchBuilder) =
         builder.Players
         |> Seq.map (fun player -> player.Id)
         |> Seq.tryFind (fun player ->
             (builder.Oche player).IsNone
-            && (builder.CardsIn(player, CardZone.Booth)
-                |> Seq.exists (fun card -> card.Kind = CardKind.Bloke)))
+            && (builder.CardsIn(player, CardZone.Booth) |> Seq.exists catalog.CountsAsPokemon))
         |> ValueOption.ofOption
 
     let private resolveLiveWins
@@ -47,7 +45,7 @@ module internal MatchWins =
                 not (
                     builder.Cards
                     |> Seq.exists (fun card ->
-                        card.Owner = other && card.Kind = CardKind.Bloke && isInPlay card)
+                        card.Owner = other && catalog.CountsAsPokemon card && isInPlay card)
                 )
             then
                 methods[player.Id] <- methods[player.Id] + 1

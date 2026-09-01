@@ -176,6 +176,7 @@ module internal MatchViewProjection =
         =
         let cardInstance = cardInstance context.Catalogue
         let engine = context.Engine
+        let exposeHand = exposeHand || engine.CanRevealHand(state, human, player)
 
         let active = state.Oche player
 

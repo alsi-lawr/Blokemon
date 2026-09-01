@@ -46,7 +46,6 @@ module internal MatchLabels =
 
     let requirementLabel (requirement: ChoiceRequirement) =
         match requirement.Kind with
-        | ChoiceRequirementKind.Optional -> "Use this effect?"
         | ChoiceRequirementKind.Amount ->
             $"Choose an amount from {requirement.Minimum} to {requirement.Maximum}"
         | ChoiceRequirementKind.Cards when requirement.Id.Value = "opening:booth" ->
@@ -54,20 +53,16 @@ module internal MatchLabels =
         | ChoiceRequirementKind.Cards -> cardChoiceLabel requirement.Minimum requirement.Maximum
         | ChoiceRequirementKind.MechanicalType -> "Choose an Energy type"
         | ChoiceRequirementKind.Attack -> "Choose an attack"
-        | ChoiceRequirementKind.Distribution ->
-            $"""Place {requirement.Maximum} damage {if requirement.Maximum = 1 then "counter" else "counters"}"""
         | ChoiceRequirementKind.Attachments ->
             $"""Choose targets for {requirement.Minimum} Energy {if requirement.Minimum = 1 then "card" else "cards"}"""
         | _ -> raise (UnreachableException())
 
     let choiceKind (kind: ChoiceRequirementKind) =
         match kind with
-        | ChoiceRequirementKind.Optional -> MatchChoiceKindView.Optional
         | ChoiceRequirementKind.Amount -> MatchChoiceKindView.Amount
         | ChoiceRequirementKind.Cards -> MatchChoiceKindView.Cards
         | ChoiceRequirementKind.MechanicalType -> MatchChoiceKindView.MechanicalType
         | ChoiceRequirementKind.Attack -> MatchChoiceKindView.Attack
-        | ChoiceRequirementKind.Distribution -> MatchChoiceKindView.Distribution
         | ChoiceRequirementKind.Attachments -> MatchChoiceKindView.Attachments
         | _ -> raise (UnreachableException())
 
@@ -163,17 +158,6 @@ module internal MatchLabels =
         | MatchAction.Attack(attacker, _) -> ValueSome attacker
         | MatchAction.ChuckFossil fossil -> ValueSome fossil
         | _ -> ValueNone
-
-    let canReveal (state: MatchState) (human: PlayerId) (cardId: CardInstanceId) =
-        let card = state.Card cardId
-
-        card.Owner = human
-        || match card.Zone with
-           | CardZone.Oche
-           | CardZone.Booth
-           | CardZone.Attached
-           | CardZone.EmptiesTray -> true
-           | _ -> false
 
     let attackDisabledReason (state: MatchState) (human: PlayerId) =
         if state.Phase <> MatchPhase.Playing then

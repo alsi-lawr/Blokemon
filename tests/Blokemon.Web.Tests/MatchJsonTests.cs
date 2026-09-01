@@ -14,15 +14,10 @@ public sealed class MatchJsonTests
 {
     private static ImmutableArray<EffectChoice> Choices() =>
         ImmutableArray.Create(
-            EffectChoice.NewOptional(new("optional"), true),
             EffectChoice.NewAmount(new("amount"), 2),
             EffectChoice.NewCards(new("cards"), ImmutableArray.Create(new CardInstanceId("C1"))),
             EffectChoice.NewMechanicalType(new("type"), BlokemonMechanicalType.Grass),
             EffectChoice.NewAttack(new("attack"), new("effect")),
-            EffectChoice.NewDistribution(
-                new("distribution"),
-                ImmutableArray.Create(new DamageAllocation(new CardInstanceId("C2"), 3))
-            ),
             EffectChoice.NewAttachments(
                 new("attachments"),
                 ImmutableArray.Create(
@@ -137,7 +132,7 @@ public sealed class MatchJsonTests
             new MatchId("match"),
             new PlayerId("player"),
             new MatchRevision(7),
-            ImmutableArray.Create(EffectChoice.NewOptional(new("optional"), true)),
+            ImmutableArray.Create(EffectChoice.NewAmount(new("amount"), 2)),
             MatchAction.NewAttack(new("attacker"), new("attack-effect"))
         );
 
@@ -145,7 +140,7 @@ public sealed class MatchJsonTests
 
         json.ShouldBe(
             """
-            {"id":{"value":"attack-command"},"matchId":{"value":"match"},"actor":{"value":"player"},"expectedRevision":{"value":7},"choices":[{"$choice":"optional","choiceId":{"value":"optional"},"isAccepted":true}],"action":{"$command":"attack","attacker":{"value":"attacker"},"attackId":{"value":"attack-effect"}}}
+            {"id":{"value":"attack-command"},"matchId":{"value":"match"},"actor":{"value":"player"},"expectedRevision":{"value":7},"choices":[{"$choice":"amount","choiceId":{"value":"amount"},"value":2}],"action":{"$command":"attack","attacker":{"value":"attacker"},"attackId":{"value":"attack-effect"}}}
             """
         );
         await Task.CompletedTask;
@@ -299,11 +294,11 @@ public sealed class MatchJsonTests
         const string nullChoice =
             $"{CommandEnvelope},\"choices\":[null],\"action\":{{\"$command\":\"resign\"}}}}";
         // The worst nested case the census found: a record carried inside a choice payload.
-        const string nullAllocation =
-            $"{CommandEnvelope},\"choices\":[{{\"$choice\":\"distribution\","
+        const string nullAttachment =
+            $"{CommandEnvelope},\"choices\":[{{\"$choice\":\"attachments\","
             + "\"choiceId\":{\"value\":\"d\"},\"values\":[null]}],\"action\":{\"$command\":\"resign\"}}";
 
-        var damaged = new[] { absentAction, nullAction, nullChoice, nullAllocation }
+        var damaged = new[] { absentAction, nullAction, nullChoice, nullAttachment }
             .Select(json => JsonSerializer.Deserialize<MatchCommand>(json, MatchJson.Options)!)
             .ToArray();
 

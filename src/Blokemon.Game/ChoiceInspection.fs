@@ -5,14 +5,11 @@ open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectTargeting
 open Blokemon.Game.ChoiceShapes
+open Blokemon.Game.PokemonPowers
+open Blokemon.Game.VintageChoices
 
 /// Working out what an effect has to ask before it can run, without running any of it.
 module internal ChoiceInspection =
-
-    let private deferConditionalBranches (catalog: AuthorityCatalog) (effect: EffectId) =
-        match catalog.PartyTrick effect with
-        | ValueSome trick -> trick.Trigger <> BlokemonTrigger.OnPromotionFromMitt
-        | ValueNone -> true
 
     let remainingBoothCapacity
         (catalog: AuthorityCatalog)
@@ -41,63 +38,30 @@ module internal ChoiceInspection =
         (path: string)
         (dependency: EffectChoiceId voption)
         (requirements: ResizeArray<ChoiceRequirement>)
-        (triggerContext: TriggerContext voption)
         =
         let candidatesOf () =
-            resolveCandidates catalog builder actor source instruction triggerContext
+            resolveCandidates catalog builder actor source instruction
 
         if
-            instruction.Opcode = BlokemonOpcode.AttachVim
-            && instruction.Selection = BlokemonSelection.AnyDistribution
+            VintageChoices.inspect
+                catalog
+                builder
+                actor
+                source
+                effect
+                instruction
+                path
+                dependency
+                requirements
         then
-            let eligibleVim =
-                (if hasDeclaredSources instruction then
-                     candidatesOf ()
-                 else
-                     builder.CardsIn(actor, CardZone.Stack)
-                     |> Seq.truncate instruction.Amount
-                     |> Seq.filter (fun card -> card.Kind = CardKind.Vim))
-                |> Seq.map (fun card -> card.Id)
-                |> Seq.toArray
-
-            let eligibleTargets =
-                (if instruction.Targets.Length > 0 then
-                     instruction.Targets
-                     |> Seq.collect (fun target ->
-                         resolveTarget catalog builder actor source target triggerContext)
-                 else
-                     inPlay builder actor)
-                |> Seq.filter isInPlay
-                |> Seq.map (fun card -> card.Id)
-                |> Seq.distinct
-                |> Seq.sort
-                |> Seq.toArray
-
-            let required =
-                if hasDeclaredSources instruction then
-                    min instruction.Amount eligibleVim.Length
-                else
-                    eligibleVim.Length
-
-            if required > 0 && eligibleTargets.Length > 0 then
-                requirements.Add
-                    { ChoiceRequirement.create
-                          (choiceId effect path "attachments")
-                          ChoiceRequirementKind.Attachments
-                          actor
-                          (if hasDeclaredSources instruction then required else 0)
-                          required
-                          (ImmutableArray.CreateRange eligibleVim)
-                          ImmutableArray<_>.Empty
-                          ImmutableArray<_>.Empty
-                          dependency with
-                        EligibleTargets = ImmutableArray.CreateRange eligibleTargets }
+            ()
         else
 
             if
                 instruction.Opcode = BlokemonOpcode.ModifySoftSpot
                 && instruction.Selection = BlokemonSelection.Chosen
                 && instruction.MechanicalTypes.Length > 1
+                && candidatesOf () |> Seq.exists (hasEffectiveSoftSpot catalog builder)
             then
                 requirements.Add(
                     ChoiceRequirement.create
@@ -112,14 +76,18 @@ module internal ChoiceInspection =
                         dependency
                 )
 
-            if instruction.Opcode = BlokemonOpcode.CopyAttack then
+            if
+                instruction.Opcode = BlokemonOpcode.CopyAttack
+                || (instruction.Opcode = BlokemonOpcode.RestrictAttack
+                    && instruction.Selection = BlokemonSelection.Chosen)
+            then
                 let opponent = builder.Other actor
 
                 let effects =
                     (match builder.Oche opponent with
                      | ValueSome card -> Seq.singleton card
                      | ValueNone -> Seq.empty)
-                    |> Seq.collect catalog.Attacks
+                    |> Seq.collect (effectiveAttacks catalog builder)
                     |> Seq.map (fun attack -> EffectId attack.MechanicalId)
                     |> Seq.toArray
 
@@ -136,26 +104,6 @@ module internal ChoiceInspection =
                             (ImmutableArray.CreateRange effects)
                             dependency
                     )
-            elif instruction.Selection = BlokemonSelection.AnyDistribution then
-                if instruction.Opcode = BlokemonOpcode.PlaceDamageCounters then
-                    let eligible =
-                        resolveCandidates catalog builder actor source instruction ValueNone
-                        |> Seq.map (fun card -> card.Id)
-                        |> Seq.toArray
-
-                    if eligible.Length > 0 then
-                        requirements.Add(
-                            ChoiceRequirement.create
-                                (choiceId effect path "distribution")
-                                ChoiceRequirementKind.Distribution
-                                actor
-                                0
-                                instruction.Amount
-                                (ImmutableArray.CreateRange eligible)
-                                ImmutableArray<_>.Empty
-                                ImmutableArray<_>.Empty
-                                dependency
-                        )
             elif instructionOwnsCardChoice instruction then
                 let boothCapacity =
                     remainingBoothCapacity catalog builder actor instruction.Destination
@@ -241,37 +189,12 @@ module internal ChoiceInspection =
         (parentPath: string)
         (optionalDependency: EffectChoiceId voption)
         (requirements: ResizeArray<ChoiceRequirement>)
-        (triggerContext: TriggerContext voption)
         =
         for index in 0 .. program.Length - 1 do
             let instruction = program[index]
             let path = $"{parentPath}/{index}"
 
-            let dependency =
-                if
-                    instruction.Opcode = BlokemonOpcode.Conditional
-                    && instruction.Predicates
-                       |> Array.exists (fun predicate ->
-                           predicate.Condition = BlokemonCondition.Optional)
-                then
-                    let optionalId = choiceId effect path "optional"
-
-                    requirements.Add(
-                        ChoiceRequirement.create
-                            optionalId
-                            ChoiceRequirementKind.Optional
-                            actor
-                            0
-                            1
-                            ImmutableArray<_>.Empty
-                            ImmutableArray<_>.Empty
-                            ImmutableArray<_>.Empty
-                            optionalDependency
-                    )
-
-                    ValueSome optionalId
-                else
-                    optionalDependency
+            let dependency = optionalDependency
 
             inspectInstructionChoice
                 catalog
@@ -283,14 +206,12 @@ module internal ChoiceInspection =
                 path
                 dependency
                 requirements
-                triggerContext
 
             let skipBranches =
                 instruction.Opcode = BlokemonOpcode.BeerMatToss
                 || instruction.Opcode = BlokemonOpcode.RepeatUntilBlankSide
                 || (instruction.Opcode = BlokemonOpcode.MoveCards && instruction.Then.Length > 0)
-                || (instruction.Opcode = BlokemonOpcode.Conditional
-                    && deferConditionalBranches catalog effect)
+                || instruction.Opcode = BlokemonOpcode.Conditional
 
             if not skipBranches then
                 inspectProgram
@@ -303,7 +224,6 @@ module internal ChoiceInspection =
                     (path + "/then")
                     dependency
                     requirements
-                    triggerContext
 
                 inspectProgram
                     catalog
@@ -315,7 +235,6 @@ module internal ChoiceInspection =
                     (path + "/otherwise")
                     optionalDependency
                     requirements
-                    triggerContext
 
     let inspectChoices
         (catalog: AuthorityCatalog)
@@ -324,20 +243,9 @@ module internal ChoiceInspection =
         (source: CardState)
         (effect: EffectId)
         (program: BlokemonEffectInstruction array)
-        (triggerContext: TriggerContext voption)
         =
         let requirements = ResizeArray<ChoiceRequirement>()
 
-        inspectProgram
-            catalog
-            builder
-            actor
-            source
-            effect
-            program
-            "root"
-            ValueNone
-            requirements
-            triggerContext
+        inspectProgram catalog builder actor source effect program "root" ValueNone requirements
 
         ImmutableArray.CreateRange(requirements |> Seq.distinctBy (fun value -> value.Id))

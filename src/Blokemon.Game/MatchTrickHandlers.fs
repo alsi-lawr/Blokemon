@@ -7,6 +7,9 @@ open Blokemon.Game.MatchRules
 open Blokemon.Game.MatchKnockouts
 open Blokemon.Game.MatchRounds
 open Blokemon.Game.MatchPending
+open Blokemon.Game.PokemonPowers
+open Blokemon.Game.MatchSendHome
+open Blokemon.Game.MatchWins
 
 /// Using an activated party trick or a once-per-round local house rule: one printed program run
 /// straight off a card that is already on the table.
@@ -39,8 +42,8 @@ module internal MatchTrickHandlers =
                 let isActivatedTrick =
                     trick.IsSome
                     && source.Owner = command.Actor
-                    && pokemonPowerIsEnabled catalog source
-                    && catalog.PartyTricks source
+                    && PokemonPowers.pokemonPowerIsEnabled catalog builder source
+                    && effectivePartyTricks catalog builder source
                        |> Seq.exists (fun candidate ->
                            candidate.MechanicalId = effect.Value
                            && candidate.Trigger = BlokemonTrigger.Activated)
@@ -135,8 +138,7 @@ module internal MatchTrickHandlers =
                                     false,
                                     isActivatedLocalRule,
                                     ValueNone,
-                                    beerMatResults,
-                                    ValueNone
+                                    beerMatResults
                                 )
 
                             if not execution.IsApplied then
@@ -149,12 +151,34 @@ module internal MatchTrickHandlers =
                                     catalog
                                     interpreter
                                     builder
-                                    execution.ForcedSendHome
+                                    ImmutableArray<_>.Empty
                                     ValueNone
                                     false
                                     ImmutableArray<_>.Empty
-                                    0
                                 |> ignore
+
+                                if containsOpcode program BlokemonOpcode.Buzzap then
+                                    builder.Events.Add(
+                                        PendingMatchEvent.forCards
+                                            MatchEventKind.BlokeSentHome
+                                            (builder.Other source.Owner)
+                                            source.Id
+                                            (ImmutableArray.Create source.Id)
+                                    )
+
+                                    let takingPlayer = builder.Other source.Owner
+
+                                    builder.TakeBarChits(
+                                        takingPlayer,
+                                        catalog.BarChits source,
+                                        source.Id
+                                    )
+                                    |> ignore
+
+                                    if source.Zone = CardZone.Oche then
+                                        assignReplacement catalog builder source.Owner
+
+                                    resolveWins catalog builder ValueNone
 
                                 resolveVoluntarySourceChuck catalog builder source execution
                                 HandlerResult.accepted

@@ -61,14 +61,10 @@ module internal MatchIdentity =
         | value when not (hasValue value.Id.Value) -> false
         | EffectChoice.Cards(_, cards) -> cards |> Seq.forall cardIdHasValue
         | EffectChoice.Attack(_, attack) -> hasValue attack.Value
-        | EffectChoice.Distribution(_, allocations) ->
-            allocations
-            |> Seq.forall (fun item -> not (isMissing item) && hasValue item.Card.Value)
         | EffectChoice.Attachments(_, placements) ->
             placements
             |> Seq.forall (fun item ->
                 not (isMissing item) && hasValue item.Vim.Value && hasValue item.Bloke.Value)
-        | EffectChoice.Optional _
         | EffectChoice.Amount _
         | EffectChoice.MechanicalType _ -> true
 

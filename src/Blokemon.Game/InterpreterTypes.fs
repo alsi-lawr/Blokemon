@@ -2,6 +2,7 @@ namespace Blokemon.Game
 
 open System.Collections.Generic
 open System.Collections.Immutable
+open Blokemon.Core.SetDesign
 
 type InterpreterAuditIssue =
     { Code: string
@@ -29,11 +30,9 @@ type internal InterpreterExecution =
     { IsApplied: bool
       Rejection: CommandRejectionCode voption
       Requirements: ImmutableArray<ChoiceRequirement>
-      ForcedSendHome: ImmutableArray<CardInstanceId>
-      SourceChucked: bool
+      SourceLeftPlay: bool
       BeerMatResults: ImmutableArray<bool>
       AttackDamageTargets: ImmutableArray<CardInstanceId>
-      DeferredAttackKnockoutBarChits: int
       CompleteAttackDamage: (unit -> ImmutableArray<CardInstanceId>) voption }
 
 [<RequireQualifiedAccess>]
@@ -46,11 +45,9 @@ module internal InterpreterExecution =
         { IsApplied = false
           Rejection = ValueSome rejection
           Requirements = requirements
-          ForcedSendHome = ImmutableArray<_>.Empty
-          SourceChucked = false
+          SourceLeftPlay = false
           BeerMatResults = ImmutableArray<_>.Empty
           AttackDamageTargets = ImmutableArray<_>.Empty
-          DeferredAttackKnockoutBarChits = 0
           CompleteAttackDamage = ValueNone }
 
 /// Everything one effect's execution accumulates: the staged damage, the choices it consumed, the
@@ -67,15 +64,15 @@ type internal EffectRuntime
         isHouseRule: bool,
         copyStack: HashSet<EffectId>,
         beerMatResults: ImmutableArray<bool>,
-        triggerContext: TriggerContext voption,
         resolutionTrace: ResolutionTrace
     ) =
     let recordedBeerMats = ResizeArray<bool> beerMatResults
     let usedChoiceIds = HashSet<EffectChoiceId>()
     let pendingAttackDamage = ResizeArray<PendingDamage>()
     let pendingOtherDamage = ResizeArray<PendingDamage>()
-    let forcedSendHome = HashSet<CardInstanceId>()
     let attackDamageTargets = HashSet<CardInstanceId>()
+    let resolvedAttackDamage = Dictionary<CardInstanceId, int>()
+    let postDamageInstructions = ResizeArray<BlokemonEffectInstruction>()
     let mutable replayedBeerMats = 0
     let mutable lastBeerMatWasReplayed = false
 
@@ -88,7 +85,6 @@ type internal EffectRuntime
     member _.IsAttack = isAttack
     member _.IsHouseRule = isHouseRule
     member _.CopyStack = copyStack
-    member _.TriggerContext = triggerContext
     member _.ResolutionTrace = resolutionTrace
 
     member val DeferredRequirements: ImmutableArray<ChoiceRequirement> =
@@ -102,11 +98,11 @@ type internal EffectRuntime
 
     member _.PendingOtherDamage = pendingOtherDamage
 
-    member _.ForcedSendHome = forcedSendHome
-
     member _.AttackDamageTargets = attackDamageTargets
+    member _.ResolvedAttackDamage = resolvedAttackDamage
+    member _.PostDamageInstructions = postDamageInstructions
 
-    member val SourceChucked = false with get, set
+    member val SourceLeftPlay = false with get, set
 
     member val LastSelectedCards: ImmutableArray<CardInstanceId> =
         ImmutableArray<_>.Empty with get, set
@@ -114,14 +110,8 @@ type internal EffectRuntime
     member val HasCardSelection = false with get, set
     member val BadgeSides = 0 with get, set
     member val TossCount = 0 with get, set
-    member val DeferredAttackKnockoutBarChits = 0 with get, set
     member val BeerMatGateParent: string voption = ValueNone with get, set
     member val FirstBeerMatIsBlank = false with get, set
-    member val CardsChucked = 0 with get, set
-    member val QualifyingChuckedCards = 0 with get, set
-    member val IgnoreSoftSpot = false with get, set
-    member val IgnoreStubbornStreak = false with get, set
-    member val DeferringEndRound = false with get, set
     member val Rejection: CommandRejectionCode voption = ValueNone with get, set
 
     member _.NextBeerMat() =
@@ -160,12 +150,11 @@ type internal EffectRuntime
 
         found
 
-    member this.OptionalChoice(id: EffectChoiceId) = this.Pick(EffectChoice.optional id)
     member this.CardsChoice(id: EffectChoiceId) = this.Pick(EffectChoice.cards id)
+    member this.AmountChoice(id: EffectChoiceId) = this.Pick(EffectChoice.amount id)
 
     member this.TypeChoice(id: EffectChoiceId) =
         this.Pick(EffectChoice.mechanicalType id)
 
     member this.AttackChoice(id: EffectChoiceId) = this.Pick(EffectChoice.attack id)
-    member this.DistributionChoice(id: EffectChoiceId) = this.Pick(EffectChoice.distribution id)
     member this.AttachmentsChoice(id: EffectChoiceId) = this.Pick(EffectChoice.attachments id)

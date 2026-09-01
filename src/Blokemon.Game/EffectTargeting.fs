@@ -3,6 +3,7 @@ namespace Blokemon.Game
 open System
 open System.Linq
 open Blokemon.Core.SetDesign
+open Blokemon.Game.PokemonPowers
 
 /// Which cards an instruction is allowed to touch, before any choice narrows the set.
 module internal EffectTargeting =
@@ -15,10 +16,20 @@ module internal EffectTargeting =
         |> Seq.filter (fun card ->
             card.Owner = player && (card.Zone = CardZone.Oche || card.Zone = CardZone.Booth))
 
-    let attachedVim (builder: MatchBuilder) (card: CardInstanceId) =
-        (builder.Card card).Attachments
+    let isEnergyAttachment
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (host: CardState)
+        (attached: CardState)
+        =
+        effectiveEnergy catalog builder host attached |> Seq.isEmpty |> not
+
+    let attachedVim (catalog: AuthorityCatalog) (builder: MatchBuilder) (card: CardInstanceId) =
+        let host = builder.Card card
+
+        host.Attachments
         |> Seq.map builder.Card
-        |> Seq.filter (fun attached -> attached.Kind = CardKind.Vim)
+        |> Seq.filter (isEnergyAttachment catalog builder host)
 
     let choiceId (effect: EffectId) (path: string) (kind: string) =
         EffectChoiceId $"{effect.Value}:{path}:{kind}"
@@ -71,13 +82,12 @@ module internal EffectTargeting =
         | BlokemonOpcode.ShuffleStack
         | BlokemonOpcode.MoveCards
         | BlokemonOpcode.ChuckCards
-        | BlokemonOpcode.AttachVim
-        | BlokemonOpcode.MoveVim
         | BlokemonOpcode.ChuckVim -> true
         | _ -> false
 
     let filterCards
         (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
         (cards: CardState seq)
         (instruction: BlokemonEffectInstruction)
         =
@@ -87,11 +97,18 @@ module internal EffectTargeting =
              || instruction.RelatedIds.Contains(card.MechanicalId.Value, StringComparer.Ordinal))
             && (instruction.MechanicalTypes.Length = 0
                 || not (filtersCandidatesByMechanicalType instruction.Opcode)
-                || (if card.Kind = CardKind.Vim then
+                || (match card.AttachedTo with
+                    | ValueSome host when
+                        effectiveEnergy catalog builder (builder.Card host) card
+                        |> Seq.exists (fun value ->
+                            Array.contains value instruction.MechanicalTypes)
+                        ->
+                        true
+                    | _ when card.Kind = CardKind.Vim ->
                         Array.contains
                             (catalog.Vim card.MechanicalId).MechanicalType
                             instruction.MechanicalTypes
-                    else
+                    | _ ->
                         card.Kind = CardKind.Bloke
                         && (catalog.Bloke card.MechanicalId).MechanicalTypes
                            |> Array.exists (fun value ->
@@ -110,19 +127,16 @@ module internal EffectTargeting =
         (actor: PlayerId)
         (source: CardState)
         (target: BlokemonTarget)
-        (triggerContext: TriggerContext voption)
         : CardState seq =
         match target with
         | BlokemonTarget.Self -> Seq.singleton source
         | BlokemonTarget.OwnOche -> yieldCard (builder.Oche actor)
         | BlokemonTarget.OwnBoothChosen -> builder.CardsIn(actor, CardZone.Booth)
         | BlokemonTarget.OwnBlokeChosen -> inPlay builder actor
-        | BlokemonTarget.OwnBlokesAll -> inPlay builder actor
         | BlokemonTarget.OtherOche -> yieldCard (builder.Oche(builder.Other actor))
         | BlokemonTarget.OtherBoothChosen -> builder.CardsIn(builder.Other actor, CardZone.Booth)
         | BlokemonTarget.OtherBoothAll -> builder.CardsIn(builder.Other actor, CardZone.Booth)
         | BlokemonTarget.OtherBlokeChosen -> inPlay builder (builder.Other actor)
-        | BlokemonTarget.OtherBlokesAll -> inPlay builder (builder.Other actor)
         | BlokemonTarget.OwnMitt -> builder.CardsIn(actor, CardZone.Mitt)
         | BlokemonTarget.OtherMitt -> builder.CardsIn(builder.Other actor, CardZone.Mitt)
         | BlokemonTarget.OwnStack -> builder.CardsIn(actor, CardZone.Stack)
@@ -130,32 +144,7 @@ module internal EffectTargeting =
         | BlokemonTarget.OwnEmptiesTray -> builder.CardsIn(actor, CardZone.EmptiesTray)
         | BlokemonTarget.OtherEmptiesTray ->
             builder.CardsIn(builder.Other actor, CardZone.EmptiesTray)
-        | BlokemonTarget.OwnAttachedBarKits ->
-            inPlay builder actor
-            |> Seq.collect (fun card -> card.Attachments |> Seq.map builder.Card)
-            |> Seq.filter (fun card -> card.Kind = CardKind.Kit)
-        | BlokemonTarget.OwnOcheAttachedVim ->
-            yieldCard (builder.Oche actor)
-            |> Seq.collect (fun card -> card.Attachments |> Seq.map builder.Card)
-            |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
-        | BlokemonTarget.OtherOcheAttachedVim ->
-            yieldCard (builder.Oche(builder.Other actor))
-            |> Seq.collect (fun card -> card.Attachments |> Seq.map builder.Card)
-            |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
-        | BlokemonTarget.KnockedOutBlokeAttachedVim ->
-            match triggerContext with
-            | ValueSome context when context.KnockedOutBloke.IsSome ->
-                (builder.Card context.KnockedOutBloke.Value).Attachments
-                |> Seq.map builder.Card
-                |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
-            | _ -> Seq.empty
-        | BlokemonTarget.AttackingBloke ->
-            match triggerContext with
-            | ValueSome context when context.AttackingBloke.IsSome ->
-                Seq.singleton (builder.Card context.AttackingBloke.Value)
-            | _ -> Seq.empty
-        | BlokemonTarget.BarChits -> builder.CardsIn(actor, CardZone.BarChit)
-        | _ -> builder.Cards |> Seq.filter (fun card -> card.Zone = CardZone.Local)
+        | unsupported -> invalidOp $"Unsupported target {int unsupported}."
 
     let resolveImplicitCandidates
         (catalog: AuthorityCatalog)
@@ -175,55 +164,36 @@ module internal EffectTargeting =
         | BlokemonOpcode.ScaleDamage
         | BlokemonOpcode.ApplyRoughState
         | BlokemonOpcode.ModifySoftSpot
-        | BlokemonOpcode.SendHome
-        | BlokemonOpcode.CopyAttack
-        | BlokemonOpcode.Demote -> otherOche ()
+        | BlokemonOpcode.CopyAttack -> otherOche ()
         | BlokemonOpcode.DealBoothDamage -> builder.CardsIn(builder.Other actor, CardZone.Booth)
-        | BlokemonOpcode.PlaceDamageCounters -> inPlay builder (builder.Other actor)
         | BlokemonOpcode.DealSelfDamage
         | BlokemonOpcode.HealDamage
         | BlokemonOpcode.ClearRoughState
         | BlokemonOpcode.PreventDamage
         | BlokemonOpcode.PreventEffects
         | BlokemonOpcode.ReduceDamage
-        | BlokemonOpcode.ModifyAttackCost
         | BlokemonOpcode.ModifyTaxiFare
         | BlokemonOpcode.RestrictAttack
         | BlokemonOpcode.RestrictTaxi
         | BlokemonOpcode.RestrictKit
-        | BlokemonOpcode.RestrictLocal
-        | BlokemonOpcode.RestrictEmptiesRecovery
         | BlokemonOpcode.ReflectAttackDamage
-        | BlokemonOpcode.RecoverFromSendHome
         | BlokemonOpcode.PlayAsBloke
-        | BlokemonOpcode.ChuckSelf
-        | BlokemonOpcode.TriggeredPartyTrick
-        | BlokemonOpcode.ContinuousPartyTrick
-        | BlokemonOpcode.OncePerRound
-        | BlokemonOpcode.EndRoundEffect -> self ()
+        | BlokemonOpcode.OncePerRound -> self ()
         | BlokemonOpcode.DrawFromStack
         | BlokemonOpcode.ShuffleStack -> builder.CardsIn(actor, CardZone.Stack)
-        | BlokemonOpcode.SearchStack
-        | BlokemonOpcode.TransformFromStack ->
-            filterCards catalog (builder.CardsIn(actor, CardZone.Stack)) instruction
+        | BlokemonOpcode.SearchStack ->
+            filterCards catalog builder (builder.CardsIn(actor, CardZone.Stack)) instruction
         | BlokemonOpcode.ChuckCards ->
             inPlay builder actor
             |> Seq.collect (fun card -> card.Attachments |> Seq.map builder.Card)
             |> Seq.filter (fun card -> card.Kind = CardKind.Kit)
-        | BlokemonOpcode.AttachVim ->
-            builder.CardsIn(actor, CardZone.Mitt)
-            |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
-        | BlokemonOpcode.MoveVim ->
-            inPlay builder actor
-            |> Seq.collect (fun card -> card.Attachments |> Seq.map builder.Card)
-            |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
         | BlokemonOpcode.ChuckVim ->
             source.Attachments
             |> Seq.map builder.Card
-            |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
+            |> Seq.filter (isEnergyAttachment catalog builder source)
         | BlokemonOpcode.SwapOche ->
             builder.CardsIn(builder.Other actor, CardZone.Booth)
-            |> Seq.filter (fun card -> card.Kind = CardKind.Bloke)
+            |> Seq.filter catalog.CountsAsPokemon
         | _ -> Seq.empty
 
     let resolveCandidates
@@ -232,7 +202,6 @@ module internal EffectTargeting =
         (actor: PlayerId)
         (source: CardState)
         (instruction: BlokemonEffectInstruction)
-        (triggerContext: TriggerContext voption)
         =
         let declared = declaredSources instruction
 
@@ -241,8 +210,7 @@ module internal EffectTargeting =
                 resolveImplicitCandidates catalog builder actor source instruction
             else
                 declared
-                |> Seq.collect (fun target ->
-                    resolveTarget catalog builder actor source target triggerContext)
+                |> Seq.collect (fun target -> resolveTarget catalog builder actor source target)
 
         let candidates =
             if
@@ -250,9 +218,11 @@ module internal EffectTargeting =
                 && not (hasDeclaredSources instruction)
             then
                 candidates
-                |> Seq.filter (fun card -> card.Kind = CardKind.Bloke)
-                |> Seq.collect (fun card -> card.Attachments |> Seq.map builder.Card)
-                |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
+                |> Seq.filter catalog.CountsAsPokemon
+                |> Seq.collect (fun host ->
+                    host.Attachments
+                    |> Seq.map builder.Card
+                    |> Seq.filter (isEnergyAttachment catalog builder host))
             else
                 candidates
 
@@ -262,4 +232,8 @@ module internal EffectTargeting =
             else
                 candidates
 
-        filterCards catalog candidates instruction
+        candidates
+        |> Seq.filter (fun card ->
+            card.Id <> source.Id
+            || (card.Zone <> CardZone.Mitt && card.Zone <> CardZone.EmptiesTray))
+        |> fun cards -> filterCards catalog builder cards instruction

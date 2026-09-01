@@ -9,7 +9,6 @@ module internal ChoiceValidation =
 
     let private choiceIsValid (choice: EffectChoice) (requirement: ChoiceRequirement) =
         match choice with
-        | EffectChoice.Optional _ -> requirement.Kind = ChoiceRequirementKind.Optional
         | EffectChoice.Amount(_, amount) ->
             requirement.Kind = ChoiceRequirementKind.Amount
             && amount >= requirement.Minimum
@@ -28,17 +27,6 @@ module internal ChoiceValidation =
         | EffectChoice.Attack(_, value) ->
             requirement.Kind = ChoiceRequirementKind.Attack
             && Seq.contains value requirement.EligibleEffects
-        | EffectChoice.Distribution(_, allocations) ->
-            requirement.Kind = ChoiceRequirementKind.Distribution
-            && (allocations |> Seq.sumBy (fun allocation -> allocation.Counters)) = requirement.Maximum
-            && (allocations
-                |> Seq.map (fun allocation -> allocation.Card)
-                |> Seq.distinct
-                |> Seq.length) = allocations.Length
-            && allocations
-               |> Seq.forall (fun allocation ->
-                   allocation.Counters >= 0
-                   && Seq.contains allocation.Card requirement.EligibleCards)
         | EffectChoice.Attachments(_, placements) ->
             requirement.Kind = ChoiceRequirementKind.Attachments
             && placements.Length >= requirement.Minimum
@@ -60,22 +48,10 @@ module internal ChoiceValidation =
 
         for requirement in requirements do
             if rejection.IsNone then
-                let declined =
-                    match requirement.DependsOnOptional with
-                    | ValueNone -> false
-                    | ValueSome dependency ->
-                        match
-                            choices
-                            |> Seq.tryPick (
-                                EffectChoice.optional dependency >> ValueOption.toOption
-                            )
-                        with
-                        | None ->
-                            rejection <- ValueSome CommandRejectionCode.ChoiceRequired
-                            false
-                        | Some accepted -> not accepted
+                if requirement.DependsOnOptional.IsSome then
+                    rejection <- ValueSome CommandRejectionCode.InvalidChoice
 
-                if rejection.IsNone && not declined then
+                if rejection.IsNone then
                     let matching =
                         choices
                         |> Seq.filter (fun choice -> choice.Id = requirement.Id)

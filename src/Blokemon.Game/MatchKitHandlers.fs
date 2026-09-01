@@ -7,6 +7,8 @@ open Blokemon.Game.MatchRules
 open Blokemon.Game.MatchKnockouts
 open Blokemon.Game.MatchPending
 open Blokemon.Game.MatchKitRules
+open Blokemon.Game.MatchWins
+open Blokemon.Game.PokemonPowers
 
 /// Playing a kit: every executable house rule is planned against a throwaway copy first, so a rule
 /// that turns out to need an answer parks the command before anything has moved.
@@ -43,8 +45,15 @@ module internal MatchKitHandlers =
                     let executableRules =
                         kit.HouseRules
                         |> Array.filter (fun rule ->
-                            not (containsOpcode rule.Program BlokemonOpcode.OncePerRound)
-                            && not (isDeclarativeHouseRule rule))
+                            not (containsOpcode rule.Program BlokemonOpcode.OncePerRound))
+
+                    let prehistoricPowerBlocksBreeder =
+                        executableRules
+                        |> Seq.exists (fun rule ->
+                            containsOpcode rule.Program BlokemonOpcode.PokemonBreeder)
+                        && builder.Cards
+                           |> Seq.exists (fun card ->
+                               hasActivePower catalog builder card BlokemonOpcode.PrehistoricPower)
 
                     let submissionRejection =
                         if isResuming then
@@ -76,104 +85,119 @@ module internal MatchKitHandlers =
                                 ValueSome(HandlerResult.rejectWith rejection requirements)
                             | ValueNone -> ValueNone
 
-                    match submissionRejection with
-                    | ValueSome result -> result
-                    | ValueNone ->
+                    if prehistoricPowerBlocksBreeder then
+                        HandlerResult.reject CommandRejectionCode.EffectUnavailable
+                    else
+                        match submissionRejection with
+                        | ValueSome result -> result
+                        | ValueNone ->
 
-                        // Every rule is planned against a throwaway copy first, so a rule that turns out to need an
-                        // answer parks the whole command before anything has moved on the real table.
-                        let planned =
-                            executableRules
-                            |> Array.tryPick (fun houseRule ->
-                                let effect = EffectId houseRule.MechanicalId
-
-                                let plan =
-                                    interpreter.Plan(
-                                        builder,
-                                        command.Actor,
-                                        kitCard,
-                                        effect,
-                                        houseRule.Program,
-                                        command.Choices,
-                                        false,
-                                        true,
-                                        beerMatResults
-                                    )
-
-                                if plan.IsApplied then
-                                    None
-                                elif
-                                    plan.Rejection <> ValueSome CommandRejectionCode.ChoiceRequired
-                                then
-                                    Some(
-                                        HandlerResult.rejectWith
-                                            (plan.Rejection
-                                             |> ValueOption.defaultValue
-                                                 CommandRejectionCode.InvalidChoice)
-                                            plan.Requirements
-                                    )
-                                else
-                                    Some(
-                                        pendEffect
-                                            builder
-                                            command
-                                            kitCard.Id
-                                            effect
-                                            plan.Requirements
-                                            beerMatResults
-                                            plan.BeerMatResults
-                                            false
-                                    ))
-
-                        match planned with
-                        | Some result -> result
-                        | None ->
-
-                            let executionRejection =
+                            // Every rule is planned against a throwaway copy first, so a rule that turns out to need an
+                            // answer parks the whole command before anything has moved on the real table.
+                            let planned =
                                 executableRules
                                 |> Array.tryPick (fun houseRule ->
-                                    let execution =
-                                        interpreter.Execute(
+                                    let effect = EffectId houseRule.MechanicalId
+
+                                    let plan =
+                                        interpreter.Plan(
                                             builder,
                                             command.Actor,
-                                            builder.Card kitCard.Id,
-                                            EffectId houseRule.MechanicalId,
+                                            kitCard,
+                                            effect,
                                             houseRule.Program,
                                             command.Choices,
                                             false,
                                             true,
-                                            ValueNone,
-                                            beerMatResults,
-                                            ValueNone
+                                            beerMatResults
                                         )
 
-                                    if execution.IsApplied then
+                                    if plan.IsApplied then
                                         None
-                                    else
+                                    elif
+                                        plan.Rejection
+                                        <> ValueSome CommandRejectionCode.ChoiceRequired
+                                    then
                                         Some(
                                             HandlerResult.rejectWith
-                                                (execution.Rejection
+                                                (plan.Rejection
                                                  |> ValueOption.defaultValue
                                                      CommandRejectionCode.InvalidChoice)
-                                                execution.Requirements
+                                                plan.Requirements
+                                        )
+                                    else
+                                        Some(
+                                            pendEffect
+                                                builder
+                                                command
+                                                kitCard.Id
+                                                effect
+                                                plan.Requirements
+                                                beerMatResults
+                                                plan.BeerMatResults
+                                                false
                                         ))
 
-                            match executionRejection with
+                            match planned with
                             | Some result -> result
                             | None ->
 
-                                if (builder.Card kitCard.Id).Zone = CardZone.Mitt then
-                                    builder.MoveCard(kitCard.Id, CardZone.EmptiesTray)
+                                let executionRejection =
+                                    executableRules
+                                    |> Array.tryPick (fun houseRule ->
+                                        let execution =
+                                            interpreter.Execute(
+                                                builder,
+                                                command.Actor,
+                                                builder.Card kitCard.Id,
+                                                EffectId houseRule.MechanicalId,
+                                                houseRule.Program,
+                                                command.Choices,
+                                                false,
+                                                true,
+                                                ValueNone,
+                                                beerMatResults
+                                            )
 
-                                builder.RoundUsage <-
-                                    { builder.RoundUsage with
-                                        KitsPlayed =
-                                            ImmutableArray.CreateRange(
-                                                Seq.append
-                                                    builder.RoundUsage.KitsPlayed
-                                                    [ kitCard.MechanicalId ]
-                                            ) }
+                                        if execution.IsApplied then
+                                            None
+                                        else
+                                            Some(
+                                                HandlerResult.rejectWith
+                                                    (execution.Rejection
+                                                     |> ValueOption.defaultValue
+                                                         CommandRejectionCode.InvalidChoice)
+                                                    execution.Requirements
+                                            ))
 
+                                match executionRejection with
+                                | Some result -> result
+                                | None ->
 
+                                    if (builder.Card kitCard.Id).Zone = CardZone.Mitt then
+                                        builder.MoveCard(kitCard.Id, CardZone.EmptiesTray)
 
-                                HandlerResult.accepted
+                                    builder.RoundUsage <-
+                                        { builder.RoundUsage with
+                                            KitsPlayed =
+                                                ImmutableArray.CreateRange(
+                                                    Seq.append
+                                                        builder.RoundUsage.KitsPlayed
+                                                        [ kitCard.MechanicalId ]
+                                                ) }
+
+                                    resolveSendHome
+                                        catalog
+                                        interpreter
+                                        builder
+                                        ImmutableArray<_>.Empty
+                                        ValueNone
+                                        false
+                                        ImmutableArray<_>.Empty
+                                    |> ignore
+
+                                    if builder.Phase = MatchPhase.Playing then
+                                        for player in builder.Players do
+                                            assignReplacement catalog builder player.Id
+
+                                    HandlerResult.accepted

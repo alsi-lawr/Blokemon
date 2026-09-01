@@ -12,8 +12,8 @@ open TUnit.Core
 /// to pay it with - from both sides of it.
 type TaxiFareTests() =
 
-    let Howard = "BLK-003" // fare 4
-    let Weedman = "BLK-001" // fare 2
+    let Howard = "BLK-003" // Retreat Cost 2
+    let Weedman = "BLK-001" // Retreat Cost 1
     let Nobody = "BLK-004" // whoever is waiting on the bench
 
     let First = MatchScenario.FirstPlayer
@@ -68,7 +68,7 @@ type TaxiFareTests() =
         let state = Table []
         let taxi = TaxiOffered state First
 
-        taxi.Affordability |> should equal (ActionAffordability.ShortOfTaxiFare 4)
+        taxi.Affordability |> should equal (ActionAffordability.ShortOfTaxiFare 2)
 
         MatchScenario.RejectionCode(MatchScenario.Engine().Apply(state, taxi.Command))
         |> should equal CommandRejectionCode.InvalidTaxiFare
@@ -77,7 +77,7 @@ type TaxiFareTests() =
     member _.``a taxi the attached vim covers should stay payable and should bring the bench bloke on``
         ()
         =
-        let state = Table [ "VIM-SOBER"; "VIM-SOBER"; "VIM-SOBER"; "VIM-SOBER" ]
+        let state = Table [ "VIM-SOBER"; "VIM-SOBER" ]
         let taxi = TaxiOffered state First
 
         taxi.Affordability |> should equal ActionAffordability.Payable
@@ -88,7 +88,7 @@ type TaxiFareTests() =
         (retreated.Card (Bench First).Id).Zone |> should equal CardZone.Oche
 
     [<Test>]
-    member _.``karaoke queen should offer and accept taxi only with fare two``() =
+    member _.``a two-cost retreat should offer and accept taxi only with two Energy``() =
         let table attached =
             MatchScenario.WithCards
                 (MatchScenario.BattleState "BLK-040" Weedman attached 95UL)

@@ -26,18 +26,13 @@ module internal ChoiceShapes =
         else
             match instruction.Opcode with
             | BlokemonOpcode.DealBoothDamage
-            | BlokemonOpcode.PlaceDamageCounters
             | BlokemonOpcode.HealDamage
             | BlokemonOpcode.ApplyRoughState
             | BlokemonOpcode.SearchStack
             | BlokemonOpcode.MoveCards
             | BlokemonOpcode.ChuckCards
-            | BlokemonOpcode.AttachVim
-            | BlokemonOpcode.MoveVim
             | BlokemonOpcode.ChuckVim
-            | BlokemonOpcode.SwapOche
-            | BlokemonOpcode.SendHome
-            | BlokemonOpcode.TransformFromStack -> true
+            | BlokemonOpcode.SwapOche -> true
             | _ -> false
 
     let haveDifferentMechanicalTypes

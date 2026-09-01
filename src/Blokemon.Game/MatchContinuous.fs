@@ -3,9 +3,10 @@ namespace Blokemon.Game
 open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
+open Blokemon.Game.PokemonPowers
 
-/// Continuous party tricks and declarative house rules are re-derived before every command, so a
-/// modifier that stopped applying stops mattering without anyone having to remember to remove it.
+/// Continuous Pokemon Powers are re-derived before every command, so a modifier that stopped
+/// applying stops mattering without anyone having to remember to remove it.
 module internal MatchContinuous =
 
     let refreshContinuousEffects
@@ -15,13 +16,13 @@ module internal MatchContinuous =
         =
         for source in builder.Cards |> Seq.sortBy (fun card -> card.Id) |> Seq.toArray do
             for trick in
-                catalog.PartyTricks source
+                effectivePartyTricks catalog builder source
                 |> Seq.filter (fun trick -> trick.Trigger = BlokemonTrigger.Continuous)
                 |> Seq.toArray do
                 let effect = EffectId trick.MechanicalId
                 builder.RemoveEffects(effect, source.Id)
 
-                if pokemonPowerIsEnabled catalog source then
+                if PokemonPowers.pokemonPowerIsEnabled catalog builder source then
                     interpreter.Execute(
                         builder,
                         source.Owner,
@@ -32,30 +33,3 @@ module internal MatchContinuous =
                         false
                     )
                     |> ignore
-
-        for source in
-            builder.Cards
-            |> Seq.filter (fun card -> card.Kind = CardKind.Kit && card.Zone = CardZone.Attached)
-            |> Seq.toArray do
-            for rule in
-                catalog.HouseRules source
-                |> Seq.filter (fun rule ->
-                    not (containsCondition rule.Program BlokemonCondition.Optional))
-                |> Seq.toArray do
-                let effect = EffectId rule.MechanicalId
-                builder.RemoveEffects(effect, source.Id)
-
-                interpreter.Execute(
-                    builder,
-                    source.Owner,
-                    source,
-                    effect,
-                    rule.Program,
-                    ImmutableArray<_>.Empty,
-                    false,
-                    true,
-                    ValueNone,
-                    ImmutableArray<_>.Empty,
-                    ValueNone
-                )
-                |> ignore

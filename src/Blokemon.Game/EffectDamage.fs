@@ -3,68 +3,52 @@ namespace Blokemon.Game
 open System.Collections.Immutable
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectSelection
+open Blokemon.Game.PokemonPowers
 
 /// Staging, ordering and placing the damage an effect deals: soft spots, stubborn streaks,
 /// prevention, reduction and reflection, applied in the printed order.
 module internal EffectDamage =
 
-    let private rankConditions =
-        [ BlokemonCondition.TargetIsRegular
-          BlokemonCondition.TargetIsSeasoned
-          BlokemonCondition.TargetIsLandlord ]
-
-    let private matchesTargetRank
-        (catalog: AuthorityCatalog)
-        (effect: TemporaryEffect)
-        (target: CardState)
-        =
-        if target.Kind <> CardKind.Bloke then
-            not (
-                effect.Conditions
-                |> Seq.exists (fun condition -> List.contains condition rankConditions)
-            )
-        else
-            let rank = (catalog.Bloke target.MechanicalId).Rank
-
-            (not (Seq.contains BlokemonCondition.TargetIsRegular effect.Conditions)
-             || rank = BlokemonRank.Regular)
-            && (not (Seq.contains BlokemonCondition.TargetIsSeasoned effect.Conditions)
-                || rank = BlokemonRank.Seasoned)
-            && (not (Seq.contains BlokemonCondition.TargetIsLandlord effect.Conditions)
-                || rank = BlokemonRank.Landlord)
-
     /// Whether an effect that names a rank applies to this attacker and this target.
     let effectMatchesAttack
-        (catalog: AuthorityCatalog)
-        (effect: TemporaryEffect)
-        (attacker: CardState)
-        (target: CardState)
+        (_: AuthorityCatalog)
+        (_: TemporaryEffect)
+        (_: CardState)
+        (_: CardState)
         =
-        if
-            Seq.contains BlokemonCondition.SourceIsRegular effect.Conditions
-            && (attacker.Kind <> CardKind.Bloke
-                || (catalog.Bloke attacker.MechanicalId).Rank <> BlokemonRank.Regular)
-        then
-            false
-        else
-            matchesTargetRank catalog effect target
+        true
 
     /// Whether an effect that names a rank applies to this card, without an attacker in play.
-    let effectMatchesCardRank
-        (catalog: AuthorityCatalog)
-        (effect: TemporaryEffect)
-        (card: CardState)
-        =
-        matchesTargetRank catalog effect card
+    let effectMatchesCardRank (_: AuthorityCatalog) (_: TemporaryEffect) (_: CardState) = true
 
-    let private applyOutgoingAttackDamage (runtime: EffectRuntime) (damage: int) =
+    let private applyOutgoingAttackDamage
+        (runtime: EffectRuntime)
+        (target: CardState)
+        (kind: DamageKind)
+        (damage: int)
+        =
+        let plusPower =
+            if kind <> DamageKind.Attack || target.Zone <> CardZone.Oche then
+                0
+            else
+                runtime.Builder.Effects
+                |> Seq.filter (fun effect ->
+                    effect.Owner = runtime.Actor
+                    && effect.TargetCard = ValueSome runtime.Source.Id
+                    && effect.Kind = TemporaryEffectKind.AttachedTrainer)
+                |> Seq.sumBy (fun effect -> max 0 effect.Amount)
+
         damage
+        + plusPower
         + (runtime.Builder.Effects
            |> Seq.filter (fun effect ->
                effect.Owner = runtime.Actor
                && effect.TargetCard = ValueSome runtime.Source.Id
                && effect.Kind = TemporaryEffectKind.ScaleNextAttackDamage
-               && effect.AppliesFromRound <= runtime.Builder.RoundNumber)
+               && effect.AppliesFromRound <= runtime.Builder.RoundNumber
+               && (effect.RelatedCards.Length = 0
+                   || effect.RelatedCards
+                      |> Seq.exists (fun related -> related.Value = runtime.Effect.Value)))
            |> Seq.sumBy (fun effect -> effect.Amount))
 
     let private applyAttackProtection
@@ -77,19 +61,68 @@ module internal EffectDamage =
             runtime.Builder.Effects
             |> Seq.filter (fun effect ->
                 effect.TargetCard = ValueSome target.Id
-                && effectMatchesAttack catalog effect runtime.Source target)
+                && effectMatchesAttack catalog effect runtime.Source target
+                && (effect.Kind <> TemporaryEffectKind.ReduceDamageFromAttacker
+                    || effect.SourceCard = runtime.Source.Id))
             |> Seq.toArray
 
         if
             targetEffects
-            |> Array.exists (fun effect -> effect.Kind = TemporaryEffectKind.PreventDamage)
+            |> Array.exists (fun effect ->
+                effect.Kind = TemporaryEffectKind.PreventDamage
+                || effect.Kind = TemporaryEffectKind.PreventEffects)
         then
             0
         else
             damage
             - (targetEffects
                |> Array.filter (fun effect -> effect.Kind = TemporaryEffectKind.ReduceDamage)
+               |> Array.append (
+                   targetEffects
+                   |> Array.filter (fun effect ->
+                       effect.Kind = TemporaryEffectKind.ReduceDamageFromAttacker)
+               )
                |> Array.sumBy (fun effect -> effect.Amount))
+
+    let private applyTrainerEffects
+        (catalog: AuthorityCatalog)
+        (runtime: EffectRuntime)
+        (target: CardState)
+        (damage: int)
+        =
+        applyAttackProtection catalog runtime target damage
+
+    let private applyPokemonPowerProtection
+        (catalog: AuthorityCatalog)
+        (runtime: EffectRuntime)
+        (target: CardState)
+        (damage: int)
+        =
+        if
+            hasActivePower catalog runtime.Builder target BlokemonOpcode.InvisibleWall
+            && damage >= 30
+        then
+            0
+        elif hasActivePower catalog runtime.Builder target BlokemonOpcode.KabutoArmor then
+            damage / 20 * 10
+        else
+            damage
+
+    let private applyAttackEffectProtection
+        (runtime: EffectRuntime)
+        (target: CardState)
+        (damage: int)
+        =
+        if
+            runtime.Builder.Effects
+            |> Seq.exists (fun effect ->
+                effect.TargetCard = ValueSome target.Id
+                && effect.Kind = TemporaryEffectKind.PreventDamageUpTo
+                && damage <= effect.Amount)
+        then
+            0
+        else
+            damage
 
     let private applySoftSpot
         (catalog: AuthorityCatalog)
@@ -97,10 +130,14 @@ module internal EffectDamage =
         (target: CardState)
         (damage: int)
         =
-        if runtime.IgnoreSoftSpot || target.Kind <> CardKind.Bloke then
+        if target.Kind <> CardKind.Bloke then
             damage
         else
-            let attackerTypes = catalog.MechanicalTypes(runtime.Builder.Card runtime.Source.Id)
+            let attackerTypes =
+                effectiveMechanicalTypes
+                    catalog
+                    runtime.Builder
+                    (runtime.Builder.Card runtime.Source.Id)
 
             let softSpotEffects =
                 runtime.Builder.Effects
@@ -126,7 +163,7 @@ module internal EffectDamage =
                     | Some effect -> effect.MechanicalTypes
                     | None ->
                         ImmutableArray.CreateRange(
-                            (catalog.Bloke target.MechanicalId).SoftSpots
+                            (effectiveBloke catalog runtime.Builder target).SoftSpots
                             |> Array.map (fun softSpot -> softSpot.MechanicalType)
                         )
 
@@ -145,11 +182,30 @@ module internal EffectDamage =
         (target: CardState)
         (damage: int)
         =
-        if runtime.IgnoreStubbornStreak || target.Kind <> CardKind.Bloke then
+        if target.Kind <> CardKind.Bloke then
             damage
         else
-            let attackerTypes = catalog.MechanicalTypes(runtime.Builder.Card runtime.Source.Id)
-            let stubborn = (catalog.Bloke target.MechanicalId).StubbornStreaks
+            let attackerTypes =
+                effectiveMechanicalTypes
+                    catalog
+                    runtime.Builder
+                    (runtime.Builder.Card runtime.Source.Id)
+
+            let changedResistance =
+                runtime.Builder.Effects
+                |> Seq.tryFindBack (fun effect ->
+                    effect.TargetCard = ValueSome target.Id
+                    && effect.Kind = TemporaryEffectKind.ChangeResistance)
+
+            let stubborn =
+                match changedResistance with
+                | Some effect ->
+                    effect.MechanicalTypes
+                    |> Seq.map (fun value ->
+                        { MechanicalType = value
+                          Modifier = "-30" })
+                    |> Seq.toArray
+                | None -> (effectiveBloke catalog runtime.Builder target).StubbornStreaks
 
             if
                 stubborn
@@ -177,7 +233,7 @@ module internal EffectDamage =
                 match step with
                 | BlokemonDamageResolutionStep.PrintedOrProgramBaseDamage -> resolved
                 | BlokemonDamageResolutionStep.EffectsOnAttackingBloke ->
-                    applyOutgoingAttackDamage runtime resolved
+                    applyOutgoingAttackDamage runtime target kind resolved
                 | BlokemonDamageResolutionStep.StopWhenDamageIsZero ->
                     stoppedAtZero <- resolved = 0
                     resolved
@@ -190,10 +246,13 @@ module internal EffectDamage =
                     kind = DamageKind.Attack && not stoppedAtZero
                     ->
                     applyStubbornStreak catalog runtime target resolved
+                    |> applyAttackEffectProtection runtime target
                 | BlokemonDamageResolutionStep.Resistance -> resolved
                 | BlokemonDamageResolutionStep.TrainerEffects when not stoppedAtZero ->
-                    applyAttackProtection catalog runtime target resolved
+                    applyTrainerEffects catalog runtime target resolved
                 | BlokemonDamageResolutionStep.TrainerEffects -> resolved
+                | BlokemonDamageResolutionStep.PokemonPowers when not stoppedAtZero ->
+                    applyPokemonPowerProtection catalog runtime target resolved
                 | BlokemonDamageResolutionStep.PokemonPowers -> resolved
                 | BlokemonDamageResolutionStep.PlaceDamageCounters ->
                     let clamped = max 0 resolved
@@ -210,18 +269,35 @@ module internal EffectDamage =
         resolved
 
     let private addReflectedDamage (runtime: EffectRuntime) (target: CardState) (damage: int) =
-        if
-            runtime.Builder.Effects
-            |> Seq.exists (fun effect ->
-                effect.TargetCard = ValueSome target.Id
-                && effect.Owner <> runtime.Actor
-                && effect.Kind = TemporaryEffectKind.ReflectAttackDamage
-                && effect.AppliesFromRound <= runtime.Builder.RoundNumber)
-        then
+        let rec reflectedAmount (program: BlokemonEffectInstruction array) =
+            program
+            |> Seq.tryPick (fun instruction ->
+                if instruction.Opcode = BlokemonOpcode.ReflectAttackDamage then
+                    Some instruction.Amount
+                else
+                    reflectedAmount instruction.Then
+                    |> Option.orElseWith (fun () -> reflectedAmount instruction.Otherwise))
+
+        let amount =
+            if
+                hasActivePower
+                    runtime.Catalog
+                    runtime.Builder
+                    target
+                    BlokemonOpcode.ReflectAttackDamage
+            then
+                effectivePartyTricks runtime.Catalog runtime.Builder target
+                |> Seq.tryPick (fun trick -> reflectedAmount trick.Program)
+            else
+                None
+
+        match amount with
+        | Some reflected ->
             runtime.PendingOtherDamage.Add
                 { Target = runtime.Source.Id
-                  Amount = damage
+                  Amount = if reflected > 0 then reflected else damage
                   Kind = DamageKind.PlacedCounter }
+        | None -> ()
 
     let pendingSendsHome (catalog: AuthorityCatalog) (runtime: EffectRuntime) =
         runtime.PendingAttackDamage
@@ -248,7 +324,7 @@ module internal EffectDamage =
                 else
                     pending.Amount
 
-            damage + target.Damage >= catalog.StayingPower target)
+            damage + target.Damage >= effectiveStayingPower catalog runtime.Builder target)
 
     let addPendingDamage
         (catalog: AuthorityCatalog)
@@ -317,6 +393,8 @@ module internal EffectDamage =
             runtime.AttackDamageTargets.Add target.Id |> ignore
             addReflectedDamage runtime target damage
 
+        runtime.ResolvedAttackDamage[target.Id] <- damage
+
     let resolveDamage (catalog: AuthorityCatalog) (runtime: EffectRuntime) =
         for pending in runtime.PendingAttackDamage |> Seq.toArray do
             let target = runtime.Builder.Card pending.Target
@@ -335,10 +413,18 @@ module internal EffectDamage =
             | _ -> place catalog runtime pending pending.Amount
 
         for pending in runtime.PendingOtherDamage |> Seq.toArray do
+            let target = runtime.Builder.Card pending.Target
+
+            let amount =
+                if pending.Kind = DamageKind.SelfDamage then
+                    applyAttackProtection catalog runtime target pending.Amount |> max 0
+                else
+                    pending.Amount
+
             runtime.Builder.PlaceDamage(
                 runtime.Actor,
                 pending.Target,
-                pending.Amount,
+                amount,
                 pending.Kind,
                 ValueSome runtime.Source.Id
             )

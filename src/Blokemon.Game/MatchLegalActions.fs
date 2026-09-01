@@ -105,12 +105,12 @@ module internal MatchLegalActions =
                     ImmutableArray<_>.Empty
                     (MatchAction.ChooseOpening(oche.Id, ImmutableArray<_>.Empty)))
 
-    let replacementActions (state: MatchState) (actor: PlayerId) =
+    let replacementActions (catalog: AuthorityCatalog) (state: MatchState) (actor: PlayerId) =
         if state.ReplacementPlayer <> ValueSome actor then
             Seq.empty
         else
             state.CardsIn(actor, CardZone.Booth)
-            |> Seq.filter (fun card -> card.Kind = CardKind.Bloke)
+            |> Seq.filter catalog.CountsAsPokemon
             |> Seq.map (fun card ->
                 simple
                     LegalActionKind.ChooseReplacement
@@ -202,7 +202,7 @@ module internal MatchLegalActions =
         | MatchPhase.Playing -> playingActions catalog interpreter state actor
         | MatchPhase.AwaitingEffectChoice -> effectChoiceActions state actor
         | MatchPhase.AwaitingTriggerChoice -> triggerChoiceActions state actor
-        | MatchPhase.AwaitingReplacement -> replacementActions state actor
+        | MatchPhase.AwaitingReplacement -> replacementActions catalog state actor
         | MatchPhase.Complete -> Seq.empty
         | other -> failwithf "Unhandled match phase %A." other
 

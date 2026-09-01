@@ -3,6 +3,7 @@ namespace Blokemon.Game
 open System
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectTargeting
+open Blokemon.Game.PokemonPowers
 
 /// How a resolved candidate set narrows to the cards an instruction actually acts on, and how the
 /// authority's value sources read off the live state.
@@ -35,13 +36,7 @@ module internal EffectSelection =
         (path: string)
         : CardState seq =
         let candidates =
-            resolveCandidates
-                catalog
-                runtime.Builder
-                runtime.Actor
-                runtime.Source
-                instruction
-                runtime.TriggerContext
+            resolveCandidates catalog runtime.Builder runtime.Actor runtime.Source instruction
             |> Seq.toArray
 
         if instruction.Selection = BlokemonSelection.BeerMat && runtime.BadgeSides = 0 then
@@ -51,14 +46,6 @@ module internal EffectSelection =
             | BlokemonSelection.Chosen
             | BlokemonSelection.OtherSideChosen
             | BlokemonSelection.UpTo -> choiceCards runtime instruction path candidates
-            | BlokemonSelection.SeededRandom ->
-                candidates
-                |> Seq.sortBy (fun _ -> runtime.Builder.Random.NextInt Int32.MaxValue)
-                |> Seq.truncate instruction.TargetCount
-            | BlokemonSelection.AnyDistribution ->
-                match runtime.CardsChoice(choiceId runtime.Effect path "cards") with
-                | ValueSome values -> values |> Seq.map runtime.Builder.Card
-                | ValueNone -> candidates
             | BlokemonSelection.All when instruction.Opcode = BlokemonOpcode.SearchStack ->
                 candidates |> Seq.truncate instruction.Amount
             | BlokemonSelection.All ->
@@ -69,7 +56,6 @@ module internal EffectSelection =
                     else
                         candidates.Length
                 )
-            | BlokemonSelection.Top -> candidates |> Seq.truncate instruction.Amount
             | _ -> candidates
 
     let resolveValue (runtime: EffectRuntime) (instruction: BlokemonEffectInstruction) =
@@ -86,31 +72,43 @@ module internal EffectSelection =
             match other () with
             | ValueSome card -> card.Damage / 10
             | ValueNone -> 0
-        | BlokemonValueSource.OtherBoothCount ->
-            builder.CardsIn(builder.Other runtime.Actor, CardZone.Booth) |> Seq.length
         | BlokemonValueSource.OwnBoothCount ->
             builder.CardsIn(runtime.Actor, CardZone.Booth) |> Seq.length
-        | BlokemonValueSource.OwnAttachedVim ->
-            attachedVim builder runtime.Source.Id
-            |> Seq.filter (fun vim ->
-                instruction.MechanicalTypes.Length = 0
-                || Array.contains
-                    (runtime.Catalog.Vim vim.MechanicalId).MechanicalType
-                    instruction.MechanicalTypes)
-            |> Seq.length
         | BlokemonValueSource.OtherAttachedVim ->
             match other () with
-            | ValueSome card -> attachedVim builder card.Id |> Seq.length
+            | ValueSome card -> attachedVim runtime.Catalog builder card.Id |> Seq.length
             | ValueNone -> 0
         | BlokemonValueSource.BadgeSides -> runtime.BadgeSides
-        | BlokemonValueSource.CardsChuckedByEffect -> runtime.CardsChucked
-        | BlokemonValueSource.KitCardsInOtherMitt ->
-            builder.CardsIn(builder.Other runtime.Actor, CardZone.Mitt)
-            |> Seq.filter (fun card -> card.Kind = CardKind.Kit)
+        | BlokemonValueSource.ExtraTypedEnergy ->
+            let energyType = instruction.MechanicalTypes |> Array.tryHead
+
+            match energyType, runtime.Catalog.Attack runtime.Effect with
+            | Some selectedType, ValueSome attack ->
+                let transforming =
+                    hasActivePower runtime.Catalog builder runtime.Source BlokemonOpcode.Transform
+
+                let attached =
+                    (builder.Card runtime.Source.Id).Attachments
+                    |> Seq.map builder.Card
+                    |> Seq.collect (effectiveEnergy runtime.Catalog builder runtime.Source)
+                    |> Seq.filter (fun value -> transforming || value = selectedType)
+                    |> Seq.length
+
+                let required =
+                    if transforming then
+                        attack.VimCost.Length
+                    else
+                        attack.VimCost
+                        |> Seq.filter (fun value -> value = selectedType)
+                        |> Seq.length
+
+                min instruction.TargetCount (max 0 (attached - required))
+            | _ -> 0
+        | BlokemonValueSource.NamedPokemonInPlay ->
+            builder.Cards
+            |> Seq.filter (fun card ->
+                card.Owner = runtime.Actor
+                && isInPlay card
+                && instruction.RelatedIds |> Array.contains card.MechanicalId.Value)
             |> Seq.length
-        | BlokemonValueSource.QualifyingChuckedCards -> runtime.QualifyingChuckedCards
-        | _ ->
-            max
-                0
-                (instruction.Amount
-                 - (builder.CardsIn(runtime.Actor, CardZone.Mitt) |> Seq.length))
+        | unsupported -> invalidOp $"Unsupported value source {int unsupported}."

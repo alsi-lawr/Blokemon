@@ -5,6 +5,7 @@ open System.Collections.Immutable
 open System.Linq
 open Blokemon.Core.SetDesign
 open Blokemon.Game.EffectDamage
+open Blokemon.Game.PokemonPowers
 
 /// What a handler returns: either accepted, or a rejection plus the requirements the caller still
 /// has to answer.
@@ -36,15 +37,6 @@ module internal MatchRules =
 
     let isInPlay (card: CardState) =
         card.Zone = CardZone.Oche || card.Zone = CardZone.Booth
-
-    let pokemonPowerIsEnabled (catalog: AuthorityCatalog) (card: CardState) =
-        card.Kind = CardKind.Bloke
-        && isInPlay card
-        && not (
-            card.RoughStates
-            |> Seq.exists (fun entry ->
-                Array.contains entry.State catalog.Manifest.BaseRules.PokemonPower.DisabledBy)
-        )
 
     /// A player who started over waits for the one who did not to finish setting up. Fewest
     /// mulligans places first, and an equal count leaves both free to place in either order.
@@ -84,55 +76,32 @@ module internal MatchRules =
             || containsOpcode instruction.Then opcode
             || containsOpcode instruction.Otherwise opcode)
 
-    let rec containsCondition
-        (program: BlokemonEffectInstruction array)
-        (condition: BlokemonCondition)
-        =
-        program
-        |> Array.exists (fun instruction ->
-            (instruction.Predicates
-             |> Array.exists (fun predicate -> predicate.Condition = condition))
-            || containsCondition instruction.Then condition
-            || containsCondition instruction.Otherwise condition)
-
-    let rec private flattenProgram (program: BlokemonEffectInstruction array) =
-        program
-        |> Seq.collect (fun instruction ->
-            Seq.append
-                (Seq.singleton instruction)
-                (Seq.append
-                    (flattenProgram instruction.Then)
-                    (flattenProgram instruction.Otherwise)))
-
-    let isDeclarativeHouseRule (rule: BlokemonHouseRule) =
-        flattenProgram rule.Program
-        |> Seq.forall (fun instruction ->
-            instruction.Opcode = BlokemonOpcode.Conditional
-            || instruction.Opcode = BlokemonOpcode.ContinuousPartyTrick)
-
     let effectiveStayingPower (catalog: AuthorityCatalog) (card: CardState) =
         catalog.StayingPower card
 
+    let effectiveStayingPowerAt
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (card: CardState)
+        =
+        PokemonPowers.effectiveStayingPower catalog builder card
+
     let effectiveTaxiFare (catalog: AuthorityCatalog) (builder: MatchBuilder) (card: CardState) =
-        let mutable fare = catalog.TaxiFare card
+        let mutable fare = PokemonPowers.effectiveTaxiFare catalog builder card
 
         for modifier in
             builder.Effects
             |> Seq.filter (fun effect ->
-                (effect.TargetCard = ValueSome card.Id || effect.TargetCard.IsNone)
+                effect.TargetCard = ValueSome card.Id
                 && effect.Kind = TemporaryEffectKind.ModifyTaxiFare
                 && effectMatchesCardRank catalog effect card)
             |> Seq.toArray do
-            let continuous =
-                match catalog.PartyTrick modifier.SourceEffect with
-                | ValueSome trick -> trick.Trigger = BlokemonTrigger.Continuous
-                | ValueNone -> false
-
-            fare <-
-                if modifier.MechanicalTypes.Length = 0 || continuous then
-                    0
-                else
-                    max 0 (fare + modifier.Amount)
+            match builder.FindCard modifier.SourceCard with
+            | ValueSome source when
+                hasActivePower catalog builder source BlokemonOpcode.ModifyTaxiFare
+                ->
+                fare <- max 0 (fare + modifier.Amount)
+            | _ -> ()
 
         fare
 
@@ -142,64 +111,48 @@ module internal MatchRules =
         (attacker: CardState)
         (attack: BlokemonAttack)
         =
-        if
-            builder.Effects
-            |> Seq.exists (fun effect ->
-                effect.TargetCard = ValueSome attacker.Id
-                && effect.Kind = TemporaryEffectKind.ModifyAttackCost
-                && effectMatchesCardRank catalog effect attacker
-                && effect.Amount < 0)
-        then
-            true
-        else
-            let costs = ResizeArray<BlokemonMechanicalType> attack.VimCost
+        let transforming = hasActivePower catalog builder attacker BlokemonOpcode.Transform
 
-            for effect in
-                builder.Effects
-                |> Seq.filter (fun effect ->
-                    effect.TargetCard = ValueSome attacker.Id
-                    && effect.Kind = TemporaryEffectKind.ModifyAttackCost
-                    && effectMatchesCardRank catalog effect attacker
-                    && effect.Amount > 0)
-                |> Seq.toArray do
-                if effect.MechanicalTypes.Length = 0 then
-                    costs.AddRange(Seq.replicate effect.Amount BlokemonMechanicalType.Colorless)
+        let costs =
+            if transforming then
+                attack.VimCost |> Seq.map (fun _ -> BlokemonMechanicalType.Colorless)
+            else
+                attack.VimCost
+
+        let available =
+            ResizeArray<BlokemonMechanicalType>(
+                attacker.Attachments
+                |> Seq.map builder.Card
+                |> Seq.collect (PokemonPowers.effectiveEnergy catalog builder attacker)
+            )
+
+        let mutable payable = true
+
+        for typedCost in
+            costs
+            |> Seq.filter (fun cost -> cost <> BlokemonMechanicalType.Colorless)
+            |> Seq.toArray do
+            if payable then
+                let index = available.FindIndex(fun vim -> vim = typedCost)
+
+                if index < 0 then
+                    payable <- false
                 else
-                    costs.AddRange effect.MechanicalTypes
+                    available.RemoveAt index
 
-            let available =
-                ResizeArray<BlokemonMechanicalType>(
-                    attacker.Attachments
-                    |> Seq.map builder.Card
-                    |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
-                    |> Seq.collect (fun card -> (catalog.Vim card.MechanicalId).Provides)
-                )
+        payable
+        && available.Count
+           >= (costs
+               |> Seq.filter (fun cost -> cost = BlokemonMechanicalType.Colorless)
+               |> Seq.length)
 
-            let mutable payable = true
-
-            for typedCost in
-                costs
-                |> Seq.filter (fun cost -> cost <> BlokemonMechanicalType.Colorless)
-                |> Seq.toArray do
-                if payable then
-                    let index = available.FindIndex(fun vim -> vim = typedCost)
-
-                    if index < 0 then
-                        payable <- false
-                    else
-                        available.RemoveAt index
-
-            payable
-            && available.Count
-               >= (costs
-                   |> Seq.filter (fun cost -> cost = BlokemonMechanicalType.Colorless)
-                   |> Seq.length)
-
-    let energyUnits (catalog: AuthorityCatalog) (card: CardState) =
-        if card.Kind = CardKind.Vim then
-            (catalog.Vim card.MechanicalId).Provides.Length
-        else
-            0
+    let energyUnits
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (host: CardState)
+        (card: CardState)
+        =
+        PokemonPowers.effectiveEnergy catalog builder host card |> Seq.length
 
     let retreatPaymentIsValid
         (catalog: AuthorityCatalog)
@@ -211,7 +164,7 @@ module internal MatchRules =
         let attachedEnergy =
             outgoing.Attachments
             |> Seq.map builder.Card
-            |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
+            |> Seq.filter (fun card -> energyUnits catalog builder outgoing card > 0)
             |> Seq.toArray
 
         let chosen = selected |> Seq.map builder.FindCard |> Seq.toArray
@@ -224,20 +177,31 @@ module internal MatchRules =
         && (if fare = 0 then
                 selected.Length = 0
             else
-                let supplied = chosen |> Array.sumBy (fun card -> energyUnits catalog card.Value)
+                let supplied =
+                    chosen
+                    |> Array.sumBy (fun card -> energyUnits catalog builder outgoing card.Value)
 
                 supplied >= fare
                 && chosen
-                   |> Array.forall (fun card -> supplied - energyUnits catalog card.Value < fare))
+                   |> Array.forall (fun card ->
+                       supplied - energyUnits catalog builder outgoing card.Value < fare))
 
-    let defaultRetreatPayment (catalog: AuthorityCatalog) (attachments: CardState seq) (fare: int) =
+    let defaultRetreatPayment
+        (catalog: AuthorityCatalog)
+        (builder: MatchBuilder)
+        (outgoing: CardState)
+        (attachments: CardState seq)
+        (fare: int)
+        =
         let chosen = ResizeArray<CardInstanceId>()
         let mutable supplied = 0
 
-        for energy in attachments |> Seq.sortBy (fun card -> -energyUnits catalog card, card.Id) do
+        for energy in
+            attachments
+            |> Seq.sortBy (fun card -> -energyUnits catalog builder outgoing card, card.Id) do
             if supplied < fare then
                 chosen.Add energy.Id
-                supplied <- supplied + energyUnits catalog energy
+                supplied <- supplied + energyUnits catalog builder outgoing energy
 
         ImmutableArray.CreateRange chosen, supplied >= fare
 

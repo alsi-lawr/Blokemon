@@ -22,7 +22,6 @@ module internal MatchLegalChoices =
 
     let private stableChoice (requirement: ChoiceRequirement) : EffectChoice seq =
         match requirement.Kind with
-        | ChoiceRequirementKind.Optional -> [ EffectChoice.Optional(requirement.Id, true) ]
         | ChoiceRequirementKind.Amount ->
             [ EffectChoice.Amount(requirement.Id, requirement.Minimum) ]
         | ChoiceRequirementKind.Cards ->
@@ -41,16 +40,6 @@ module internal MatchLegalChoices =
             requirement.EligibleEffects
             |> Seq.truncate 1
             |> Seq.map (fun effect -> EffectChoice.Attack(requirement.Id, effect))
-        | ChoiceRequirementKind.Distribution ->
-            requirement.EligibleCards
-            |> Seq.truncate 1
-            |> Seq.map (fun card ->
-                EffectChoice.Distribution(
-                    requirement.Id,
-                    ImmutableArray.Create
-                        { Card = card
-                          Counters = requirement.Maximum }
-                ))
         | ChoiceRequirementKind.Attachments ->
             requirement.EligibleTargets
             |> Seq.truncate 1
@@ -68,101 +57,15 @@ module internal MatchLegalChoices =
     let stableChoices (requirements: ImmutableArray<ChoiceRequirement>) =
         ImmutableArray.CreateRange(requirements |> Seq.collect stableChoice)
 
-    /// Promotion triggers read the table as it will be after the swap, so the requirements have to be
-    /// derived from a projected state rather than the one on the table now.
     let promotionChoiceRequirements
-        (catalog: AuthorityCatalog)
-        (interpreter: BlokemonInterpreter)
-        (state: MatchState)
-        (actor: PlayerId)
-        (promotion: CardState)
-        (target: CardState)
+        (_: AuthorityCatalog)
+        (_: BlokemonInterpreter)
+        (_: MatchState)
+        (_: PlayerId)
+        (_: CardState)
+        (_: CardState)
         =
-        let rules = catalog.Manifest.BaseRules.Promotion
-
-        let promotedCards =
-            state.Cards
-            |> Seq.map (fun card ->
-                if card.Id = target.Id then
-                    { card with
-                        Zone = CardZone.Attached
-                        AttachedTo = ValueSome promotion.Id
-                        Attachments = ImmutableArray<_>.Empty
-                        RoughStates = ImmutableArray<_>.Empty }
-                elif card.Id = promotion.Id then
-                    { card with
-                        Zone = target.Zone
-                        StackPosition = target.StackPosition
-                        Damage =
-                            if rules.RetainDamageAndAttachedCards then
-                                target.Damage
-                            else
-                                0
-                        Attachments =
-                            if rules.RetainDamageAndAttachedCards then
-                                target.Attachments
-                            else
-                                ImmutableArray<_>.Empty
-                        UnderlyingCards =
-                            ImmutableArray.CreateRange(
-                                Seq.append target.UnderlyingCards [ target.Id ]
-                            )
-                        RoughStates =
-                            if rules.ClearRoughStatesAndAttackEffects then
-                                ImmutableArray<_>.Empty
-                            else
-                                target.RoughStates
-                        EnteredAtOwnerRound = target.EnteredAtOwnerRound
-                        LastPromotedRound = state.RoundNumber }
-                elif Seq.contains card.Id target.Attachments then
-                    if rules.RetainDamageAndAttachedCards then
-                        { card with
-                            AttachedTo = ValueSome promotion.Id }
-                    else
-                        { card with
-                            Zone = CardZone.EmptiesTray
-                            AttachedTo = ValueNone }
-                else
-                    card)
-
-        let promotedEffects =
-            if rules.ClearRoughStatesAndAttackEffects then
-                state.Effects
-            else
-                ImmutableArray.CreateRange(
-                    state.Effects
-                    |> Seq.map (fun effect ->
-                        { effect with
-                            SourceCard =
-                                if effect.SourceCard = target.Id then
-                                    promotion.Id
-                                else
-                                    effect.SourceCard
-                            TargetCard =
-                                if effect.TargetCard = ValueSome target.Id then
-                                    ValueSome promotion.Id
-                                else
-                                    effect.TargetCard })
-                )
-
-        let promotedState =
-            { state with
-                Cards = ImmutableArray.CreateRange promotedCards
-                Effects = promotedEffects }
-
-        ImmutableArray.CreateRange(
-            catalog.PartyTricks promotion
-            |> Seq.filter (fun trick -> trick.Trigger = BlokemonTrigger.OnPromotionFromMitt)
-            |> Seq.collect (fun trick ->
-                interpreter.GetChoiceRequirements(
-                    promotedState,
-                    { Actor = actor
-                      Source = promotion.Id
-                      Effect = EffectId trick.MechanicalId
-                      Choices = ImmutableArray<_>.Empty }
-                ))
-            |> fun requirements -> requirements.DistinctBy(fun requirement -> requirement.Id)
-        )
+        ImmutableArray<_>.Empty
 
     let invocationRequirements
         (interpreter: BlokemonInterpreter)

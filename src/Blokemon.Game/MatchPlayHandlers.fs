@@ -6,6 +6,8 @@ open Blokemon.Core.SetDesign
 open Blokemon.Game.MatchRules
 open Blokemon.Game.MatchKnockouts
 open Blokemon.Game.MatchPending
+open Blokemon.Game.MatchWins
+open Blokemon.Game.PokemonPowers
 
 /// Promoting a bloke and taxiing one in from the booth: the two commands that reshape who is at the
 /// oche without running a kit.
@@ -13,7 +15,7 @@ module internal MatchPlayHandlers =
 
     let promote
         (catalog: AuthorityCatalog)
-        (interpreter: BlokemonInterpreter)
+        (_: BlokemonInterpreter)
         (builder: MatchBuilder)
         (command: MatchCommand)
         (promotionId: CardInstanceId)
@@ -36,7 +38,10 @@ module internal MatchPlayHandlers =
                     || target.Owner <> command.Actor
                     || promotion.Kind <> CardKind.Bloke
                     || promotion.Zone <> CardZone.Mitt
-                    || not (isInPlay target)
+                    || builder.Cards
+                       |> Seq.exists (fun card ->
+                           hasActivePower catalog builder card BlokemonOpcode.PrehistoricPower)
+                    || not (isInPlay target && catalog.CountsAsPokemon target)
                     || (rules.NotOnEitherFirstRound && player.RoundsStarted <= 1)
                     || (rules.NotFirstRoundInPlay
                         && target.EnteredAtOwnerRound = player.RoundsStarted)
@@ -94,53 +99,11 @@ module internal MatchPlayHandlers =
                             builder.DetachTo(attachmentId, CardZone.EmptiesTray)
 
                     if rules.ClearRoughStatesAndAttackEffects then
-                        builder.RemoveEffectsFor target.Id
+                        builder.ClearAndRetargetPokemonEffects(target.Id, promotion.Id)
                     else
                         builder.RetargetEffects(target.Id, promotion.Id)
 
-                    let mutable rejected = ValueNone
-
-                    for trick in
-                        catalog.PartyTricks(builder.Card promotion.Id)
-                        |> Seq.filter (fun trick ->
-                            trick.Trigger = BlokemonTrigger.OnPromotionFromMitt)
-                        |> Seq.toArray do
-                        if rejected.IsNone then
-                            let execution =
-                                interpreter.Execute(
-                                    builder,
-                                    command.Actor,
-                                    builder.Card promotion.Id,
-                                    EffectId trick.MechanicalId,
-                                    trick.Program,
-                                    command.Choices,
-                                    false
-                                )
-
-                            if not execution.IsApplied then
-                                rejected <-
-                                    ValueSome(
-                                        HandlerResult.rejectWith
-                                            (execution.Rejection
-                                             |> ValueOption.defaultValue
-                                                 CommandRejectionCode.InvalidChoice)
-                                            execution.Requirements
-                                    )
-                            else
-                                resolveSendHome
-                                    catalog
-                                    interpreter
-                                    builder
-                                    execution.ForcedSendHome
-                                    ValueNone
-                                    false
-                                    ImmutableArray<_>.Empty
-                                    0
-                                |> ignore
-
-                    match rejected with
-                    | ValueSome result -> result
-                    | ValueNone -> HandlerResult.accepted
+                    HandlerResult.accepted
 
     let taxi
         (catalog: AuthorityCatalog)
@@ -159,14 +122,15 @@ module internal MatchPlayHandlers =
             | ValueSome outgoing, ValueSome incoming ->
 
                 if
-                    outgoing.Kind <> CardKind.Bloke
-                    || incoming.Kind <> CardKind.Bloke
+                    not (catalog.CountsAsPokemon outgoing)
+                    || not (catalog.CountsAsPokemon incoming)
                     || incoming.Owner <> actor
                     || incoming.Zone <> CardZone.Booth
                 then
                     HandlerResult.reject CommandRejectionCode.WrongZone
                 elif
-                    builder.RoundUsage.TaxisUsed >= catalog.Manifest.BaseRules.Taxi.PerRound
+                    outgoing.Kind = CardKind.Kit
+                    || builder.RoundUsage.TaxisUsed >= catalog.Manifest.BaseRules.Taxi.PerRound
                     || outgoing.RoughStates
                        |> Seq.exists (fun entry -> (catalog.RoughState entry.State).PreventsTaxi)
                     || builder.Effects
@@ -176,13 +140,7 @@ module internal MatchPlayHandlers =
                 then
                     HandlerResult.reject CommandRejectionCode.EffectUnavailable
                 else
-                    let fare = effectiveTaxiFare catalog builder outgoing
-
-                    let attachedVim =
-                        outgoing.Attachments
-                        |> Seq.map builder.Card
-                        |> Seq.filter (fun card -> card.Kind = CardKind.Vim)
-                        |> Seq.toArray
+                    let fare = MatchRules.effectiveTaxiFare catalog builder outgoing
 
                     if not (retreatPaymentIsValid catalog builder outgoing fare vimToChuck) then
                         HandlerResult.reject CommandRejectionCode.InvalidTaxiFare
@@ -222,7 +180,7 @@ module internal MatchPlayHandlers =
                                 catalog.Manifest.BaseRules.Taxi.MovingToBoothClearsRoughStatesAndAttackEffects
                             then
                                 builder.ClearRoughStates(actor, outgoing.Id)
-                                builder.RemoveEffectsFor(outgoing.Id, true)
+                                builder.ClearPokemonEffects outgoing.Id
 
                             if not catalog.Manifest.BaseRules.Taxi.AttachedCardsAndDamageRemain then
                                 let moved = builder.Card outgoing.Id
