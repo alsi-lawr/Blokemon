@@ -49,6 +49,31 @@ module private CpuPolicyScenarios =
             RelatedCards = independentArray effect.RelatedCards
             Conditions = independentArray effect.Conditions }
 
+    let superPotionState () =
+        let original =
+            MatchScenario.BattleStateWith
+                "BLK-040"
+                "BLK-004"
+                [ "VIM-DODGY" ]
+                3505UL
+                (ImmutableArray.Create(MatchScenario.RoughState BlokemonRoughState.NoddedOff 2))
+                ImmutableArray<_>.Empty
+                ImmutableArray<_>.Empty
+
+        let damaged =
+            { original.Card(CardInstanceId "attacker") with
+                Damage = 30 }
+
+        let potion =
+            MatchScenario.PlainCard
+                "super-potion"
+                "KIT-027"
+                MatchScenario.FirstPlayer
+                CardZone.Mitt
+                -1
+
+        MatchScenario.WithCards original [ damaged; potion ], damaged, potion
+
     let highCombinationWildfireState () =
         let original = MatchScenario.BattleState "BLK-146" "BLK-004" [] 3515UL
 
@@ -177,29 +202,7 @@ type CpuPolicyTests() =
     member _.``normal should use the full useful Super Potion amount instead of paying for no healing``
         ()
         =
-        let original =
-            MatchScenario.BattleStateWith
-                "BLK-040"
-                "BLK-004"
-                [ "VIM-DODGY" ]
-                3505UL
-                (ImmutableArray.Create(MatchScenario.RoughState BlokemonRoughState.NoddedOff 2))
-                ImmutableArray<_>.Empty
-                ImmutableArray<_>.Empty
-
-        let damaged =
-            { original.Card(CardInstanceId "attacker") with
-                Damage = 30 }
-
-        let potion =
-            MatchScenario.PlainCard
-                "super-potion"
-                "KIT-027"
-                MatchScenario.FirstPlayer
-                CardZone.Mitt
-                -1
-
-        let state = MatchScenario.WithCards original [ damaged; potion ]
+        let state, _, potion = superPotionState ()
         let action = selected (choose CpuDifficulty.Normal 0UL state)
 
         match action.Command.Action with
@@ -212,6 +215,32 @@ type CpuPolicyTests() =
             | _ -> None)
         |> Seq.exactlyOne
         |> should equal 3
+
+    [<Test>]
+    member _.``Easy should vary across weaker and stronger productive Super Potion amounts``() =
+        let state, damaged, potion = superPotionState ()
+
+        let assertAmount seed expectedAmount expectedDamage =
+            let action = selected (choose CpuDifficulty.Easy seed state)
+
+            match action.Command.Action with
+            | MatchAction.PlayKit(card, _) -> card |> should equal potion.Id
+            | other -> failwith $"Expected Easy to play Super Potion, got {other}."
+
+            action.Command.Choices
+            |> Seq.choose (function
+                | EffectChoice.Amount(_, amount) -> Some amount
+                | _ -> None)
+            |> Seq.exactlyOne
+            |> should equal expectedAmount
+
+            let after =
+                MatchScenario.Applied(MatchScenario.Engine().Apply(state, action.Command))
+
+            (after.Card damaged.Id).Damage |> should equal expectedDamage
+
+        assertAmount 0UL 2 10
+        assertAmount 2UL 3 0
 
     [<Test>]
     member _.``normal should heal the more damaged target``() =

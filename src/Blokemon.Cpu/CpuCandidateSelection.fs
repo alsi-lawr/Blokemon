@@ -126,13 +126,7 @@ module internal CpuCandidateSelection =
             |> Seq.filter (fun value ->
                 value.Candidate.Kind <> LegalActionKind.EndRound
                 && value.Score > 0
-                && value.Score > endScore
-                && not (
-                    evaluated
-                    |> Seq.exists (fun alternative ->
-                        alternative.Candidate.Action = value.Candidate.Action
-                        && alternative.Score > value.Score)
-                ))
+                && value.Score > endScore)
             |> Seq.sortWith (fun left right ->
                 let byScore = compare right.Score left.Score
 

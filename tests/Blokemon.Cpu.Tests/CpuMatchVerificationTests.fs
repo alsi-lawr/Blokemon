@@ -259,8 +259,9 @@ type CpuMatchVerificationTests() =
         assertFullMatch CpuDifficulty.Impossible CpuSeat.Second 725198UL
 
     [<Test>]
-    member _.``every difficulty should make Wildfire discard Energy instead of doing nothing``() =
-        assertUsefulWildfire CpuDifficulty.Easy
+    member _.``strategic difficulties should make Wildfire discard Energy instead of doing nothing``
+        ()
+        =
         assertUsefulWildfire CpuDifficulty.Normal
         assertUsefulWildfire CpuDifficulty.Hard
         assertUsefulWildfire CpuDifficulty.Impossible
