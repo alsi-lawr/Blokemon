@@ -39,8 +39,8 @@ module internal MatchStartFlow =
         let archiveCompletedMatch = archiveCompletedMatch context
         let reconcileStartConflict = reconcileStartConflict context
         let matchSeed = matchSeedFor profile request.CommandId
-        // The seed is part of the policy version: changing it changes fair planning samples and
-        // therefore the commands replay must reproduce. A different seed belongs to a new policy.
+        // The persisted seed controls Easy's deterministic variation and is part of replay and
+        // policy identity. A different seed can select different commands, so replay preserves it.
         let requestedPolicy = MatchCpuPolicy.initial request.Difficulty matchSeed.Value
 
         task {
