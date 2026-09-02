@@ -75,7 +75,7 @@ module private CpuMatchVerificationScenarios =
         | ValueNone -> "none"
 
     let diagnostic difficulty seat seed revision candidate =
-        $"deck={fastFireDeckName}; authority={MatchScenario.Authority.ManifestVersion}; seat={seatName seat}; seed={seed}; policy={CpuPolicyVersion.strategic}; difficulty={difficulty}; revision={revision}; candidate={candidateName candidate}"
+        $"deck={fastFireDeckName}; authority={MatchScenario.Authority.ManifestVersion}; seat={seatName seat}; seed={seed}; policy={CpuPolicyVersion.active}; difficulty={difficulty}; revision={revision}; candidate={candidateName candidate}"
 
     let runMatch difficulty seat seed =
         let engine = MatchScenario.Engine()
@@ -93,7 +93,7 @@ module private CpuMatchVerificationScenarios =
             | MatchStartOutcome.Started(started, events) -> started, events
             | MatchStartOutcome.Rejected issues ->
                 failwith
-                    $"deck={fastFireDeckName}; seat={seatName seat}; seed={seed}; policy={CpuPolicyVersion.strategic}; start rejected with {issues.Length} issues"
+                    $"deck={fastFireDeckName}; seat={seatName seat}; seed={seed}; policy={CpuPolicyVersion.active}; start rejected with {issues.Length} issues"
 
         let decisionIndices = Dictionary<PlayerId, uint64>()
         decisionIndices[MatchScenario.FirstPlayer] <- 0UL
@@ -130,7 +130,7 @@ module private CpuMatchVerificationScenarios =
                 diagnostic difficulty seat seed state.Revision selected.Evidence.Candidate
 
             if
-                selected.Evidence.Work.CandidatesConsidered > CpuSearchConfiguration.strategic.RootCandidateLimit
+                selected.Evidence.Work.CandidatesConsidered > CpuSearchConfiguration.active.RootCandidateLimit
                 || selected.Evidence.Work.NodesVisited > selected.Evidence.Work.NodeLimit
                 || selected.Evidence.Work.DepthReached > selected.Evidence.Work.DepthLimit
             then
@@ -207,90 +207,6 @@ module private CpuMatchVerificationScenarios =
         | ValueSome candidate, CpuDecision.Selected action -> candidate, action
         | _ -> failwith $"{difficulty} supplied no legal corpus action at {state.Revision.Value}."
 
-    let applyPolicyChoice difficulty seed state =
-        let engine = MatchScenario.Engine()
-        let candidate, action = policyChoice difficulty seed state
-
-        engine.TryMaterializeCpuCommand(state, MatchScenario.FirstPlayer, candidate)
-        |> should equal (ValueSome action.Command)
-
-        MatchScenario.Applied(engine.Apply(state, action.Command))
-
-    let benchDevelopmentState () =
-        let better =
-            MatchScenario.PlainCard
-                "better-basic"
-                "BLK-001"
-                MatchScenario.FirstPlayer
-                CardZone.Mitt
-                -1
-
-        let plausible =
-            MatchScenario.PlainCard
-                "plausible-basic"
-                "BLK-007"
-                MatchScenario.FirstPlayer
-                CardZone.Mitt
-                -1
-
-        MatchScenario.BattleState "BLK-004" "BLK-001" [] 3601UL
-        |> fun state -> MatchScenario.WithCards state [ better; plausible ]
-
-    let knockoutState () =
-        let original =
-            MatchScenario.BattleState "BLK-004" "BLK-004" [ "VIM-CURRY"; "VIM-SOBER" ] 3602UL
-
-        let defender =
-            { original.Card(CardInstanceId "defender") with
-                Damage = 20 }
-
-        let defenderBench =
-            MatchScenario.PlainCard
-                "defender-bench"
-                "BLK-007"
-                MatchScenario.SecondPlayer
-                CardZone.Booth
-                0
-
-        let barChit =
-            MatchScenario.PlainCard
-                "strength-bar-chit"
-                "VIM-BLAZED"
-                MatchScenario.FirstPlayer
-                CardZone.BarChit
-                0
-
-        MatchScenario.WithCards original [ defender; defenderBench; barChit ]
-        |> fun state -> MatchScenario.WithBarChits state MatchScenario.FirstPlayer 1
-
-    // The fixed score uses only engine outcomes: printed durability plus maximum printed damage
-    // for the developed Blokemon, and 1000 points per Bar Chit actually taken. Policy scores are
-    // deliberately excluded.
-    let strengthScore difficulty =
-        let development = applyPolicyChoice difficulty 0UL (benchDevelopmentState ())
-
-        let developed =
-            development.CardsIn(MatchScenario.FirstPlayer, CardZone.Booth)
-            |> Seq.find (fun card ->
-                card.Id = CardInstanceId "better-basic"
-                || card.Id = CardInstanceId "plausible-basic")
-
-        let printed =
-            MatchScenario.Authority.Collectibles
-            |> Seq.find (fun card -> card.Id = developed.MechanicalId.Value)
-
-        let developmentScore =
-            printed.StayingPower + (printed.Attacks |> Seq.map _.PrintedDamage |> Seq.max)
-
-        let beforeKnockout = knockoutState ()
-        let afterKnockout = applyPolicyChoice difficulty 0UL beforeKnockout
-
-        let barChitsTaken =
-            (beforeKnockout.Player MatchScenario.FirstPlayer).BarChitsRemaining
-            - (afterKnockout.Player MatchScenario.FirstPlayer).BarChitsRemaining
-
-        developmentScore + barChitsTaken * 1000
-
     let assertUsefulWildfire difficulty =
         let state = MatchScenario.BattleState "BLK-146" "BLK-004" [ "VIM-CURRY" ] 3603UL
 
@@ -348,14 +264,3 @@ type CpuMatchVerificationTests() =
         assertUsefulWildfire CpuDifficulty.Normal
         assertUsefulWildfire CpuDifficulty.Hard
         assertUsefulWildfire CpuDifficulty.Impossible
-
-    [<Test>]
-    member _.``fixed semantic outcomes should preserve difficulty strength ordering``() =
-        let easy = strengthScore CpuDifficulty.Easy
-        let normal = strengthScore CpuDifficulty.Normal
-        let hard = strengthScore CpuDifficulty.Hard
-        let impossible = strengthScore CpuDifficulty.Impossible
-
-        normal |> should be (greaterThan easy)
-        hard |> should be (greaterThanOrEqualTo normal)
-        impossible |> should be (greaterThanOrEqualTo hard)

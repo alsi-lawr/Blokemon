@@ -316,17 +316,7 @@ type CpuPolicyTests() =
                     |> Seq.map independentlyMaterializedEffect
                     |> ImmutableArray.CreateRange }
 
-        let fairObservation =
-            engine.GetCpuObservation(
-                rematerialized,
-                MatchScenario.FirstPlayer,
-                CpuObservationMode.Fair
-            )
-
-        let fairState =
-            CpuPlanning.createFairState engine rematerialized fairObservation 0UL 0UL
-
-        let next = selected (choose CpuDifficulty.Normal 0UL fairState)
+        let next = selected (choose CpuDifficulty.Normal 0UL rematerialized)
 
         match next.Command.Action with
         | MatchAction.Attack(attacker, effect) ->
@@ -335,7 +325,7 @@ type CpuPolicyTests() =
         | action ->
             failwith $"Expected the powered attack instead of repeated Energy Burn, got {action}."
 
-        match engine.Apply(fairState, next.Command) with
+        match engine.Apply(rematerialized, next.Command) with
         | CommandOutcome.Applied _ -> ()
         | CommandOutcome.Rejected(_, rejection) ->
             failwith $"The engine-issued attack was rejected with {rejection.Code}."
@@ -496,7 +486,7 @@ type CpuPolicyTests() =
         | actions -> failwith $"Expected two productive bench plays, got {actions}."
 
     [<Test>]
-    member _.``Hard should repeat bounded forward planning through engine candidates``() =
+    member _.``Hard should find a fair Energy setup that Normal's immediate policy misses``() =
         let basic =
             MatchScenario.PlainCard
                 "hard-basic"
@@ -527,6 +517,18 @@ type CpuPolicyTests() =
 
         let first = choose CpuDifficulty.Hard 17UL state
         let repeated = choose CpuDifficulty.Hard 17UL state
+        let normal = selected (choose CpuDifficulty.Normal 17UL state)
+        let hard = selected first
+
+        match normal.Command.Action with
+        | MatchAction.PlayBloke card -> card |> should equal basic.Id
+        | action -> failwith $"Expected Normal's best immediate bench play, got {action}."
+
+        match hard.Command.Action with
+        | MatchAction.AttachVim(vim, target) ->
+            vim |> should equal energy.Id
+            target |> should equal (CardInstanceId "attacker")
+        | action -> failwith $"Expected Hard's searched Energy setup, got {action}."
 
         repeated |> should equal first
 
@@ -537,7 +539,6 @@ type CpuPolicyTests() =
         |> should be (lessThanOrEqualTo first.Evidence.Work.DepthLimit)
 
         first.Evidence.Work.DepthReached |> should be (greaterThan 1)
-        first.Evidence.Work.SamplesEvaluated |> should equal 2
 
         let observation =
             MatchScenario

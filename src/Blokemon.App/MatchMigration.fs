@@ -129,6 +129,11 @@ module internal MatchMigration =
                 "match.document_version",
                 "This saved battle uses an unsupported version. No data changed."
             )
+        | MatchRecoveryDocument.ActiveMatch, MatchRecoveryReason.UnsupportedCpuPolicy ->
+            ApiError(
+                "match.cpu_policy_version",
+                "This saved battle uses an unsupported computer policy. No data changed."
+            )
         | MatchRecoveryDocument.ActiveMatch, MatchRecoveryReason.IncompatibleWithCurrentRules ->
             ApiError(
                 "match.authority_changed",
@@ -136,6 +141,8 @@ module internal MatchMigration =
             )
         | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.Corrupt -> historyCorrupt ()
         | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.UnsupportedVersion ->
+            historyVersion ()
+        | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.UnsupportedCpuPolicy ->
             historyVersion ()
         | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.IncompatibleWithCurrentRules ->
             historyAuthorityChanged ()
@@ -147,9 +154,13 @@ module internal MatchMigration =
                 Some MatchRecoveryKindView.ActiveMatchCorrupt
             | MatchRecoveryDocument.ActiveMatch, MatchRecoveryReason.UnsupportedVersion ->
                 Some MatchRecoveryKindView.ActiveMatchUnsupportedVersion
+            | MatchRecoveryDocument.ActiveMatch, MatchRecoveryReason.UnsupportedCpuPolicy ->
+                Some MatchRecoveryKindView.ActiveMatchUnsupportedVersion
             | MatchRecoveryDocument.ActiveMatch, MatchRecoveryReason.IncompatibleWithCurrentRules ->
                 Some MatchRecoveryKindView.ActiveMatchIncompatibleWithCurrentRules
             | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.UnsupportedVersion ->
+                Some MatchRecoveryKindView.MatchHistoryUnsupportedVersion
+            | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.UnsupportedCpuPolicy ->
                 Some MatchRecoveryKindView.MatchHistoryUnsupportedVersion
             | MatchRecoveryDocument.MatchHistory, MatchRecoveryReason.IncompatibleWithCurrentRules ->
                 Some MatchRecoveryKindView.MatchHistoryIncompatibleWithCurrentRules
@@ -168,8 +179,8 @@ module internal MatchMigration =
         let reason =
             match error.Code with
             | "match.authority_changed" -> MatchRecoveryReason.IncompatibleWithCurrentRules
-            | "match.document_version"
-            | "match.cpu_policy_version" -> MatchRecoveryReason.UnsupportedVersion
+            | "match.document_version" -> MatchRecoveryReason.UnsupportedVersion
+            | "match.cpu_policy_version" -> MatchRecoveryReason.UnsupportedCpuPolicy
             | _ -> MatchRecoveryReason.Corrupt
 
         { Document = MatchRecoveryDocument.ActiveMatch

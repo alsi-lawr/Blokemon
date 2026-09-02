@@ -9,8 +9,7 @@ module internal MatchFailures =
 
     let matchKey = "match"
     let matchHistoryKey = "match-history"
-    // Schema 3 pins the policy that authored every CPU command. Schema 2 is migrated through the
-    // fixed policy it actually used, rather than being replayed as a strategic difficulty.
+    // Schema 3 pins the policy that authored every CPU command.
     let matchSchemaVersion = 3
     let matchHistorySchemaVersion = 3
     let maximumCpuCommandsPerRequest = 256

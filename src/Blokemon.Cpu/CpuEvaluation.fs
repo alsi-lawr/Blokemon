@@ -5,6 +5,11 @@ open Blokemon.Game
 open System
 open System.Linq
 
+[<RequireQualifiedAccess>]
+type internal CpuEvaluationKnowledge =
+    | Fair of knownAtRoot: Set<CardInstanceId>
+    | Authoritative
+
 module internal CpuEvaluation =
 
     open CpuPolicyLimits
@@ -41,10 +46,10 @@ module internal CpuEvaluation =
 
         groups
 
-    let private increasedDuplicateEnergyBurn (before: MatchState) (after: MatchState) =
-        let beforeGroups = energyBurnGroups before.Effects
+    let private increasedDuplicateEnergyBurn beforeEffects afterEffects =
+        let beforeGroups = energyBurnGroups beforeEffects
 
-        energyBurnGroups after.Effects
+        energyBurnGroups afterEffects
         |> Seq.exists (fun (identity, afterCount) ->
             beforeGroups
             |> Seq.tryFind (fun (candidate, _) -> sameEnergyBurnEffect candidate identity)
@@ -112,7 +117,27 @@ module internal CpuEvaluation =
 
         if effect.Owner = actor then magnitude else -magnitude
 
-    let scoreState
+    let private scoreCards
+        (catalog: AuthorityCatalog)
+        (readyAttacks: Map<CardInstanceId, int>)
+        (actor: PlayerId)
+        (cards: CardState seq)
+        =
+        cards
+        |> Seq.sumBy (fun card ->
+            let value =
+                if isInPlay card && catalog.CountsAsPokemon card then
+                    inPlayValue catalog readyAttacks card
+                elif card.Zone = CardZone.Mitt then
+                    handValue catalog card
+                elif card.Zone = CardZone.Stack then
+                    2
+                else
+                    0
+
+            if isActorCard actor card then value else -value)
+
+    let private scoreState
         (catalog: AuthorityCatalog)
         (readyAttacks: Map<CardInstanceId, int>)
         (actor: PlayerId)
@@ -122,26 +147,9 @@ module internal CpuEvaluation =
         | ValueSome winner when winner = actor -> 1_000_000
         | ValueSome _ -> -1_000_000
         | ValueNone ->
-            let cards = state.Cards |> Seq.toArray
             let other = state.Other actor
             let actorState = state.Player actor
             let otherState = state.Player other
-
-            let cardScore =
-                cards
-                |> Seq.sumBy (fun card ->
-                    let value =
-                        if isInPlay card && catalog.CountsAsPokemon card then
-                            inPlayValue catalog readyAttacks card
-                        elif card.Zone = CardZone.Mitt then
-                            handValue catalog card
-                        elif card.Zone = CardZone.Stack then
-                            2
-                        else
-                            0
-
-                    if isActorCard actor card then value else -value)
-
             let prizeScore = (otherState.BarChitsRemaining - actorState.BarChitsRemaining) * 320
 
             let stackSafety owner sign =
@@ -150,20 +158,87 @@ module internal CpuEvaluation =
                 else
                     0
 
-            cardScore
+            scoreCards catalog readyAttacks actor state.Cards
             + prizeScore
             + stackSafety actor 1
             + stackSafety other -1
             + (state.Effects |> Seq.sumBy (effectValue actor))
+
+    let private scorePublicState
+        (catalog: AuthorityCatalog)
+        (readyAttacks: Map<CardInstanceId, int>)
+        (actor: PlayerId)
+        (knownAtRoot: Set<CardInstanceId>)
+        (state: CpuPublicMatchState)
+        =
+        match state.Winner with
+        | ValueSome winner when winner = actor -> 1_000_000
+        | ValueSome _ -> -1_000_000
+        | ValueNone ->
+            let other = state.Players |> Seq.find (fun player -> player.Id <> actor) |> _.Id
+
+            let actorState = state.Players |> Seq.find (fun player -> player.Id = actor)
+            let otherState = state.Players |> Seq.find (fun player -> player.Id = other)
+            let prizeScore = (otherState.BarChitsRemaining - actorState.BarChitsRemaining) * 320
+
+            let stackCount owner =
+                let known =
+                    state.Cards
+                    |> Seq.filter (fun card ->
+                        knownAtRoot.Contains card.Id
+                        && card.Owner = owner
+                        && card.Zone = CardZone.Stack)
+                    |> Seq.length
+
+                let hidden =
+                    state.HiddenZones
+                    |> Seq.filter (fun zone -> zone.Owner = owner && zone.Zone = CardZone.Stack)
+                    |> Seq.sumBy _.Count
+
+                known + hidden
+
+            let stackSafety owner sign =
+                if stackCount owner = 0 then -sign * 80 else 0
+
+            let visibleCards =
+                state.Cards |> Seq.filter (fun card -> knownAtRoot.Contains card.Id)
+
+            let visibleEffects =
+                state.Effects
+                |> Seq.filter (fun effect ->
+                    knownAtRoot.Contains effect.SourceCard
+                    && (effect.TargetCard.IsNone || knownAtRoot.Contains effect.TargetCard.Value))
+
+            scoreCards catalog readyAttacks actor visibleCards
+            + prizeScore
+            + stackSafety actor 1
+            + stackSafety other -1
+            + (visibleEffects |> Seq.sumBy (effectValue actor))
+
+    let private scoreFor
+        catalog
+        readyAttacks
+        actor
+        knowledge
+        (state: MatchState)
+        (observation: CpuObservation)
+        =
+        match knowledge with
+        | CpuEvaluationKnowledge.Fair knownAtRoot ->
+            scorePublicState catalog readyAttacks actor knownAtRoot observation.State
+        | CpuEvaluationKnowledge.Authoritative -> scoreState catalog readyAttacks actor state
 
     let transitionScore
         (catalog: AuthorityCatalog)
         (readyBefore: Map<CardInstanceId, int>)
         (readyAfter: Map<CardInstanceId, int>)
         (actor: PlayerId)
+        (knowledge: CpuEvaluationKnowledge)
         (kind: LegalActionKind)
         (before: MatchState)
+        (beforeObservation: CpuObservation)
         (after: MatchState)
+        (afterObservation: CpuObservation)
         =
         let progress =
             match kind with
@@ -188,14 +263,16 @@ module internal CpuEvaluation =
 
         if
             kind = LegalActionKind.UsePartyTrick
-            && increasedDuplicateEnergyBurn before after
+            && increasedDuplicateEnergyBurn
+                beforeObservation.State.Effects
+                afterObservation.State.Effects
         then
             // Energy Burn is printed as repeatable, so the engine must keep offering it. Once the
             // identical conversion is already active, however, another copy cannot change the
             // effective Energy and is not progress for the policy to prefer over ending the round.
             -1
         elif kind = LegalActionKind.EndRound then
-            match after.Winner with
+            match afterObservation.State.Winner with
             | ValueSome winner when winner = actor -> 1_000_000
             | ValueSome _ -> -1_000_000
             | ValueNone -> 0
@@ -206,13 +283,14 @@ module internal CpuEvaluation =
                 else
                     readyAfter
 
-            scoreState catalog afterReadiness actor after
-            - scoreState catalog readyBefore actor before
+            scoreFor catalog afterReadiness actor knowledge after afterObservation
+            - scoreFor catalog readyBefore actor knowledge before beforeObservation
             + progress
 
     let scoreTransition
         (engine: MatchEngine)
         (actor: PlayerId)
+        (knowledge: CpuEvaluationKnowledge)
         (kind: LegalActionKind)
         (before: MatchState)
         (beforeObservation: CpuObservation)
@@ -240,6 +318,9 @@ module internal CpuEvaluation =
             (readyAttacks beforeObservation)
             (readyAttacks afterObservation)
             actor
+            knowledge
             kind
             before
+            beforeObservation
             after
+            afterObservation

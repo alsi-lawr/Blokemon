@@ -24,45 +24,33 @@ module CpuPolicyInput =
 
 type CpuSearchConfiguration =
     { RootCandidateLimit: int
-      NormalNodeLimit: int
-      HardNodeLimit: int
-      HardDepthLimit: int
-      HardSamples: int
+      ImmediateNodeLimit: int
+      SearchNodeLimit: int
+      SearchDepthLimit: int
       BeamWidth: int }
 
 [<RequireQualifiedAccess>]
 module CpuSearchConfiguration =
 
-    let legacy =
-        { RootCandidateLimit = 0
-          NormalNodeLimit = 0
-          HardNodeLimit = 0
-          HardDepthLimit = 0
-          HardSamples = 0
-          BeamWidth = 0 }
-
-    let strategic =
+    let active =
         { RootCandidateLimit = 256
-          NormalNodeLimit = 256
-          HardNodeLimit = 512
-          HardDepthLimit = 4
-          HardSamples = 2
+          ImmediateNodeLimit = 256
+          SearchNodeLimit = 512
+          SearchDepthLimit = 4
           BeamWidth = 8 }
 
 [<RequireQualifiedAccess>]
 module CpuPolicyVersion =
 
-    let legacy = 1
-    let strategic = 2
+    let active = 3
 
 module internal CpuPolicyLimits =
 
-    let rootCandidateLimit = CpuSearchConfiguration.strategic.RootCandidateLimit
-    let normalNodeLimit = CpuSearchConfiguration.strategic.NormalNodeLimit
-    let hardNodeLimit = CpuSearchConfiguration.strategic.HardNodeLimit
-    let hardDepthLimit = CpuSearchConfiguration.strategic.HardDepthLimit
-    let hardSamples = CpuSearchConfiguration.strategic.HardSamples
-    let beamWidth = CpuSearchConfiguration.strategic.BeamWidth
+    let rootCandidateLimit = CpuSearchConfiguration.active.RootCandidateLimit
+    let immediateNodeLimit = CpuSearchConfiguration.active.ImmediateNodeLimit
+    let searchNodeLimit = CpuSearchConfiguration.active.SearchNodeLimit
+    let searchDepthLimit = CpuSearchConfiguration.active.SearchDepthLimit
+    let beamWidth = CpuSearchConfiguration.active.BeamWidth
 
 [<RequireQualifiedAccess>]
 type CpuDecision =
@@ -74,8 +62,7 @@ type CpuWorkEvidence =
       NodesVisited: int
       NodeLimit: int
       DepthReached: int
-      DepthLimit: int
-      SamplesEvaluated: int }
+      DepthLimit: int }
 
 type CpuDecisionEvidence =
     { Input: CpuPolicyInput

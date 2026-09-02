@@ -11,6 +11,7 @@ module internal CpuForwardSearch =
         (engine: MatchEngine)
         (actor: PlayerId)
         (mode: CpuObservationMode)
+        (knowledge: CpuEvaluationKnowledge)
         (budget: CpuWorkBudget)
         depth
         depthLimit
@@ -43,21 +44,34 @@ module internal CpuForwardSearch =
             bounded
             |> Seq.choose (fun candidate ->
                 match
-                    tryAdvance engine actor mode budget (depth + 1) state observation candidate
+                    tryAdvance
+                        engine
+                        actor
+                        mode
+                        knowledge
+                        budget
+                        (depth + 1)
+                        state
+                        observation
+                        candidate
                 with
                 | ValueNone -> None
                 | ValueSome(immediate, next, nextObservation) ->
-                    Some(
-                        immediate
-                        + score
-                            engine
-                            actor
-                            mode
-                            budget
-                            (depth + 1)
-                            depthLimit
-                            next
-                            nextObservation
-                    ))
+                    if canContinue knowledge nextObservation then
+                        Some(
+                            immediate
+                            + score
+                                engine
+                                actor
+                                mode
+                                knowledge
+                                budget
+                                (depth + 1)
+                                depthLimit
+                                next
+                                nextObservation
+                        )
+                    else
+                        Some immediate)
             |> Seq.append (Seq.singleton 0)
             |> Seq.max

@@ -3,7 +3,6 @@ namespace Blokemon.Cpu
 open Blokemon.Game
 
 open System
-open System.Collections.Generic
 
 type internal EvaluatedCpuCandidate =
     { Candidate: CpuLegalCandidate
@@ -56,6 +55,7 @@ module internal CpuCandidateSelection =
         (engine: MatchEngine)
         (actor: PlayerId)
         (mode: CpuObservationMode)
+        (knowledge: CpuEvaluationKnowledge)
         (budget: CpuWorkBudget)
         depth
         (state: MatchState)
@@ -77,6 +77,7 @@ module internal CpuCandidateSelection =
                         CpuEvaluation.scoreTransition
                             engine
                             actor
+                            knowledge
                             candidate.Kind
                             state
                             observation
@@ -89,6 +90,7 @@ module internal CpuCandidateSelection =
         (engine: MatchEngine)
         (actor: PlayerId)
         (mode: CpuObservationMode)
+        (knowledge: CpuEvaluationKnowledge)
         (budget: CpuWorkBudget)
         (state: MatchState)
         (observation: CpuObservation)
@@ -96,34 +98,9 @@ module internal CpuCandidateSelection =
         =
         candidates
         |> Seq.choose (fun candidate ->
-            match tryAdvance engine actor mode budget 1 state observation candidate with
+            match tryAdvance engine actor mode knowledge budget 1 state observation candidate with
             | ValueSome(score, _, _) -> Some { Candidate = candidate; Score = score }
             | ValueNone -> None)
-        |> Seq.toArray
-
-    let aggregateSamples
-        (samples: EvaluatedCpuCandidate array array)
-        (candidates: CpuLegalCandidate array)
-        =
-        let byId = Dictionary<CpuCandidateId, ResizeArray<int>>()
-
-        for sample in samples do
-            for evaluated in sample do
-                match byId.TryGetValue evaluated.Candidate.Id with
-                | true, scores -> scores.Add evaluated.Score
-                | _ ->
-                    let scores = ResizeArray<int>()
-                    scores.Add evaluated.Score
-                    byId.Add(evaluated.Candidate.Id, scores)
-
-        candidates
-        |> Seq.choose (fun candidate ->
-            match byId.TryGetValue candidate.Id with
-            | true, scores when scores.Count = samples.Length ->
-                Some
-                    { Candidate = candidate
-                      Score = scores |> Seq.sum |> (fun total -> total / scores.Count) }
-            | _ -> None)
         |> Seq.toArray
 
     let chooseBest (evaluated: EvaluatedCpuCandidate array) =
@@ -138,34 +115,40 @@ module internal CpuCandidateSelection =
         |> Seq.tryHead
 
     let chooseEasy input revision (evaluated: EvaluatedCpuCandidate array) =
-        match chooseBest evaluated with
-        | None -> None
-        | Some best ->
-            let endScore =
-                evaluated
-                |> Seq.tryFind (fun value -> value.Candidate.Kind = LegalActionKind.EndRound)
-                |> Option.map _.Score
-                |> Option.defaultValue Int32.MinValue
+        let ending =
+            evaluated
+            |> Seq.tryFind (fun value -> value.Candidate.Kind = LegalActionKind.EndRound)
 
-            let productive =
-                evaluated
-                |> Seq.filter (fun value ->
-                    value.Candidate.Kind <> LegalActionKind.EndRound && value.Score > endScore)
-                |> Seq.toArray
+        let endScore = ending |> Option.map _.Score |> Option.defaultValue Int32.MinValue
 
-            let pool = if productive.Length > 0 then productive else evaluated
-            let threshold = max 20 (abs best.Score / 5)
+        let productive =
+            evaluated
+            |> Seq.filter (fun value ->
+                value.Candidate.Kind <> LegalActionKind.EndRound
+                && value.Score > 0
+                && value.Score > endScore
+                && not (
+                    evaluated
+                    |> Seq.exists (fun alternative ->
+                        alternative.Candidate.Action = value.Candidate.Action
+                        && alternative.Score > value.Score)
+                ))
+            |> Seq.sortWith (fun left right ->
+                let byScore = compare right.Score left.Score
 
-            let plausible =
-                pool
-                |> Seq.filter (fun value -> value.Score >= best.Score - threshold)
-                |> Seq.sortWith (fun left right ->
-                    let byScore = compare right.Score left.Score
+                if byScore <> 0 then
+                    byScore
+                else
+                    String.CompareOrdinal(left.Candidate.Id.Value, right.Candidate.Id.Value))
+            |> Seq.toArray
 
-                    if byScore <> 0 then
-                        byScore
-                    else
-                        String.CompareOrdinal(left.Candidate.Id.Value, right.Candidate.Id.Value))
-                |> Seq.toArray
+        if productive.Length > 0 then
+            Some productive[deterministicIndex input revision productive.Length]
+        else
+            ending |> Option.orElseWith (fun () -> chooseBest evaluated)
 
-            Some plausible[deterministicIndex input revision plausible.Length]
+    let canContinue knowledge (observation: CpuObservation) =
+        match knowledge with
+        | CpuEvaluationKnowledge.Authoritative -> true
+        | CpuEvaluationKnowledge.Fair knownAtRoot ->
+            observation.State.Cards |> Seq.forall (fun card -> knownAtRoot.Contains card.Id)

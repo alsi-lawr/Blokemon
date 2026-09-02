@@ -13,6 +13,7 @@ type internal MatchRecoveryDocument =
 type internal MatchRecoveryReason =
     | Corrupt
     | UnsupportedVersion
+    | UnsupportedCpuPolicy
     | IncompatibleWithCurrentRules
 
 type internal MatchRecoveryRequirement =

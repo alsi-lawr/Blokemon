@@ -38,10 +38,9 @@ module internal MatchIdentity =
                invariant policy.Seed
                invariant policy.DecisionIndex
                invariant policy.Search.RootCandidateLimit
-               invariant policy.Search.NormalNodeLimit
-               invariant policy.Search.HardNodeLimit
-               invariant policy.Search.HardDepthLimit
-               invariant policy.Search.HardSamples
+               invariant policy.Search.ImmediateNodeLimit
+               invariant policy.Search.SearchNodeLimit
+               invariant policy.Search.SearchDepthLimit
                invariant policy.Search.BeamWidth |]
         )
 

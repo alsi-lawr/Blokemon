@@ -6,7 +6,6 @@
   <ItemGroup>
     <Compile Include="CpuPolicy.fs" />
     <Compile Include="CpuEvaluation.fs" />
-    <Compile Include="CpuPlanning.fs" />
     <Compile Include="CpuCandidateSelection.fs" />
     <Compile Include="CpuForwardSearch.fs" />
     <Compile Include="DeterministicCpu.fs" />

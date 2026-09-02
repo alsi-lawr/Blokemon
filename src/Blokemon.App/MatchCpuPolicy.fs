@@ -27,32 +27,21 @@ module internal MatchCpuPolicy =
         | None -> None
         | Some _ ->
             Some
-                { Version = CpuPolicyVersion.strategic
+                { Version = CpuPolicyVersion.active
                   Difficulty = difficulty
                   Seed = seed
                   DecisionIndex = 0UL
-                  Search = CpuSearchConfiguration.strategic }
+                  Search = CpuSearchConfiguration.active }
 
-    let legacy seed decisionIndex =
-        { Version = CpuPolicyVersion.legacy
-          Difficulty = CpuDifficultyView.Normal
-          Seed = seed
-          DecisionIndex = decisionIndex
-          Search = CpuSearchConfiguration.legacy }
-
-    let isSupportedVersion version =
-        version = CpuPolicyVersion.legacy || version = CpuPolicyVersion.strategic
+    let isSupportedVersion version = version = CpuPolicyVersion.active
 
     let isValid (policy: CpuPolicyDocument | null) =
         match policy with
         | null -> false
         | value when isNull (box value.Search) -> false
-        | value when value.Version = CpuPolicyVersion.legacy ->
-            value.Difficulty = CpuDifficultyView.Normal
-            && value.Search = CpuSearchConfiguration.legacy
-        | value when value.Version = CpuPolicyVersion.strategic ->
+        | value when value.Version = CpuPolicyVersion.active ->
             gameDifficulty value.Difficulty |> Option.isSome
-            && value.Search = CpuSearchConfiguration.strategic
+            && value.Search = CpuSearchConfiguration.active
         | _ -> false
 
     let input (policy: CpuPolicyDocument) =
@@ -74,7 +63,4 @@ module internal MatchCpuPolicy =
         (actor: PlayerId)
         (policy: CpuPolicyDocument)
         =
-        if policy.Version = CpuPolicyVersion.legacy then
-            context.Cpu.ChooseLegacy(context.Engine, state, actor)
-        else
-            context.Cpu.Choose(context.Engine, state, actor, input policy).Decision
+        context.Cpu.Choose(context.Engine, state, actor, input policy).Decision

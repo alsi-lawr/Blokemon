@@ -738,7 +738,7 @@ public sealed class BrowserLocalApplicationTests
         archived["clientCommands"] = new JsonArray();
         var history = new JsonObject
         {
-            ["schemaVersion"] = 2,
+            ["schemaVersion"] = 3,
             ["authorityVersion"] = catalogue.Mechanics.ManifestVersion,
             ["matches"] = new JsonArray(archived),
         };

@@ -4,6 +4,7 @@ using Blokemon.App;
 using Blokemon.App.Catalogue;
 using Blokemon.App.Contracts;
 using Blokemon.Core.SetDesign;
+using Blokemon.Cpu;
 using Blokemon.Product;
 using Blokemon.Web.Content;
 using Blokemon.Web.Persistence;
@@ -740,6 +741,8 @@ public sealed class LocalMatchTests
         started.Match!.Difficulty.ShouldBe(difficulty);
         document.StartCommand.CpuPolicy.Difficulty.ShouldBe(difficulty);
         document.CpuPolicy.Difficulty.ShouldBe(difficulty);
+        document.StartCommand.CpuPolicy.Version.ShouldBe(CpuPolicyVersion.active);
+        document.CpuPolicy.Version.ShouldBe(CpuPolicyVersion.active);
         document.StartCommand.CpuPolicy.Seed.ShouldBe(document.Start.Seed.Value);
         document.CpuPolicy.Seed.ShouldBe(document.Start.Seed.Value);
         document.StartCommand.CpuPolicy.DecisionIndex.ShouldBe(0UL);
