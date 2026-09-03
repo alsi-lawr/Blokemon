@@ -10,6 +10,15 @@
     <Compile Include="MatchJsonUnions.fs" />
     <Compile Include="MatchJson.fs" />
     <Compile Include="DocumentIdentity.fs" />
+    <Compile Include="PlayerDocumentKeys.fs" />
+    <Compile Include="SessionFailures.fs" />
+    <!--
+      The server-only tenancy documents: the records and keys, then the link index and the
+      approval transitions that read and write them.
+    -->
+    <Compile Include="TenancyDocuments.fs" />
+    <Compile Include="IdentityLinks.fs" />
+    <Compile Include="Approvals.fs" />
     <Compile Include="PlayModeApplication.fs" />
     <Compile Include="MatchMigrationTypes.fs" />
     <!--
@@ -83,6 +92,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Blokemon.App.Tests" />
     <InternalsVisibleTo Include="Blokemon.Game.Tests" />
     <InternalsVisibleTo Include="Blokemon.Web.Tests" />
   </ItemGroup>

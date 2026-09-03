@@ -18,7 +18,7 @@ module internal ProfileStore =
         let documents = context.Documents
 
         task {
-            let! stored = documents.Read(profileKey, cancellationToken)
+            let! stored = documents.Read(context.Keys.Profile, cancellationToken)
 
             match stored with
             | null -> return { Profile = null; Error = null }
@@ -86,7 +86,7 @@ module internal ProfileStore =
 
                                         let! write =
                                             documents.Update(
-                                                profileKey,
+                                                context.Keys.Profile,
                                                 document.Revision,
                                                 candidateJson,
                                                 cancellationToken
@@ -121,7 +121,12 @@ module internal ProfileStore =
                 let documentJson = JsonSerializer.Serialize(loaded.Document, json)
 
                 let! write =
-                    documents.Update(profileKey, loaded.Revision, documentJson, cancellationToken)
+                    documents.Update(
+                        context.Keys.Profile,
+                        loaded.Revision,
+                        documentJson,
+                        cancellationToken
+                    )
 
                 match write with
                 | :? DocumentWriteResult.Written as written ->

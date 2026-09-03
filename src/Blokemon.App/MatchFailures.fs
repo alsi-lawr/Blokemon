@@ -4,11 +4,9 @@ open System
 open Blokemon.App.Contracts
 open Blokemon.Game
 
-/// The tier's fixed document keys and every typed failure a match operation can return.
+/// Every typed failure a match operation can return, and the fixed match constants.
 module internal MatchFailures =
 
-    let matchKey = "match"
-    let matchHistoryKey = "match-history"
     // Schema 3 pins the policy that authored every CPU command.
     let matchSchemaVersion = 3
     let matchHistorySchemaVersion = 3

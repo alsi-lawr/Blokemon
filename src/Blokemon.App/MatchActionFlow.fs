@@ -265,7 +265,7 @@ module internal MatchActionFlow =
 
                                                             let! write =
                                                                 documents.Update(
-                                                                    matchKey,
+                                                                    context.Keys.Match,
                                                                     current.DocumentRevision,
                                                                     documentJson,
                                                                     cancellationToken

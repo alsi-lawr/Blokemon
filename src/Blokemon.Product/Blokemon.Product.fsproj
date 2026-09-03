@@ -7,6 +7,7 @@
     <Compile Include="DomainResult.fs" />
     <Compile Include="Economy.fs" />
     <Compile Include="DomainValues.fs" />
+    <Compile Include="Identity.fs" />
     <Compile Include="Decks.fs" />
     <Compile Include="StarterDecks.fs" />
     <Compile Include="LocalProfileSnapshot.fs" />

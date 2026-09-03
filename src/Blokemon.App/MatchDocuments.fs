@@ -159,6 +159,7 @@ type internal CommandMaterialization =
 type internal MatchContext =
     { Catalogue: BlokemonCatalogue
       Documents: IStateDocumentStore
+      Keys: PlayerDocumentKeys
       Engine: MatchEngine
       Cpu: DeterministicCpu
       mutable Cached: LoadedMatch | null }

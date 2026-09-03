@@ -1,15 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
+    <RootNamespace>Blokemon.App.Tests</RootNamespace>
+    <AssemblyName>Blokemon.App.Tests</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="EconomyModeTests.fs" />
-    <Compile Include="IdentityTests.fs" />
-    <Compile Include="LocalProfileTests.fs" />
-    <Compile Include="StarterDeckClaimTests.fs" />
+    <Compile Include="MemoryDocumentStore.fs" />
+    <Compile Include="AccountScopedDocumentTests.fs" />
+    <Compile Include="IdentityLinkTests.fs" />
+    <Compile Include="ApprovalTests.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/Blokemon.Product/Blokemon.Product.fsproj" />
+    <ProjectReference Include="../../src/Blokemon.App/Blokemon.App.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <!--
@@ -26,8 +28,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content
-      Include="../../content/authorities/mechanics.json"
-      Link="Authorities/mechanics.json"
+      Include="../../src/Blokemon.Web.Client/wwwroot/content/catalogue.json"
+      Link="content/catalogue.json"
       CopyToOutputDirectory="PreserveNewest"
     />
   </ItemGroup>

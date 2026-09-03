@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Blokemon.App;
 using Blokemon.App.Catalogue;
@@ -6,6 +7,8 @@ using Blokemon.Product;
 using Blokemon.Web.Content;
 using Blokemon.Web.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Shouldly;
 
 namespace Blokemon.Web.Tests;
@@ -364,6 +367,168 @@ public sealed class StateDocumentStoreTests
         (await store.Read("match")).ShouldBeNull();
     }
 
+    [Test]
+    public async Task KeyOverTheBound_IsRefusedWithATypedErrorWhileTheBoundItselfIsAccepted()
+    {
+        await using var database = await TestDatabase.Create();
+        var store = new StateDocumentStore(database);
+        var atTheBound = new string('k', StateDocument.MaximumKeyLength);
+        var overTheBound = atTheBound + "k";
+
+        var accepted = await store.Create(atTheBound, "{}");
+        var refused = await Should.ThrowAsync<DocumentStorageException>(() =>
+            store.Create(overTheBound, "{}")
+        );
+        var refusedRead = await Should.ThrowAsync<DocumentStorageException>(() =>
+            store.Read(overTheBound)
+        );
+
+        accepted.ShouldBe(new DocumentWriteResult.Written(1));
+        refused.Failure.ShouldBe(DocumentStorageFailure.Rejected);
+        refusedRead.Failure.ShouldBe(DocumentStorageFailure.Rejected);
+        (await store.List("k")).Select(static summary => summary.Key).ShouldBe([atTheBound]);
+    }
+
+    [Test]
+    public async Task EveryDefinedKey_FitsTheBoundAndTheApprovalKeyIs82Characters()
+    {
+        await using var database = await TestDatabase.Create();
+        var store = new StateDocumentStore(database);
+        var account = AccountId.Mint();
+        var tenant = TenantId.Mint();
+        var playerKeys = PlayerDocumentKeysModule.forAccount(account);
+        var provider = Value(
+            IdentityProviderName.Create(new string('p', IdentityProviderName.MaximumLength))
+        );
+        var subject = Value(ExternalSubject.Create(new string('s', ExternalSubject.MaximumLength)));
+        string[] keys =
+        [
+            playerKeys.Profile,
+            playerKeys.Match,
+            playerKeys.MatchHistory,
+            TenancyDocuments.tenantKey(tenant),
+            TenancyDocuments.accountKey(account),
+            TenancyDocuments.linkKey(provider, subject),
+            TenancyDocuments.approvalKey(account, tenant),
+        ];
+
+        foreach (var key in keys)
+        {
+            (await store.Create(key, "{}")).ShouldBe(new DocumentWriteResult.Written(1));
+        }
+
+        TenancyDocuments.approvalKey(account, tenant).Length.ShouldBe(82);
+        keys.ShouldAllBe(key => key.Length <= StateDocument.MaximumKeyLength);
+    }
+
+    [Test]
+    public async Task Listing_ReturnsKeysRevisionsAndTheDeclaredProjectionsAndNoBody()
+    {
+        await using var database = await TestDatabase.Create();
+        var store = new StateDocumentStore(database);
+        var account = AccountId.Mint();
+        var tenant = TenantId.Mint();
+        var createdAt = new DateTimeOffset(2026, 9, 3, 12, 0, 0, TimeSpan.Zero);
+        var expiresAt = createdAt.AddHours(8);
+        var accountJson = JsonSerializer.Serialize(
+            TenancyDocuments.newAccount(account, createdAt),
+            TenancyDocuments.json
+        );
+        var tenantJson = JsonSerializer.Serialize(
+            TenancyDocuments.newTenant(
+                tenant,
+                Value(TenantSlug.Create("the-regular")),
+                "The Regular",
+                createdAt
+            ),
+            TenancyDocuments.json
+        );
+        await store.Create(TenancyDocuments.accountKey(account), accountJson);
+        await store.Update(TenancyDocuments.accountKey(account), 1, accountJson);
+        await store.Create(TenancyDocuments.tenantKey(tenant), tenantJson);
+        await store.Create(
+            "session/one",
+            $$"""{"expiresAt":"{{expiresAt:O}}","token":"never-listed","status":"never-listed"}"""
+        );
+        await store.Create("handoff/one", """{"kind":"Channel"}""");
+        await store.Create(
+            PlayerDocumentKeysModule.forAccount(account).Profile,
+            """{"status":"never-projected","createdAt":"2026-09-03T12:00:00+00:00"}"""
+        );
+        await store.Create("link/example/one", """{"status":"never-projected"}""");
+        await store.Create("account/damaged", "not json");
+
+        var accounts = await store.List("account/");
+        var sessions = await store.List("session/");
+        var everything = await store.List("");
+
+        accounts
+            .Select(static summary => summary.Key)
+            .ShouldBe([TenancyDocuments.accountKey(account), "account/damaged"]);
+        var listedAccount = accounts.Single(summary =>
+            summary.Key == TenancyDocuments.accountKey(account)
+        );
+        listedAccount.Revision.ShouldBe(2);
+        listedAccount.Projection.ShouldBe(
+            new DocumentProjection.Lifecycle("Active", createdAt, null)
+        );
+        accounts
+            .Single(static summary => summary.Key == "account/damaged")
+            .Projection.ShouldBeNull();
+        everything
+            .Single(summary => summary.Key == TenancyDocuments.tenantKey(tenant))
+            .Projection.ShouldBe(new DocumentProjection.Lifecycle("Active", createdAt, null));
+        sessions.Single().Projection.ShouldBe(new DocumentProjection.Expiry(expiresAt));
+        everything
+            .Single(static summary => summary.Key == "handoff/one")
+            .Projection.ShouldBe(new DocumentProjection.Expiry(null));
+        everything
+            .Where(static summary =>
+                summary.Key.StartsWith("a/", StringComparison.Ordinal)
+                || summary.Key.StartsWith("link/", StringComparison.Ordinal)
+            )
+            .ShouldAllBe(static summary => summary.Projection == null);
+        everything.Count.ShouldBe(7);
+        typeof(DocumentSummary).GetProperty("Json").ShouldBeNull();
+    }
+
+    [Test]
+    public async Task AccountScopedKeysMigration_DeletesTheLegacyRowsOnceAndLeavesEveryOtherRow()
+    {
+        await using var database = await TestDatabase.CreateAsInitialStateLeftIt();
+        var store = new StateDocumentStore(database);
+        await store.Create("profile", """{"legacy":"profile"}""");
+        await store.Create("match", """{"legacy":"match"}""");
+        await store.Create("match-history", """{"legacy":"history"}""");
+        await store.Create("a/other/profile", """{"kept":"profile"}""");
+        await store.Update("a/other/profile", 1, """{"kept":"profile-2"}""");
+        await store.Create("match-migration-backup/sentinel", """{"kept":"backup"}""");
+        await store.Create("profiles", """{"kept":"prefix-neighbour"}""");
+
+        await database.Migrate();
+        var afterFirst = await store.List("");
+        await database.Migrate();
+        var afterSecond = await store.List("");
+        await store.Create("profile", """{"recreated":"profile"}""");
+        await database.Migrate();
+        var recreated = await store.Read("profile");
+        var widened = await store.Create(new string('w', StateDocument.MaximumKeyLength), "{}");
+
+        afterFirst
+            .Select(static summary => (summary.Key, summary.Revision))
+            .ShouldBe([
+                ("a/other/profile", 2L),
+                ("match-migration-backup/sentinel", 1L),
+                ("profiles", 1L),
+            ]);
+        afterSecond.ShouldBe(afterFirst);
+        (await store.Read("a/other/profile")).ShouldBe(
+            new StoredDocument(2, """{"kept":"profile-2"}""")
+        );
+        recreated.ShouldBe(new StoredDocument(1, """{"recreated":"profile"}"""));
+        widened.ShouldBe(new DocumentWriteResult.Written(1));
+    }
+
     private sealed class TestDatabase : IDbContextFactory<BlokemonDbContext>, IAsyncDisposable
     {
         private readonly string _path;
@@ -382,9 +547,47 @@ public sealed class StateDocumentStoreTests
             var database = new TestDatabase(
                 Path.Combine(AppContext.BaseDirectory, $"state-{Guid.NewGuid():N}.db")
             );
-            await using var context = database.CreateDbContext();
-            await context.Database.MigrateAsync();
+            await database.Migrate();
             return database;
+        }
+
+        /// <summary>
+        /// A database as the first migration left it, with that migration recorded as applied:
+        /// the schema is built from the migration's own operations, so what the start-up
+        /// migration then does to it is what it does to a real legacy database.
+        /// </summary>
+        public static async Task<TestDatabase> CreateAsInitialStateLeftIt()
+        {
+            const string initialStateId = "202608140001_InitialState";
+            var database = new TestDatabase(
+                Path.Combine(AppContext.BaseDirectory, $"state-{Guid.NewGuid():N}.db")
+            );
+            await using var context = database.CreateDbContext();
+            var migrations = context.GetService<IMigrationsAssembly>();
+            var initialState = migrations.CreateMigration(
+                migrations.Migrations[initialStateId],
+                context.Database.ProviderName!
+            );
+            var commands = context
+                .GetService<IMigrationsSqlGenerator>()
+                .Generate(initialState.UpOperations, initialState.TargetModel);
+            foreach (var command in commands)
+            {
+                await context.Database.ExecuteSqlRawAsync(command.CommandText);
+            }
+            var history = context.GetService<IHistoryRepository>();
+            await context.Database.ExecuteSqlRawAsync(history.GetCreateScript());
+            await context.Database.ExecuteSqlRawAsync(
+                history.GetInsertScript(new HistoryRow(initialStateId, ProductInfo.GetVersion()))
+            );
+            return database;
+        }
+
+        /// <summary>The start-up migration, as Program.cs runs it.</summary>
+        public async Task Migrate()
+        {
+            await using var context = CreateDbContext();
+            await context.Database.MigrateAsync();
         }
 
         public BlokemonDbContext CreateDbContext() => new(_options);
@@ -431,6 +634,12 @@ public sealed class StateDocumentStoreTests
         }
         return response.Value;
     }
+
+    private static T Value<T, TFailure>(DomainResult<T, TFailure> result) =>
+        result.Match(
+            static value => value,
+            static failure => throw new InvalidOperationException(failure!.ToString())
+        );
 
     private static ApiError Error<T>(ApiResponse<T> response)
     {

@@ -7,6 +7,8 @@ open Blokemon.Product
 type internal ApplicationContext =
     { Catalogue: BlokemonCatalogue
       Documents: IStateDocumentStore
+      Principal: ApplicationPrincipal
+      Keys: PlayerDocumentKeys
       Matches: LocalMatchService
       Economy: EconomyRules
       ProfileAuthorityPolicy: ProfileAuthorityPolicy

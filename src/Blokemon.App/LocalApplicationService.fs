@@ -12,10 +12,22 @@ type LocalApplicationService
     (
         catalogue: BlokemonCatalogue,
         documents: IStateDocumentStore,
+        principal: ApplicationPrincipal,
         matches: LocalMatchService,
         economy: EconomyRules,
         profileAuthorityPolicy: ProfileAuthorityPolicy
     ) =
+
+    let keys = PlayerDocumentKeys.ofPrincipal principal
+
+    do
+        if matches.Keys <> keys then
+            raise (
+                ArgumentException(
+                    "The match service must act on the same player's documents.",
+                    nameof matches
+                )
+            )
 
     let projectionHooks = ApplicationProjectionHooks()
 
@@ -30,6 +42,8 @@ type LocalApplicationService
     let context operation : ApplicationContext =
         { Catalogue = catalogue
           Documents = documents
+          Principal = principal
+          Keys = keys
           Matches = matches
           Economy = economy
           ProfileAuthorityPolicy = profileAuthorityPolicy
@@ -37,6 +51,24 @@ type LocalApplicationService
           ProjectionRequest =
             { Generation = Interlocked.Increment(&projectionGeneration)
               Operation = operation } }
+
+    /// The browser-local host's service: anonymous, on the literal keys it has always used.
+    new
+        (
+            catalogue: BlokemonCatalogue,
+            documents: IStateDocumentStore,
+            matches: LocalMatchService,
+            economy: EconomyRules,
+            profileAuthorityPolicy: ProfileAuthorityPolicy
+        ) =
+        LocalApplicationService(
+            catalogue,
+            documents,
+            ApplicationPrincipal.BrowserLocal,
+            matches,
+            economy,
+            profileAuthorityPolicy
+        )
 
     member internal _.ProjectionBuildCounts = projections.BuildCounts
 

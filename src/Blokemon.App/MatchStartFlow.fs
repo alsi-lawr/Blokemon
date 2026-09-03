@@ -285,13 +285,13 @@ module internal MatchStartFlow =
                                                 match loaded.Match with
                                                 | null ->
                                                     documents.Create(
-                                                        matchKey,
+                                                        context.Keys.Match,
                                                         json,
                                                         cancellationToken
                                                     )
                                                 | existing ->
                                                     documents.Update(
-                                                        matchKey,
+                                                        context.Keys.Match,
                                                         existing.DocumentRevision,
                                                         json,
                                                         cancellationToken

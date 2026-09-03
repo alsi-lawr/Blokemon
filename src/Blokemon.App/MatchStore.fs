@@ -28,7 +28,7 @@ module internal MatchStore =
         let replayDocument = replayDocument context
 
         task {
-            let! stored = documents.Read(matchKey, cancellationToken)
+            let! stored = documents.Read(context.Keys.Match, cancellationToken)
 
             match stored with
             | null ->
@@ -71,7 +71,7 @@ module internal MatchStore =
                             return
                                 { Match = null
                                   Error = error
-                                  Recovery = Some(activeReplayRecovery ready.Stored error) }
+                                  Recovery = Some(activeReplayRecovery context ready.Stored error) }
                         | Null ->
                             context.Cached <- replayed.Match
 
@@ -87,7 +87,7 @@ module internal MatchStore =
         (cancellationToken: CancellationToken)
         =
         task {
-            let! stored = context.Documents.Read(matchHistoryKey, cancellationToken)
+            let! stored = context.Documents.Read(context.Keys.MatchHistory, cancellationToken)
 
             match stored with
             | null -> return Ok None
@@ -111,7 +111,7 @@ module internal MatchStore =
         let replayDocument = replayDocument context
 
         task {
-            let! stored = documents.Read(matchHistoryKey, cancellationToken)
+            let! stored = documents.Read(context.Keys.MatchHistory, cancellationToken)
 
             let! history =
                 task {
@@ -196,10 +196,15 @@ module internal MatchStore =
 
                             let! write =
                                 match resolvedStored with
-                                | None -> documents.Create(matchHistoryKey, json, cancellationToken)
+                                | None ->
+                                    documents.Create(
+                                        context.Keys.MatchHistory,
+                                        json,
+                                        cancellationToken
+                                    )
                                 | Some existing ->
                                     documents.Update(
-                                        matchHistoryKey,
+                                        context.Keys.MatchHistory,
                                         existing.Revision,
                                         json,
                                         cancellationToken

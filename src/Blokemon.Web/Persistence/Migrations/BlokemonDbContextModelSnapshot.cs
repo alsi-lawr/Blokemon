@@ -17,7 +17,7 @@ public partial class BlokemonDbContextModelSnapshot : ModelSnapshot
             "Blokemon.Web.Persistence.StateDocument",
             entity =>
             {
-                entity.Property<string>("Key").HasMaxLength(64).HasColumnType("TEXT");
+                entity.Property<string>("Key").HasMaxLength(160).HasColumnType("TEXT");
                 entity.Property<string>("Json").IsRequired().HasColumnType("TEXT");
                 entity.Property<long>("Revision").IsConcurrencyToken().HasColumnType("INTEGER");
                 entity.HasKey("Key");

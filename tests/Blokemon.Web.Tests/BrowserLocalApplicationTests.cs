@@ -1009,12 +1009,15 @@ public sealed class BrowserLocalApplicationTests
         (await documents.Read("profile")).ShouldBe(legacy);
     }
 
+    // Server documents are keyed by account and no request names one until BLOKEMON-149
+    // introduces sessions, so every /api route refuses with the typed session.required error in
+    // the ordinary envelope. BLOKEMON-149 restores these to full journeys.
     [Test]
-    public async Task ServerApi_StillPersistsAProfileInItsOwnSqliteDatabase()
+    public async Task ServerApi_RefusesEveryRouteWithoutASessionAndPersistsNothing()
     {
         var dataDirectory = Path.Combine(
             AppContext.BaseDirectory,
-            $"server-regression-{Guid.NewGuid():N}"
+            $"server-session-required-{Guid.NewGuid():N}"
         );
         try
         {
@@ -1024,88 +1027,72 @@ public sealed class BrowserLocalApplicationTests
                 builder.UseSetting("Blokemon:DataDirectory", dataDirectory);
             });
             using var client = factory.CreateClient();
-            var commandId = Guid.Parse("96666666-6666-6666-6666-666666666666");
+            var matchId = Guid.Parse("c6111111-1111-1111-1111-111111111111");
+            (HttpMethod Method, string Path, object? Body)[] routes =
+            [
+                (HttpMethod.Get, "/api/state", null),
+                (HttpMethod.Post, "/api/profile", new CreateProfileRequest(Guid.NewGuid(), "P")),
+                (HttpMethod.Post, "/api/packs/open", new OpenPackRequest(Guid.NewGuid())),
+                (
+                    HttpMethod.Post,
+                    "/api/starter-decks/claim",
+                    new ClaimStarterDeckRequest(Guid.NewGuid(), "growroom")
+                ),
+                (
+                    HttpMethod.Post,
+                    "/api/decks",
+                    new SaveDeckRequest(Guid.NewGuid(), null, null, "Deck", [])
+                ),
+                (
+                    HttpMethod.Post,
+                    "/api/decks/delete",
+                    new DeleteDeckRequest(Guid.NewGuid(), Guid.NewGuid())
+                ),
+                (HttpMethod.Post, "/api/matches", new StartMatchRequest(Guid.NewGuid(), matchId)),
+                (
+                    HttpMethod.Post,
+                    $"/api/matches/{matchId:D}/actions",
+                    new ApplyMatchActionRequest(Guid.NewGuid(), 1, "end-turn", [])
+                ),
+                (
+                    HttpMethod.Post,
+                    "/api/matches/abandon",
+                    new AbandonSavedMatchRequest(1, "identity")
+                ),
+                (
+                    HttpMethod.Post,
+                    "/api/matches/history/discard",
+                    new DiscardMatchHistoryRequest(1, "identity")
+                ),
+                (HttpMethod.Post, "/api/purge", new { }),
+            ];
 
-            var createdResponse = await client.PostAsJsonAsync(
-                "/api/profile",
-                new CreateProfileRequest(commandId, "Server Player")
-            );
-            var created = await createdResponse.Content.ReadFromJsonAsync<
-                ApiResponse<ApplicationView>
-            >();
-            var restored = await client.GetFromJsonAsync<ApiResponse<ApplicationView>>(
-                "/api/state"
-            );
-
-            createdResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-            created!.Succeeded.ShouldBeTrue();
-            restored!.Succeeded.ShouldBeTrue();
-            restored.Value!.Profile!.Id.ShouldBe(created.Value!.Profile!.Id);
-            File.Exists(Path.Combine(dataDirectory, "blokemon.db")).ShouldBeTrue();
-        }
-        finally
-        {
-            if (Directory.Exists(dataDirectory))
+            var refusals = new List<(string Path, HttpStatusCode Status, ApiError? Error)>();
+            foreach (var (method, path, body) in routes)
             {
-                Directory.Delete(dataDirectory, recursive: true);
+                using var request = new HttpRequestMessage(method, path);
+                if (body is not null)
+                {
+                    request.Content = JsonContent.Create(body, body.GetType());
+                }
+                using var response = await client.SendAsync(request);
+                var envelope = await response.Content.ReadFromJsonAsync<
+                    ApiResponse<JsonElement?>
+                >();
+                refusals.Add((path, response.StatusCode, envelope?.Error));
+                envelope!.Succeeded.ShouldBeFalse(path);
+                envelope.Value.ShouldBeNull(path);
             }
-        }
-    }
 
-    [Test]
-    public async Task ServerApi_DeletesASavedDeckThroughItsOwnEndpoint()
-    {
-        var dataDirectory = Path.Combine(
-            AppContext.BaseDirectory,
-            $"server-deck-delete-{Guid.NewGuid():N}"
-        );
-        try
-        {
-            using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            {
-                builder.UseEnvironment("Production");
-                builder.UseSetting("Blokemon:DataDirectory", dataDirectory);
-            });
-            using var client = factory.CreateClient();
-            await client.PostAsJsonAsync(
-                "/api/profile",
-                new CreateProfileRequest(
-                    Guid.Parse("b5111111-1111-1111-1111-111111111111"),
-                    "Server Player"
-                )
-            );
-            var claimedResponse = await client.PostAsJsonAsync(
-                "/api/starter-decks/claim",
-                new ClaimStarterDeckRequest(
-                    Guid.Parse("b5222222-2222-2222-2222-222222222222"),
-                    "growroom"
-                )
-            );
-            var claimed = await claimedResponse.Content.ReadFromJsonAsync<
-                ApiResponse<ApplicationView>
-            >();
-            var starter = claimed!.Value!.Decks.Single();
+            using var scope = factory.Services.CreateScope();
+            var store = scope.ServiceProvider.GetRequiredService<StateDocumentStore>();
+            var persisted = await store.List("");
 
-            var deletedResponse = await client.PostAsJsonAsync(
-                "/api/decks/delete",
-                new DeleteDeckRequest(
-                    Guid.Parse("b5333333-3333-3333-3333-333333333333"),
-                    starter.Id
-                )
-            );
-            var deleted = await deletedResponse.Content.ReadFromJsonAsync<
-                ApiResponse<ApplicationView>
-            >();
-            var restored = await client.GetFromJsonAsync<ApiResponse<ApplicationView>>(
-                "/api/state"
-            );
-
-            deletedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-            deleted!.Succeeded.ShouldBeTrue();
-            deleted.Value!.Decks.ShouldBeEmpty();
-            Ownership(deleted.Value).ShouldBe(Ownership(claimed.Value));
-            restored!.Value!.Decks.ShouldBeEmpty();
-            restored.Value.Profile!.StarterDeckId.ShouldBe("growroom");
+            refusals.ShouldAllBe(refusal => refusal.Status == HttpStatusCode.OK);
+            refusals.ShouldAllBe(refusal => refusal.Error!.Code == "session.required");
+            refusals.Count.ShouldBe(routes.Length);
+            persisted.ShouldBeEmpty();
+            File.Exists(Path.Combine(dataDirectory, "blokemon.db")).ShouldBeTrue();
         }
         finally
         {
@@ -1356,138 +1343,6 @@ public sealed class BrowserLocalApplicationTests
             classicEconomy.Mode.ShouldBe(EconomyMode.ClassicScarcity);
             classicEconomy.PackAllowance.ShouldBe(10);
             classicEconomy.StarterDeckClaimAllowance.ShouldBe(1);
-        }
-        finally
-        {
-            if (Directory.Exists(dataDirectory))
-            {
-                Directory.Delete(dataDirectory, recursive: true);
-            }
-        }
-    }
-
-    [Test]
-    public async Task ServerApi_AppliesTheClassicEconomyConfiguredInItsSettings()
-    {
-        var dataDirectory = Path.Combine(
-            AppContext.BaseDirectory,
-            $"classic-economy-{Guid.NewGuid():N}"
-        );
-        try
-        {
-            using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            {
-                builder.UseEnvironment("Production");
-                builder.UseSetting("Blokemon:DataDirectory", dataDirectory);
-                builder.UseSetting(EconomyConfiguration.ModeKey, "ClassicScarcity");
-                builder.UseSetting(EconomyConfiguration.PackAllowanceKey, "1");
-            });
-            using var client = factory.CreateClient();
-
-            var createdResponse = await client.PostAsJsonAsync(
-                "/api/profile",
-                new CreateProfileRequest(
-                    Guid.Parse("a5111111-1111-1111-1111-111111111111"),
-                    "Classic Server Player"
-                )
-            );
-            var created = await createdResponse.Content.ReadFromJsonAsync<
-                ApiResponse<ApplicationView>
-            >();
-            var openedResponse = await client.PostAsJsonAsync(
-                "/api/packs/open",
-                new OpenPackRequest(Guid.Parse("a5222222-2222-2222-2222-222222222222"))
-            );
-            var opened = await openedResponse.Content.ReadFromJsonAsync<
-                ApiResponse<ApplicationView>
-            >();
-            var exhaustedResponse = await client.PostAsJsonAsync(
-                "/api/packs/open",
-                new OpenPackRequest(Guid.Parse("a5333333-3333-3333-3333-333333333333"))
-            );
-            var exhausted = await exhaustedResponse.Content.ReadFromJsonAsync<
-                ApiResponse<ApplicationView>
-            >();
-
-            created!.Value!.Profile!.RemainingPacks.ShouldBe(1);
-            created.Value.Profile.StarterClaimUsed.ShouldBe(false);
-            opened!.Value!.Profile!.RemainingPacks.ShouldBe(0);
-            exhausted!.Succeeded.ShouldBeFalse();
-            exhausted.Error!.Code.ShouldBe("pack.allowance");
-        }
-        finally
-        {
-            if (Directory.Exists(dataDirectory))
-            {
-                Directory.Delete(dataDirectory, recursive: true);
-            }
-        }
-    }
-
-    [Test]
-    public async Task ServerRecoveryEndpoint_UsesTheSameTypedIdentityGateAndKeyIsolation()
-    {
-        var dataDirectory = Path.Combine(
-            AppContext.BaseDirectory,
-            $"match-recovery-{Guid.NewGuid():N}"
-        );
-        try
-        {
-            using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            {
-                builder.UseEnvironment("Production");
-                builder.UseSetting("Blokemon:DataDirectory", dataDirectory);
-            });
-            using var client = factory.CreateClient();
-            var created = await client.PostAsJsonAsync(
-                "/api/profile",
-                new CreateProfileRequest(Guid.NewGuid(), "Server Player")
-            );
-            created.EnsureSuccessStatusCode();
-            var claimedResponse = await client.PostAsJsonAsync(
-                "/api/starter-decks/claim",
-                new ClaimStarterDeckRequest(Guid.NewGuid(), "growroom")
-            );
-            var claimed = (
-                await claimedResponse.Content.ReadFromJsonAsync<ApiResponse<ApplicationView>>()
-            )!.Value!;
-            var startResponse = await client.PostAsJsonAsync(
-                "/api/matches",
-                new StartMatchRequest(Guid.NewGuid(), claimed.Decks.Single().Id)
-            );
-            startResponse.EnsureSuccessStatusCode();
-
-            using var scope = factory.Services.CreateScope();
-            var store = scope.ServiceProvider.GetRequiredService<StateDocumentStore>();
-            var current = (await store.Read("match"))!;
-            var incompatible = JsonNode.Parse(current.Json)!.AsObject();
-            incompatible["authorityVersion"] = "arbitrary-authority";
-            await store.Update("match", current.Revision, incompatible.ToJsonString());
-            await store.Create("match-history", "history-sentinel");
-            await store.Create("match-migration-backup/sentinel", "backup-sentinel");
-            var profile = (await store.Read("profile"))!;
-            var history = (await store.Read("match-history"))!;
-            var backup = (await store.Read("match-migration-backup/sentinel"))!;
-
-            var gated = (
-                await client.GetFromJsonAsync<ApiResponse<ApplicationView>>("/api/state")
-            )!.Value!;
-            var recovery = gated.MatchRecovery!;
-            var abandonedResponse = await client.PostAsJsonAsync(
-                "/api/matches/abandon",
-                new AbandonSavedMatchRequest(recovery.Revision, recovery.ContentIdentity)
-            );
-            var abandoned = (
-                await abandonedResponse.Content.ReadFromJsonAsync<ApiResponse<ApplicationView>>()
-            )!;
-
-            recovery.Kind.ShouldBe(MatchRecoveryKindView.ActiveMatchUnsupportedVersion);
-            abandoned.Succeeded.ShouldBeTrue();
-            abandoned.Value!.MatchRecovery.ShouldBeNull();
-            (await store.Read("match")).ShouldBeNull();
-            (await store.Read("profile")).ShouldBe(profile);
-            (await store.Read("match-history")).ShouldBe(history);
-            (await store.Read("match-migration-backup/sentinel")).ShouldBe(backup);
         }
         finally
         {

@@ -110,12 +110,12 @@ module internal MatchRecovery =
                     | _, NonNull error ->
                         return
                             MatchMigrationOutcome.RecoveryRequired(
-                                activeReplayRecovery ready.Stored error
+                                activeReplayRecovery context ready.Stored error
                             )
                     | Null, Null ->
                         return
                             MatchMigrationOutcome.RecoveryRequired(
-                                activeReplayRecovery ready.Stored (invalidReplayError ())
+                                activeReplayRecovery context ready.Stored (invalidReplayError ())
                             )
                 | _ -> return resolved
             }
@@ -124,7 +124,7 @@ module internal MatchRecovery =
             context
             profile
             MatchRecoveryDocument.ActiveMatch
-            matchKey
+            context.Keys.Match
             request.ExpectedRevision
             request.ContentIdentity
             resolve
@@ -141,7 +141,7 @@ module internal MatchRecovery =
             context
             profile
             MatchRecoveryDocument.MatchHistory
-            matchHistoryKey
+            context.Keys.MatchHistory
             request.ExpectedRevision
             request.ContentIdentity
             resolveHistory

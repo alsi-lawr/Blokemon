@@ -175,7 +175,7 @@ module internal MatchMigration =
             ))
         |> Option.toObj
 
-    let activeReplayRecovery (stored: StoredDocument) (error: ApiError) =
+    let activeReplayRecovery (context: MatchContext) (stored: StoredDocument) (error: ApiError) =
         let reason =
             match error.Code with
             | "match.authority_changed" -> MatchRecoveryReason.IncompatibleWithCurrentRules
@@ -184,7 +184,7 @@ module internal MatchMigration =
             | _ -> MatchRecoveryReason.Corrupt
 
         { Document = MatchRecoveryDocument.ActiveMatch
-          Key = matchKey
+          Key = context.Keys.Match
           Reason = reason
           Stored = stored }
 
@@ -267,7 +267,7 @@ module internal MatchMigration =
             | MatchMigrationPreparation.Current document ->
                 return MatchMigrationOutcome.Ready { Stored = source; Document = document }
             | MatchMigrationPreparation.RecoveryRequired reason ->
-                return recovery MatchRecoveryDocument.ActiveMatch matchKey reason source
+                return recovery MatchRecoveryDocument.ActiveMatch context.Keys.Match reason source
             | MatchMigrationPreparation.Candidate candidate ->
                 cancellationToken.ThrowIfCancellationRequested()
 
@@ -277,7 +277,7 @@ module internal MatchMigration =
                     return
                         recovery
                             MatchRecoveryDocument.ActiveMatch
-                            matchKey
+                            context.Keys.Match
                             (if candidate.ReboundAuthority then
                                  MatchRecoveryReason.IncompatibleWithCurrentRules
                              else
@@ -287,7 +287,7 @@ module internal MatchMigration =
                     return!
                         persist
                             MatchRecoveryDocument.ActiveMatch
-                            matchKey
+                            context.Keys.Match
                             context.Documents
                             source
                             candidate
@@ -307,7 +307,12 @@ module internal MatchMigration =
             | MatchMigrationPreparation.Current document ->
                 return MatchMigrationOutcome.Ready { Stored = source; Document = document }
             | MatchMigrationPreparation.RecoveryRequired reason ->
-                return recovery MatchRecoveryDocument.MatchHistory matchHistoryKey reason source
+                return
+                    recovery
+                        MatchRecoveryDocument.MatchHistory
+                        context.Keys.MatchHistory
+                        reason
+                        source
             | MatchMigrationPreparation.Candidate candidate ->
                 cancellationToken.ThrowIfCancellationRequested()
 
@@ -315,7 +320,7 @@ module internal MatchMigration =
                     return
                         recovery
                             MatchRecoveryDocument.MatchHistory
-                            matchHistoryKey
+                            context.Keys.MatchHistory
                             (if candidate.ReboundAuthority then
                                  MatchRecoveryReason.IncompatibleWithCurrentRules
                              else
@@ -325,7 +330,7 @@ module internal MatchMigration =
                     return!
                         persist
                             MatchRecoveryDocument.MatchHistory
-                            matchHistoryKey
+                            context.Keys.MatchHistory
                             context.Documents
                             source
                             candidate

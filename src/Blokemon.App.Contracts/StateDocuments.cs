@@ -64,3 +64,24 @@ public sealed class DocumentStorageException(
 {
     public DocumentStorageFailure Failure { get; } = failure;
 }
+
+/// One entry of a key-prefix listing: the key, its revision and the declared summary of its
+/// type, never the document body.
+public sealed record DocumentSummary(string Key, long Revision, DocumentProjection? Projection);
+
+/// The named fields a listing may surface for a document type. Types without a declared
+/// projection are listed with none.
+public abstract record DocumentProjection
+{
+    private DocumentProjection() { }
+
+    /// For account and tenant documents.
+    public sealed record Lifecycle(
+        string? Status,
+        DateTimeOffset? CreatedAt,
+        DateTimeOffset? ErasedAt
+    ) : DocumentProjection;
+
+    /// For hand-off and session documents.
+    public sealed record Expiry(DateTimeOffset? ExpiresAt) : DocumentProjection;
+}

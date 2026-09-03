@@ -11,6 +11,7 @@ public sealed class StateDocumentStore(IDbContextFactory<BlokemonDbContext> cont
         CancellationToken cancellationToken = default
     )
     {
+        RefuseOverlongKey(key);
         await using var context = await contexts.CreateDbContextAsync(cancellationToken);
         return await context
             .StateDocuments.AsNoTracking()
@@ -25,6 +26,7 @@ public sealed class StateDocumentStore(IDbContextFactory<BlokemonDbContext> cont
         CancellationToken cancellationToken = default
     )
     {
+        RefuseOverlongKey(key);
         await using var context = await contexts.CreateDbContextAsync(cancellationToken);
         var rows = await context.Database.ExecuteSqlInterpolatedAsync(
             $"""
@@ -43,6 +45,7 @@ public sealed class StateDocumentStore(IDbContextFactory<BlokemonDbContext> cont
         CancellationToken cancellationToken = default
     )
     {
+        RefuseOverlongKey(key);
         await using var context = await contexts.CreateDbContextAsync(cancellationToken);
         var rows = await context
             .StateDocuments.Where(row => row.Key == key && row.Revision == expectedRevision)
@@ -60,6 +63,7 @@ public sealed class StateDocumentStore(IDbContextFactory<BlokemonDbContext> cont
 
     public async Task Delete(string key, CancellationToken cancellationToken = default)
     {
+        RefuseOverlongKey(key);
         await using var context = await contexts.CreateDbContextAsync(cancellationToken);
         await context
             .StateDocuments.Where(row => row.Key == key)
@@ -73,6 +77,7 @@ public sealed class StateDocumentStore(IDbContextFactory<BlokemonDbContext> cont
         CancellationToken cancellationToken = default
     )
     {
+        RefuseOverlongKey(key);
         await using var context = await contexts.CreateDbContextAsync(cancellationToken);
         var rows = await context
             .StateDocuments.Where(row =>
@@ -89,5 +94,46 @@ public sealed class StateDocumentStore(IDbContextFactory<BlokemonDbContext> cont
             cancellationToken
         );
         return exists ? new DocumentDeleteResult.Conflict() : new DocumentDeleteResult.Missing();
+    }
+
+    /// <summary>
+    /// Every document whose key starts with <paramref name="prefix"/>, in key order: the key,
+    /// its revision and the summary declared for its type. No document body leaves the store.
+    /// </summary>
+    public async Task<IReadOnlyList<DocumentSummary>> List(
+        string prefix,
+        CancellationToken cancellationToken = default
+    )
+    {
+        RefuseOverlongKey(prefix);
+        await using var context = await contexts.CreateDbContextAsync(cancellationToken);
+        var rows = await context
+            .StateDocuments.AsNoTracking()
+            .Where(row => row.Key.StartsWith(prefix))
+            .OrderBy(static row => row.Key)
+            .Select(static row => new
+            {
+                row.Key,
+                row.Revision,
+                row.Json,
+            })
+            .ToListAsync(cancellationToken);
+        return rows.Select(row => new DocumentSummary(
+                row.Key,
+                row.Revision,
+                DocumentSummaryProjection.Project(row.Key, row.Json)
+            ))
+            .ToArray();
+    }
+
+    private static void RefuseOverlongKey(string key)
+    {
+        if (key.Length > StateDocument.MaximumKeyLength)
+        {
+            throw new DocumentStorageException(
+                DocumentStorageFailure.Rejected,
+                $"A document key must be at most {StateDocument.MaximumKeyLength} characters."
+            );
+        }
     }
 }

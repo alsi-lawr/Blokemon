@@ -3,6 +3,11 @@ using Blokemon.App.Contracts;
 
 namespace Blokemon.Web.Api;
 
+/// <summary>
+/// The server's application routes. Server documents are keyed by account, and until
+/// BLOKEMON-149 introduces sessions no request names one, so every route answers with the typed
+/// <c>session.required</c> refusal in the ordinary response envelope and touches nothing.
+/// </summary>
 public static class ApplicationEndpoints
 {
     public static IEndpointRouteBuilder MapApplicationEndpoints(
@@ -10,89 +15,23 @@ public static class ApplicationEndpoints
     )
     {
         var api = endpoints.MapGroup("/api");
-        api.MapGet(
-            "/state",
-            (LocalApplicationService application, CancellationToken cancellationToken) =>
-                application.State(cancellationToken)
-        );
-        api.MapPost(
-            "/profile",
-            (
-                CreateProfileRequest request,
-                LocalApplicationService application,
-                CancellationToken cancellationToken
-            ) => application.CreateProfile(request, cancellationToken)
-        );
-        api.MapPost(
-            "/packs/open",
-            (
-                OpenPackRequest request,
-                LocalApplicationService application,
-                CancellationToken cancellationToken
-            ) => application.OpenPack(request, cancellationToken)
-        );
-        api.MapPost(
-            "/starter-decks/claim",
-            (
-                ClaimStarterDeckRequest request,
-                LocalApplicationService application,
-                CancellationToken cancellationToken
-            ) => application.ClaimStarterDeck(request, cancellationToken)
-        );
-        api.MapPost(
-            "/decks",
-            (
-                SaveDeckRequest request,
-                LocalApplicationService application,
-                CancellationToken cancellationToken
-            ) => application.SaveDeck(request, cancellationToken)
-        );
-        api.MapPost(
-            "/decks/delete",
-            (
-                DeleteDeckRequest request,
-                LocalApplicationService application,
-                CancellationToken cancellationToken
-            ) => application.DeleteDeck(request, cancellationToken)
-        );
-        api.MapPost(
-            "/matches",
-            (
-                StartMatchRequest request,
-                LocalApplicationService application,
-                CancellationToken cancellationToken
-            ) => application.StartMatch(request, cancellationToken)
-        );
+        api.MapGet("/state", static () => SessionRequired<ApplicationView>());
+        api.MapPost("/profile", static () => SessionRequired<ApplicationView>());
+        api.MapPost("/packs/open", static () => SessionRequired<ApplicationView>());
+        api.MapPost("/starter-decks/claim", static () => SessionRequired<ApplicationView>());
+        api.MapPost("/decks", static () => SessionRequired<ApplicationView>());
+        api.MapPost("/decks/delete", static () => SessionRequired<ApplicationView>());
+        api.MapPost("/matches", static () => SessionRequired<MatchMutationView>());
         api.MapPost(
             "/matches/{matchId:guid}/actions",
-            (
-                Guid matchId,
-                ApplyMatchActionRequest request,
-                LocalApplicationService application,
-                CancellationToken cancellationToken
-            ) => application.ApplyMatchAction(matchId, request, cancellationToken)
+            static () => SessionRequired<MatchMutationView>()
         );
-        api.MapPost(
-            "/matches/abandon",
-            (
-                AbandonSavedMatchRequest request,
-                LocalApplicationService application,
-                CancellationToken cancellationToken
-            ) => application.AbandonSavedMatch(request, cancellationToken)
-        );
-        api.MapPost(
-            "/matches/history/discard",
-            (
-                DiscardMatchHistoryRequest request,
-                LocalApplicationService application,
-                CancellationToken cancellationToken
-            ) => application.DiscardMatchHistory(request, cancellationToken)
-        );
-        api.MapPost(
-            "/purge",
-            (LocalApplicationService application, CancellationToken cancellationToken) =>
-                application.PurgeData(cancellationToken)
-        );
+        api.MapPost("/matches/abandon", static () => SessionRequired<ApplicationView>());
+        api.MapPost("/matches/history/discard", static () => SessionRequired<ApplicationView>());
+        api.MapPost("/purge", static () => SessionRequired<ApplicationView>());
         return endpoints;
     }
+
+    private static ApiResponse<T> SessionRequired<T>()
+        where T : class => new(false, null, SessionFailures.required());
 }

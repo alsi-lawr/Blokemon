@@ -57,7 +57,11 @@ module internal ProfileLifecycle =
                             failed<ApplicationView> (
                                 ApiError(
                                     "profile.exists",
-                                    "This machine already has a local profile."
+                                    match context.Principal with
+                                    | ApplicationPrincipal.BrowserLocal ->
+                                        "This machine already has a local profile."
+                                    | ApplicationPrincipal.Account _ ->
+                                        "This account already has a profile."
                                 )
                             )
                 | Null ->
@@ -105,7 +109,11 @@ module internal ProfileLifecycle =
                             let documentJson = JsonSerializer.Serialize(document, json)
 
                             let! write =
-                                documents.Create(profileKey, documentJson, cancellationToken)
+                                documents.Create(
+                                    context.Keys.Profile,
+                                    documentJson,
+                                    cancellationToken
+                                )
 
                             match write with
                             | :? DocumentWriteResult.Written as written ->
@@ -133,7 +141,7 @@ module internal ProfileLifecycle =
 
         task {
             do! matches.PurgeSavedMatches cancellationToken
-            do! documents.Delete(profileKey, cancellationToken)
+            do! documents.Delete(context.Keys.Profile, cancellationToken)
             let! view = toView null cancellationToken null
             return succeeded view
         }

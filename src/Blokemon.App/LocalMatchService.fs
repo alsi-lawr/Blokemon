@@ -16,14 +16,24 @@ open Blokemon.Game
 open Blokemon.Cpu
 
 [<Sealed>]
-type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentStore) =
+type LocalMatchService
+    (catalogue: BlokemonCatalogue, documents: IStateDocumentStore, keys: PlayerDocumentKeys) =
 
     let context: MatchContext =
         { Catalogue = catalogue
           Documents = documents
+          Keys = keys
           Engine = MatchEngine(catalogue.Mechanics)
           Cpu = DeterministicCpu()
           Cached = null }
+
+    /// The browser-local host's service, on the literal keys it has always used.
+    new(catalogue: BlokemonCatalogue, documents: IStateDocumentStore) =
+        LocalMatchService(catalogue, documents, PlayerDocumentKeys.browserLocal)
+
+    /// The keys this service reads and writes; the application service acting for the same
+    /// player must hold the same.
+    member _.Keys = keys
 
     /// The saved battle as this player sees it.
     member internal _.StateProjection
@@ -171,8 +181,8 @@ type LocalMatchService(catalogue: BlokemonCatalogue, documents: IStateDocumentSt
     /// Deletes the saved battle and its history.
     member _.PurgeSavedMatches([<Optional>] cancellationToken: CancellationToken) =
         task {
-            do! documents.Delete(matchKey, cancellationToken)
-            do! documents.Delete(matchHistoryKey, cancellationToken)
+            do! documents.Delete(keys.Match, cancellationToken)
+            do! documents.Delete(keys.MatchHistory, cancellationToken)
             context.Cached <- null
         }
         :> Task

@@ -7,11 +7,9 @@ open System.Text.Json.Serialization
 open Blokemon.App.Contracts
 open Blokemon.Product
 
-/// The profile document's key and options, and every typed failure the application tier returns
+/// The profile document's options, and every typed failure the application tier returns
 /// for a rejected product transition.
 module internal ProfileFailures =
-
-    let profileKey = "profile"
 
     // Version 3 dropped the starter claim's deck snapshot. Older documents fail the version
     // check in LoadProfile and take the damaged-document recovery path; there is no migration.
