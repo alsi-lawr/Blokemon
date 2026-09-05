@@ -20,6 +20,11 @@
     <Compile Include="RecoveryCodeTests.fs" />
     <Compile Include="PasskeyEnrolmentTests.fs" />
     <Compile Include="PasskeyRecoveryTests.fs" />
+    <Compile Include="IntegrationTokenTests.fs" />
+    <Compile Include="RateLimiterTests.fs" />
+    <Compile Include="HandoffCodeTests.fs" />
+    <Compile Include="TenantAdmissionTests.fs" />
+    <Compile Include="IssuerAdmissionTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Blokemon.App/Blokemon.App.fsproj" />

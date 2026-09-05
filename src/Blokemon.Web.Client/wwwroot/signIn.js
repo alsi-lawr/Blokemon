@@ -125,3 +125,16 @@ export function attachReceiver(dotNet) {
         early.splice(0),
     );
 }
+
+// Opens the continuation in a new top-level window the client itself owns: the code travels in
+// the fragment, never a session token, and the window's handle back to this one is severed
+// once it is known to have opened (a "noopener" feature would open it blind, with no way to
+// tell a blocked window from an opened one). False when the browser blocked it.
+export function openContinuation(url) {
+    const opened = window.open(url, "_blank");
+    if (opened === null) {
+        return false;
+    }
+    opened.opener = null;
+    return true;
+}

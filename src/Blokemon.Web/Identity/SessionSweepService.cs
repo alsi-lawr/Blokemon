@@ -4,8 +4,10 @@ using Blokemon.Web.Persistence;
 namespace Blokemon.Web.Identity;
 
 /// <summary>
-/// Runs the session sweep once at start-up and then on the configured interval (hourly by
-/// default). The sweep itself is <see cref="SessionSweep.run"/>, which tests call directly.
+/// Runs the session sweep, and the sweep of expired hand-off and continuation codes, once at
+/// start-up and then on the configured interval (hourly by default). The sweeps themselves are
+/// <see cref="SessionSweep.run"/> and <see cref="HandoffCodes.sweep"/>, which tests call
+/// directly; each mint also removes what has expired.
 /// </summary>
 public sealed class SessionSweepService(
     IServiceScopeFactory scopes,
@@ -39,6 +41,17 @@ public sealed class SessionSweepService(
             if (removed > 0)
             {
                 logger.LogInformation("Removed {Count} expired session documents.", removed);
+            }
+
+            var codes = await HandoffCodes.sweep(
+                documents,
+                documents,
+                time.GetUtcNow(),
+                cancellationToken
+            );
+            if (codes > 0)
+            {
+                logger.LogInformation("Removed {Count} expired sign-in codes.", codes);
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

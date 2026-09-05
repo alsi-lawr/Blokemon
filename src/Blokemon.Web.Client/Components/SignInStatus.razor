@@ -4,10 +4,16 @@
     failed are shown the same card, so the card has to say which one they are.
 *@
 <div class="profile-setup">
-    <div class="panel setup-card sign-in-status" role="status" aria-live="polite">
+    <div class="panel setup-card sign-in-status @(ApprovalPending ? "approval-prompt" : null)" role="status" aria-live="polite">
         <span class="eyebrow">@Eyebrow</span>
         <h1>@Heading</h1>
-        @if (Flow.Stage == SignInStage.Failed && Flow.Error is not null)
+        @if (ApprovalPending)
+        {
+            @* Not a failure: the channel asked, and this is where the answer is given. *@
+            <p>@Flow.Error!.Message</p>
+            <a class="primary button full" href="signin" target="_top" rel="noopener">Sign in</a>
+        }
+        else if (Flow.Stage == SignInStage.Failed && Flow.Error is not null)
         {
             <FailurePanel Message="@Flow.Error.Message" />
         }
@@ -32,6 +38,9 @@
 
     private string Eyebrow => Flow.Tenant is null ? "Channel" : Flow.Tenant.Label;
 
+    private bool ApprovalPending =>
+        Flow.Stage == SignInStage.Failed && Flow.Error?.Code == "approval.pending";
+
     // Every named stage has its sentence; the suppression is for a value cast in from outside
     // the names the enum declares, which the flow never produces.
 #pragma warning disable CS8524
@@ -42,6 +51,7 @@
             SignInStage.Waiting => $"Waiting for {Label} to sign you in…",
             SignInStage.SigningIn => "Signing you in…",
             SignInStage.SignedIn => $"Signed in as {Flow.DisplayName}.",
+            SignInStage.Failed when ApprovalPending => $"{Label} wants to use your Blokemon.",
             SignInStage.Failed => Hosted ? "That did not sign you in." : "That link did not sign you in.",
         };
 #pragma warning restore CS8524

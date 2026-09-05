@@ -1,5 +1,6 @@
 using Blokemon.App;
 using Blokemon.App.Contracts;
+using Blokemon.Identity.Federated;
 using Blokemon.Web.Api;
 using Blokemon.Web.Components;
 using Blokemon.Web.Content;
@@ -24,6 +25,9 @@ builder.Services.AddPooledDbContextFactory<BlokemonDbContext>(options =>
 );
 builder.Services.AddScoped<StateDocumentStore>();
 builder.Services.AddScoped<IStateDocumentStore>(static provider =>
+    provider.GetRequiredService<StateDocumentStore>()
+);
+builder.Services.AddScoped<IDocumentListing>(static provider =>
     provider.GetRequiredService<StateDocumentStore>()
 );
 
@@ -86,6 +90,9 @@ app.MapGet(
 app.MapApplicationEndpoints();
 app.MapIdentityEndpoints();
 app.MapFirstPartyEndpoints();
+app.MapApprovalEndpoints();
+app.MapContinuationEndpoints();
+app.MapBlokeBotChannels();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

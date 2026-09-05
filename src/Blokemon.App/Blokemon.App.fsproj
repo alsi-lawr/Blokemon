@@ -18,6 +18,7 @@
     -->
     <Compile Include="TenancyDocuments.fs" />
     <Compile Include="Accounts.fs" />
+    <Compile Include="Tenants.fs" />
     <Compile Include="IdentityLinks.fs" />
     <Compile Include="Approvals.fs" />
     <!--
@@ -26,8 +27,8 @@
       share, and the operator bootstrap. Sign-in completion comes last because it creates the
       first profile through the application service.
     -->
-    <Compile Include="Tenants.fs" />
     <Compile Include="Sessions.fs" />
+    <Compile Include="CurrentSession.fs" />
     <Compile Include="SessionSweep.fs" />
     <Compile Include="IdentityConfiguration.fs" />
     <Compile Include="IdentityProviders.fs" />
@@ -42,6 +43,15 @@
     <Compile Include="RecoveryCodes.fs" />
     <Compile Include="PasskeyEnrolment.fs" />
     <Compile Include="PasskeyRecovery.fs" />
+    <!--
+      Channel admission by integration token and the single-use codes a channel or a session
+      mints; the issuer admission that decides what a hand-off produces comes after sign-in
+      completion, which it completes through.
+    -->
+    <Compile Include="IntegrationTokens.fs" />
+    <Compile Include="RateLimiter.fs" />
+    <Compile Include="HandoffCodes.fs" />
+    <Compile Include="TenantAdmission.fs" />
     <Compile Include="PlayModeApplication.fs" />
     <Compile Include="MatchMigrationTypes.fs" />
     <!--
@@ -92,6 +102,7 @@
     <Compile Include="ApplicationMatchRecoveryOperations.fs" />
     <Compile Include="LocalApplicationService.fs" />
     <Compile Include="SignInCompletion.fs" />
+    <Compile Include="IssuerAdmission.fs" />
   </ItemGroup>
 
   <ItemGroup>

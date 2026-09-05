@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!--
+    The BlokeBot federation: the provider, the channel endpoints a plugin calls with its
+    integration token, the exchange that admits the viewers it hands off, and the operator's
+    admission of channels. Only Blokemon.Web references this project; the application tier it
+    builds on names no channel host.
+  -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\Blokemon.App\Blokemon.App.fsproj" />
+    <ProjectReference Include="..\Blokemon.App.Contracts\Blokemon.App.Contracts.csproj" />
+    <ProjectReference Include="..\Blokemon.Product\Blokemon.Product.fsproj" />
+  </ItemGroup>
+</Project>

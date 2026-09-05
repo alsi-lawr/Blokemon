@@ -1,3 +1,4 @@
+using Blokemon.Identity.Federated;
 using Microsoft.AspNetCore.Routing.Template;
 
 namespace Blokemon.Web.Identity;
@@ -23,10 +24,10 @@ public static class ApiSessionPolicy
         ("POST", "/api/session/firstparty/authenticate/options"),
         ("POST", "/api/session/firstparty/authenticate"),
         ("POST", "/api/session/firstparty/recover"),
-        // The hand-off and continuation exchanges (BLOKEMON-151).
+        // The hand-off and continuation exchanges.
         ("POST", HandoffExchange.Route),
         ("POST", "/api/session/resume"),
-        // The channel endpoints, authenticated by integration token (BLOKEMON-151).
+        // The channel endpoints, authenticated by integration token.
         ("GET", "/api/tenant/self"),
         ("POST", "/api/tenant/handoff"),
         ("POST", "/api/tenant/erasure"),

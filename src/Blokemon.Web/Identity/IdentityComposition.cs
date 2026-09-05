@@ -1,6 +1,7 @@
 using Blokemon.App;
 using Blokemon.App.Catalogue;
 using Blokemon.App.Contracts;
+using Blokemon.Identity.Federated;
 using Blokemon.Product;
 using Blokemon.Web.Identity.Passkeys;
 using Blokemon.Web.Persistence;
@@ -26,6 +27,7 @@ public static class IdentityComposition
             provider.GetServices<IIdentityProvider>()
         ));
         services.AddSingleton<ClientLockouts>();
+        services.AddBlokeBotChannels();
         services.AddSingleton<PasskeyChallenges>();
         if (identity.Passkeys is { Value: { } passkeys })
         {

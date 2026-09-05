@@ -58,6 +58,7 @@ else if (_view!.Profile is not null)
     @if (_mode?.Selected == PlayMode.ServerBacked && Session.Current is { Recovery: false })
     {
         <PasskeyPanel />
+        <PendingApprovals />
     }
     @PurgePanel
 }

@@ -97,12 +97,14 @@ else if (_view!.Profile is null)
 }
 else if (_view.Profile.StarterDeckId is null)
 {
+    @Offer
     @StarterCatalogue
 }
 else
 {
     var owned = _view.Cards.Count(static card => card.OwnedQuantity > 0);
     var claimedStarter = _view.StarterDecks.FirstOrDefault(static starter => starter.IsClaimed);
+    @Offer
     <header class="topline">
         <div>
             <span class="eyebrow">Your game</span>
@@ -239,6 +241,16 @@ else
 }
 
 @code {
+    // The passkey offer belongs to a signed-in server game only; a browser game has no account
+    // to add a passkey to, and a recovery session never reaches this page.
+    private RenderFragment Offer =>
+        @<text>
+            @if (_mode?.Selected == PlayMode.ServerBacked && Session.Current is { Recovery: false })
+            {
+                <PasskeyOffer />
+            }
+        </text>;
+
     private RenderFragment StarterCatalogue =>
         @<section class="starter-shell" aria-labelledby="starter-heading">
             <div class="starter-intro">

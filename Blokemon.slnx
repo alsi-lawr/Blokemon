@@ -10,6 +10,7 @@
     <Project Path="src/Blokemon.Core.Contracts/Blokemon.Core.Contracts.fsproj" />
     <Project Path="src/Blokemon.Cpu/Blokemon.Cpu.fsproj" />
     <Project Path="src/Blokemon.Game/Blokemon.Game.fsproj" />
+    <Project Path="src/Blokemon.Identity.Federated/Blokemon.Identity.Federated.csproj" />
     <Project Path="src/Blokemon.PackGen/Blokemon.PackGen.fsproj" />
     <Project Path="src/Blokemon.Product/Blokemon.Product.fsproj" />
     <Project Path="src/Blokemon.Sheet/Blokemon.Sheet.fsproj" />

@@ -281,12 +281,12 @@ def standalone_session(devtools, origin, token, expires_at):
     close_menu(devtools)
 
 
-def fragment_reader(devtools, origin, path, exchange_path):
+def fragment_reader(devtools, origin, path, exchange_path, expected_phrase):
     devtools.events.clear()
     devtools.navigate(origin, "/signin")
     devtools.command("Page.navigate", {"url": f"{origin}{path}#handoff=fragment-code-{exchange_path.rsplit('/', 1)[-1]}"})
     devtools.wait_for("document.querySelector('.sign-in-status') !== null", f"{path} sign-in status card", timeout=30)
-    devtools.wait_for("document.querySelector('.sign-in-status .failure') !== null", f"{path} typed failure once the exchange is unavailable", timeout=30)
+    devtools.wait_for("document.querySelector('.sign-in-status .failure') !== null", f"{path} typed failure once the exchange refuses the code", timeout=30)
     require(devtools.evaluate("location.hash") == "", f"{path} cleared the #handoff fragment")
     exchanges = requests_to(devtools, exchange_path)
     require(len(exchanges) == 1, f"{path} called {exchange_path} once")
@@ -294,7 +294,7 @@ def fragment_reader(devtools, origin, path, exchange_path):
     require("fragment-code" not in exchanges[0]["request"]["url"], f"{path} kept the code out of the request URL")
     require(exchanges[0]["request"]["method"] == "POST", f"{path} posted the code")
     message = devtools.evaluate("document.querySelector('.sign-in-status .failure span')?.textContent")
-    require("not available" in message, f"{path} shows the typed unavailable outcome")
+    require(expected_phrase in message, f"{path} shows the typed outcome ({message!r})")
 
 
 def unknown_tenant(devtools, origin):
@@ -417,9 +417,11 @@ def main():
             devtools.command("Log.enable")
             devtools.set_viewport(1440, 900)
             standalone_session(devtools, origin, token, expires_at)
-            fragment_reader(devtools, origin, "/", EXCHANGE)
-            fragment_reader(devtools, origin, "/t/core", EXCHANGE)
-            fragment_reader(devtools, origin, "/t/core/continue", RESUME)
+            # This host enables only the test provider, so the hand-off exchange answers the
+            # typed "not enabled"; the continuation exchange refuses a code it never minted.
+            fragment_reader(devtools, origin, "/", EXCHANGE, "not enabled")
+            fragment_reader(devtools, origin, "/t/core", EXCHANGE, "not enabled")
+            fragment_reader(devtools, origin, "/t/core/continue", RESUME, "not valid")
             unknown_tenant(devtools, origin)
             receiver_rules(devtools, parent_origin)
             hosted(devtools, parent_origin, origin, "after", expect_ready=True, expect_exchange=True)

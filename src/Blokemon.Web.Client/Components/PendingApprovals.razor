@@ -1,0 +1,56 @@
+@*
+    The channels waiting for this person's approval, each with one action. The panel exists only
+    while the server lists at least one: "no channels are waiting" is not a fact a player needs
+    stated. Which sessions may approve is the server's rule; the panel renders what it lists and
+    shows the typed refusal when a grant is refused.
+*@
+@inject SessionApiClient SessionApi
+
+@if (_pending is { Length: > 0 })
+{
+    <div class="panel setup-card pending-approvals" aria-labelledby="approvals-heading">
+        <h2 id="approvals-heading">Channels waiting for you</h2>
+        <p>These channels asked to use your Blokemon. Approving one lets it sign you in.</p>
+        <ul class="approval-list" aria-label="Channels waiting for your approval">
+            @foreach (var channel in _pending)
+            {
+                <li>
+                    <span>@channel.Label</span>
+                    <button type="button" class="secondary" @onclick="() => Approve(channel)" disabled="@(_working is not null)">@(_working == channel.TenantId ? "Approving…" : "Approve")</button>
+                    @if (_errors.TryGetValue(channel.TenantId, out var error))
+                    {
+                        <span class="field-error" role="alert">@error</span>
+                    }
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    private PendingApprovalView[]? _pending;
+    private string? _working;
+    private readonly Dictionary<string, string> _errors = new(StringComparer.Ordinal);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await SessionApi.PendingApprovals();
+        _pending = response.Succeeded ? response.Value : null;
+    }
+
+    private async Task Approve(PendingApprovalView channel)
+    {
+        _errors.Remove(channel.TenantId);
+        _working = channel.TenantId;
+        var response = await SessionApi.Approve(channel.TenantId);
+        _working = null;
+        if (response.Succeeded)
+        {
+            _pending = _pending!.Where(item => item.TenantId != channel.TenantId).ToArray();
+        }
+        else
+        {
+            _errors[channel.TenantId] = response.Error?.Message ?? "That could not be approved.";
+        }
+    }
+}

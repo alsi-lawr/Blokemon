@@ -18,7 +18,7 @@ public sealed class ServerSessionTests
 {
     private static readonly Guid MatchId = Guid.Parse("c6111111-1111-1111-1111-111111111111");
 
-    /// <summary>Every route that requires a session: the eleven application routes minus the state route, BLOKEMON-149's own, the continuation 151 will add, and BLOKEMON-150's account-bound routes.</summary>
+    /// <summary>Every route that requires a session: the eleven application routes minus the state route, BLOKEMON-149's own, BLOKEMON-150's account-bound routes, and BLOKEMON-151's continuation, approval and operator admission routes.</summary>
     private static (HttpMethod Method, string Path, object? Body)[] SessionRequiredRoutes() =>
         [
             (HttpMethod.Post, "/api/profile", new CreateProfileRequest(Guid.NewGuid(), "P")),
@@ -53,7 +53,14 @@ public sealed class ServerSessionTests
             (HttpMethod.Post, "/api/purge", new { }),
             (HttpMethod.Post, "/api/session/signout", new { }),
             (HttpMethod.Post, "/api/session/continue", new { }),
+            (HttpMethod.Get, "/api/session/approvals", null),
+            (HttpMethod.Post, $"/api/session/approvals/{MatchId:D}", new { }),
             (HttpMethod.Post, "/api/operator/bootstrap", new OperatorBootstrapRequest("x")),
+            // The operator's admission routes (BLOKEMON-151).
+            (HttpMethod.Post, "/api/operator/tenants", new { slug = "x", label = "x" }),
+            (HttpMethod.Post, $"/api/operator/tenants/{MatchId:D}/rotate", new { }),
+            (HttpMethod.Post, $"/api/operator/tenants/{MatchId:D}/close", new { }),
+            (HttpMethod.Post, $"/api/operator/tenants/{MatchId:D}/revoke", new { }),
             // The first-party routes that act on the session's own account (BLOKEMON-150).
             (HttpMethod.Post, "/api/session/firstparty/enrol/options", new { }),
             (
@@ -118,27 +125,6 @@ public sealed class ServerSessionTests
         }
 
         (await host.WithStore(store => store.List(""))).ShouldBe(before);
-    }
-
-    [Test]
-    public async Task ContinueRoute_RequiresASessionAheadOfItsArrival()
-    {
-        await using var host = SessionHost.Create();
-        var signedIn = await host.SignIn("continuing");
-        using var anonymous = host.Client();
-        using var client = host.Client(signedIn.Token);
-
-        using var refused = await anonymous.PostAsJsonAsync("/api/session/continue", new { });
-        using var absent = await client.PostAsJsonAsync("/api/session/continue", new { });
-
-        var envelope = await refused.Content.ReadFromJsonAsync<ApiResponse<JsonElement?>>();
-        envelope!.Error!.Code.ShouldBe(SessionFailures.RequiredCode);
-        // With a session the policy lets the request through to a route that does not exist
-        // yet. The host's status-code re-execution replays the POST through the not-found
-        // page, which answers 400 rather than 404 until BLOKEMON-155 settles the host; either
-        // way it is neither a success nor a session refusal.
-        absent.IsSuccessStatusCode.ShouldBeFalse();
-        absent.StatusCode.ShouldBeOneOf(HttpStatusCode.NotFound, HttpStatusCode.BadRequest);
     }
 
     [Test]
@@ -223,7 +209,7 @@ public sealed class ServerSessionTests
         // The host names the hand-off exchange route (BLOKEMON-151's) so the client need not.
         value["handoffExchangePath"]!.GetValue<string>().ShouldBe("api/session/blokebot");
 
-        foreach (var slug in new[] { "nobody", "self", "Not-A-Slug", "a--b" })
+        foreach (var slug in new[] { "nobody", "Not-A-Slug", "a--b" })
         {
             var missing = await client.GetFromJsonAsync<ApiResponse<TenantDescriptorView>>(
                 $"/api/tenant/{slug}"
@@ -232,6 +218,14 @@ public sealed class ServerSessionTests
             missing.Value.ShouldBeNull(slug);
             missing.Error!.Code.ShouldBe("tenant.not_found", slug);
         }
+
+        // The reserved segment is the channel's own descriptor route, which wants a token.
+        var self = await client.GetFromJsonAsync<ApiResponse<TenantDescriptorView>>(
+            "/api/tenant/self"
+        );
+        self!.Succeeded.ShouldBeFalse();
+        self.Value.ShouldBeNull();
+        self.Error!.Code.ShouldBe("channel.token_required");
     }
 
     [Test]
@@ -253,7 +247,13 @@ public sealed class ServerSessionTests
         health.StatusCode.ShouldBe(HttpStatusCode.OK);
         descriptor!.Value!.EnabledProviders.ShouldBeEmpty();
         descriptor.Value.CoreSignIn.ShouldBeNull();
-        host.Factory.Services.GetServices<IIdentityProvider>().ShouldBeEmpty();
+        // The federation's provider is the only implementation a published host ships (the
+        // first-party one exists only with a relying party configured); the registry lists it
+        // only when the deployment enables it, and the test double is never here.
+        host.Factory.Services.GetServices<IIdentityProvider>()
+            .ShouldAllBe(static provider =>
+                provider is Blokemon.Identity.Federated.BlokeBotProvider
+            );
     }
 
     // The two names below are the host's own (Blokemon.Web owns them); this test project is

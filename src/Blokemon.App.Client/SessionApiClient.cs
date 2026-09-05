@@ -44,6 +44,42 @@ public sealed class SessionApiClient(HttpClient http)
             cancellationToken
         );
 
+    /// <summary>A continuation code for the held session, to open in a top-level window.</summary>
+    public Task<ApiResponse<ContinuationView>> Continue(
+        CancellationToken cancellationToken = default
+    ) =>
+        ApiEnvelopeTransport.Post<object, ContinuationView>(
+            http,
+            "api/session/continue",
+            new(),
+            UnavailableError,
+            cancellationToken
+        );
+
+    /// <summary>The channels waiting for the signed-in person's approval.</summary>
+    public Task<ApiResponse<PendingApprovalView[]>> PendingApprovals(
+        CancellationToken cancellationToken = default
+    ) =>
+        ApiEnvelopeTransport.Get<PendingApprovalView[]>(
+            http,
+            "api/session/approvals",
+            UnavailableError,
+            cancellationToken
+        );
+
+    /// <summary>Approves a pending channel for the signed-in person's account.</summary>
+    public Task<ApiResponse<ApprovalView>> Approve(
+        string tenantId,
+        CancellationToken cancellationToken = default
+    ) =>
+        ApiEnvelopeTransport.Post<object, ApprovalView>(
+            http,
+            $"api/session/approvals/{Uri.EscapeDataString(tenantId)}",
+            new(),
+            UnavailableError,
+            cancellationToken
+        );
+
     public Task<ApiResponse<SignOutView>> SignOut(CancellationToken cancellationToken = default) =>
         ApiEnvelopeTransport.Post<object, SignOutView>(
             http,

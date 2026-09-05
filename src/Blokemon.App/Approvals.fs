@@ -166,3 +166,147 @@ module internal Approvals =
                         (readmitted existing.Document)
                         cancellationToken
         }
+
+    /// Records the tenant as pending for the account when there is no record yet; an existing
+    /// record, whatever it says, is left as it is.
+    let ensurePending
+        (documents: IStateDocumentStore)
+        (account: AccountId)
+        (tenant: TenantId)
+        (cancellationToken: CancellationToken)
+        : Task<DomainResult<unit, ApprovalFailure>> =
+        task {
+            let! loaded = load documents account tenant cancellationToken
+
+            match loaded with
+            | DomainResult.Failed failure -> return DomainResult.Failed failure
+            | DomainResult.Succeeded(Some _) -> return DomainResult.Succeeded()
+            | DomainResult.Succeeded None ->
+                return!
+                    save documents account tenant None (pending account tenant) cancellationToken
+        }
+
+    /// Approves the tenant for the account, creating the record when there is none; an
+    /// exclusion is left in place and still dominates. `adopted` marks the core sign-in's
+    /// adoption of an account with no other live route.
+    let approve
+        (documents: IStateDocumentStore)
+        (account: AccountId)
+        (tenant: TenantId)
+        (at: DateTimeOffset)
+        (adopted: bool)
+        (cancellationToken: CancellationToken)
+        : Task<DomainResult<unit, ApprovalFailure>> =
+        task {
+            let! loaded = load documents account tenant cancellationToken
+
+            match loaded with
+            | DomainResult.Failed failure -> return DomainResult.Failed failure
+            | DomainResult.Succeeded existing ->
+                let current =
+                    match existing with
+                    | Some loaded -> loaded.Document
+                    | None -> pending account tenant
+
+                if current.Status = ApprovalStatus.Approved then
+                    return DomainResult.Succeeded()
+                else
+                    let approved =
+                        { current with
+                            Status = ApprovalStatus.Approved
+                            ApprovedAt = Nullable at
+                            AdoptedAt = if adopted then Nullable at else current.AdoptedAt }
+
+                    return! save documents account tenant existing approved cancellationToken
+        }
+
+    /// Removes the tenant's approval for the account and nothing else: the record goes, unless
+    /// the owner's exclusion is on it, in which case the exclusion stays and the approval is
+    /// taken back to pending. Returns whether anything changed.
+    let dissociate
+        (documents: IStateDocumentStore)
+        (account: AccountId)
+        (tenant: TenantId)
+        (cancellationToken: CancellationToken)
+        : Task<DomainResult<bool, ApprovalFailure>> =
+        task {
+            let! loaded = load documents account tenant cancellationToken
+
+            match loaded with
+            | DomainResult.Failed failure -> return DomainResult.Failed failure
+            | DomainResult.Succeeded None -> return DomainResult.Succeeded false
+            | DomainResult.Succeeded(Some existing) when isExcluded existing.Document ->
+                if existing.Document.Status = ApprovalStatus.Pending then
+                    return DomainResult.Succeeded false
+                else
+                    let! saved =
+                        save
+                            documents
+                            account
+                            tenant
+                            (Some existing)
+                            { existing.Document with
+                                Status = ApprovalStatus.Pending
+                                ApprovedAt = Nullable()
+                                AdoptedAt = Nullable() }
+                            cancellationToken
+
+                    match saved with
+                    | DomainResult.Succeeded() -> return DomainResult.Succeeded true
+                    | DomainResult.Failed failure -> return DomainResult.Failed failure
+            | DomainResult.Succeeded(Some existing) ->
+                let! stored = documents.Read(approvalKey account tenant, cancellationToken)
+
+                match stored with
+                | null -> return DomainResult.Succeeded false
+                | document ->
+                    let! deleted =
+                        documents.DeleteIfUnchanged(
+                            approvalKey account tenant,
+                            existing.Revision,
+                            document.Json,
+                            cancellationToken
+                        )
+
+                    match deleted with
+                    | :? DocumentDeleteResult.Deleted -> return DomainResult.Succeeded true
+                    | :? DocumentDeleteResult.Missing -> return DomainResult.Succeeded false
+                    | _ -> return DomainResult.Failed ApprovalFailure.Conflict
+        }
+
+    /// Every approval record of the account with the tenant it names, in key order.
+    let forAccount
+        (documents: IStateDocumentStore)
+        (listing: IDocumentListing)
+        (account: AccountId)
+        (cancellationToken: CancellationToken)
+        : Task<(ApprovalDocument * TenantDocument option) list> =
+        task {
+            let! summaries = listing.List($"approval/{account}/", cancellationToken)
+            let mutable found = []
+
+            for summary in summaries do
+                let! stored = documents.Read(summary.Key, cancellationToken)
+
+                match stored with
+                | null -> ()
+                | document ->
+                    let parsed =
+                        try
+                            Ok(JsonSerializer.Deserialize<ApprovalDocument>(document.Json, json))
+                        with :? JsonException ->
+                            Error()
+
+                    match parsed with
+                    | Ok(NonNull approval) when approval.SchemaVersion = approvalSchemaVersion ->
+                        let! tenant =
+                            match TenantId.Create approval.Tenant with
+                            | DomainResult.Succeeded id ->
+                                Tenants.read documents id cancellationToken
+                            | DomainResult.Failed _ -> Task.FromResult None
+
+                        found <- (approval, tenant) :: found
+                    | _ -> ()
+
+            return List.rev found
+        }

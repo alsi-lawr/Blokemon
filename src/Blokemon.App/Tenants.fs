@@ -8,9 +8,21 @@ open Blokemon.App.Contracts
 open Blokemon.App.TenancyDocuments
 open Blokemon.Product
 
+/// A tenant as it was read, at the revision a change must be written against.
+type LoadedTenant =
+    { Revision: int64
+      Document: TenantDocument }
+
 /// Tenant records as the server reads them: by id, by slug, and the default tenant that the
 /// public Blokemon at `/` is.
 module Tenants =
+
+    /// The stored record's id as the value type; a stored record always carries a valid one.
+    let idOf (tenant: TenantDocument) : TenantId =
+        match TenantId.Create tenant.Id with
+        | DomainResult.Succeeded id -> id
+        | DomainResult.Failed _ -> failwith "A stored tenant record carries a valid id."
+
 
     /// The default tenant's slug. It is a well-formed, unreserved slug, so a channel cannot be
     /// admitted under it once the default tenant holds it.
@@ -22,7 +34,10 @@ module Tenants =
     [<Literal>]
     let DefaultLabel = "Blokemon"
 
-    let private parse (document: StoredDocument) : TenantDocument option =
+    let isDefault (tenant: TenantDocument) =
+        String.Equals(tenant.Slug, DefaultSlug.Value, StringComparison.Ordinal)
+
+    let parse (document: StoredDocument) : TenantDocument option =
         let parsed =
             try
                 Ok(JsonSerializer.Deserialize<TenantDocument>(document.Json, json))

@@ -1,5 +1,6 @@
 using Blokemon.App;
 using Blokemon.App.Contracts;
+using Blokemon.Identity.Federated;
 using Blokemon.Product;
 using Blokemon.Web.Identity;
 using Blokemon.Web.Persistence;
@@ -7,9 +8,9 @@ using Blokemon.Web.Persistence;
 namespace Blokemon.Web.Api;
 
 /// <summary>
-/// The session, tenant and operator routes this ticket owns: sign-out, the tenant descriptor
-/// and the operator bootstrap. The provider ceremonies and exchanges belong to BLOKEMON-150 and
-/// 151 and are anonymous in <see cref="ApiSessionPolicy"/> ahead of their arrival.
+/// The session, tenant and operator routes of BLOKEMON-149: sign-out, the tenant descriptor
+/// and the operator bootstrap. The provider ceremonies and exchanges are the first-party
+/// routes and the federation's.
 /// </summary>
 public static class IdentityEndpoints
 {
@@ -56,7 +57,7 @@ public static class IdentityEndpoints
                 return tenant is { Value: { } found }
                     ? new ApiResponse<TenantDescriptorView>(
                         true,
-                        Describe(found, registry, identity),
+                        TenantDescriptors.Describe(found, registry, identity),
                         null
                     )
                     : new ApiResponse<TenantDescriptorView>(
@@ -131,28 +132,5 @@ public static class IdentityEndpoints
             }
         );
         return endpoints;
-    }
-
-    private static TenantDescriptorView Describe(
-        TenantDocument tenant,
-        IdentityProviderRegistry registry,
-        IdentityConfiguration identity
-    )
-    {
-        var core = IdentityProviderName.Create(CoreSignIn.ProviderName)
-            is DomainResult<IdentityProviderName, ExternalIdentityFailure>.Succeeded name
-            ? identity.Provider(name.Value)
-            : null;
-        return new(
-            tenant.Id,
-            tenant.Slug,
-            tenant.DisplayLabel,
-            registry.Enabled.Select(static name => name.Value).ToArray(),
-            tenant.RegisteredParentOrigin,
-            core?.CoreSignInUrl is { } url
-                ? new CoreSignInView(CoreSignIn.Label, url.ToString())
-                : null,
-            HandoffExchange.ClientPath
-        );
     }
 }

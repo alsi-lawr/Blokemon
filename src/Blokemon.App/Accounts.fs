@@ -48,3 +48,17 @@ module Accounts =
             | Some value -> return value.Status = AccountStatus.Active
             | None -> return false
         }
+
+    /// Whether the account is an operator: it exists, reads, is active and carries the flag.
+    let isOperator
+        (documents: IStateDocumentStore)
+        (account: AccountId)
+        (cancellationToken: CancellationToken)
+        : Task<bool> =
+        task {
+            let! record = read documents account cancellationToken
+
+            match record with
+            | Some value -> return value.Status = AccountStatus.Active && value.Operator
+            | None -> return false
+        }

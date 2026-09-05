@@ -1,0 +1,69 @@
+@*
+    The offer to a signed-in player whose account has no passkey: the D-039 mitigation, worded
+    as the design words it. It runs the ceremony here when this document can, and otherwise
+    moves the session to a top-level window where the same offer runs in place. It leaves only
+    when the account gains a passkey.
+*@
+@inject PasskeyFlow Passkeys
+@inject PasskeyCeremony Ceremony
+@inject ContinuationWindow Continuation
+@inject NavigationManager Navigation
+
+@if (_offered)
+{
+    <div class="notice passkey-offer" role="status">
+        <p>@(_opened ? "Continue in the window that opened." : "Add a passkey so you can play anywhere and confirm new channels.")</p>
+        @if (!_opened)
+        {
+            <button type="button" class="secondary" @onclick="Add" disabled="@_working">@(_working ? "Waiting for your passkey…" : "Add a passkey")</button>
+        }
+        @if (_error is not null)
+        {
+            <span class="field-error" role="alert">@_error</span>
+        }
+    </div>
+}
+
+@code {
+    private bool _offered;
+    private bool _working;
+    private bool _opened;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await Passkeys.State();
+        _offered = state.Succeeded && state.Value is { Passkeys.Length: 0, CanAddPasskey: true };
+    }
+
+    private async Task Add()
+    {
+        _error = null;
+        _working = true;
+        if (await Ceremony.CanRunHere())
+        {
+            var enrolled = await Passkeys.AddPasskey("Continue to your game", "/");
+            _working = false;
+            if (!enrolled.Succeeded)
+            {
+                _error = enrolled.Error?.Message;
+                return;
+            }
+
+            _offered = false;
+            Navigation.NavigateTo("passkeys/codes");
+            return;
+        }
+
+        var opened = await Continuation.Open();
+        _working = false;
+        if (opened.Succeeded)
+        {
+            _opened = true;
+        }
+        else
+        {
+            _error = opened.Error?.Message;
+        }
+    }
+}
