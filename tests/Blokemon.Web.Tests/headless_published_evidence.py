@@ -79,6 +79,16 @@ def browser_local_journey(devtools, origin):
     devtools.wait_for("document.querySelector('a[href=\"profile\"]') !== null", "the create-player link", timeout=30)
     activate(devtools, "Create player")
     devtools.wait_for("document.querySelector('#display-name') !== null", "the profile form", timeout=30)
+    # A signed-out visitor choosing the server from the player form is sent to sign in, as from
+    # the chooser: the form is not offered against a server that would refuse it.
+    require(devtools.evaluate("[...document.querySelectorAll('.setup-card button')].some(b => b.textContent.trim() === 'Sign in to use this server')"), "the player form offers sign-in for the server while signed out")
+    activate(devtools, "Sign in to use this server")
+    devtools.wait_for("location.pathname === '/signin' && document.querySelector('.sign-in') !== null", "the sign-in page from the player form", timeout=30)
+    require(devtools.evaluate("document.querySelector('#display-name') === null"), "no player form is shown on the way to sign in")
+    activate(devtools, "Keep playing in this browser")
+    devtools.wait_for("document.querySelector('a[href=\"profile\"]') !== null", "the create-player link again", timeout=30)
+    activate(devtools, "Create player")
+    devtools.wait_for("document.querySelector('#display-name') !== null", "the profile form again", timeout=30)
     devtools.set_value("#display-name", "Published Player")
     activate(devtools, "Create player")
     devtools.wait_for("[...document.querySelectorAll('.starter-option button')].some(b => b.textContent.trim().startsWith('Open '))", "the starter catalogue", timeout=30)

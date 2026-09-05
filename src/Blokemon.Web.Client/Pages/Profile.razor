@@ -22,7 +22,7 @@ else if (_error is not null)
         <div class="actions">
             @if (_mode?.ServerBackedAvailable is true)
             {
-                <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">Use this server</button>
+                <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">@(Session.Current is null ? "Sign in to use this server" : "Use this server")</button>
             }
             <button class="secondary" @onclick="() => ChangeMode(PlayMode.BrowserLocal)" disabled="@(_saving || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)">Use this browser</button>
         </div>
@@ -48,7 +48,7 @@ else if (_view!.Profile is not null)
         <div class="actions">
             @if (_mode?.ServerBackedAvailable is true)
             {
-                <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">Use this server</button>
+                <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">@(Session.Current is null ? "Sign in to use this server" : "Use this server")</button>
             }
             <button class="secondary" @onclick="() => ChangeMode(PlayMode.BrowserLocal)" disabled="@(_saving || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)">Use this browser</button>
         </div>
@@ -78,7 +78,7 @@ else
             <div class="actions" aria-label="Save location">
                 @if (_mode?.ServerBackedAvailable is true)
                 {
-                    <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">Use this server</button>
+                    <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">@(Session.Current is null ? "Sign in to use this server" : "Use this server")</button>
                 }
                 <button class="secondary" @onclick="() => ChangeMode(PlayMode.BrowserLocal)" disabled="@(_saving || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)">Use this browser</button>
             </div>
@@ -222,6 +222,16 @@ else
 
     private async Task ChangeMode(PlayMode mode)
     {
+        // A signed-out visitor choosing the server has chosen to sign in first, as on the Home
+        // page: nothing is saved until they are, and the sign-in flows select the server game
+        // themselves. Offering the player form against a server that will refuse it is not a
+        // choice.
+        if (mode == PlayMode.ServerBacked && Session.Current is null)
+        {
+            Navigation.NavigateTo("signin");
+            return;
+        }
+
         _saving = true;
         _validation = null;
         var response = await Modes.SelectMode(mode);
