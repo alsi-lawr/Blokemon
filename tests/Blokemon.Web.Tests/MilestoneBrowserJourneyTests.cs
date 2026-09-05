@@ -140,9 +140,19 @@ public sealed class MilestoneBrowserJourneyTests
         {
             File.WriteAllText(reportPath, report);
         }
-        report.ShouldNotContain(alpha.Token!);
-        report.ShouldNotContain(core.Value.Token);
-        report.ShouldNotContain(reauthChannel.Token!);
+        foreach (
+            var token in new[]
+            {
+                alpha.Token!,
+                bravo.Token!,
+                gamma.Token!,
+                core.Value.Token,
+                reauthChannel.Token!,
+            }
+        )
+        {
+            report.ShouldNotContain(token);
+        }
         process.ExitCode.ShouldBe(0, report);
         report.ShouldContain("HEADLESS MILESTONE EVIDENCE COMPLETE");
 

@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from headless_card_viewer import Chrome, DevTools, EvidenceFailure, require  # noqa: E402
 from headless_channel_evidence import Frame, offer_moment, signed_in_frame  # noqa: E402
 from headless_passkey_evidence import add_authenticator, recovery_codes_screen  # noqa: E402
-from headless_session_evidence import activate, close_menu, identity_text, open_menu  # noqa: E402
+from headless_session_evidence import activate, close_menu, identity_text, open_menu, requests_to  # noqa: E402
 from static_host import static_server  # noqa: E402
 
 PLAYER = "Milestone Passkey"
@@ -224,19 +224,24 @@ def closure_and_adoption(devtools, shots, parent_origin, app_origin, channel_tok
     require(mint(app_origin, channel_token, twitch, "Adopted Viewer", allow_failure=True) is None, "a closed channel mints no hand-off")
     # The closed channel's hosted page no longer signs anyone in: opened top-level, its status
     # card shows the channel but never a signed-in player.
+    devtools.events.clear()
     devtools.navigate(app_origin, f"/t/{slug}", ready_selector=".app-shell")
     devtools.wait_for("document.querySelector('.sign-in-status') !== null", "the closed channel's status card", timeout=90)
-    require("Signed in as" not in devtools.evaluate("document.body.textContent"), "the closed channel signs nobody in")
+    require(not requests_to(devtools, "/api/session/blokebot"), "the closed channel's page made no exchange: it signs nobody in")
     screenshot(devtools, shots, f"closure-{viewport}")
 
     # Core adopts the orphan: top-level, no approval prompt.
     adopt = mint(app_origin, core_token, twitch, "Adopted Viewer")
     devtools.command("Page.navigate", {"url": f"{app_origin}/#handoff={adopt}"})
     devtools.wait_for("location.pathname === '/' && document.querySelector('.app-shell') !== null", "home after the core hand-off", timeout=90)
-    require("wants to use your Blokemon" not in devtools.evaluate("document.body.textContent"), "the core issuer adopts with no approval prompt")
+    # Settled: the sign-in status card has left and the signed-in game (its starter catalogue,
+    # for a player with no deck yet) is on screen; no approval prompt ever appeared.
+    devtools.wait_for("document.querySelector('.sign-in-status') === null && document.querySelector('.starter-shell') !== null", "the adopted player's game settled", timeout=90)
+    require(devtools.evaluate("document.querySelector('.approval-prompt') === null"), "the core issuer adopts with no approval prompt")
     open_menu(devtools)
     require(identity_text(devtools) == "Adopted Viewer", f"the orphan is adopted by core ({viewport})")
     close_menu(devtools)
+    devtools.wait_for("document.querySelector('.app-menu-panel') === null", "the menu closed")
     require(devtools.evaluate("location.hash") == "", "the adoption hand-off cleared its fragment")
     screenshot(devtools, shots, f"adoption-{viewport}")
 
