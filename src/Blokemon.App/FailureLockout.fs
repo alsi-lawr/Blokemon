@@ -4,7 +4,9 @@ open System
 open System.Collections.Generic
 
 /// Refuses a client after `limit` failures inside a sliding `window`. Recovery and operator
-/// bootstrap share the same terms: five failures per client per fifteen minutes.
+/// bootstrap share the same terms: five failures per client per fifteen minutes. Nothing
+/// resets the window early: a success from a shared address does not hand the next guesser a
+/// fresh allowance, so failures simply age out.
 [<Sealed>]
 type FailureLockout(limit: int, window: TimeSpan) =
 
@@ -47,6 +49,3 @@ type FailureLockout(limit: int, window: TimeSpan) =
                     created
 
             recorded.Enqueue now)
-
-    member _.Clear(client: string) =
-        lock gate (fun () -> failures.Remove client |> ignore)

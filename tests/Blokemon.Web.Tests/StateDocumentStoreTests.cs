@@ -426,7 +426,9 @@ public sealed class StateDocumentStoreTests
     {
         await using var database = await TestDatabase.Create();
         var store = new StateDocumentStore(database);
-        var account = AccountId.Mint();
+        // A fixed id whose key sorts ahead of `account/damaged`, so the key-order assertion
+        // below proves the listing's order rather than depending on a minted GUID's first digit.
+        var account = Value(AccountId.Create("2ab8cf70-2f2e-4b6c-9e5b-7d0d2b7f1c11"));
         var tenant = TenantId.Mint();
         var createdAt = new DateTimeOffset(2026, 9, 3, 12, 0, 0, TimeSpan.Zero);
         var expiresAt = createdAt.AddHours(8);

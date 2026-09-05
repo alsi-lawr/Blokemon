@@ -311,6 +311,7 @@ else
     private bool _choosingMode;
     private bool _modeLoaded;
     private bool _signingIn;
+    private bool _enteringRoot;
     private bool _skipAnimations;
     private bool _focusCeremonyDone;
 
@@ -318,14 +319,19 @@ else
     {
         // A hand-off in the fragment is a sign-in to the default tenant arriving top-level; it
         // is exchanged before the page decides what to show, and a failure stays on screen.
+        // While the entry is in flight the status card follows the flow's own stage, so a
+        // re-render during the pending exchange shows "Signing you in" rather than the loading
+        // panel; once it returns only a failure keeps the card.
         SignIn.Changed += SignInChanged;
-        _signingIn = await SignIn.EnterRoot() || SignIn.Stage == SignInStage.Failed;
-        if (SignIn.Stage == SignInStage.Failed)
+        _enteringRoot = true;
+        await SignIn.EnterRoot();
+        _enteringRoot = false;
+        _signingIn = SignIn.Stage == SignInStage.Failed;
+        if (_signingIn)
         {
             return;
         }
 
-        _signingIn = false;
         _mode = await Modes.Mode();
         _modeLoaded = true;
         if (_mode.Selected is null)
@@ -465,7 +471,15 @@ else
 
     private static string TypeClass(string type) => $"type-{type.ToLowerInvariant()}";
 
-    private void SignInChanged() => _ = InvokeAsync(StateHasChanged);
+    private void SignInChanged()
+    {
+        if (_enteringRoot)
+        {
+            _signingIn = SignIn.Stage != SignInStage.Idle;
+        }
+
+        _ = InvokeAsync(StateHasChanged);
+    }
 
     public async ValueTask DisposeAsync()
     {
