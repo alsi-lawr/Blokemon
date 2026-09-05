@@ -783,15 +783,67 @@ class ViewerEvidence:
 
     def mouse_hold(self, scope, control):
         point = self.prepare_control(scope, control)
+        surface = self.press_surface(scope, control)
         self.devtools.mouse("mousePressed", point, buttons=1)
         self.devtools.wait_for(
             "document.querySelector('.card-viewer') !== null",
             "mouse hold viewer",
             timeout=2,
         )
+        self.require_sharp_art()
         self.devtools.mouse("mouseReleased", point)
         self._wait_closed()
         require(True, "mouse hold opens only for the hold and closes on release")
+        self.require_put_down(surface, "a mouse release over the viewer")
+
+    # The card the control belongs to, measured before it is pressed.
+    def press_surface(self, scope, control):
+        measured = self.devtools.evaluate(f"""
+        (() => {{
+          const opener = document.querySelector({json.dumps(scope)})?.querySelector({json.dumps(control)});
+          const surface = opener?.closest('.card-press')?.querySelector(':scope > .card-press-surface');
+          if (!surface) return null;
+          window.__pressSurface = surface;
+          return {{ width: surface.getBoundingClientRect().width, holding: surface.classList.contains('is-holding') }};
+        }})()
+        """)
+        require(measured is not None and measured["width"] > 0 and not measured["holding"], "the pressed card is at rest before the press")
+        return measured
+
+    # A released card is back where it was: the lift that answered the press ends with the press,
+    # wherever the pointer was let go.
+    def require_put_down(self, before, how):
+        time.sleep(0.4)
+        after = self.devtools.evaluate(
+            "(() => { const s = window.__pressSurface; return { width: s.getBoundingClientRect().width, holding: s.classList.contains('is-holding') }; })()"
+        )
+        require(not after["holding"], f"{how} ends the hold on the card")
+        require(
+            abs(after["width"] - before["width"]) < 0.5,
+            f"{how} puts the card back at its size ({before['width']:.1f}px before, {after['width']:.1f}px after)",
+        )
+
+    # The viewer's illustration is the file its own size needs, not the small face's enlarged.
+    def require_sharp_art(self):
+        self.devtools.wait_for(
+            "(() => { const i = document.querySelector('.card-viewer img[srcset]:not(.previous-art)'); return i !== null && i.complete && i.currentSrc !== ''; })()",
+            "the viewer's illustration to load",
+            timeout=10,
+        )
+        art = self.devtools.evaluate("""
+        (() => {
+          const image = document.querySelector('.card-viewer img[srcset]:not(.previous-art)');
+          const shown = image.getBoundingClientRect().width * devicePixelRatio;
+          const file = image.currentSrc.split('/').pop();
+          const candidate = /-(\d+)\.webp$/.exec(file);
+          const widths = [...image.srcset.matchAll(/ (\d+)w/g)].map(m => Number(m[1]));
+          return { file, shown, width: candidate ? Number(candidate[1]) : Math.max(...widths), widest: Math.max(...widths) };
+        })()
+        """)
+        require(
+            art["width"] >= art["widest"] or art["width"] >= art["shown"] * 0.9,
+            f"the viewer shows the illustration file its size needs ({art['file']} for {art['shown']:.0f} device pixels)",
+        )
 
     def touch_hold(self, scope, control):
         point = self.prepare_control(scope, control)

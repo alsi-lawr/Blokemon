@@ -22,7 +22,6 @@
     private ElementReference? _returnFocusTo;
     private ElementReference? _restoreFocusTo;
     private double _scale = 0.5;
-    private double _artworkScale = 0.5;
     private bool _armViewer;
     private bool _pinned;
     private bool _takeFocus;
@@ -40,6 +39,7 @@
         if (firstRender)
         {
             _module = await Js.InvokeAsync<IJSObjectReference>("import", "./cardViewer.js");
+            await _module.InvokeVoidAsync("armPresses");
         }
 
         if (
@@ -69,9 +69,28 @@
         }
     }
 
+    // A press has begun on a card that may be held up: the file the viewer will show is fetched
+    // now, so the viewer opens with its illustration already on the way or already here.
+    internal async Task Warm(CardView card, ElementReference source)
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _module.InvokeVoidAsync("warmViewerArt", source, card.Id);
+        }
+        catch (JSException)
+        {
+            // A card removed between the press and the fetch has nothing to warm.
+        }
+    }
+
     internal async Task Hold(CardView card, ElementReference source)
     {
-        await MeasureScale(card, source);
+        await MeasureScale();
         _armViewer = true;
         _pinned = false;
         _takeFocus = false;
@@ -82,7 +101,7 @@
 
     internal async Task Pin(CardView card, ElementReference returnFocusTo)
     {
-        await MeasureScale(card, returnFocusTo);
+        await MeasureScale();
         _armViewer = true;
         _pinned = true;
         _takeFocus = true;
@@ -93,12 +112,11 @@
 
     internal Task Close() => InvokeAsync(DismissAndRestoreFocus);
 
-    private async Task MeasureScale(CardView card, ElementReference source)
+    private async Task MeasureScale()
     {
         if (_module is not null)
         {
             _scale = await _module.InvokeAsync<double>("viewerScale");
-            _artworkScale = await _module.InvokeAsync<double>("artworkScale", source, card.Id);
         }
     }
 
@@ -154,8 +172,7 @@
     }
 
     private string ViewerStyle() =>
-        $"--viewer-scale: {_scale.ToString("0.####", CultureInfo.InvariantCulture)}; "
-        + $"--viewer-artwork-scale: {_artworkScale.ToString("0.####", CultureInfo.InvariantCulture)}";
+        $"--viewer-scale: {_scale.ToString("0.####", CultureInfo.InvariantCulture)}";
 
     private void RouteChanged(object? sender, LocationChangedEventArgs eventArgs) =>
         _ = InvokeAsync(DismissForNavigation);

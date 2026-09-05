@@ -62,20 +62,67 @@ export function viewerScale() {
   return viewerScaleFor(window.innerWidth, window.innerHeight);
 }
 
-// Responsive card artwork is laid out at the face's rendered scale so sizes="auto" selects the
-// source that face needs. A viewer grows the print without asking the browser to replace that
-// already loaded source, so it carries the originating face's artwork scale into the enlarged copy.
-export function artworkScale(source, cardId) {
+// A mouse release lands wherever the pointer is, and a held card puts the viewer there: the press
+// surface would never hear the release that ends its hold, and the card would stay lifted. A
+// finger is captured to what it pressed by the browser itself; the mouse is captured here, so
+// every press ends on the surface it began on whatever is under the pointer by then.
+let pressesArmed = false;
+
+export function armPresses() {
+  if (pressesArmed) {
+    return;
+  }
+
+  pressesArmed = true;
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (event.pointerType === "touch") {
+        return;
+      }
+
+      const surface = event.target?.closest?.(".card-press-surface");
+      if (surface && surface.setPointerCapture) {
+        try {
+          surface.setPointerCapture(event.pointerId);
+        } catch {
+          // A pointer that is already gone cannot be captured, and nothing is lost.
+        }
+      }
+    },
+    { capture: true },
+  );
+}
+
+// The illustration a face carries was chosen for the face's own size. The viewer shows the same
+// card several times larger and lays its illustration out at that size, so the browser fetches
+// the file that size needs. The fetch begins with the press rather than with the viewer, so the
+// hold that opens the viewer is the time the file takes to arrive.
+export function warmViewerArt(source, cardId) {
   const sourceScope =
     source?.closest(".attached-card") ?? source?.closest(".card-press") ?? source;
   const card = [...(sourceScope?.querySelectorAll("[data-canonical-id]") ?? [])].find(
     (candidate) => candidate.dataset.canonicalId === cardId,
   );
   const face = card?.closest(".card-face-host");
-  const scale = Number.parseFloat(
+  const illustration = face?.querySelector("img[srcset]:not(.previous-art)");
+  if (!face || !illustration) {
+    return;
+  }
+
+  const faceScale = Number.parseFloat(
     getComputedStyle(face).getPropertyValue("--blokemon-card-scale"),
   );
-  return Number.isFinite(scale) && scale > 0 ? scale : viewerScale();
+  if (!Number.isFinite(faceScale) || faceScale <= 0) {
+    return;
+  }
+
+  const shown = illustration.getBoundingClientRect().width * (viewerScale() / faceScale);
+  const image = new Image();
+  image.decoding = "async";
+  image.sizes = `${Math.ceil(shown)}px`;
+  image.srcset = illustration.srcset;
+  image.src = illustration.src;
 }
 
 // A viewer open across a rotation or resize is rescaled in the browser rather than through a

@@ -225,6 +225,8 @@ public sealed class MatchReducedMotionTests
                 case "prefersReducedMotion":
                     WasAskedAboutMotion = true;
                     return (TValue)(object)true;
+                case "armPresses":
+                    return default!;
                 default:
                     throw new NotSupportedException(
                         $"A still table asked the browser for '{identifier}'."

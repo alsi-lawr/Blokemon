@@ -159,6 +159,8 @@
             return;
         }
 
+        // The viewer's illustration starts loading with the press, not with the viewer.
+        _ = Host().Warm(Card, _press);
         _hold.Down(
             eventArgs,
             () =>

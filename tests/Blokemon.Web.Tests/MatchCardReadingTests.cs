@@ -387,8 +387,10 @@ public sealed class MatchCardReadingTests
                 case "prefersReducedMotion":
                     return (TValue)(object)false;
                 case "viewerScale":
-                case "artworkScale":
                     return (TValue)(object)0.5d;
+                case "armPresses":
+                case "warmViewerArt":
+                    return default!;
                 case "guardViewer":
                     if (args is [ElementReference guardedElement, ..])
                     {
