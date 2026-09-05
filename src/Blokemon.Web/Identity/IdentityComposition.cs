@@ -78,8 +78,10 @@ public static class IdentityComposition
 
 /// <summary>
 /// The per-client lock-outs, one per guessable secret: operator bootstrap and recovery codes,
-/// each five failures per client per fifteen minutes, keyed by the caller's remote address,
-/// which is the only client identity an anonymous-to-the-code caller has.
+/// each five failures per client per fifteen minutes, keyed by the caller's client address,
+/// which is the only client identity an anonymous-to-the-code caller has. The address is the
+/// connection's, or the forwarded one when the connection is a known proxy (BLOKEMON-D-045,
+/// <see cref="Hosting.ForwardedClients"/>); this is the one resolution both lock-outs share.
 /// </summary>
 public sealed class ClientLockouts
 {

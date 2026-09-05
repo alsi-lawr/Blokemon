@@ -49,9 +49,6 @@ public sealed class HeadlessChannelTests
                     "localhost"
                 );
                 builder.UseSetting($"{IdentityConfigurationModule.PasskeysOriginsKey}:0", origin);
-                builder.ConfigureServices(static services =>
-                    services.AddTransient<IStartupFilter, FramingAllowedForTests>()
-                );
             },
             kestrel: true,
             kestrelPort: port

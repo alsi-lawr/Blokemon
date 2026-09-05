@@ -43,11 +43,6 @@ public sealed class HeadlessSessionTests
                     "Blokemon:Identity:Providers:BlokeBot:CoreSignInUrl",
                     $"{parentOrigin}/core-signin.html"
                 );
-                // The hosted checks frame this host from the parent page's origin; the
-                // shipped framing headers are BLOKEMON-155's to replace.
-                builder.ConfigureServices(static services =>
-                    services.AddTransient<IStartupFilter, FramingAllowedForTests>()
-                );
             },
             kestrel: true
         );

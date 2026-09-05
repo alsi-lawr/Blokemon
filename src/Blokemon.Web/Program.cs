@@ -4,6 +4,7 @@ using Blokemon.Identity.Federated;
 using Blokemon.Web.Api;
 using Blokemon.Web.Components;
 using Blokemon.Web.Content;
+using Blokemon.Web.Hosting;
 using Blokemon.Web.Identity;
 using Blokemon.Web.Identity.Passkeys;
 using Blokemon.Web.Persistence;
@@ -18,7 +19,11 @@ var contentRoot = Path.Combine(AppContext.BaseDirectory, "content");
 var catalogue = BlokemonCatalogueBuilder.Load(contentRoot);
 var databasePath = LocalDataPath.Resolve(builder.Configuration);
 
+// Resolved here so that an invalid value fails the host before it listens.
+var hosting = HostingConfigurationModule.Resolve(builder.Configuration);
+
 builder.Services.AddSingleton(catalogue);
+builder.Services.AddSingleton(hosting);
 builder.Services.AddSingleton(EconomyConfiguration.Resolve(builder.Configuration));
 builder.Services.AddPooledDbContextFactory<BlokemonDbContext>(options =>
     options.UseSqlite($"Data Source={databasePath}")
@@ -38,13 +43,20 @@ builder.Services.AddScoped(serviceProvider => new HttpClient
 {
     BaseAddress = new Uri(serviceProvider.GetRequiredService<NavigationManager>().BaseUri),
 });
-builder
-    .Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
+
+// The client renders in the browser only: no interactive-server components, so no circuit
+// and no SignalR hub are ever offered (BLOKEMON-155).
+builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
+
+// The Razor Components endpoints refuse to serve without the antiforgery middleware, so it
+// stays; the framing policy is HostingHeaders' alone, so antiforgery's own X-Frame-Options is
+// not emitted. No /api route carries antiforgery metadata.
+builder.Services.AddAntiforgery(static options => options.SuppressXFrameOptionsHeader = true);
 
 var app = builder.Build();
 
+app.UseForwardedClients(hosting);
+app.UseHostingHeaders();
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
@@ -97,7 +109,6 @@ app.MapOperatorEndpoints();
 app.MapTenantOwnerEndpoints();
 app.MapBlokeBotChannels().AddEndpointFilter<SignInDiagnosticsFilter>();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Blokemon.Web.Client._Imports).Assembly);
 

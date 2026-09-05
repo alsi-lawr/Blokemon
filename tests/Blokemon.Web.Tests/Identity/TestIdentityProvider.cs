@@ -239,30 +239,3 @@ internal sealed class SessionHost : IAsyncDisposable
         }
     }
 }
-
-/// <summary>
-/// Lets the headless hosted-mode checks frame the test host from the parent page's origin. The
-/// shipped host still answers with the interactive-server render mode's
-/// <c>frame-ancestors 'self'</c> and the antiforgery middleware's <c>X-Frame-Options</c>;
-/// BLOKEMON-155 replaces both with the per-tenant framing policy. Test assembly only.
-/// </summary>
-internal sealed class FramingAllowedForTests : IStartupFilter
-{
-    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) =>
-        app =>
-        {
-            app.Use(
-                static (context, pipeline) =>
-                {
-                    context.Response.OnStarting(() =>
-                    {
-                        context.Response.Headers.Remove("X-Frame-Options");
-                        context.Response.Headers.Remove("Content-Security-Policy");
-                        return Task.CompletedTask;
-                    });
-                    return pipeline(context);
-                }
-            );
-            next(app);
-        };
-}

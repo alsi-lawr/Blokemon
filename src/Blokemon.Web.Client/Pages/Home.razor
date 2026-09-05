@@ -40,7 +40,7 @@ else if (_mode!.Selected is null)
                     <h2>Play on this server.</h2>
                     <p>Your player, cards, decks, and battles are saved by this server.</p>
                     <div class="actions">
-                        <button class="primary" @onclick="() => ChooseMode(PlayMode.ServerBacked)" disabled="@_choosingMode">Use this server</button>
+                        <button class="primary" @onclick="() => ChooseMode(PlayMode.ServerBacked)" disabled="@_choosingMode">@(Session.Current is null ? "Sign in to use this server" : "Use this server")</button>
                     </div>
                 </div>
             </div>
@@ -380,6 +380,14 @@ else
 
     private async Task ChooseMode(PlayMode mode)
     {
+        // A signed-out visitor choosing the server has chosen to sign in first: nothing is
+        // saved until they are, and the sign-in flows select the server game themselves.
+        if (mode == PlayMode.ServerBacked && Session.Current is null)
+        {
+            Navigation.NavigateTo("signin");
+            return;
+        }
+
         _choosingMode = true;
         _modeError = null;
         var response = await Modes.SelectMode(mode);

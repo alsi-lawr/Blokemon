@@ -31,6 +31,7 @@
     <Compile Include="CurrentSession.fs" />
     <Compile Include="SessionSweep.fs" />
     <Compile Include="IdentityConfiguration.fs" />
+    <Compile Include="HostingConfiguration.fs" />
     <Compile Include="IdentityProviders.fs" />
     <Compile Include="FailureLockout.fs" />
     <Compile Include="OperatorBootstrap.fs" />
