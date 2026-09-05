@@ -23,14 +23,24 @@ public sealed record TenantDescriptorView(
     string HandoffExchangePath
 );
 
-/// <summary>A single-use code presented to an exchange endpoint.</summary>
-public sealed record SessionExchangeRequest(string Code);
+/// <summary>
+/// A single-use code presented to an exchange endpoint, with the slug of the tenant the page
+/// is running as (null at the root, the default tenant) so the exchange can refuse a code
+/// bound to another tenant.
+/// </summary>
+public sealed record SessionExchangeRequest(string Code, string? Slug = null);
 
 /// <summary>
-/// A session as the client receives it, once: the bearer token, when it expires, and the
-/// display name of the profile it acts for.
+/// A session as the client receives it, once: the bearer token, when it expires, the display
+/// name of the profile it acts for, and whether it is a recovery session that can only enrol a
+/// replacement passkey.
 /// </summary>
-public sealed record IssuedSessionView(string Token, DateTimeOffset ExpiresAt, string DisplayName);
+public sealed record IssuedSessionView(
+    string Token,
+    DateTimeOffset ExpiresAt,
+    string DisplayName,
+    bool Recovery = false
+);
 
 public sealed record SignOutView(DateTimeOffset RevokedAt);
 

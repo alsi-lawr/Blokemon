@@ -29,15 +29,17 @@ public sealed class SessionApiClient(HttpClient http)
             cancellationToken
         );
 
+    /// <summary>Exchanges a code at the given route for the tenant the page runs as (null: the default).</summary>
     public Task<ApiResponse<IssuedSessionView>> Exchange(
         string path,
         string code,
+        string? slug = null,
         CancellationToken cancellationToken = default
     ) =>
         ApiEnvelopeTransport.Post<SessionExchangeRequest, IssuedSessionView>(
             http,
             path,
-            new(code),
+            new(code, slug),
             UnavailableError,
             cancellationToken
         );

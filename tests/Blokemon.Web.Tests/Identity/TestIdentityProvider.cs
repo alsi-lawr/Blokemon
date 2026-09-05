@@ -91,7 +91,8 @@ internal sealed class SessionHost : IAsyncDisposable
     public static SessionHost Create(
         Action<IWebHostBuilder>? configure = null,
         bool withProvider = true,
-        bool kestrel = false
+        bool kestrel = false,
+        int kestrelPort = 0
     )
     {
         var dataDirectory = Path.Combine(AppContext.BaseDirectory, $"sessions-{Guid.NewGuid():N}");
@@ -121,9 +122,16 @@ internal sealed class SessionHost : IAsyncDisposable
 
             configure?.Invoke(builder);
         });
-        if (kestrel)
+        if (kestrel && kestrelPort == 0)
         {
             factory.UseKestrel(0);
+        }
+        else if (kestrel)
+        {
+            // A check whose origin must be known before the host starts, as the passkey
+            // relying party's must, names its own port; localhost binds both loopbacks so the
+            // browser's own resolution of the name reaches it.
+            factory.UseKestrel(options => options.ListenLocalhost(kestrelPort));
         }
 
         return new(factory, dataDirectory, provider);

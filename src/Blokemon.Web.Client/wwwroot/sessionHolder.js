@@ -18,15 +18,16 @@ export function read() {
             token: stored.token,
             expiresAt: typeof stored.expiresAt === "string" ? stored.expiresAt : null,
             displayName: typeof stored.displayName === "string" ? stored.displayName : null,
+            recovery: stored.recovery === true,
         };
     } catch {
         return null;
     }
 }
 
-export function write(token, expiresAt, displayName) {
+export function write(token, expiresAt, displayName, recovery) {
     try {
-        sessionStorage.setItem(key, JSON.stringify({ token, expiresAt, displayName }));
+        sessionStorage.setItem(key, JSON.stringify({ token, expiresAt, displayName, recovery: recovery === true }));
         return true;
     } catch {
         return false;

@@ -6,6 +6,8 @@
 @inject IJSRuntime Js
 @inject SoundBoard Sound
 @inject SignInFlow SignIn
+@inject SessionHolder Session
+@inject NavigationManager Navigation
 
 <PageTitle>Home · Blokemon</PageTitle>
 
@@ -329,6 +331,13 @@ else
         _signingIn = SignIn.Stage == SignInStage.Failed;
         if (_signingIn)
         {
+            return;
+        }
+
+        // A recovery session can do one thing, and it is not here.
+        if ((await Session.Load()) is { Recovery: true })
+        {
+            Navigation.NavigateTo("recover/passkey");
             return;
         }
 

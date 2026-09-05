@@ -131,7 +131,12 @@ public sealed class SignInFlow(
     private async Task<bool> Exchange(string path, string code, CancellationToken cancellationToken)
     {
         Move(SignInStage.SigningIn);
-        var response = await api.Exchange(path, code, cancellationToken);
+        var response = await api.Exchange(
+            path,
+            code,
+            Tenant is { Slug: var slug } && slug != Tenants.DefaultSlug.Value ? slug : null,
+            cancellationToken
+        );
         if (!response.Succeeded || response.Value is null)
         {
             Fail(response.Error);

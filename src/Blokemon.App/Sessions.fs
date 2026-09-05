@@ -173,30 +173,43 @@ module Sessions =
         : Task =
         documents.Delete(key id, cancellationToken)
 
-    /// Reads the account a session names, so a session whose account was disabled or erased
-    /// stops acting the moment that happened rather than when a sweep notices.
-    let private accountMayAct
+    /// Revokes every session the predicate selects. The listing carries only expiry, so each
+    /// session document is read; how many were revoked is returned.
+    let private revokeWhere
         (documents: IStateDocumentStore)
+        (listing: IDocumentListing)
+        (selected: SessionDocument -> bool)
+        (cancellationToken: CancellationToken)
+        : Task<int> =
+        task {
+            let! sessions = listing.List("session/", cancellationToken)
+            let mutable revoked = 0
+
+            for summary in sessions do
+                let id = summary.Key.Substring("session/".Length)
+                let! document = readDocument documents id cancellationToken
+
+                match document with
+                | Some stored when selected stored ->
+                    do! revoke documents id cancellationToken
+                    revoked <- revoked + 1
+                | _ -> ()
+
+            return revoked
+        }
+
+    /// Revokes every session of the account: consuming a recovery code ends every other way in.
+    let revokeAccount
+        (documents: IStateDocumentStore)
+        (listing: IDocumentListing)
         (account: AccountId)
         (cancellationToken: CancellationToken)
-        =
-        task {
-            let! stored = documents.Read(accountKey account, cancellationToken)
-
-            match stored with
-            | null -> return false
-            | document ->
-                let parsed =
-                    try
-                        Ok(JsonSerializer.Deserialize<AccountDocument>(document.Json, json))
-                    with :? JsonException ->
-                        Error()
-
-                match parsed with
-                | Ok(NonNull value) when value.SchemaVersion = accountSchemaVersion ->
-                    return value.Status = AccountStatus.Active
-                | _ -> return false
-        }
+        : Task<int> =
+        revokeWhere
+            documents
+            listing
+            (fun stored -> String.Equals(stored.Account, account.Value, StringComparison.Ordinal))
+            cancellationToken
 
     /// What a presented bearer token establishes at `now`. A session whose account can no
     /// longer act is revoked here and then refused.
@@ -221,7 +234,9 @@ module Sessions =
                     match toSession stored with
                     | None -> return SessionValidation.Required
                     | Some session ->
-                        let! mayAct = accountMayAct documents session.Account cancellationToken
+                        // A session whose account was disabled or erased stops acting the
+                        // moment that happened rather than when a sweep notices.
+                        let! mayAct = Accounts.isActive documents session.Account cancellationToken
 
                         if mayAct then
                             return SessionValidation.Valid session

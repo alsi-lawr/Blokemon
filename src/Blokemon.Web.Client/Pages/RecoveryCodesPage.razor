@@ -1,0 +1,28 @@
+@page "/passkeys/codes"
+@inject PasskeyFlow Passkeys
+@inject NavigationManager Navigation
+
+<PageTitle>Recovery codes · Blokemon</PageTitle>
+
+@*
+    The codes waiting from the flow that produced them. A reload arrives with none, because
+    they were shown once; the page then returns to the profile rather than showing a blank.
+*@
+@if (Passkeys.PendingCodes is { } codes)
+{
+    <RecoveryCodes Codes="codes" />
+}
+else
+{
+    <LoadingPanel />
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (Passkeys.PendingCodes is null)
+        {
+            Navigation.NavigateTo("profile");
+        }
+    }
+}

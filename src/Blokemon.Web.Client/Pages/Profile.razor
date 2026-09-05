@@ -3,6 +3,7 @@
 @inject IProfileOperations ProfileOperations
 @inject IPlayModeOperations Modes
 @inject NavigationManager Navigation
+@inject SessionHolder Session
 
 <PageTitle>Profile · Blokemon</PageTitle>
 
@@ -54,6 +55,10 @@ else if (_view!.Profile is not null)
             <span class="field-error" role="alert">@_validation</span>
         }
     </div>
+    @if (_mode?.Selected == PlayMode.ServerBacked && Session.Current is { Recovery: false })
+    {
+        <PasskeyPanel />
+    }
     @PurgePanel
 }
 else
@@ -141,6 +146,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await Session.Load();
         _mode = await Modes.Mode();
         await Load();
     }

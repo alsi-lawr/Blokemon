@@ -1,8 +1,33 @@
 [
   {
+    "pname": "Fido2",
+    "version": "4.0.1",
+    "hash": "sha256-bTTmj5//YSgaUENgXMKXY2s1dAxhtdYNu7TAa4iXbEU="
+  },
+  {
+    "pname": "Fido2.Models",
+    "version": "4.0.1",
+    "hash": "sha256-upadIQMUYlznjb/0ZTSpjjkCscSF9NrikGjbP88f5cU="
+  },
+  {
+    "pname": "FSharp.Core",
+    "version": "10.1.302",
+    "hash": "sha256-9O2hsu+yizilUmsLZ46IlDSqcRE6TC+oZgtiynXMffw="
+  },
+  {
     "pname": "Humanizer.Core",
     "version": "2.14.1",
     "hash": "sha256-EXvojddPu+9JKgOG9NSQgUTfWq1RpOYw7adxDPKDJ6o="
+  },
+  {
+    "pname": "libsodium",
+    "version": "1.0.20.1",
+    "hash": "sha256-wd/z31FRbcaVGrogSNVjefEYWjNxTGzQd04DOlY1PFE="
+  },
+  {
+    "pname": "Microsoft.AspNetCore.App.Internal.Assets",
+    "version": "10.0.11",
+    "hash": "sha256-rIBqk5EAxY3F9mgPiQFpBPebQEQR/r077VUIXlQzE3M="
   },
   {
     "pname": "Microsoft.AspNetCore.Authorization",
@@ -43,6 +68,16 @@
     "pname": "Microsoft.AspNetCore.Metadata",
     "version": "10.0.11",
     "hash": "sha256-fzJJUxnxwWtLYAItbjW+jH2z/hTTEXaFr9KbWnMQmck="
+  },
+  {
+    "pname": "Microsoft.Bcl.Memory",
+    "version": "9.0.14",
+    "hash": "sha256-/1YVk+lrwfq7hpr1T5URizzU9keMEO5YVifavEi9c8M="
+  },
+  {
+    "pname": "Microsoft.Bcl.TimeProvider",
+    "version": "8.0.1",
+    "hash": "sha256-TQRaWjk1aZu+jn/rR8oOv8BJEG31i6mPkf3BkIR7C+c="
   },
   {
     "pname": "Microsoft.Build.Framework",
@@ -220,6 +255,26 @@
     "hash": "sha256-V6zjbxp2H85M2UEGxvnwRH5+y7gbYCTIGRZO2tXli9c="
   },
   {
+    "pname": "Microsoft.IdentityModel.Abstractions",
+    "version": "8.2.0",
+    "hash": "sha256-e+BmN/Et9mTqWt4M38udL47M4wHHs25Ob299gJSBZIM="
+  },
+  {
+    "pname": "Microsoft.IdentityModel.JsonWebTokens",
+    "version": "8.2.0",
+    "hash": "sha256-tOzI2GmMISuWO/vDtJIeKmYAaFPYjrB5NhpzCWWcIw4="
+  },
+  {
+    "pname": "Microsoft.IdentityModel.Logging",
+    "version": "8.2.0",
+    "hash": "sha256-JdrIo2Dg9UPu/eK5TIPKLWfRmvPGhKZrBCQL+MIv72I="
+  },
+  {
+    "pname": "Microsoft.IdentityModel.Tokens",
+    "version": "8.2.0",
+    "hash": "sha256-QxhnZVUrKKUZEKZgok2+4HjawuXZtVhXCJ2+BDomja8="
+  },
+  {
     "pname": "Microsoft.JSInterop",
     "version": "10.0.11",
     "hash": "sha256-hrTlIFRdWIzUTQbGh0Bbf6WTx06iC8EO9kGIuIbEaCk="
@@ -258,6 +313,11 @@
     "pname": "Newtonsoft.Json",
     "version": "13.0.4",
     "hash": "sha256-8JCB1FdAW681qXP6DFDWvycu1oPyVoxaYgpJ2pUvZSk="
+  },
+  {
+    "pname": "NSec.Cryptography",
+    "version": "25.4.0",
+    "hash": "sha256-jwsuS+Kp+sD31S41tTHv/zkFqnzxnGOEty2iZVmBb6E="
   },
   {
     "pname": "SQLitePCLRaw.bundle_e_sqlite3",

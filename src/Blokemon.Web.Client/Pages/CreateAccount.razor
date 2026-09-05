@@ -1,0 +1,63 @@
+@page "/signin/create"
+@inject PasskeyFlow Passkeys
+@inject PasskeyCeremony Ceremony
+@inject NavigationManager Navigation
+
+<PageTitle>Create your account · Blokemon</PageTitle>
+
+<div class="profile-setup">
+    <div class="panel setup-card sign-in create-account">
+        <span class="eyebrow">New account</span>
+        <h1>Create your account.</h1>
+        <p>Your passkey is your sign-in: this device's fingerprint, face or PIN. No password.</p>
+        @if (_unsupported)
+        {
+            <p class="notice sign-in-situation">This browser cannot make passkeys.</p>
+        }
+        <label for="display-name">Display name</label>
+        <input id="display-name" maxlength="32" autocomplete="nickname" @bind="_displayName" disabled="@_working" />
+        @if (_validation is not null)
+        {
+            <span class="field-error" role="alert">@_validation</span>
+        }
+        <button type="button" class="primary full" @onclick="Create" disabled="@(_working || _unsupported)">@(_working ? "Creating…" : "Create with a passkey")</button>
+        @if (_failure is not null)
+        {
+            <span class="field-error" role="alert">@_failure</span>
+        }
+        <div class="actions"><a class="quiet button" href="signin">Back to sign in</a></div>
+    </div>
+</div>
+
+@code {
+    private string _displayName = string.Empty;
+    private string? _validation;
+    private string? _failure;
+    private bool _working;
+    private bool _unsupported;
+
+    protected override async Task OnInitializedAsync() => _unsupported = !await Ceremony.Available();
+
+    private async Task Create()
+    {
+        var displayName = _displayName.Trim();
+        if (displayName.Length is < 1 or > 32)
+        {
+            _validation = "Enter a display name from 1 to 32 characters.";
+            return;
+        }
+
+        _validation = null;
+        _failure = null;
+        _working = true;
+        var response = await Passkeys.CreateAccount(displayName);
+        _working = false;
+        if (!response.Succeeded)
+        {
+            _failure = response.Error?.Message;
+            return;
+        }
+
+        Navigation.NavigateTo("passkeys/codes");
+    }
+}

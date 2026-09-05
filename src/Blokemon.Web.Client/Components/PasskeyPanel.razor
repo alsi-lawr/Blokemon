@@ -1,0 +1,113 @@
+@*
+    The profile's passkeys panel: the account's passkeys, its recovery-code count, and exactly
+    the actions the server says this session may take. The panel is always the same shape, so
+    loading, error and empty states fill it rather than moving what sits below.
+*@
+@inject PasskeyFlow Passkeys
+@inject NavigationManager Navigation
+
+<div class="panel setup-card passkeys" aria-labelledby="passkeys-heading">
+    <h2 id="passkeys-heading">Passkeys</h2>
+    <p>Your passkeys sign you in on this device and any that shares them.</p>
+    @if (_state is null && _error is null)
+    {
+        <p class="muted">Loading…</p>
+    }
+    else if (_state is not null)
+    {
+        <ul class="passkey-list" aria-label="Your passkeys">
+            @if (_state.Passkeys.Length == 0)
+            {
+                <li class="passkey-empty"><small>No passkey yet.</small></li>
+            }
+            @foreach (var passkey in _state.Passkeys)
+            {
+                <li>
+                    <span>Passkey · added @passkey.EnrolledAt.ToLocalTime().ToString("d MMM yyyy")</span>
+                    @if (passkey.TenantLabel is not null)
+                    {
+                        <small>from @passkey.TenantLabel</small>
+                    }
+                </li>
+            }
+        </ul>
+        @if (_state.CanAddPasskey)
+        {
+            <div class="actions">
+                <button type="button" class="secondary" @onclick="Add" disabled="@(_working != Working.None)">@(_working == Working.Add ? "Waiting for your passkey…" : "Add a passkey")</button>
+            </div>
+        }
+        <h3>Recovery codes</h3>
+        <p>@(_state.RecoveryCodesRemaining is { } remaining ? $"{remaining} of 10 left." : "No codes yet. They arrive with your first passkey.")</p>
+        @if (_state.CanMakeNewCodes)
+        {
+            <div class="actions">
+                <button type="button" class="secondary" @onclick="MakeNewCodes" disabled="@(_working != Working.None)">@(_working == Working.Codes ? "Making…" : "Make new codes")</button>
+            </div>
+        }
+    }
+    @if (_error is not null)
+    {
+        <span class="field-error" role="alert">@_error</span>
+    }
+</div>
+
+@code {
+    private enum Working { None, Add, Codes }
+
+    private PasskeyStateView? _state;
+    private string? _error;
+    private Working _working;
+
+    protected override Task OnInitializedAsync() => Load();
+
+    private async Task Load()
+    {
+        var response = await Passkeys.State();
+        if (response.Succeeded)
+        {
+            _state = response.Value;
+            _error = null;
+        }
+        else
+        {
+            _error = response.Error?.Message;
+        }
+    }
+
+    private async Task Add()
+    {
+        _error = null;
+        _working = Working.Add;
+        var response = await Passkeys.AddPasskey("Back to your profile", "profile");
+        _working = Working.None;
+        if (!response.Succeeded)
+        {
+            _error = response.Error?.Message;
+            return;
+        }
+
+        if (response.Value?.RecoveryCodes is not null)
+        {
+            Navigation.NavigateTo("passkeys/codes");
+            return;
+        }
+
+        await Load();
+    }
+
+    private async Task MakeNewCodes()
+    {
+        _error = null;
+        _working = Working.Codes;
+        var response = await Passkeys.MakeNewCodes("Back to your profile", "profile");
+        _working = Working.None;
+        if (!response.Succeeded)
+        {
+            _error = response.Error?.Message;
+            return;
+        }
+
+        Navigation.NavigateTo("passkeys/codes");
+    }
+}

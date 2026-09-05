@@ -2,6 +2,7 @@ using Blokemon.App;
 using Blokemon.App.Catalogue;
 using Blokemon.App.Contracts;
 using Blokemon.Product;
+using Blokemon.Web.Identity.Passkeys;
 using Blokemon.Web.Persistence;
 
 namespace Blokemon.Web.Identity;
@@ -24,7 +25,18 @@ public static class IdentityComposition
             provider.GetRequiredService<IdentityConfiguration>(),
             provider.GetServices<IIdentityProvider>()
         ));
-        services.AddSingleton<OperatorBootstrapLockout>();
+        services.AddSingleton<ClientLockouts>();
+        services.AddSingleton<PasskeyChallenges>();
+        if (identity.Passkeys is { Value: { } passkeys })
+        {
+            // The relying party is configured, so the first-party ceremonies exist; the
+            // registry lists the provider only when the deployment enables it.
+            services.AddSingleton(provider => new PasskeyCeremonies(
+                passkeys,
+                provider.GetRequiredService<PasskeyChallenges>()
+            ));
+            services.AddSingleton<IIdentityProvider, FirstPartyProvider>();
+        }
         services.AddScoped<CurrentSession>();
         services.AddScoped<ServerApplications>();
         services.AddScoped(static provider => new SignInServices(
@@ -60,19 +72,16 @@ public static class IdentityComposition
 }
 
 /// <summary>
-/// The operator bootstrap lock-out: five failures per client per fifteen minutes, keyed by the
-/// caller's remote address, which is the only client identity an anonymous-to-the-code caller
-/// has.
+/// The per-client lock-outs, one per guessable secret: operator bootstrap and recovery codes,
+/// each five failures per client per fifteen minutes, keyed by the caller's remote address,
+/// which is the only client identity an anonymous-to-the-code caller has.
 /// </summary>
-public sealed class OperatorBootstrapLockout
+public sealed class ClientLockouts
 {
-    private readonly FailureLockout _lockout = FailureLockout.OnRecoveryTerms();
+    public FailureLockout OperatorBootstrap { get; } = FailureLockout.OnRecoveryTerms();
+
+    public FailureLockout Recovery { get; } = FailureLockout.OnRecoveryTerms();
 
     public static string ClientOf(HttpContext context) =>
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-
-    public bool IsLockedOut(string client, DateTimeOffset now) => _lockout.IsLockedOut(client, now);
-
-    public void RecordFailure(string client, DateTimeOffset now) =>
-        _lockout.RecordFailure(client, now);
 }

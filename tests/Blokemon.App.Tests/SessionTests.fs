@@ -60,6 +60,34 @@ type SessionTests() =
         }
 
     [<Test>]
+    member _.``revoking an account's sessions should leave every other account's in place``() =
+        task {
+            let documents = MemoryDocumentStore()
+            let! owner = account documents
+            let! other = account documents
+            let tenant = TenantId.Mint()
+
+            let issue holder =
+                Sessions.issue
+                    documents
+                    holder
+                    tenant
+                    SessionProvenance.FirstParty
+                    now
+                    lifetime
+                    Unchecked.defaultof<_>
+
+            let! _ = issue owner
+            let! _ = issue owner
+            let! kept = issue other
+
+            let! revoked = Sessions.revokeAccount documents documents owner Unchecked.defaultof<_>
+
+            revoked |> should equal 2
+            keysUnder documents "session/" |> should equal [ Sessions.key kept.Session.Id ]
+        }
+
+    [<Test>]
     member _.``every provenance should be issued and read back``() =
         task {
             let documents = MemoryDocumentStore()

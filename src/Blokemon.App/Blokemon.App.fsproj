@@ -17,6 +17,7 @@
       approval transitions that read and write them.
     -->
     <Compile Include="TenancyDocuments.fs" />
+    <Compile Include="Accounts.fs" />
     <Compile Include="IdentityLinks.fs" />
     <Compile Include="Approvals.fs" />
     <!--
@@ -32,6 +33,15 @@
     <Compile Include="IdentityProviders.fs" />
     <Compile Include="FailureLockout.fs" />
     <Compile Include="OperatorBootstrap.fs" />
+    <!--
+      First-party credentials: the passkey and recovery-code documents, who may enrol, and the
+      recovery flow that consumes a code, revokes the account's sessions and issues the one
+      session that can enrol the replacement. The WebAuthn ceremony itself is the host's.
+    -->
+    <Compile Include="Credentials.fs" />
+    <Compile Include="RecoveryCodes.fs" />
+    <Compile Include="PasskeyEnrolment.fs" />
+    <Compile Include="PasskeyRecovery.fs" />
     <Compile Include="PlayModeApplication.fs" />
     <Compile Include="MatchMigrationTypes.fs" />
     <!--

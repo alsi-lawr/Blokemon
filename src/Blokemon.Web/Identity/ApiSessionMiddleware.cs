@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using Blokemon.App;
 using Blokemon.App.Contracts;
+using Blokemon.Product;
 using Blokemon.Web.Persistence;
 
 namespace Blokemon.Web.Identity;
@@ -9,7 +10,9 @@ namespace Blokemon.Web.Identity;
 /// Establishes the request's session from its bearer token and refuses every non-anonymous
 /// <c>/api</c> request that has no valid one, before any endpoint runs. On an anonymous route a
 /// token that fails validation is ignored rather than refused, so a stale token in the browser
-/// never blocks the exchange that would replace it. The refusal travels as HTTP 200 in the
+/// never blocks the exchange that would replace it. A <c>Recovery</c> session is accepted only
+/// on the replacement enrolment: elsewhere it is refused with its own typed error, and on an
+/// anonymous route it is ignored like a stale token. The refusal travels as HTTP 200 in the
 /// ordinary envelope like every other typed error, which is what the client reads.
 /// </summary>
 public sealed class ApiSessionMiddleware(RequestDelegate next, TimeProvider time)
@@ -42,7 +45,21 @@ public sealed class ApiSessionMiddleware(RequestDelegate next, TimeProvider time
         );
         if (validation is SessionValidation.Valid valid)
         {
-            current.Session = valid.Item;
+            var recovering =
+                valid.Item.Provenance == SessionProvenance.Recovery
+                && !ApiSessionPolicy.IsRecoveryPermitted(
+                    context.Request.Method,
+                    context.Request.Path
+                );
+            if (!recovering)
+            {
+                current.Session = valid.Item;
+            }
+            else if (!anonymous)
+            {
+                await Refuse(context, SessionFailures.recovery());
+                return;
+            }
         }
         else if (!anonymous)
         {

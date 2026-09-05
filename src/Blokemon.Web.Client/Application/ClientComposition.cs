@@ -70,6 +70,9 @@ public static class ClientComposition
         services.AddScoped<TenantContext>();
         services.AddScoped<HostedFrame>();
         services.AddScoped<SignInFlow>();
+        services.AddScoped<PasskeyApiClient>();
+        services.AddScoped<PasskeyCeremony>();
+        services.AddScoped<PasskeyFlow>();
         services.AddScoped<IReauthenticationHost, ClientReauthentication>();
         services.AddScoped<IApplicationDocumentInvalidations, BrowserDocumentInvalidations>();
         services.AddScoped<ApplicationSnapshotCoordinator>();

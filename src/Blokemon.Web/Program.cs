@@ -4,6 +4,7 @@ using Blokemon.Web.Api;
 using Blokemon.Web.Components;
 using Blokemon.Web.Content;
 using Blokemon.Web.Identity;
+using Blokemon.Web.Identity.Passkeys;
 using Blokemon.Web.Persistence;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
@@ -84,6 +85,7 @@ app.MapGet(
 );
 app.MapApplicationEndpoints();
 app.MapIdentityEndpoints();
+app.MapFirstPartyEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

@@ -1,5 +1,7 @@
 @page "/signin"
 @inject TenantContext Tenants
+@inject PasskeyFlow Passkeys
+@inject NavigationManager Navigation
 
 <PageTitle>Sign in · Blokemon</PageTitle>
 
@@ -12,6 +14,10 @@ else
     @if (_error is not null)
     {
         <FailurePanel Message="@_error" />
+    }
+    @if (_refused is not null)
+    {
+        <FailurePanel Message="@_refused" />
     }
     <div class="profile-setup">
         <div class="panel setup-card sign-in">
@@ -30,12 +36,25 @@ else
                     {
                         <p class="sign-in-empty">No sign-in is set up on this server yet.</p>
                     }
+                    @if (FirstParty)
+                    {
+                        <button type="button" class="primary full sign-in-passkey" @onclick="SignInWithPasskey" disabled="@_working">@(_working ? "Waiting for your passkey…" : "Sign in with a passkey")</button>
+                        @if (_declined is not null)
+                        {
+                            <span class="field-error" role="alert">@_declined</span>
+                        }
+                        <a class="secondary button full" href="signin/create">Create an account</a>
+                    }
                     @if (_descriptor.CoreSignIn is { } core)
                     {
                         <a class="primary button full" href="@core.Url" target="_top" rel="noopener">@core.Label</a>
                     }
                 }
             </div>
+            @if (FirstParty)
+            {
+                <p class="sign-in-recover">Lost your passkey? <a href="recover">Use a recovery code</a></p>
+            }
             <div class="actions"><a class="quiet button" href="/">Keep playing in this browser</a></div>
         </div>
     </div>
@@ -47,6 +66,12 @@ else
 
     private TenantDescriptorView? _descriptor;
     private string? _error;
+    private string? _refused;
+    private string? _declined;
+    private bool _working;
+
+    private bool FirstParty =>
+        _descriptor?.EnabledProviders.Contains(IdentityConfigurationModule.FirstPartyProvider.Value) is true;
 
     // The moment, not the instruction: a visitor sent here because a session ended is in a
     // different situation from one who chose to sign in, and the page says which.
@@ -68,6 +93,31 @@ else
         else
         {
             _error = response.Error?.Message;
+        }
+    }
+
+    // A declined or unsupported ceremony is a note under the button; a refusal from the server
+    // is a failure above the card. Signed in, the game opens.
+    private async Task SignInWithPasskey()
+    {
+        _refused = null;
+        _declined = null;
+        _working = true;
+        var response = await Passkeys.SignIn();
+        _working = false;
+        if (response.Succeeded)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        if (response.Error?.Code is "passkey.declined" or "passkey.unsupported")
+        {
+            _declined = response.Error.Message;
+        }
+        else
+        {
+            _refused = response.Error?.Message;
         }
     }
 }

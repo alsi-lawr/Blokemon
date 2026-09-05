@@ -1,0 +1,62 @@
+@page "/recover/passkey"
+@implements IDisposable
+@inject PasskeyFlow Passkeys
+@inject SessionHolder Session
+@inject NavigationManager Navigation
+
+<PageTitle>Add a new passkey · Blokemon</PageTitle>
+
+@*
+    The one thing a recovery session can do. Without one the card says where recovery starts
+    rather than offering a ceremony that would be refused.
+*@
+<div class="profile-setup">
+    <div class="panel setup-card sign-in recover-passkey">
+        <span class="eyebrow">Recovery</span>
+        @if (Session.Current is { Recovery: true })
+        {
+            <h1>Add a new passkey.</h1>
+            <p>Your other sign-ins have ended. Add a passkey to this device to keep your account; your recovery codes will be replaced.</p>
+            <button type="button" class="primary full" @onclick="Add" disabled="@_working">@(_working ? "Waiting for your passkey…" : "Add a passkey")</button>
+            @if (_failure is not null)
+            {
+                <span class="field-error" role="alert">@_failure</span>
+            }
+        }
+        else
+        {
+            <h1>Start with a recovery code.</h1>
+            <div class="actions"><a class="quiet button" href="recover">Use a recovery code</a></div>
+        }
+    </div>
+</div>
+
+@code {
+    private string? _failure;
+    private bool _working;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += SessionChanged;
+        await Session.Load();
+    }
+
+    private async Task Add()
+    {
+        _failure = null;
+        _working = true;
+        var response = await Passkeys.AddPasskey("Sign in with your new passkey", "signin");
+        _working = false;
+        if (!response.Succeeded)
+        {
+            _failure = response.Error?.Message;
+            return;
+        }
+
+        Navigation.NavigateTo("passkeys/codes");
+    }
+
+    private void SessionChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Session.Changed -= SessionChanged;
+}

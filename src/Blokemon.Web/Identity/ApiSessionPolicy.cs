@@ -16,8 +16,11 @@ public static class ApiSessionPolicy
         ("GET", "/api/state"),
         // The tenant descriptor.
         ("GET", "/api/tenant/{slug}"),
-        // The first-party sign-in ceremonies (BLOKEMON-150).
+        // The first-party sign-in ceremonies (BLOKEMON-150): each ceremony is its options and
+        // its response.
+        ("POST", "/api/session/firstparty/register/options"),
         ("POST", "/api/session/firstparty/register"),
+        ("POST", "/api/session/firstparty/authenticate/options"),
         ("POST", "/api/session/firstparty/authenticate"),
         ("POST", "/api/session/firstparty/recover"),
         // The hand-off and continuation exchanges (BLOKEMON-151).
@@ -30,15 +33,46 @@ public static class ApiSessionPolicy
         ("POST", "/api/tenant/close"),
     ];
 
-    private static readonly (string Method, TemplateMatcher Matcher)[] Matchers = Anonymous
-        .Select(route =>
-            (route.Method, new TemplateMatcher(TemplateParser.Parse(route.Template), []))
-        )
-        .ToArray();
+    /// <summary>
+    /// The one operation a <c>Recovery</c> session may perform: enrolling the replacement
+    /// passkey, which answers with the new code set. Every other route refuses it.
+    /// </summary>
+    public static readonly IReadOnlyList<(string Method, string Template)> RecoveryPermitted =
+    [
+        ("POST", "/api/session/firstparty/enrol/options"),
+        ("POST", "/api/session/firstparty/enrol"),
+    ];
 
-    public static bool IsAnonymous(string method, PathString path)
+    private static readonly (string Method, TemplateMatcher Matcher)[] AnonymousMatchers = Matchers(
+        Anonymous
+    );
+
+    private static readonly (string Method, TemplateMatcher Matcher)[] RecoveryMatchers = Matchers(
+        RecoveryPermitted
+    );
+
+    public static bool IsAnonymous(string method, PathString path) =>
+        Matches(AnonymousMatchers, method, path);
+
+    public static bool IsRecoveryPermitted(string method, PathString path) =>
+        Matches(RecoveryMatchers, method, path);
+
+    private static (string Method, TemplateMatcher Matcher)[] Matchers(
+        IEnumerable<(string Method, string Template)> routes
+    ) =>
+        routes
+            .Select(route =>
+                (route.Method, new TemplateMatcher(TemplateParser.Parse(route.Template), []))
+            )
+            .ToArray();
+
+    private static bool Matches(
+        (string Method, TemplateMatcher Matcher)[] matchers,
+        string method,
+        PathString path
+    )
     {
-        foreach (var (routeMethod, matcher) in Matchers)
+        foreach (var (routeMethod, matcher) in matchers)
         {
             if (
                 string.Equals(routeMethod, method, StringComparison.OrdinalIgnoreCase)

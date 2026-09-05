@@ -1,0 +1,61 @@
+@page "/recover"
+@inject PasskeyFlow Passkeys
+@inject PasskeyCeremony Ceremony
+@inject NavigationManager Navigation
+
+<PageTitle>Recover your account · Blokemon</PageTitle>
+
+@if (_locked is not null)
+{
+    <FailurePanel Message="@_locked" />
+}
+<div class="profile-setup">
+    <div class="panel setup-card sign-in recover">
+        <span class="eyebrow">Recovery</span>
+        <h1>Use a recovery code.</h1>
+        <p>One of the codes you saved when you set up your passkey. Each works once.</p>
+        @if (_unsupported)
+        {
+            <p class="notice sign-in-situation">This browser cannot make passkeys.</p>
+        }
+        <label for="recovery-code">Recovery code</label>
+        <input id="recovery-code" class="code-input" autocomplete="off" spellcheck="false" inputmode="text" @bind="_code" disabled="@_working" />
+        @if (_failure is not null)
+        {
+            <span class="field-error" role="alert">@_failure</span>
+        }
+        <button type="button" class="primary full" @onclick="Submit" disabled="@(_working || _locked is not null)">@(_working ? "Checking…" : "Recover")</button>
+        <div class="actions"><a class="quiet button" href="signin">Back to sign in</a></div>
+    </div>
+</div>
+
+@code {
+    private string _code = string.Empty;
+    private string? _failure;
+    private string? _locked;
+    private bool _working;
+    private bool _unsupported;
+
+    protected override async Task OnInitializedAsync() => _unsupported = !await Ceremony.Available();
+
+    private async Task Submit()
+    {
+        _failure = null;
+        _working = true;
+        var response = await Passkeys.Recover(_code);
+        _working = false;
+        if (response.Succeeded)
+        {
+            Navigation.NavigateTo("recover/passkey");
+            return;
+        }
+
+        if (response.Error?.Code == "recovery.locked")
+        {
+            _locked = response.Error.Message;
+            return;
+        }
+
+        _failure = response.Error?.Message;
+    }
+}

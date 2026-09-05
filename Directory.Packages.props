@@ -6,6 +6,8 @@
   <ItemGroup>
     <!-- Pinned to the version the pinned SDK bundles, which is what the offline nix restore
          resolves out of the SDK's own library-packs. -->
+    <!-- The WebAuthn ceremony verifier (fido2-net-lib), referenced by Blokemon.Web only. -->
+    <PackageVersion Include="Fido2" Version="4.0.1" />
     <PackageVersion Include="FSharp.Core" Version="10.1.302" />
     <PackageVersion Include="FsUnit" Version="7.1.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.11" />

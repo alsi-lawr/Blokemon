@@ -18,7 +18,7 @@ public sealed class ServerSessionTests
 {
     private static readonly Guid MatchId = Guid.Parse("c6111111-1111-1111-1111-111111111111");
 
-    /// <summary>Every route that requires a session: the eleven application routes minus the state route, plus this ticket's own and the continuation 151 will add.</summary>
+    /// <summary>Every route that requires a session: the eleven application routes minus the state route, BLOKEMON-149's own, the continuation 151 will add, and BLOKEMON-150's account-bound routes.</summary>
     private static (HttpMethod Method, string Path, object? Body)[] SessionRequiredRoutes() =>
         [
             (HttpMethod.Post, "/api/profile", new CreateProfileRequest(Guid.NewGuid(), "P")),
@@ -54,6 +54,15 @@ public sealed class ServerSessionTests
             (HttpMethod.Post, "/api/session/signout", new { }),
             (HttpMethod.Post, "/api/session/continue", new { }),
             (HttpMethod.Post, "/api/operator/bootstrap", new OperatorBootstrapRequest("x")),
+            // The first-party routes that act on the session's own account (BLOKEMON-150).
+            (HttpMethod.Post, "/api/session/firstparty/enrol/options", new { }),
+            (
+                HttpMethod.Post,
+                "/api/session/firstparty/enrol",
+                new PasskeyCeremonyRequest("x", JsonDocument.Parse("{}").RootElement)
+            ),
+            (HttpMethod.Get, "/api/session/firstparty/credentials", null),
+            (HttpMethod.Post, "/api/session/firstparty/recovery-codes", new { }),
         ];
 
     [Test]

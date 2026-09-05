@@ -20,11 +20,18 @@ module SessionFailures =
     [<Literal>]
     let ExpiredCode = "session.expired"
 
+    /// A Recovery session presented anywhere but the replacement enrolment.
+    [<Literal>]
+    let RecoveryCode = "session.recovery"
+
     let required () =
         ApiError(RequiredCode, "Sign in to play on this server.")
 
     let expired () =
         ApiError(ExpiredCode, "Your sign-in has ended. Sign in again to keep playing.")
+
+    let recovery () =
+        ApiError(RecoveryCode, "Finish recovery by adding a new passkey, then sign in with it.")
 
     /// The re-authentication reason an error carries, or none when it is any other error.
     let reauthentication (error: ApiError | null) : Nullable<ReauthenticationReason> =

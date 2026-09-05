@@ -1,0 +1,57 @@
+@*
+    The one screen that shows recovery codes, exactly once: after the first passkey, after new
+    codes are made, and after a recovery's replacement passkey. The only primary action is the
+    acknowledgement, labelled with where it goes, so nothing leaves this screen by accident. The
+    warning is the ticket's own sentence and is never conditional.
+*@
+@inject PasskeyFlow Passkeys
+@inject NavigationManager Navigation
+@inject IJSRuntime Js
+
+<div class="profile-setup">
+    <div class="panel setup-card sign-in recovery-codes-card">
+        <span class="eyebrow">Recovery codes</span>
+        <h1>Save these codes.</h1>
+        <p>Each one signs you in once if you lose your passkey. This is the only time they are shown.</p>
+        <ul class="recovery-codes" aria-label="Recovery codes">
+            @foreach (var item in Codes.Codes)
+            {
+                <li><code>@item</code></li>
+            }
+        </ul>
+        <div class="actions">
+            <button type="button" class="secondary" @onclick="Copy">@(_copied ? "Copied" : "Copy all codes")</button>
+        </div>
+        <p class="notice recovery-warning">Without a passkey, a recovery code or a linked channel, this account cannot be recovered. There is no email to fall back on.</p>
+        <button type="button" class="primary full" @onclick="Continue">@Codes.ContinueLabel</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public required RecoveryCodesToShow Codes { get; set; }
+
+    private bool _copied;
+
+    private async Task Copy()
+    {
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", string.Join("\n", Codes.Codes));
+            _copied = true;
+            StateHasChanged();
+            await Task.Delay(2000);
+            _copied = false;
+        }
+        catch (JSException)
+        {
+            // The clipboard is not available here; the codes are still on screen to be written down.
+        }
+    }
+
+    private void Continue()
+    {
+        Passkeys.ShownCodes();
+        Navigation.NavigateTo(Codes.ContinueTo);
+    }
+}

@@ -45,9 +45,13 @@ module SignInCompletion =
     /// second creation for the same account is the same command and not a second profile.
     let profileCreationCommand (account: AccountId) = Guid.Parse account.Value
 
+    /// The account the link names, or the candidate once the link is created for it. The
+    /// candidate is minted here for an ordinary first sign-in and supplied by a provider whose
+    /// subject is the account id itself.
     let private resolveAccount
         (documents: IStateDocumentStore)
         (identity: VerifiedIdentity)
+        (candidate: unit -> AccountId)
         (now: DateTimeOffset)
         (cancellationToken: CancellationToken)
         : Task<DomainResult<AccountId, SignInFailure>> =
@@ -59,7 +63,7 @@ module SignInCompletion =
             | LinkResolution.Linked account -> return DomainResult.Succeeded account
             | LinkResolution.Damaged -> return DomainResult.Failed SignInFailure.Damaged
             | LinkResolution.Unlinked ->
-                let account = AccountId.Mint()
+                let account = candidate ()
 
                 let! created =
                     IdentityLinks.create
@@ -184,17 +188,17 @@ module SignInCompletion =
                 | Null -> return DomainResult.Failed SignInFailure.Conflict
         }
 
-    /// Completes a sign-in for an identity a provider has already verified.
-    let complete
+    let private completeWith
         (services: SignInServices)
         (identity: VerifiedIdentity)
+        (candidate: unit -> AccountId)
         (tenant: TenantId)
         (now: DateTimeOffset)
         (cancellationToken: CancellationToken)
         : Task<DomainResult<IssuedSession, SignInFailure>> =
         task {
             let documents = services.Documents
-            let! resolved = resolveAccount documents identity now cancellationToken
+            let! resolved = resolveAccount documents identity candidate now cancellationToken
 
             match resolved with
             | DomainResult.Failed failure -> return DomainResult.Failed failure
@@ -238,6 +242,29 @@ module SignInCompletion =
 
                             return DomainResult.Succeeded issued
         }
+
+    /// Completes a sign-in for an identity a provider has already verified.
+    let complete
+        (services: SignInServices)
+        (identity: VerifiedIdentity)
+        (tenant: TenantId)
+        (now: DateTimeOffset)
+        (cancellationToken: CancellationToken)
+        : Task<DomainResult<IssuedSession, SignInFailure>> =
+        completeWith services identity AccountId.Mint tenant now cancellationToken
+
+    /// Completes a sign-in whose identity is the account itself: the first-party provider's
+    /// subject is the account id, so a first registration names the account it creates rather
+    /// than minting one. A link already made for that subject resolves to it as usual.
+    let completeAs
+        (services: SignInServices)
+        (identity: VerifiedIdentity)
+        (account: AccountId)
+        (tenant: TenantId)
+        (now: DateTimeOffset)
+        (cancellationToken: CancellationToken)
+        : Task<DomainResult<IssuedSession, SignInFailure>> =
+        completeWith services identity (fun () -> account) tenant now cancellationToken
 
     /// Verifies a proof through the named enabled provider, then completes the sign-in.
     let signIn

@@ -74,7 +74,7 @@ public static class IdentityEndpoints
                 CurrentSession current,
                 StateDocumentStore documents,
                 IdentityConfiguration identity,
-                OperatorBootstrapLockout lockout,
+                ClientLockouts lockouts,
                 TimeProvider time,
                 CancellationToken cancellationToken
             ) =>
@@ -89,8 +89,8 @@ public static class IdentityEndpoints
                 }
 
                 var now = time.GetUtcNow();
-                var client = OperatorBootstrapLockout.ClientOf(context);
-                if (lockout.IsLockedOut(client, now))
+                var client = ClientLockouts.ClientOf(context);
+                if (lockouts.OperatorBootstrap.IsLockedOut(client, now))
                 {
                     return new ApiResponse<OperatorBootstrapView>(
                         false,
@@ -120,7 +120,7 @@ public static class IdentityEndpoints
                 ).Error;
                 if (failure.IsRefused)
                 {
-                    lockout.RecordFailure(client, now);
+                    lockouts.OperatorBootstrap.RecordFailure(client, now);
                 }
 
                 return new ApiResponse<OperatorBootstrapView>(

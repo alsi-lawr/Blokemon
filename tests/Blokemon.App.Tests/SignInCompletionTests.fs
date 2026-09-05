@@ -156,6 +156,41 @@ type SignInCompletionTests() =
         }
 
     [<Test>]
+    member _.``completing as a given account should create that account and link the subject to it``
+        ()
+        =
+        task {
+            let documents = MemoryDocumentStore()
+            let tenant = TenantId.Mint()
+            let account = AccountId.Mint()
+            let identity = identity "own" account.Value "Alex" SessionProvenance.FirstParty
+
+            let! first =
+                SignInCompletion.completeAs
+                    (services documents)
+                    identity
+                    account
+                    tenant
+                    now
+                    CancellationToken.None
+
+            let! replay =
+                SignInCompletion.completeAs
+                    (services documents)
+                    identity
+                    (AccountId.Mint())
+                    tenant
+                    now
+                    CancellationToken.None
+
+            (succeeded first).Session.Account |> should equal account
+            (succeeded replay).Session.Account |> should equal account
+            keysUnder documents "account/" |> should equal [ $"account/{account}" ]
+            keysUnder documents "link/" |> should equal [ $"link/own/{account}" ]
+            keysUnder documents "a/" |> should equal [ $"a/{account}/profile" ]
+        }
+
+    [<Test>]
     member _.``a display name hint should be trimmed bounded and defaulted``() =
         SignInCompletion.displayName null |> should equal "Player"
         SignInCompletion.displayName "   " |> should equal "Player"

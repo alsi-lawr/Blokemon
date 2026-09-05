@@ -3,8 +3,16 @@ using Microsoft.JSInterop;
 
 namespace Blokemon.Web.Client.Application;
 
-/// <summary>A session as the browser holds it: the token, its absolute expiry and the player's name.</summary>
-public sealed record HeldSession(string Token, DateTimeOffset? ExpiresAt, string? DisplayName);
+/// <summary>
+/// A session as the browser holds it: the token, its absolute expiry, the player's name, and
+/// whether it is a recovery session that can only enrol a replacement passkey.
+/// </summary>
+public sealed record HeldSession(
+    string Token,
+    DateTimeOffset? ExpiresAt,
+    string? DisplayName,
+    bool Recovery = false
+);
 
 /// <summary>
 /// Holds the session in memory with a sessionStorage copy, so a reload keeps it and closing the
@@ -52,7 +60,7 @@ public sealed class SessionHolder(IJSRuntime js, SessionTokenStore tokens, TimeP
             return Current;
         }
 
-        Apply(new(stored.Token, stored.ExpiresAt, stored.DisplayName));
+        Apply(new(stored.Token, stored.ExpiresAt, stored.DisplayName, stored.Recovery));
         return Current;
     }
 
@@ -62,7 +70,7 @@ public sealed class SessionHolder(IJSRuntime js, SessionTokenStore tokens, TimeP
     )
     {
         _loaded = true;
-        Apply(new(issued.Token, issued.ExpiresAt, issued.DisplayName));
+        Apply(new(issued.Token, issued.ExpiresAt, issued.DisplayName, issued.Recovery));
         try
         {
             var module = await Module(cancellationToken);
@@ -71,7 +79,8 @@ public sealed class SessionHolder(IJSRuntime js, SessionTokenStore tokens, TimeP
                 cancellationToken,
                 issued.Token,
                 issued.ExpiresAt,
-                issued.DisplayName
+                issued.DisplayName,
+                issued.Recovery
             );
         }
         catch (JSException)
@@ -127,6 +136,7 @@ public sealed class SessionHolder(IJSRuntime js, SessionTokenStore tokens, TimeP
     private sealed record StoredSession(
         string Token,
         DateTimeOffset? ExpiresAt,
-        string? DisplayName
+        string? DisplayName,
+        bool Recovery = false
     );
 }
