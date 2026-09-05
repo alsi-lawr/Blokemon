@@ -14,7 +14,7 @@ module BlokemonPublicContentValidator =
     let SchemaVersion = "blokemon-public-content-schema-1999-candidate.1"
 
     [<Literal>]
-    let ContentVersion = "blokemon-public-content-1999-candidate.1"
+    let ContentVersion = "blokemon-public-content-1999-candidate.2"
 
     [<Literal>]
     let TerminologyVersion = "blokemon-public-terminology-1999-candidate.1"
@@ -53,6 +53,11 @@ module BlokemonPublicContentValidator =
            "blank side"
            "other side"
            "bloke" |]
+
+    /// The source game's vocabulary never reaches a player: Blokemon names its own creatures, cards
+    /// and rules, so no public string may carry these words.
+    let private rejectedSourceVocabulary =
+        [| "Pokémon"; "Pokemon"; "Poké"; "Pokédex"; "Pokedex" |]
 
     let private termCounts =
         [| BlokemonPublicTermCategory.Type, 10
@@ -536,6 +541,18 @@ module BlokemonPublicContentValidator =
                     $"Public mechanics text contains rejected candidate.2 vocabulary: {rejected}."
                     issues
 
+    let private validateSourceVocabulary
+        (manifest: BlokemonPublicContentManifest)
+        (issues: ResizeArray<BlokemonPublicContentIssue>)
+        =
+        for value in publicStrings manifest do
+            for rejected in rejectedSourceVocabulary do
+                check
+                    (not (containsTerm value rejected))
+                    "text.source-vocabulary"
+                    $"Public content carries the source game's vocabulary: {rejected}."
+                    issues
+
     /// Validates the public content authority against the rules this repository owns.
     let ValidateDocument
         (manifest: BlokemonPublicContentManifest)
@@ -581,5 +598,6 @@ module BlokemonPublicContentValidator =
         validateEnergy manifest mechanics issues
         validatePublicStrings manifest issues
         validateMechanicsVocabulary manifest issues
+        validateSourceVocabulary manifest issues
 
         { BlokemonPublicContentValidation.Issues = issues.ToArray() }

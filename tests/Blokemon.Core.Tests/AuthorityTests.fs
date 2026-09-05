@@ -5,6 +5,7 @@ open System.IO
 open System.Linq
 open System.Text.Json
 open System.Text.Json.Nodes
+open Blokemon.Core.PublicContent
 open Blokemon.Core.SetDesign
 open FsUnit
 open TUnit.Core
@@ -26,6 +27,35 @@ module private Authorities =
 
     let validationCodes manifest =
         BlokemonSetValidator.ValidateRuntime(manifest).Issues |> Seq.map _.Code
+
+    let readPublic () =
+        File.ReadAllText(
+            Path.Combine(AppContext.BaseDirectory, "Authorities", "public-content.json")
+        )
+
+    let publicDocument () =
+        match JsonNode.Parse(readPublic ()) with
+        | null -> failwith "The public content authority did not parse as JSON."
+        | parsed -> parsed.AsObject()
+
+    let node (value: JsonNode | null) =
+        match value with
+        | null -> failwith "The public content authority lacks a node the test relies on."
+        | present -> present
+
+    let firstTrainerEffect (document: JsonNode) =
+        let trainers = node document["trainers"]
+        let trainer = node trainers.[0]
+        let effects = node trainer["effects"]
+        node effects.[0]
+
+    let publicCodes (document: JsonNode) =
+        let manifest = BlokemonPublicContentJson.Manifest(document.ToJsonString())
+
+        BlokemonPublicContentValidator.ValidateDocument manifest mechanics.Value
+        |> _.Issues
+        |> Seq.map _.Code
+        |> Seq.toList
 
 type AuthorityTests() =
 
@@ -125,3 +155,31 @@ type AuthorityTests() =
 
         (fun () -> Authorities.deserialize document |> ignore)
         |> should throw typeof<JsonException>
+
+    [<Test>]
+    member _.``the published public content should pass validation``() =
+        Authorities.publicCodes (Authorities.publicDocument ()) |> should be Empty
+
+    [<Test>]
+    [<Arguments("Pokémon")>]
+    [<Arguments("Pokemon")>]
+    [<Arguments("Pokédex")>]
+    [<Arguments("Poké Ball")>]
+    member _.``public content should reject the source game's vocabulary in a Trainer's copy``
+        (word: string)
+        =
+        let document = Authorities.publicDocument ()
+        let effect = Authorities.firstTrainerEffect document
+        effect["effectText"] <- JsonValue.Create($"Choose 1 of your {word} and heal it.")
+
+        Authorities.publicCodes document |> should contain "text.source-vocabulary"
+
+    [<Test>]
+    member _.``public content should reject the source game's vocabulary in a Trainer's effect name``
+        ()
+        =
+        let document = Authorities.publicDocument ()
+        let effect = Authorities.firstTrainerEffect document
+        effect["name"] <- JsonValue.Create("Professor's Pokédex")
+
+        Authorities.publicCodes document |> should contain "text.source-vocabulary"

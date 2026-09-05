@@ -1,6 +1,6 @@
 {
   "schemaVersion": "blokemon-public-content-schema-1999-candidate.1",
-  "contentVersion": "blokemon-public-content-1999-candidate.1",
+  "contentVersion": "blokemon-public-content-1999-candidate.2",
   "mechanicalManifestVersion": "base-jungle-fossil-1999-card-semantics-candidate.3",
   "terminologyVersion": "blokemon-public-terminology-1999-candidate.1",
   "humanApprovalStatus": "Accepted",
@@ -4929,8 +4929,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-001-R01",
-          "name": "Clefairy Doll",
-          "effectText": "Play Clefairy Doll as if it were a Basic Pokémon. While in play, Clefairy Doll counts as a Pokémon (instead of a Trainer card). Clefairy Doll has no attacks, can't retreat, and can't be Asleep, Confused, Paralyzed, or Poisoned. If Clefairy Doll is Knocked Out, it doesn't count as a Knocked Out Pokémon. At any time during your turn before your attack, you may discard Clefairy Doll."
+          "name": "The Reenactor",
+          "effectText": "Play The Reenactor as if it were a Basic Blokemon. While in play, The Reenactor counts as a Blokemon (instead of a Trainer card). The Reenactor has no attacks, can't retreat, and can't be Asleep, Confused, Paralyzed, or Poisoned. If The Reenactor is Knocked Out, it doesn't count as a Knocked Out Blokemon. At any time during your turn before your attack, you may discard The Reenactor."
         }
       ]
     },
@@ -4940,8 +4940,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-002-R01",
-          "name": "Mysterious Fossil",
-          "effectText": "Play Mysterious Fossil as if it were a Basic Pokémon. While in play, Mysterious Fossil counts as a Pokémon (instead of a Trainer card). Mysterious Fossil has no attacks, can't retreat, and can't be Asleep, Confused, Paralyzed, or Poisoned. If Mysterious Fossil is Knocked Out, it doesn't count as a Knocked Out Pokémon. (Discard it anyway.) At any time during your turn before your attack, you may discard Mysterious Fossil from play."
+          "name": "The Spiral-Eyed Regular",
+          "effectText": "Play The Spiral-Eyed Regular as if it were a Basic Blokemon. While in play, The Spiral-Eyed Regular counts as a Blokemon (instead of a Trainer card). The Spiral-Eyed Regular has no attacks, can't retreat, and can't be Asleep, Confused, Paralyzed, or Poisoned. If The Spiral-Eyed Regular is Knocked Out, it doesn't count as a Knocked Out Blokemon. (Discard it anyway.) At any time during your turn before your attack, you may discard The Spiral-Eyed Regular from play."
         }
       ]
     },
@@ -4951,7 +4951,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-003-R01",
-          "name": "Item Finder",
+          "name": "The Relic Hunter",
           "effectText": "Discard 2 of the other cards from your hand in order to put a Trainer card from your discard pile into your hand."
         }
       ]
@@ -4962,8 +4962,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-004-R01",
-          "name": "Switch",
-          "effectText": "Switch 1 of your own Benched Pokémon with your Active Pokémon."
+          "name": "The Chauffeur",
+          "effectText": "Switch 1 of your own Benched Blokemon with your Active Blokemon."
         }
       ]
     },
@@ -4973,8 +4973,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-005-R01",
-          "name": "Pokémon Trader",
-          "effectText": "Trade 1 of the Basic Pokémon or Evolution cards in your hand for 1 of the Basic Pokémon or Evolution cards from your deck. Show both cards to your opponent. Shuffle your deck afterward."
+          "name": "Talent Scout",
+          "effectText": "Trade 1 of the Basic Blokemon or Evolution cards in your hand for 1 of the Basic Blokemon or Evolution cards from your deck. Show both cards to your opponent. Shuffle your deck afterward."
         }
       ]
     },
@@ -4984,7 +4984,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-006-R01",
-          "name": "Maintenance",
+          "name": "The Ring Road",
           "effectText": "Shuffle 2 of the other cards from your hand into your deck in order to draw a card."
         }
       ]
@@ -4995,7 +4995,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-007-R01",
-          "name": "Bill",
+          "name": "Auntie at the Door",
           "effectText": "Draw 2 cards."
         }
       ]
@@ -5006,7 +5006,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-008-R01",
-          "name": "Recycle",
+          "name": "The Optimist",
           "effectText": "Flip a coin. If heads, put a card in your discard pile on top of your deck."
         }
       ]
@@ -5017,8 +5017,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-009-R01",
-          "name": "Pokémon Flute",
-          "effectText": "Choose 1 Basic Pokémon card from your opponent's discard pile and put it onto his or her Bench. (You can't play Pokémon Flute if your opponent's Bench is full.)"
+          "name": "The Matchmaker",
+          "effectText": "Choose 1 Basic Blokemon card from your opponent's discard pile and put it onto his or her Bench. (You can't play The Matchmaker if your opponent's Bench is full.)"
         }
       ]
     },
@@ -5028,8 +5028,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-010-R01",
-          "name": "Energy Removal",
-          "effectText": "Choose 1 Energy card attached to 1 of your opponent's Pokémon and discard it."
+          "name": "The Guv'nor",
+          "effectText": "Choose 1 Energy card attached to 1 of your opponent's Blokemon and discard it."
         }
       ]
     },
@@ -5039,7 +5039,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-011-R01",
-          "name": "Lass",
+          "name": "The Door Staff",
           "effectText": "You and your opponent show each other your hands, then shuffle all the Trainer cards from your hands into your decks."
         }
       ]
@@ -5050,8 +5050,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-012-R01",
-          "name": "Potion",
-          "effectText": "Remove up to 2 damage counters from 1 of your Pokémon."
+          "name": "Closing-Time Regular",
+          "effectText": "Remove up to 2 damage counters from 1 of your Blokemon."
         }
       ]
     },
@@ -5061,8 +5061,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-013-R01",
-          "name": "Full Heal",
-          "effectText": "Your Active Pokémon is no longer Asleep, Confused, Paralyzed, or Poisoned."
+          "name": "Health-and-Safety Rep",
+          "effectText": "Your Active Blokemon is no longer Asleep, Confused, Paralyzed, or Poisoned."
         }
       ]
     },
@@ -5072,8 +5072,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-014-R01",
-          "name": "Defender",
-          "effectText": "Attach Defender to 1 of your Pokémon. At the end of your opponent's next turn, discard Defender. Damage done to that Pokémon by attacks is reduced by 20 (after applying Weakness and Resistance)."
+          "name": "Old-School Bouncer",
+          "effectText": "Attach Old-School Bouncer to 1 of your Blokemon. At the end of your opponent's next turn, discard Old-School Bouncer. Damage done to that Blokemon by attacks is reduced by 20 (after applying Weakness and Resistance)."
         }
       ]
     },
@@ -5083,7 +5083,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-015-R01",
-          "name": "Computer Search",
+          "name": "Ask Around",
           "effectText": "Discard 2 of the other cards from your hand in order to search your deck for any card and put it into your hand. Shuffle your deck afterward."
         }
       ]
@@ -5094,8 +5094,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-016-R01",
-          "name": "Devolution Spray",
-          "effectText": "Choose 1 of your own Pokémon in play and a Stage of Evolution. Discard all Evolution cards of that Stage or higher attached to that Pokémon. That Pokémon is no longer Asleep, Confused, Paralyzed, Poisoned, or anything else that might be the result of an attack (just as if you had evolved it)."
+          "name": "Cold Shower",
+          "effectText": "Choose 1 of your own Blokemon in play and a Stage of Evolution. Discard all Evolution cards of that Stage or higher attached to that Blokemon. That Blokemon is no longer Asleep, Confused, Paralyzed, Poisoned, or anything else that might be the result of an attack (just as if you had evolved it)."
         }
       ]
     },
@@ -5105,7 +5105,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-017-R01",
-          "name": "Impostor Professor Oak",
+          "name": "New Deal",
           "effectText": "Your opponent shuffles his or her hand into his or her deck, then draws 7 cards."
         }
       ]
@@ -5116,8 +5116,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-018-R01",
-          "name": "Pokémon Breeder",
-          "effectText": "Put a Stage 2 Evolution card from your hand on the matching Basic Pokémon. You can only play this card when you would be allowed to evolve that Pokémon anyway."
+          "name": "Fast Track",
+          "effectText": "Put a Stage 2 Evolution card from your hand on the matching Basic Blokemon. You can only play this card when you would be allowed to evolve that Blokemon anyway."
         }
       ]
     },
@@ -5127,8 +5127,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-019-R01",
-          "name": "Scoop Up",
-          "effectText": "Choose 1 of your Pokémon in play and return its Basic Pokémon card to your hand. (Discard all cards attached to that card.)"
+          "name": "Last Train Home",
+          "effectText": "Choose 1 of your Blokemon in play and return its Basic Blokemon card to your hand. (Discard all cards attached to that card.)"
         }
       ]
     },
@@ -5138,8 +5138,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-020-R01",
-          "name": "Super Energy Removal",
-          "effectText": "Discard 1 Energy card attached to 1 of your Pokémon in order to choose 1 of your opponent's Pokémon and up to 2 Energy cards attached to it. Discard those Energy cards."
+          "name": "Cut Off",
+          "effectText": "Discard 1 Energy card attached to 1 of your Blokemon in order to choose 1 of your opponent's Blokemon and up to 2 Energy cards attached to it. Discard those Energy cards."
         }
       ]
     },
@@ -5149,7 +5149,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-021-R01",
-          "name": "Energy Retrieval",
+          "name": "Hair of the Dog",
           "effectText": "Trade 1 of the other cards in your hand for up to 2 basic Energy cards from your discard pile."
         }
       ]
@@ -5160,8 +5160,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-022-R01",
-          "name": "PlusPower",
-          "effectText": "Attach PlusPower to your Active Pokémon. At the end of your turn, discard PlusPower. If this Pokémon's attack does damage to the Defending Pokémon (after applying Weakness and Resistance), the attack does 10 more damage to the Defending Pokémon."
+          "name": "Double Shot",
+          "effectText": "Attach Double Shot to your Active Blokemon. At the end of your turn, discard Double Shot. If this Blokemon's attack does damage to the Defending Blokemon (after applying Weakness and Resistance), the attack does 10 more damage to the Defending Blokemon."
         }
       ]
     },
@@ -5171,8 +5171,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-023-R01",
-          "name": "Pokémon Center",
-          "effectText": "Remove all damage counters from all of your own Pokémon with damage counters on them, then discard all Energy cards attached to those Pokémon."
+          "name": "Walk-In Centre",
+          "effectText": "Remove all damage counters from all of your own Blokemon with damage counters on them, then discard all Energy cards attached to those Blokemon."
         }
       ]
     },
@@ -5182,7 +5182,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-024-R01",
-          "name": "Pokédex",
+          "name": "Racing Form",
           "effectText": "Look at up to 5 cards from the top of your deck and rearrange them as you like."
         }
       ]
@@ -5193,7 +5193,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-025-R01",
-          "name": "Professor Oak",
+          "name": "Quizmaster",
           "effectText": "Discard your hand, then draw 7 cards."
         }
       ]
@@ -5204,8 +5204,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-026-R01",
-          "name": "Revive",
-          "effectText": "Put 1 Basic Pokémon card from your discard pile onto your Bench. Put damage counters on that Pokémon equal to half its HP (rounded down to the nearest 10). (You can't play Revive if your Bench is full.)"
+          "name": "Defibrillator",
+          "effectText": "Put 1 Basic Blokemon card from your discard pile onto your Bench. Put damage counters on that Blokemon equal to half its HP (rounded down to the nearest 10). (You can't play Defibrillator if your Bench is full.)"
         }
       ]
     },
@@ -5215,8 +5215,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-027-R01",
-          "name": "Super Potion",
-          "effectText": "Discard 1 Energy card attached to your own Pokémon in order to remove up to 4 damage counters from that Pokémon."
+          "name": "Full English",
+          "effectText": "Discard 1 Energy card attached to your own Blokemon in order to remove up to 4 damage counters from that Blokemon."
         }
       ]
     },
@@ -5226,8 +5226,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-028-R01",
-          "name": "Gust of Wind",
-          "effectText": "Choose 1 of your opponent's Benched Pokémon and switch it with his or her Active Pokémon."
+          "name": "You’re Up",
+          "effectText": "Choose 1 of your opponent's Benched Blokemon and switch it with his or her Active Blokemon."
         }
       ]
     },
@@ -5237,8 +5237,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-029-R01",
-          "name": "Poké Ball",
-          "effectText": "Flip a coin. If heads, you may search your deck for any Basic Pokémon or Evolution card. Show that card to your opponent, then put it into your hand. Shuffle your deck afterward."
+          "name": "Lucky Dip",
+          "effectText": "Flip a coin. If heads, you may search your deck for any Basic Blokemon or Evolution card. Show that card to your opponent, then put it into your hand. Shuffle your deck afterward."
         }
       ]
     },
@@ -5248,8 +5248,8 @@
       "effects": [
         {
           "mechanicalId": "KIT-030-R01",
-          "name": "Mr. Fuji",
-          "effectText": "Choose a Pokémon on your Bench. Shuffle it and any cards attached to it into your deck."
+          "name": "Home Safe",
+          "effectText": "Choose a Blokemon on your Bench. Shuffle it and any cards attached to it into your deck."
         }
       ]
     },
@@ -5259,7 +5259,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-031-R01",
-          "name": "Energy Search",
+          "name": "Top Up",
           "effectText": "Search your deck for a basic Energy card and put it into your hand. Shuffle your deck afterward."
         }
       ]
@@ -5270,7 +5270,7 @@
       "effects": [
         {
           "mechanicalId": "KIT-032-R01",
-          "name": "Gambler",
+          "name": "Fruit Machine",
           "effectText": "Shuffle your hand into your deck. Flip a coin. If heads, draw 8 cards. If tails, draw 1 card."
         }
       ]
