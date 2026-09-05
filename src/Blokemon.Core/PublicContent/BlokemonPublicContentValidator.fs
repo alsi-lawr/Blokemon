@@ -14,7 +14,7 @@ module BlokemonPublicContentValidator =
     let SchemaVersion = "blokemon-public-content-schema-1999-candidate.1"
 
     [<Literal>]
-    let ContentVersion = "blokemon-public-content-1999-candidate.3"
+    let ContentVersion = "blokemon-public-content-1999-candidate.4"
 
     [<Literal>]
     let TerminologyVersion = "blokemon-public-terminology-1999-candidate.1"

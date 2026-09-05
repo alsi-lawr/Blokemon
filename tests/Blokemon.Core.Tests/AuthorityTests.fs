@@ -49,6 +49,41 @@ module private Authorities =
         let effects = node trainer["effects"]
         node effects.[0]
 
+    let elements (value: JsonNode | null) = (node value).AsArray() |> Seq.map node
+
+    let text (value: JsonNode | null) = (node value).GetValue<string>()
+
+    /// Every attack and Pokémon Power name printed on a candidate source card in the 1999 ledger.
+    let sourceEffectNames () =
+        let ledger =
+            File.ReadAllText(
+                Path.Combine(
+                    AppContext.BaseDirectory,
+                    "Reference",
+                    "1999-kanto-authority-ledger.json"
+                )
+            )
+            |> JsonNode.Parse
+            |> node
+
+        seq {
+            for collectible in elements ledger["collectibles"] do
+                for candidate in elements collectible["candidates"] do
+                    let mechanics = node candidate["mechanics"]
+
+                    for effect in
+                        Seq.append (elements mechanics["attacks"]) (elements mechanics["abilities"]) do
+                        yield text effect["name"]
+        }
+        |> Set.ofSeq
+
+    /// Every effect name a player reads on a collectible: Blokemon Powers, attacks and rules.
+    let publicEffectNames (document: JsonNode) =
+        [ for collectible in elements document["collectibles"] do
+              for kind in [ "pokemonPowers"; "attacks"; "rules" ] do
+                  for effect in elements collectible[kind] do
+                      yield text effect["name"] ]
+
     let publicCodes (document: JsonNode) =
         let manifest = BlokemonPublicContentJson.Manifest(document.ToJsonString())
 
@@ -186,6 +221,15 @@ type AuthorityTests() =
         effect["effectText"] <- JsonValue.Create(text)
 
         Authorities.publicCodes document |> should contain "text.source-type"
+
+    [<Test>]
+    member _.``public attack and power names should never be the source printings' move names``() =
+        let source = Authorities.sourceEffectNames ()
+        source |> should contain "Leech Seed"
+
+        Authorities.publicEffectNames (Authorities.publicDocument ())
+        |> List.filter source.Contains
+        |> should be Empty
 
     [<Test>]
     member _.``public content should reject the source game's type names in an attack's name``() =

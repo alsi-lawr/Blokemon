@@ -652,7 +652,7 @@ public sealed class LocalMatchTests
     }
 
     [Test]
-    public async Task Whirlwind_PresentationReportsPrintedDamage()
+    public async Task StepOutside_PresentationReportsPrintedDamage()
     {
         await using var database = await TestDatabase.Create();
         var fixture = ChoiceMatchFixture.Create(database);
@@ -679,7 +679,7 @@ public sealed class LocalMatchTests
                 && eventCue.ActorIsLocalPlayer == true
             );
 
-        cue.Label.ShouldBe("Local Player used Whirlwind.");
+        cue.Label.ShouldBe("Local Player used Step Outside.");
         cue.Amount.ShouldBe(10);
         resolved.Frame.Opponent.Active!.Id.ShouldNotBe(defending.Id);
         resolved.Frame.Opponent.Bench.Single(card => card.Id == defending.Id).Damage.ShouldBe(10);

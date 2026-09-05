@@ -33,5 +33,10 @@
       Link="Authorities/public-content.json"
       CopyToOutputDirectory="PreserveNewest"
     />
+    <Content
+      Include="../../content/reference/1999-kanto-authority-ledger.json"
+      Link="Reference/1999-kanto-authority-ledger.json"
+      CopyToOutputDirectory="PreserveNewest"
+    />
   </ItemGroup>
 </Project>
