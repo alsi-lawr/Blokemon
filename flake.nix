@@ -73,6 +73,7 @@
               ./src/Blokemon.Core.Contracts
               ./src/Blokemon.Cpu
               ./src/Blokemon.Game
+              ./src/Blokemon.Identity.Federated
               ./src/Blokemon.PackGen
               ./src/Blokemon.Product
               ./src/Blokemon.Web
