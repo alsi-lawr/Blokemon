@@ -8,8 +8,9 @@ using TUnit.Core.Exceptions;
 namespace Blokemon.Web.Tests;
 
 /// <summary>
-/// The headless checks of Trainers in packs (BLOKEMON-156): Blokemon.Web on Kestrel with no
-/// provider, the browser game driven by headless_trainer_evidence.py through headless Chrome.
+/// The headless checks of Trainers in packs and in the collection and deck builder (BLOKEMON-156,
+/// BLOKEMON-157): Blokemon.Web on Kestrel with no provider, the browser game driven by
+/// headless_trainer_evidence.py through headless Chrome.
 /// Skipped where Chrome or Python is not installed. Run alone with
 /// <c>dotnet test --no-build --project tests/Blokemon.Web.Tests -- --treenode-filter "/*/*/HeadlessTrainerTests/*"</c>.
 /// </summary>
@@ -17,7 +18,7 @@ public sealed class HeadlessTrainerTests
 {
     [Test]
     [Timeout(600_000)]
-    public async Task OpenedPacks_ShowTheirTrainersThroughTheCardFace(
+    public async Task OpenedPacks_ShowTheirTrainersThroughTheCardFace_AndOwnershipGovernsThem(
         CancellationToken cancellationToken
     )
     {

@@ -906,6 +906,181 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
+    public async Task ClaimedStarter_GrantsItsTrainersAsOwnedCopies_AndAShortfallReadsLikeABlokemonOne()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var application = Local(catalogue, documents, EconomyRules.Unlimited);
+        var created = Value(
+            await application.CreateProfile(
+                new(Guid.Parse("b7111111-1111-1111-1111-111111111111"), "Trainer Owner")
+            )
+        );
+        var claimed = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("b7222222-2222-2222-2222-222222222222"), "growroom")
+            )
+        );
+        var starter = claimed.Decks.Single();
+        var cards = claimed.Cards.ToDictionary(static card => card.Id, StringComparer.Ordinal);
+        var starterTrainers = starter
+            .Entries.Where(entry => cards[entry.CardId].Kind == CardKindView.Trainer)
+            .ToArray();
+        var unownedTrainer = claimed.Cards.First(card =>
+            card.Kind == CardKindView.Trainer && card.OwnedQuantity == 0
+        );
+        var unownedBlokemon = claimed.Cards.First(card =>
+            card.Kind == CardKindView.Blokemon
+            && card.OwnedQuantity == 0
+            && starter.Entries.All(entry => entry.CardId != card.Id)
+        );
+        var energy = starter.Entries.First(entry =>
+            cards[entry.CardId].Kind == CardKindView.Energy
+        );
+
+        // Before the claim no Trainer is owned and none is free; after it the starter's Trainers
+        // are owned in the listed quantities and the claim records them.
+        created
+            .Cards.Where(static card => card.Kind == CardKindView.Trainer)
+            .ShouldAllBe(static card => !card.FreelyAvailable && card.OwnedQuantity == 0);
+        claimed
+            .Cards.Where(static card => card.Kind == CardKindView.Trainer)
+            .ShouldAllBe(static card => !card.FreelyAvailable);
+        claimed
+            .Cards.Where(static card =>
+                card.Kind == CardKindView.Energy && card.Detail == "Basic Energy"
+            )
+            .ShouldAllBe(static card => card.FreelyAvailable);
+        starterTrainers.ShouldNotBeEmpty();
+        foreach (var entry in starterTrainers)
+        {
+            cards[entry.CardId].OwnedQuantity.ShouldBe(entry.Quantity, entry.CardId);
+        }
+        starter.IsLegal.ShouldBeTrue();
+        var stored = JsonNode.Parse((await documents.Read("profile"))!.Json)!;
+        var grants = stored["profile"]!["starterDeckClaims"]![0]!["collectibleGrants"]!
+            .AsArray()
+            .ToDictionary(
+                static grant => grant!["cardId"]!.GetValue<string>(),
+                static grant => grant!["quantity"]!.GetValue<int>(),
+                StringComparer.Ordinal
+            );
+        foreach (var entry in starterTrainers)
+        {
+            grants[entry.CardId].ShouldBe(entry.Quantity, entry.CardId);
+        }
+
+        // A deck borrowing a Trainer the player does not own fails as one borrowing a Blokemon
+        // does: the same rule, the same sentence with the card's id in it.
+        DeckEntryView[] Borrowing(string cardId) =>
+            starter
+                .Entries.Select(entry =>
+                    entry.CardId == energy.CardId
+                        ? entry with
+                        {
+                            Quantity = entry.Quantity - 2,
+                        }
+                        : entry
+                )
+                .Append(new DeckEntryView(cardId, 2))
+                .ToArray();
+        var borrowedTrainer = await application.SaveDeck(
+            new(
+                Guid.Parse("b7333333-3333-3333-3333-333333333333"),
+                null,
+                null,
+                "Borrowed Trainer",
+                Borrowing(unownedTrainer.Id)
+            )
+        );
+        var borrowedBlokemon = await application.SaveDeck(
+            new(
+                Guid.Parse("b7444444-4444-4444-4444-444444444444"),
+                null,
+                null,
+                "Borrowed Blokemon",
+                Borrowing(unownedBlokemon.Id)
+            )
+        );
+
+        borrowedTrainer.Succeeded.ShouldBeFalse();
+        borrowedTrainer.Error!.Code.ShouldBe("deck.invalid");
+        borrowedBlokemon.Error!.Code.ShouldBe("deck.invalid");
+        borrowedTrainer
+            .Error.Message.Replace(unownedTrainer.Id, unownedBlokemon.Id, StringComparison.Ordinal)
+            .ShouldBe(borrowedBlokemon.Error.Message);
+        Value(await application.State()).Decks.Single().Id.ShouldBe(starter.Id);
+    }
+
+    [Test]
+    public async Task SavedDeckWhoseTrainersAreNoLongerOwned_IsReportedInvalidAndNeverAltered()
+    {
+        // A profile from before Trainers were pulled: bound to an older manifest, its decks
+        // listing Trainers, and no Trainer anywhere in its ownership history.
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var server = new ServerHandler(null);
+        var application = Application(catalogue, documents, server);
+        var historical = await CreateHistoricalProfile(
+            application,
+            documents,
+            StripTrainersFromOwnershipHistory
+        );
+        var expectedEntries = JsonNode.Parse(historical.Json)!["profile"]!["savedDecks"]!
+            .AsArray()
+            .ToDictionary(
+                static deck => deck!["name"]!.GetValue<string>(),
+                static deck =>
+                    deck!["cards"]!
+                        .AsArray()
+                        .Select(static card =>
+                            (card!["cardId"]!.GetValue<string>(), card["quantity"]!.GetValue<int>())
+                        )
+                        .OrderBy(static card => card.Item1, StringComparer.Ordinal)
+                        .ToArray(),
+                StringComparer.Ordinal
+            );
+
+        var restarted = Application(catalogue, documents, server);
+        var restored = Value(await restarted.State());
+        var opened = await restarted.OpenPack(
+            new(Guid.Parse("b8111111-1111-1111-1111-111111111111"))
+        );
+        var kinds = restored.Cards.ToDictionary(
+            static card => card.Id,
+            static card => card.Kind,
+            StringComparer.Ordinal
+        );
+
+        // The document was left as it was: no migration, no trimming, no pack.
+        (await documents.Read("profile")).ShouldBe(historical);
+        opened.Succeeded.ShouldBeFalse();
+        opened.Error!.Code.ShouldBe("pack.authority_changed");
+        restored.Decks.Length.ShouldBe(2);
+        foreach (var deck in restored.Decks)
+        {
+            var trainers = deck
+                .Entries.Where(entry => kinds[entry.CardId] == CardKindView.Trainer)
+                .ToArray();
+            trainers.ShouldNotBeEmpty(deck.Name);
+            deck.IsLegal.ShouldBeFalse(deck.Name);
+            foreach (var entry in trainers)
+            {
+                deck.Errors.ShouldContain(error =>
+                    error.Contains(entry.CardId, StringComparison.Ordinal)
+                );
+            }
+            deck.Entries.Select(static entry => (entry.CardId, entry.Quantity))
+                .OrderBy(static entry => entry.CardId, StringComparer.Ordinal)
+                .ToArray()
+                .ShouldBe(expectedEntries[deck.Name]);
+        }
+        restored
+            .Cards.Where(static card => card.Kind == CardKindView.Trainer)
+            .ShouldAllBe(static card => card.OwnedQuantity == 0 && !card.FreelyAvailable);
+    }
+
+    [Test]
     public async Task DeckBuilder_DeletesDecksWithoutChangingOwnedCardsAndKeepsThemDeleted()
     {
         var catalogue = Catalogue();
@@ -1074,6 +1249,76 @@ public sealed class BrowserLocalApplicationTests
         Ownership(deleted.Value).ShouldBe(Ownership(claimed.Value));
         restored!.Value!.Decks.ShouldBeEmpty();
         restored.Value.Profile!.StarterDeckId.ShouldBe("growroom");
+    }
+
+    [Test]
+    public async Task ServerApi_GrantsStarterTrainersAsOwnedCopiesLikeTheBrowserGame()
+    {
+        await using var host = SessionHost.Create();
+        var issued = await host.SignIn("trainer-owner", "Server Player");
+        using var client = host.Client(issued.Token);
+        var claimedResponse = await client.PostAsJsonAsync(
+            "/api/starter-decks/claim",
+            new ClaimStarterDeckRequest(
+                Guid.Parse("b9222222-2222-2222-2222-222222222222"),
+                "growroom"
+            )
+        );
+        var claimed = await claimedResponse.Content.ReadFromJsonAsync<
+            ApiResponse<ApplicationView>
+        >();
+        var starter = claimed!.Value!.Decks.Single();
+        var cards = claimed.Value.Cards.ToDictionary(
+            static card => card.Id,
+            StringComparer.Ordinal
+        );
+        var starterTrainers = starter
+            .Entries.Where(entry => cards[entry.CardId].Kind == CardKindView.Trainer)
+            .ToArray();
+        var unownedTrainer = claimed.Value.Cards.First(card =>
+            card.Kind == CardKindView.Trainer && card.OwnedQuantity == 0
+        );
+        var energy = starter.Entries.First(entry =>
+            cards[entry.CardId].Kind == CardKindView.Energy
+        );
+
+        var borrowedResponse = await client.PostAsJsonAsync(
+            "/api/decks",
+            new SaveDeckRequest(
+                Guid.Parse("b9333333-3333-3333-3333-333333333333"),
+                null,
+                null,
+                "Borrowed Trainer",
+                starter
+                    .Entries.Select(entry =>
+                        entry.CardId == energy.CardId
+                            ? entry with
+                            {
+                                Quantity = entry.Quantity - 2,
+                            }
+                            : entry
+                    )
+                    .Append(new DeckEntryView(unownedTrainer.Id, 2))
+                    .ToArray()
+            )
+        );
+        var borrowed = await borrowedResponse.Content.ReadFromJsonAsync<
+            ApiResponse<ApplicationView>
+        >();
+
+        claimedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        starterTrainers.ShouldNotBeEmpty();
+        foreach (var entry in starterTrainers)
+        {
+            cards[entry.CardId].OwnedQuantity.ShouldBe(entry.Quantity, entry.CardId);
+        }
+        claimed
+            .Value.Cards.Where(static card => card.Kind == CardKindView.Trainer)
+            .ShouldAllBe(static card => !card.FreelyAvailable);
+        starter.IsLegal.ShouldBeTrue();
+        borrowed!.Succeeded.ShouldBeFalse();
+        borrowed.Error!.Code.ShouldBe("deck.invalid");
+        borrowed.Error.Message.ShouldContain(unownedTrainer.Id);
     }
 
     [Test]
@@ -1493,6 +1738,66 @@ public sealed class BrowserLocalApplicationTests
         document["profile"]!["authorityManifestVersion"] = manifestVersion;
         await documents.Update("profile", current.Revision, document.ToJsonString());
         return (await documents.Read("profile"))!;
+    }
+
+    // Rewrites a current profile document into one from before Trainers were pulled: every
+    // Trainer dealt by a pack becomes a historical card of that pack, every Trainer grant is
+    // dropped from its claim, and the ownership follows, so the history still reconciles while
+    // the saved decks keep listing Trainers the profile never owned.
+    private static void StripTrainersFromOwnershipHistory(JsonObject profile)
+    {
+        var removed = new Dictionary<string, int>(StringComparer.Ordinal);
+        var ownership = profile["collectibleOwnership"]!.AsArray();
+        var historicalCards = 0;
+        foreach (var receipt in profile["packReceipts"]!.AsArray())
+        {
+            var sampled = receipt!["sampledCollectibleIds"]!.AsArray();
+            for (var index = 0; index < sampled.Count; index++)
+            {
+                var cardId = sampled[index]!.GetValue<string>();
+                if (!cardId.StartsWith("KIT-", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                removed[cardId] = removed.GetValueOrDefault(cardId) + 1;
+                var historicalId = $"HISTORICAL-PACK-CARD-{++historicalCards}";
+                sampled[index] = historicalId;
+                ownership.Add(new JsonObject { ["cardId"] = historicalId, ["quantity"] = 1 });
+            }
+        }
+        foreach (var claim in profile["starterDeckClaims"]!.AsArray())
+        {
+            var grants = claim!["collectibleGrants"]!.AsArray();
+            foreach (
+                var grant in grants
+                    .Select(static grant => grant!.AsObject())
+                    .Where(static grant =>
+                        grant["cardId"]!
+                            .GetValue<string>()
+                            .StartsWith("KIT-", StringComparison.Ordinal)
+                    )
+                    .ToArray()
+            )
+            {
+                var cardId = grant["cardId"]!.GetValue<string>();
+                removed[cardId] =
+                    removed.GetValueOrDefault(cardId) + grant["quantity"]!.GetValue<int>();
+                grants.Remove(grant);
+            }
+        }
+        foreach (
+            var entry in ownership
+                .Select(static entry => entry!.AsObject())
+                .Where(entry => removed.ContainsKey(entry["cardId"]!.GetValue<string>()))
+                .ToArray()
+        )
+        {
+            var cardId = entry["cardId"]!.GetValue<string>();
+            var remaining = entry["quantity"]!.GetValue<int>() - removed[cardId];
+            remaining.ShouldBe(0, cardId);
+            ownership.Remove(entry);
+        }
     }
 
     private static string UnknownCardId(string location) =>

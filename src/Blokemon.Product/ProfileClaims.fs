@@ -50,18 +50,20 @@ module internal ProfileClaims =
                 StarterDeckClaimFailure.AllowanceExhausted(claimedId, definition.Id)
             )
         | None ->
-            // Opening a starter always grants its full collectible contents, however many
-            // copies of it were opened before.
-            let authorityCollectibleIds =
+            // Opening a starter always grants its full collectible contents, Blokemon and
+            // Trainers alike, however many copies of it were opened before.
+            let authorityOwnedIds =
                 HashSet<string>(
-                    currentAuthority.Collectibles |> Seq.map (fun card -> card.Id),
+                    Seq.append
+                        (currentAuthority.Collectibles |> Seq.map (fun card -> card.Id))
+                        (currentAuthority.Kits |> Seq.map (fun card -> card.Id)),
                     StringComparer.Ordinal
                 )
 
             let grantQuantities = Dictionary<CardId, int>()
 
             for selection in definition.Cards do
-                if authorityCollectibleIds.Contains selection.CardId.Value then
+                if authorityOwnedIds.Contains selection.CardId.Value then
                     grantQuantities[selection.CardId] <-
                         grantedCount grantQuantities selection.CardId + selection.Quantity
 

@@ -273,6 +273,21 @@ type ElevenCardPackTests() =
         |> should contain "runtime.product-odds"
 
     [<Test>]
+    member _.``runtime validation should reject a kit left freely available``() =
+        let manifest = PackAuthorities.mechanics.Value
+
+        { manifest with
+            Kits =
+                manifest.Kits
+                |> Array.mapi (fun index kit ->
+                    if index = 0 then
+                        { kit with FreelyAvailable = true }
+                    else
+                        kit) }
+        |> PackAuthorities.validationCodes
+        |> should contain "runtime.kit-boundary"
+
+    [<Test>]
     member _.``runtime validation should reject a kit that is not pulled``() =
         let manifest = PackAuthorities.mechanics.Value
 

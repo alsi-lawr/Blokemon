@@ -145,22 +145,40 @@ public sealed class LocalMatchTests
                 new(Guid.Parse("11000000-0000-0000-0000-000000000002"), "growroom")
             )
         );
+        // Sixty cards without Energy, all of them owned: the starter's Blokemon and Trainers
+        // plus three packs, taken in id order up to the copy limit. Blokemon sort first, so the
+        // guaranteed Regular is among them.
+        var owned = Value(await fixture.Application.State());
+        for (var index = 1; index <= 3; index++)
+        {
+            owned = Value(
+                await fixture.Application.OpenPack(
+                    new(Guid.Parse($"31000000-0000-0000-0000-{index:D12}"))
+                )
+            );
+        }
+        var entries = new List<DeckEntryView>();
+        foreach (
+            var card in owned
+                .Cards.Where(static card =>
+                    card.Kind != CardKindView.Energy && card.OwnedQuantity > 0
+                )
+                .OrderBy(static card => card.Kind)
+                .ThenBy(static card => card.Id, StringComparer.Ordinal)
+        )
+        {
+            var remaining = 60 - entries.Sum(static entry => entry.Quantity);
+            if (remaining == 0)
+            {
+                break;
+            }
+
+            entries.Add(new(card.Id, Math.Min(Math.Min(card.OwnedQuantity, 4), remaining)));
+        }
         var deckId = Guid.Parse("21000000-0000-0000-0000-000000000001");
         var energyless = Value(
             await fixture.Application.SaveDeck(
-                new(
-                    deckId,
-                    null,
-                    null,
-                    "Warning-only deck",
-                    [
-                        new("BLK-001", 3),
-                        new("BLK-002", 1),
-                        .. Enumerable
-                            .Range(1, 14)
-                            .Select(index => new DeckEntryView($"KIT-{index:D3}", 4)),
-                    ]
-                )
+                new(deckId, null, null, "Warning-only deck", [.. entries])
             )
         );
         var saved = energyless.Decks.Single(deck => deck.Id == deckId);

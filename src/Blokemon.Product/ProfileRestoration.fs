@@ -117,7 +117,7 @@ module internal ProfileRestoration =
 
             let! reversedClaims, _ =
                 foldIndexed
-                    (restoreClaim authorityCollectibles)
+                    (restoreClaim authorityPulledIds)
                     ([], Set.empty)
                     (orEmpty snapshot.StarterDeckClaims)
 

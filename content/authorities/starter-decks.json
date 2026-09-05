@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "starterDeckVersion": "blokemon-starters-1999-1.0.0",
-  "mechanicalManifestVersion": "base-jungle-fossil-1999-card-semantics-candidate.2",
+  "mechanicalManifestVersion": "base-jungle-fossil-1999-card-semantics-candidate.3",
   "decks": [
     {
       "id": "growroom",

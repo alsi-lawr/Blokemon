@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Headless checks of Trainers coming out of packs (BLOKEMON-156) against a running Blokemon.Web.
+"""Headless checks of Trainers coming out of packs and being owned (BLOKEMON-156, BLOKEMON-157)
+against a running Blokemon.Web.
 
 Driven by HeadlessTrainerTests, which hosts Blokemon.Web on Kestrel and hands this script its
-origin. The browser game creates a player and opens packs with reduced motion on, so each opening
-lands on its summary; every pack shows eleven distinct cards through the card face, at least two of
-them Trainers, and the last pack lists the same eleven afterwards, at desktop and on a phone. Chrome
-runs headless only.
+origin. The browser game creates a player, claims a starter and opens packs with reduced motion on,
+so each opening lands on its summary; every pack shows eleven distinct cards through the card face,
+at least two of them Trainers, and the last pack lists the same eleven afterwards, at desktop and on
+a phone. The collection then shows each pulled Trainer with an owned count and its Owned view keeps
+only Trainers with one, and the deck builder lets a pulled Trainer into a new deck exactly as many
+times as it is owned. Chrome runs headless only.
 """
 from __future__ import annotations
 
@@ -55,6 +58,24 @@ def create_player(devtools, origin):
     )
 
 
+def claim_starter(devtools):
+    require(
+        devtools.evaluate(
+            """
+            (() => {
+              const button = [...document.querySelectorAll('.starter-option > button')]
+                .find(candidate => candidate.textContent.trim().startsWith('Open '));
+              if (!button) return false;
+              button.click();
+              return true;
+            })()
+            """
+        ),
+        "claimed one starter",
+    )
+    devtools.wait_for("document.querySelector('.starter-option') === null || [...document.querySelectorAll('.starter-option > button')].every(b => b.disabled)", "the starter claimed", timeout=30)
+
+
 def open_pack(devtools, origin, viewport):
     """Opens one pack and returns the eleven faces its summary showed, after checking them."""
     devtools.navigate(origin, "/packs")
@@ -77,6 +98,78 @@ def open_pack(devtools, origin, viewport):
     return dealt
 
 
+def quantity_shown(devtools, card_id):
+    """The owned count a collection tile shows for a card: the digits in its quantity badge."""
+    return devtools.evaluate(
+        f"""(() => {{
+            const tile = [...document.querySelectorAll('.collection-grid .card-tile')]
+              .find(t => t.querySelector('article.blokemon-gym-card')?.dataset.canonicalId === {json.dumps(card_id)});
+            if (!tile) return null;
+            const digits = (tile.querySelector('.qty')?.textContent ?? '').match(/\d+/);
+            return digits ? Number(digits[0]) : null;
+        }})()"""
+    )
+
+
+def collection_counts(devtools, origin, pulled, viewport):
+    """Every pulled Trainer's tile shows at least the copies the packs dealt, and the Owned view
+    keeps a Trainer only when its count is above zero."""
+    devtools.navigate(origin, "/collection")
+    devtools.wait_for("document.querySelector('.collection-grid article.blokemon-gym-card') !== null", "the collection", timeout=30)
+    dealt = {}
+    for card in pulled:
+        dealt[card["id"]] = dealt.get(card["id"], 0) + 1
+    for card_id, copies in dealt.items():
+        shown = quantity_shown(devtools, card_id)
+        require(shown is not None and shown >= copies, f"{viewport}: {card_id} shows an owned count of at least {copies} ({shown})")
+    activate(devtools, "Owned")
+    devtools.wait_for("document.querySelector('.toolbar button.selected') !== null", "the Owned view")
+    owned_trainers = devtools.evaluate(
+        """[...document.querySelectorAll('.collection-grid .card-tile')]
+            .filter(t => t.querySelector('article.blokemon-gym-card')?.dataset.cardType === 'Trainer')
+            .map(t => ({ id: t.querySelector('article.blokemon-gym-card').dataset.canonicalId, digits: ((t.querySelector('.qty')?.textContent ?? '').match(/\d+/) || [null])[0] }))"""
+    )
+    require(owned_trainers, f"{viewport}: the Owned view lists Trainers")
+    require(all(card["digits"] is not None and int(card["digits"]) > 0 for card in owned_trainers), f"{viewport}: every Trainer in the Owned view has an owned count above zero")
+    require({card["id"] for card in pulled} <= {card["id"] for card in owned_trainers}, f"{viewport}: every pulled Trainer is in the Owned view")
+    activate(devtools, "Owned")
+
+
+def deck_builder_cap(devtools, origin, pulled, viewport):
+    """A pulled Trainer outside the starter list can be added to a new deck exactly as many times
+    as the packs dealt it, then the add step disables."""
+    devtools.navigate(origin, "/decks")
+    devtools.wait_for("document.querySelector('.deck-line article.blokemon-gym-card') !== null", "the starter deck list", timeout=30)
+    listed = set(devtools.evaluate("[...document.querySelectorAll('.deck-line article.blokemon-gym-card')].map(a => a.dataset.canonicalId)"))
+    dealt = {}
+    for card in pulled:
+        if card["type"] == "Trainer" and card["id"] not in listed:
+            dealt[card["id"]] = dealt.get(card["id"], 0) + 1
+    require(dealt, f"{viewport}: a pulled Trainer sits outside the starter list ({sorted(listed)})")
+    card_id, owned = sorted(dealt.items())[0]
+    activate(devtools, "New deck")
+    devtools.wait_for("[...document.querySelectorAll('.deck-line')].length === 0", "an empty new deck", timeout=30)
+    stepper = f"""(() => {{
+        const card = [...document.querySelectorAll('.catalogue-card')]
+          .find(c => c.querySelector('article.blokemon-gym-card')?.dataset.canonicalId === {json.dumps(card_id)});
+        if (!card) return null;
+        const buttons = card.querySelectorAll('.stepper button');
+        return {{ count: Number(card.querySelector('.stepper output').textContent.trim()), addDisabled: buttons[buttons.length - 1].disabled }};
+    }})()"""
+    for step in range(owned):
+        state = devtools.evaluate(stepper)
+        require(state is not None and state["count"] == step and not state["addDisabled"], f"{viewport}: {card_id} at {step} of {owned} can be added ({state})")
+        devtools.evaluate(f"""(() => {{
+            const card = [...document.querySelectorAll('.catalogue-card')]
+              .find(c => c.querySelector('article.blokemon-gym-card')?.dataset.canonicalId === {json.dumps(card_id)});
+            const buttons = card.querySelectorAll('.stepper button');
+            buttons[buttons.length - 1].click();
+        }})()""")
+        devtools.wait_for(f"({stepper})?.count === {step + 1}", f"{card_id} added ({step + 1})")
+    state = devtools.evaluate(stepper)
+    require(state["count"] == owned and state["addDisabled"], f"{viewport}: {card_id} stops at its {owned} owned copies ({state})")
+
+
 def main():
     origin = env("BLOKEMON_ORIGIN")
     with tempfile.TemporaryDirectory(prefix="blokemon-trainer-evidence-") as temporary:
@@ -89,6 +182,7 @@ def main():
             # the card harness's concern.
             devtools.set_reduced_motion(True)
             create_player(devtools, origin)
+            claim_starter(devtools)
             desktop = open_pack(devtools, origin, "1440x900")
             devtools.set_viewport(412, 915, touch=True)
             phone = open_pack(devtools, origin, "412x915")
@@ -96,6 +190,12 @@ def main():
                 [card["id"] for card in desktop] != [card["id"] for card in phone],
                 "the second pack is its own draw",
             )
+            pulled = [card for card in desktop + phone if card["type"] == "Trainer"]
+            collection_counts(devtools, origin, pulled, "412x915")
+            deck_builder_cap(devtools, origin, pulled, "412x915")
+            devtools.set_viewport(1440, 900)
+            collection_counts(devtools, origin, pulled, "1440x900")
+            deck_builder_cap(devtools, origin, pulled, "1440x900")
         except EvidenceFailure as failure:
             try:
                 where = devtools.evaluate("location.href")

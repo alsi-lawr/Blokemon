@@ -35,7 +35,7 @@ module internal ProfileRestorationSteps =
         | pulledIds -> not (pulledIds.Contains cardId.Value)
 
     let private restoreGrant
-        (authorityCollectibles: Dictionary<string, BlokemonCollectible>)
+        (authorityPulledIds: HashSet<string>)
         (claimPath: string)
         (grants: StarterCollectibleGrant list, granted: Set<CardId>)
         (grantIndex: int)
@@ -66,14 +66,14 @@ module internal ProfileRestorationSteps =
 
             do!
                 failWhen
-                    (not (authorityCollectibles.ContainsKey cardId.Value))
+                    (not (authorityPulledIds.Contains cardId.Value))
                     (LocalProfileRestorationFailure.UnknownCard($"{path}.CardId", cardId))
 
             return StarterCollectibleGrant(cardId, grant.Quantity) :: grants, granted.Add cardId
         }
 
     let restoreClaim
-        (authorityCollectibles: Dictionary<string, BlokemonCollectible>)
+        (authorityPulledIds: HashSet<string>)
         (claims: StarterDeckClaim list, commandIds: Set<CommandId>)
         (claimIndex: int)
         (claimSnapshot: StarterDeckClaimSnapshot)
@@ -104,7 +104,7 @@ module internal ProfileRestorationSteps =
 
             let! grants, _ =
                 foldIndexed
-                    (restoreGrant authorityCollectibles claimPath)
+                    (restoreGrant authorityPulledIds claimPath)
                     ([], Set.empty)
                     (orEmpty claimSnapshot.CollectibleGrants)
 

@@ -22,7 +22,7 @@ module BlokemonSetValidator =
         check
             (StringComparer.Ordinal.Equals(
                 manifest.ManifestVersion,
-                "base-jungle-fossil-1999-card-semantics-candidate.2"
+                "base-jungle-fossil-1999-card-semantics-candidate.3"
             ))
             "runtime.manifest-version"
             "The runtime manifest must use the complete 1999 card-semantics load identity."

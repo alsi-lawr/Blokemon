@@ -119,8 +119,7 @@ module private StarterDeckClaimFixtures =
         let kit =
             authority.Value.Kits
             |> Array.filter (fun card ->
-                card.FreelyAvailable
-                && min card.StackCopyLimit authority.Value.BaseRules.Stack.MechanicalCopyLimit >= 1)
+                min card.StackCopyLimit authority.Value.BaseRules.Stack.MechanicalCopyLimit >= 2)
             |> Array.sortWith (fun left right -> String.CompareOrdinal(left.Id, right.Id))
             |> Array.head
 
@@ -139,8 +138,8 @@ module private StarterDeckClaimFixtures =
                 Quantity = 1 }
               { CardId = collectibleId
                 Quantity = requiredCollectibleQuantity }
-              { CardId = kitId; Quantity = 1 }
-              { CardId = basicVimId; Quantity = 56 } ]
+              { CardId = kitId; Quantity = 2 }
+              { CardId = basicVimId; Quantity = 55 } ]
 
         { Definition =
             StarterDeckDefinition(
@@ -270,7 +269,10 @@ type StarterDeckClaimTests() =
         starterDeck.Cards.Values |> Seq.sum |> should equal 60
         claim.Id |> should equal fixture.Definition.Id
         claim.CommandId |> should equal commandId
-        claim.CollectibleGrants.Length |> should equal 2
+        claim.CollectibleGrants.Length |> should equal 3
+
+        (claim.CollectibleGrants |> Seq.find (fun grant -> grant.CardId = fixture.KitId)).Quantity
+        |> should equal 2
 
         (claim.CollectibleGrants
          |> Seq.find (fun grant -> grant.CardId = fixture.CollectibleId))
@@ -288,7 +290,7 @@ type StarterDeckClaimTests() =
         claimedProfile.OwnedCollectibleQuantity claimedProfile.GuaranteedRegularCollectibleId
         |> should equal 2
 
-        claimedProfile.OwnedCollectibleQuantity fixture.KitId |> should equal 0
+        claimedProfile.OwnedCollectibleQuantity fixture.KitId |> should equal 2
         claimedProfile.OwnedCollectibleQuantity fixture.BasicVimId |> should equal 0
 
         let revised =
@@ -468,6 +470,8 @@ type StarterDeckClaimTests() =
         reclaimedProfile.OwnedCollectibleQuantity fixture.CollectibleId
         |> should equal (2 * fixture.RequiredCollectibleQuantity)
 
+        reclaimedProfile.OwnedCollectibleQuantity fixture.KitId |> should equal 4
+
         reclaimedProfile.OwnedCollectibleQuantity profile.GuaranteedRegularCollectibleId
         |> should equal 3
 
@@ -502,7 +506,12 @@ type StarterDeckClaimTests() =
         |> should equal persisted.SecondCommandId.Value
 
         for claim in snapshot.StarterDeckClaims do
-            claim.CollectibleGrants.Length |> should equal 2
+            claim.CollectibleGrants.Length |> should equal 3
+
+            (claim.CollectibleGrants
+             |> Seq.find (fun grant -> grant.CardId = persisted.Starter.KitId.Value))
+                .Quantity
+            |> should equal 2
 
             (claim.CollectibleGrants
              |> Seq.find (fun grant -> grant.CardId = persisted.Starter.CollectibleId.Value))

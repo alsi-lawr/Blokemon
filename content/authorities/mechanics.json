@@ -1,5 +1,5 @@
 {
-  "manifestVersion": "base-jungle-fossil-1999-card-semantics-candidate.2",
+  "manifestVersion": "base-jungle-fossil-1999-card-semantics-candidate.3",
   "presentationStatus": "Accepted",
   "approvedMechanicalDisplayMap": [
     {
@@ -16544,8 +16544,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Rare",
@@ -16581,8 +16581,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Common",
@@ -16652,8 +16652,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Rare",
@@ -16689,8 +16689,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Common",
@@ -16782,8 +16782,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Rare",
@@ -16855,8 +16855,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -16892,8 +16892,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Common",
@@ -16948,8 +16948,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Common",
@@ -17000,8 +17000,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -17037,8 +17037,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Common",
@@ -17165,8 +17165,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Rare",
@@ -17202,8 +17202,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Common",
@@ -17239,8 +17239,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -17276,8 +17276,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -17353,8 +17353,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Rare",
@@ -17390,8 +17390,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Rare",
@@ -17463,8 +17463,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Rare",
@@ -17501,8 +17501,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Rare",
@@ -17538,8 +17538,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Rare",
@@ -17591,8 +17591,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Rare",
@@ -17662,8 +17662,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -17699,8 +17699,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -17736,8 +17736,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -17773,8 +17773,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -17826,8 +17826,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -17874,8 +17874,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -17911,8 +17911,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -17948,8 +17948,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Common",
@@ -18026,8 +18026,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Common",
@@ -18083,8 +18083,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Uncommon",
@@ -18146,8 +18146,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Common",
@@ -18251,8 +18251,8 @@
           ]
         }
       ],
-      "freelyAvailable": true,
-      "owned": false,
+      "freelyAvailable": false,
+      "owned": true,
       "pulled": true,
       "traded": false,
       "productBucket": "Common",

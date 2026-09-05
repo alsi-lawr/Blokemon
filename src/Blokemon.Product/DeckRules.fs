@@ -93,10 +93,15 @@ module internal DeckRules =
                         DeckValidationIssue.CollectibleQuantityNotOwned(cardId, quantity, owned)
                     )
             | _, (true, kit), _ ->
-                if not kit.FreelyAvailable then
-                    issues.Add(DeckValidationIssue.CatalogueCardNotFree cardId)
-
+                // A kit is a collectible in the deck rules: owned copies govern it.
                 checkCopyLimit issues cardId quantity kit.StackCopyLimit rules.MechanicalCopyLimit
+
+                let owned = ownedQuantity cardId
+
+                if quantity > int64 owned then
+                    issues.Add(
+                        DeckValidationIssue.CollectibleQuantityNotOwned(cardId, quantity, owned)
+                    )
             | _, _, (true, vim) ->
                 if not vim.FreelyAvailable then
                     issues.Add(DeckValidationIssue.CatalogueCardNotFree cardId)

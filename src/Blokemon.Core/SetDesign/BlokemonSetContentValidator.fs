@@ -114,12 +114,12 @@ module internal BlokemonSetContentValidator =
             (manifest.Kits
              |> Array.forall (fun card ->
                  card.PresentationStatus = BlokemonPresentationStatus.Accepted
-                 && card.FreelyAvailable
-                 && not card.Owned
+                 && not card.FreelyAvailable
+                 && card.Owned
                  && card.Pulled
                  && not card.Traded))
             "runtime.kit-boundary"
-            "Kits must be free, non-owned, pulled, non-traded and accepted for presentation."
+            "Kits must be owned and pulled rather than free, non-traded and accepted for presentation."
             issues
 
         let inPlayTrainers =
