@@ -44,6 +44,18 @@
   }
 }
 
+/*
+  A hand card's reading pill hangs below the card, and on a phone the hand sits at the foot of the
+  screen: hung there, the pill - unseen until a keyboard reaches it - would still reach past the
+  screen and give the table a scroll. It sits over the card's lower edge instead, inside the hand.
+*/
+@media (max-width: 720px) {
+  .hand-card .card-reading {
+    top: auto;
+    bottom: 4px;
+  }
+}
+
 /* This box answers the pointer and NEVER moves. A card that rose on hover would climb out from
    under the pointer, lose it, drop, and take it again - flicker rather than lift. */
 .hand-card {

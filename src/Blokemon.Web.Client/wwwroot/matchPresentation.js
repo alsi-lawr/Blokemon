@@ -39,6 +39,14 @@ function centre(element) {
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, rect };
 }
 
+// A phone table is scaled to fit its screen (match-table.css), and a length written into it is
+// read at that scale: a distance measured across the screen has to be handed to the table in the
+// table's own pixels, or the card would travel short by exactly the fit.
+function tableScale(element) {
+  const zoom = element?.currentCSSZoom;
+  return typeof zoom === "number" && zoom > 0 ? zoom : 1;
+}
+
 // A card can have several things running on it at once, and one the player is hovering or has left
 // focus on carries a fade of its own alongside whatever the deal started. Only the runs a
 // stylesheet gave a name are being looked for here, so the rest are passed over rather than asked a
@@ -92,10 +100,11 @@ export function positionDrawCards(table) {
   // somewhere: a card is dealt from a stack it is the same size as, and ends up whatever size
   // the place receiving it draws cards at.
   const { x: deckX, y: deckY } = centre(deck);
+  const scale = tableScale(deck);
   for (const { element, arc } of visuals) {
     const at = centre(element);
-    const dx = deckX - at.x;
-    const dy = deckY - at.y;
+    const dx = (deckX - at.x) / scale;
+    const dy = (deckY - at.y) / scale;
     element.style.setProperty("--draw-from-x", `${dx}px`);
     element.style.setProperty("--draw-from-y", `${dy}px`);
     element.style.setProperty("--draw-lift", `${arc * Math.hypot(dx, dy)}px`);
@@ -132,8 +141,8 @@ export function positionDrawCards(table) {
     const start = centre(element);
     const fromX = Number.parseFloat(element.style.getPropertyValue("--draw-from-x"));
     const fromY = Number.parseFloat(element.style.getPropertyValue("--draw-from-y"));
-    element.style.setProperty("--draw-from-x", `${fromX + deckX - start.x}px`);
-    element.style.setProperty("--draw-from-y", `${fromY + deckY - start.y}px`);
+    element.style.setProperty("--draw-from-x", `${fromX + (deckX - start.x) / scale}px`);
+    element.style.setProperty("--draw-from-y", `${fromY + (deckY - start.y) / scale}px`);
     animation.currentTime = 0;
     animation.play();
   }
@@ -194,10 +203,11 @@ export function positionPlayCard(table) {
   const rest = centre(traveller);
   const from = centre(origin);
   const to = playLanding(table, landing);
-  traveller.style.setProperty("--play-from-x", `${from.x - rest.x}px`);
-  traveller.style.setProperty("--play-from-y", `${from.y - rest.y}px`);
-  traveller.style.setProperty("--play-to-x", `${to.x - rest.x}px`);
-  traveller.style.setProperty("--play-to-y", `${to.y - rest.y}px`);
+  const scale = tableScale(traveller);
+  traveller.style.setProperty("--play-from-x", `${(from.x - rest.x) / scale}px`);
+  traveller.style.setProperty("--play-from-y", `${(from.y - rest.y) / scale}px`);
+  traveller.style.setProperty("--play-to-x", `${(to.x - rest.x) / scale}px`);
+  traveller.style.setProperty("--play-to-y", `${(to.y - rest.y) / scale}px`);
 
   // How big the card is at each end of its journey is a share of how big it is where it rests, so
   // a traveller that measures nothing has nothing to be compared against. Then neither share is
@@ -226,9 +236,9 @@ export function positionPlayCard(table) {
   // the journey's own proportions rather than a distance in pixels that only suits one screen.
   traveller.style.setProperty(
     "--play-lift",
-    `${0.27 * Math.hypot(to.x - from.x, to.y - from.y)}px`,
+    `${(0.27 * Math.hypot(to.x - from.x, to.y - from.y)) / scale}px`,
   );
-  traveller.style.setProperty("--play-dip", `${0.06 * from.rect.height}px`);
+  traveller.style.setProperty("--play-dip", `${(0.06 * from.rect.height) / scale}px`);
 
   traveller.style.removeProperty("animation");
   void table.offsetWidth;
@@ -283,11 +293,12 @@ export function positionAttack(table) {
     return;
   }
 
+  const scale = tableScale(field);
   field.style.setProperty("--blow-x", `${(toX - from.x) / gap}`);
   field.style.setProperty("--blow-y", `${(toY - from.y) / gap}`);
-  field.style.setProperty("--blow-gap", `${gap}px`);
-  field.style.setProperty("--blow-width", `${from.rect.width}px`);
-  field.style.setProperty("--struck-width", `${struckWidth}px`);
+  field.style.setProperty("--blow-gap", `${gap / scale}px`);
+  field.style.setProperty("--blow-width", `${from.rect.width / scale}px`);
+  field.style.setProperty("--struck-width", `${struckWidth / scale}px`);
 }
 
 export async function toggleFullscreen(element) {

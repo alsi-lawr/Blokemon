@@ -1,6 +1,8 @@
 .battle-screen {
   position: relative;
-  height: calc(100dvh - 68px);
+  /* The room the table has: the screen less the bar above it and, on a phone, the nav below. */
+  --table-height: calc(100dvh - 68px);
+  height: var(--table-height);
   min-height: 0;
   overflow: auto;
   overscroll-behavior: contain;
@@ -12,14 +14,14 @@
     #090b08;
 
   @media (max-width: 720px) {
-    height: calc(100dvh - 124px);
+    --table-height: calc(100dvh - 124px);
     min-height: 0;
   }
 }
 
 .battle-screen:fullscreen {
+  --table-height: 100dvh;
   width: 100vw;
-  height: 100dvh;
 }
 
 .battle-canvas {
@@ -28,10 +30,18 @@
   min-width: 1120px;
   height: max(100%, 820px);
 
-  /* Exactly screen height - nothing here may grow the canvas and start a scroll. */
+  /*
+    Exactly screen height - nothing here may grow the canvas and start a scroll. The phone table
+    is drawn for the 791px a Pixel leaves it, and a screen with less - the browser's own toolbar
+    takes its share - gets the same table scaled to fit rather than a scroll. tan(atan2(a, b)) is
+    a divided by b as a plain number, which is what zoom takes; the cap keeps a taller screen at
+    the drawn size with the spare height around it.
+  */
   @media (max-width: 720px) {
+    --table-fit: min(1, tan(atan2(var(--table-height), 791px)));
     min-width: 0;
     height: 100%;
+    zoom: var(--table-fit);
   }
 }
 
