@@ -98,31 +98,13 @@ module SignInCompletion =
         (cancellationToken: CancellationToken)
         : Task<DomainResult<AccountDocument, SignInFailure>> =
         task {
-            let read () =
-                task {
-                    let! stored = documents.Read(accountKey account, cancellationToken)
-
-                    match stored with
-                    | null -> return None
-                    | document ->
-                        let parsed =
-                            try
-                                Ok(JsonSerializer.Deserialize<AccountDocument>(document.Json, json))
-                            with :? JsonException ->
-                                Error()
-
-                        match parsed with
-                        | Ok(NonNull value) when value.SchemaVersion = accountSchemaVersion ->
-                            return Some(Ok value)
-                        | _ -> return Some(Error())
-                }
-
-            let! existing = read ()
+            let! existing = Accounts.load documents account cancellationToken
 
             match existing with
-            | Some(Ok document) -> return DomainResult.Succeeded document
-            | Some(Error()) -> return DomainResult.Failed SignInFailure.Damaged
-            | None ->
+            | AccountRecord.Live(_, document) -> return DomainResult.Succeeded document
+            | AccountRecord.Erased _ -> return DomainResult.Failed SignInFailure.AccountErased
+            | AccountRecord.Damaged -> return DomainResult.Failed SignInFailure.Damaged
+            | AccountRecord.Absent ->
                 let document = newAccount account now
 
                 let! write =
@@ -135,10 +117,10 @@ module SignInCompletion =
                 match write with
                 | :? DocumentWriteResult.Written -> return DomainResult.Succeeded document
                 | _ ->
-                    let! raced = read ()
+                    let! raced = Accounts.load documents account cancellationToken
 
                     match raced with
-                    | Some(Ok document) -> return DomainResult.Succeeded document
+                    | AccountRecord.Live(_, document) -> return DomainResult.Succeeded document
                     | _ -> return DomainResult.Failed SignInFailure.Conflict
         }
 

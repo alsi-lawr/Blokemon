@@ -84,6 +84,13 @@ public abstract record DocumentProjection
 
     /// For hand-off and session documents.
     public sealed record Expiry(DateTimeOffset? ExpiresAt) : DocumentProjection;
+
+    /// For approval documents: what a tenant owner's listing may show of one.
+    public sealed record Approval(
+        string? Status,
+        DateTimeOffset? ApprovedAt,
+        DateTimeOffset? ExcludedAt
+    ) : DocumentProjection;
 }
 
 /// A store that can enumerate its documents by key prefix. The server store lists; the

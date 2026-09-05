@@ -1,0 +1,41 @@
+@*
+    A consequential action that takes a second press: the first replaces it with the question
+    and two buttons, the purge panel's shape. The verb names the action; the working label
+    shows while the server answers.
+*@
+
+@if (!_confirming)
+{
+    <button type="button" class="secondary" @onclick="() => _confirming = true" disabled="@Disabled">@Verb</button>
+}
+else
+{
+    <span class="admin-question"><strong>Really @Verb.ToLowerInvariant()?</strong></span>
+    <button type="button" class="quiet" @onclick="() => _confirming = false" disabled="@Disabled">Keep</button>
+    <button type="button" class="primary" @onclick="Confirm" disabled="@Disabled">@(Working ? WorkingLabel : Verb)</button>
+}
+
+@code {
+    private bool _confirming;
+
+    [Parameter]
+    public required string Verb { get; set; }
+
+    [Parameter]
+    public string WorkingLabel { get; set; } = "Working…";
+
+    [Parameter]
+    public bool Working { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public EventCallback OnConfirm { get; set; }
+
+    private async Task Confirm()
+    {
+        await OnConfirm.InvokeAsync();
+        _confirming = false;
+    }
+}

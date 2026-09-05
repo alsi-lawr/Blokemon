@@ -20,7 +20,9 @@ public static class ContinuationEndpoints
     )
     {
         endpoints.MapPost("/api/session/continue", Continue);
-        endpoints.MapPost("/api/session/resume", Resume);
+        endpoints
+            .MapPost("/api/session/resume", Resume)
+            .AddEndpointFilter<SignInDiagnosticsFilter>();
         return endpoints;
     }
 

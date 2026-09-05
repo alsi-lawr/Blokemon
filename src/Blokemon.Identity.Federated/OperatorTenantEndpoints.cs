@@ -43,8 +43,8 @@ public static class OperatorTenantEndpoints
         }
 
         if (
-            !string.IsNullOrWhiteSpace(request.BroadcasterTwitchUserId)
-            && TwitchSubjects.Parse(request.BroadcasterTwitchUserId)
+            !string.IsNullOrWhiteSpace(request.BroadcasterSubject)
+            && TwitchSubjects.Parse(request.BroadcasterSubject)
                 is DomainResult<ExternalSubject, ApiError>.Failed malformed
         )
         {
@@ -58,7 +58,7 @@ public static class OperatorTenantEndpoints
             listing,
             request.Slug,
             request.Label,
-            request.BroadcasterTwitchUserId,
+            request.BroadcasterSubject,
             request.ParentOrigin,
             time.GetUtcNow(),
             cancellationToken

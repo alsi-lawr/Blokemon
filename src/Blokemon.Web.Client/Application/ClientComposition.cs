@@ -71,6 +71,7 @@ public static class ClientComposition
         services.AddScoped<HostedFrame>();
         services.AddScoped<SignInFlow>();
         services.AddScoped<PasskeyApiClient>();
+        services.AddScoped<AdministrationApiClient>();
         services.AddScoped<PasskeyCeremony>();
         services.AddScoped<PasskeyFlow>();
         services.AddScoped<ContinuationWindow>();

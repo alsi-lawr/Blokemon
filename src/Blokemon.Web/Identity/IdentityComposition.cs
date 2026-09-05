@@ -27,6 +27,9 @@ public static class IdentityComposition
             provider.GetServices<IIdentityProvider>()
         ));
         services.AddSingleton<ClientLockouts>();
+        services.AddSingleton(static provider => new SignInDiagnostics(
+            provider.GetRequiredService<TimeProvider>().GetUtcNow()
+        ));
         services.AddBlokeBotChannels();
         services.AddSingleton<PasskeyChallenges>();
         if (identity.Passkeys is { Value: { } passkeys })

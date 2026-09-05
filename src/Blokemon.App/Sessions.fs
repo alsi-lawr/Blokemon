@@ -211,6 +211,23 @@ module Sessions =
             (fun stored -> String.Equals(stored.Account, account.Value, StringComparison.Ordinal))
             cancellationToken
 
+    /// Revokes every session of the account in the tenant, whoever issued it: an exclusion ends
+    /// the account's presence in that tenant and nowhere else.
+    let revokeAccountInTenant
+        (documents: IStateDocumentStore)
+        (listing: IDocumentListing)
+        (account: AccountId)
+        (tenant: TenantId)
+        (cancellationToken: CancellationToken)
+        : Task<int> =
+        revokeWhere
+            documents
+            listing
+            (fun stored ->
+                String.Equals(stored.Account, account.Value, StringComparison.Ordinal)
+                && String.Equals(stored.Tenant, tenant.Value, StringComparison.Ordinal))
+            cancellationToken
+
     /// Revokes every session the tenant issued: closing or revoking a channel ends every way in
     /// it gave. A first-party session that acts in the tenant is the person's own, not the
     /// tenant's, and survives; closing the core issuer signs nobody out of their passkey.

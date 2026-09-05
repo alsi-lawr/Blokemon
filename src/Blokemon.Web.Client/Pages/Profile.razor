@@ -4,6 +4,8 @@
 @inject IPlayModeOperations Modes
 @inject NavigationManager Navigation
 @inject SessionHolder Session
+@inject SessionApiClient SessionApi
+@inject IApplicationStateRefresher Refresher
 
 <PageTitle>Profile · Blokemon</PageTitle>
 
@@ -61,6 +63,10 @@ else if (_view!.Profile is not null)
         <PendingApprovals />
     }
     @PurgePanel
+    @if (_mode?.Selected == PlayMode.ServerBacked && Session.Current is { Recovery: false })
+    {
+        @ErasePanel
+    }
 }
 else
 {
@@ -116,15 +122,64 @@ else
             }
         </div>;
 
+    // Erasure is the account's end, not the game's: a separate action beside the purge with
+    // the same two-step shape. The server says which sessions may erase; a channel session's
+    // refusal is shown where the buttons were.
+    private RenderFragment ErasePanel =>
+        @<div class="panel setup-card erase-account">
+            <h2>Erase your account.</h2>
+            <p>Removes your account from this server: your player, cards, decks, battles, passkeys, recovery codes and every channel's link to you. This cannot be undone.</p>
+            @if (!_confirmingErase)
+            {
+                <div class="actions">
+                    <button class="secondary" @onclick="() => _confirmingErase = true" disabled="@_saving">Erase account</button>
+                </div>
+            }
+            else
+            {
+                <p><strong>Really erase your account?</strong></p>
+                <div class="actions">
+                    <button class="secondary" @onclick="() => _confirmingErase = false" disabled="@_saving">Keep my account</button>
+                    <button class="primary" @onclick="Erase" disabled="@_saving">@(_saving ? "Erasing…" : "Erase everything")</button>
+                </div>
+            }
+            @if (_eraseError is not null)
+            {
+                <span class="field-error" role="alert">@_eraseError</span>
+            }
+        </div>;
+
     private ApplicationView? _view;
     private PlayModeState? _mode;
     private string? _error;
     private string? _validation;
     private string? _purgeError;
+    private string? _eraseError;
     private string _displayName = string.Empty;
     private bool _saving;
     private bool _confirmingPurge;
+    private bool _confirmingErase;
     private Guid? _commandId;
+
+    private async Task Erase()
+    {
+        _saving = true;
+        _eraseError = null;
+        var response = await SessionApi.Erase();
+        _saving = false;
+        _confirmingErase = false;
+        if (!response.Succeeded)
+        {
+            _eraseError = response.Error?.Message;
+            return;
+        }
+
+        // The server revoked the session as part of the erasure; the browser's copy goes too,
+        // and the sign-in page is the honest place to land with no account to show.
+        await Session.Discard();
+        await Refresher.Refresh();
+        Navigation.NavigateTo("signin");
+    }
 
     private async Task Purge()
     {

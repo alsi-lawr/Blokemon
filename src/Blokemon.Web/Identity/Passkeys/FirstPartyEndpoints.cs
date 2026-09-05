@@ -22,10 +22,10 @@ public static class FirstPartyEndpoints
     {
         var group = endpoints.MapGroup(Prefix);
         group.MapPost("/register/options", RegisterOptions);
-        group.MapPost("/register", Register);
+        group.MapPost("/register", Register).AddEndpointFilter<SignInDiagnosticsFilter>();
         group.MapPost("/authenticate/options", AuthenticateOptions);
-        group.MapPost("/authenticate", Authenticate);
-        group.MapPost("/recover", Recover);
+        group.MapPost("/authenticate", Authenticate).AddEndpointFilter<SignInDiagnosticsFilter>();
+        group.MapPost("/recover", Recover).AddEndpointFilter<SignInDiagnosticsFilter>();
         PasskeyEnrolmentEndpoints.Map(group);
         return endpoints;
     }

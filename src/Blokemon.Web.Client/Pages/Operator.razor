@@ -1,0 +1,312 @@
+@page "/operator"
+@inject AdministrationApiClient Administration
+@inject SessionApiClient SessionApi
+@inject SessionHolder Session
+@inject IJSRuntime Js
+
+<PageTitle>Operator · Blokemon</PageTitle>
+
+<div class="admin-page">
+    <header class="topline">
+        <div>
+            <span class="eyebrow">Operator</span>
+            <h1>This server.</h1>
+        </div>
+    </header>
+
+    @if (_refused is not null)
+    {
+        <div class="panel">
+            <FailurePanel Message="@_refused" />
+            <a class="primary button" href="/">Return home</a>
+        </div>
+    }
+    else if (_tenants is null || _accounts is null || _diagnostics is null)
+    {
+        <LoadingPanel />
+    }
+    else
+    {
+        <div class="grid">
+            <section class="panel admin-channels" aria-labelledby="channels-heading">
+                <h2 id="channels-heading">Channels</h2>
+                <p>Admit a channel by its slug, label, the broadcaster's subject and the exact origin of the page that embeds it.</p>
+                <form class="admin-form" @onsubmit="Admit" @onsubmit:preventDefault>
+                    <label>Slug <input @bind="_slug" disabled="@(_working is not null)" autocomplete="off" /></label>
+                    <label>Label <input @bind="_label" disabled="@(_working is not null)" autocomplete="off" /></label>
+                    <label>Broadcaster subject <input @bind="_broadcaster" disabled="@(_working is not null)" autocomplete="off" inputmode="numeric" /></label>
+                    <label>Parent origin <input @bind="_parentOrigin" disabled="@(_working is not null)" autocomplete="off" inputmode="url" /></label>
+                    <div class="actions">
+                        <button type="submit" class="primary" disabled="@(_working is not null)">@(_working == "admit" ? "Admitting…" : "Admit")</button>
+                    </div>
+                    @if (_formError is not null)
+                    {
+                        <span class="field-error" role="alert">@_formError</span>
+                    }
+                </form>
+                @if (_token is not null)
+                {
+                    <div class="notice admin-token" role="status">
+                        <span>Integration token for <strong>@_token.Label</strong>, shown once. Give it to the channel and keep no copy.</span>
+                        <code>@_token.Token</code>
+                        <div class="actions">
+                            <button type="button" class="secondary" @onclick="CopyToken">@(_copied ? "Copied" : "Copy")</button>
+                        </div>
+                    </div>
+                }
+                @if (_tenants.Length == 0)
+                {
+                    <small class="admin-empty">No channels are admitted.</small>
+                }
+                else
+                {
+                    <ul class="admin-list" aria-label="Channels">
+                        @foreach (var tenant in _tenants)
+                        {
+                            <AdminRow Id="@tenant.Id" Badges="@TenantBadges(tenant)" Timestamp="@($"admitted {AdminRow.Day(tenant.CreatedAt)}")" Error="@ErrorOf(tenant.Id)">
+                                @if (tenant.Status == "Active")
+                                {
+                                    <button type="button" class="secondary" @onclick="() => Rotate(tenant.Id)" disabled="@(_working is not null)">@(_working == $"rotate:{tenant.Id}" ? "Rotating…" : "Rotate")</button>
+                                    <ConfirmedAction Verb="Close" WorkingLabel="Closing…" Working="@(_working == $"close:{tenant.Id}")" Disabled="@(_working is not null)" OnConfirm="() => Close(tenant.Id)" />
+                                }
+                                @if (tenant.Status == "Closed")
+                                {
+                                    <button type="button" class="secondary" @onclick="() => Rotate(tenant.Id)" disabled="@(_working is not null)">@(_working == $"rotate:{tenant.Id}" ? "Re-admitting…" : "Re-admit")</button>
+                                }
+                                @if (tenant.Status is "Active" or "Closed")
+                                {
+                                    <ConfirmedAction Verb="Revoke" WorkingLabel="Revoking…" Working="@(_working == $"revoke:{tenant.Id}")" Disabled="@(_working is not null)" OnConfirm="() => Revoke(tenant.Id)" />
+                                }
+                            </AdminRow>
+                        }
+                    </ul>
+                }
+            </section>
+
+            <section class="panel admin-accounts" aria-labelledby="accounts-heading">
+                <h2 id="accounts-heading">Accounts</h2>
+                <p>Every account on this server. Disabling keeps its data; erasing removes everything but the id.</p>
+                <ul class="admin-list" aria-label="Accounts">
+                    @foreach (var account in _accounts)
+                    {
+                        <AdminRow Id="@account.Id" Badges="@AccountBadges(account)" Timestamp="@AccountTimestamp(account)" Error="@ErrorOf(account.Id)">
+                            @if (account.Status == "Active")
+                            {
+                                <ConfirmedAction Verb="Disable" WorkingLabel="Disabling…" Working="@(_working == $"disable:{account.Id}")" Disabled="@(_working is not null)" OnConfirm="() => Disable(account.Id)" />
+                                <button type="button" class="secondary" @onclick="() => GrantOperator(account.Id)" disabled="@(_working is not null)">@(_working == $"grant:{account.Id}" ? "Granting…" : "Grant operator")</button>
+                                <button type="button" class="secondary" @onclick="() => MakeDefaultOwner(account.Id)" disabled="@(_working is not null || _defaultTenantId is null)">@(_working == $"owner:{account.Id}" ? "Assigning…" : "Make default owner")</button>
+                            }
+                            @if (account.Status == "Disabled")
+                            {
+                                <button type="button" class="secondary" @onclick="() => Enable(account.Id)" disabled="@(_working is not null)">@(_working == $"enable:{account.Id}" ? "Enabling…" : "Enable")</button>
+                            }
+                            @if (account.Status is "Active" or "Disabled")
+                            {
+                                <ConfirmedAction Verb="Erase" WorkingLabel="Erasing…" Working="@(_working == $"erase:{account.Id}")" Disabled="@(_working is not null)" OnConfirm="() => EraseAccount(account.Id)" />
+                            }
+                        </AdminRow>
+                    }
+                </ul>
+            </section>
+
+            <section class="panel admin-sign-ins" aria-labelledby="sign-ins-heading">
+                <h2 id="sign-ins-heading">Sign-ins</h2>
+                <p>Outcomes since this server started, by their typed reason.</p>
+                <small class="admin-since">Since @_diagnostics.Since.ToLocalTime().ToString("d MMM yyyy HH:mm")</small>
+                @if (_diagnostics.Outcomes.Length == 0)
+                {
+                    <small class="admin-empty">No sign-ins yet.</small>
+                }
+                else
+                {
+                    <dl class="admin-outcomes">
+                        @foreach (var outcome in _diagnostics.Outcomes)
+                        {
+                            <dt><code>@outcome.Code</code></dt>
+                            <dd>@outcome.Count</dd>
+                        }
+                    </dl>
+                }
+            </section>
+        </div>
+    }
+</div>
+
+@code {
+    private TenantSummaryView[]? _tenants;
+    private AccountSummaryView[]? _accounts;
+    private SignInDiagnosticsView? _diagnostics;
+    private string? _defaultTenantId;
+    private string? _refused;
+    private string? _working;
+    private string? _formError;
+    private AdmittedTenantView? _token;
+    private bool _copied;
+    private string _slug = string.Empty;
+    private string _label = string.Empty;
+    private string _broadcaster = string.Empty;
+    private string _parentOrigin = string.Empty;
+    private readonly Dictionary<string, string> _errors = new(StringComparer.Ordinal);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.Load();
+        var core = await SessionApi.Descriptor(Tenants.DefaultSlug.Value);
+        _defaultTenantId = core.Succeeded ? core.Value?.Id : null;
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        var tenants = await Administration.Tenants();
+        if (!tenants.Succeeded)
+        {
+            _refused = tenants.Error?.Message ?? "Only an operator can see this.";
+            return;
+        }
+
+        var accounts = await Administration.Accounts();
+        var diagnostics = await Administration.Diagnostics();
+        _tenants = tenants.Value;
+        _accounts = accounts.Value ?? [];
+        _diagnostics = diagnostics.Value ?? new SignInDiagnosticsView(DateTimeOffset.MinValue, []);
+    }
+
+    private IReadOnlyList<string> TenantBadges(TenantSummaryView tenant) =>
+        tenant.Id == _defaultTenantId
+            ? [Badge(tenant.Status), "Core"]
+            : [Badge(tenant.Status)];
+
+    private static IReadOnlyList<string> AccountBadges(AccountSummaryView account) =>
+        [account.ErasedAt is not null ? "Erased" : Badge(account.Status)];
+
+    private static string AccountTimestamp(AccountSummaryView account) =>
+        account.ErasedAt is { } erased ? $"erased {AdminRow.Day(erased)}" : $"created {AdminRow.Day(account.CreatedAt)}";
+
+    private static string Badge(string? status) => status ?? "Unknown";
+
+    private string? ErrorOf(string id) => _errors.TryGetValue(id, out var error) ? error : null;
+
+    private async Task Admit()
+    {
+        _formError = null;
+        _working = "admit";
+        var response = await Administration.Admit(
+            new(_slug.Trim(), _label.Trim(), Blank(_broadcaster), Blank(_parentOrigin))
+        );
+        _working = null;
+        if (!response.Succeeded)
+        {
+            _formError = response.Error?.Message;
+            return;
+        }
+
+        ShowToken(response.Value);
+        _slug = _label = _broadcaster = _parentOrigin = string.Empty;
+        await Load();
+    }
+
+    private static string? Blank(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private void ShowToken(AdmittedTenantView? admitted)
+    {
+        _token = admitted;
+        _copied = false;
+    }
+
+    private async Task CopyToken()
+    {
+        if (_token is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", _token.Token);
+            _copied = true;
+            _ = Task.Delay(2000).ContinueWith(_ => InvokeAsync(() => { _copied = false; StateHasChanged(); }));
+        }
+        catch (JSException)
+        {
+            // The clipboard is unavailable here; the token stays on screen.
+        }
+    }
+
+    private Task Rotate(string tenantId) =>
+        Act(tenantId, $"rotate:{tenantId}", async () =>
+        {
+            var response = await Administration.Rotate(tenantId);
+            if (response.Succeeded)
+            {
+                ShowToken(response.Value);
+            }
+            return (response.Succeeded, response.Error);
+        });
+
+    private Task Close(string tenantId) =>
+        Act(tenantId, $"close:{tenantId}", async () =>
+        {
+            var response = await Administration.Close(tenantId);
+            return (response.Succeeded, response.Error);
+        });
+
+    private Task Revoke(string tenantId) =>
+        Act(tenantId, $"revoke:{tenantId}", async () =>
+        {
+            var response = await Administration.Revoke(tenantId);
+            return (response.Succeeded, response.Error);
+        });
+
+    private Task Disable(string accountId) =>
+        Act(accountId, $"disable:{accountId}", async () =>
+        {
+            var response = await Administration.Disable(accountId);
+            return (response.Succeeded, response.Error);
+        });
+
+    private Task Enable(string accountId) =>
+        Act(accountId, $"enable:{accountId}", async () =>
+        {
+            var response = await Administration.Enable(accountId);
+            return (response.Succeeded, response.Error);
+        });
+
+    private Task GrantOperator(string accountId) =>
+        Act(accountId, $"grant:{accountId}", async () =>
+        {
+            var response = await Administration.GrantOperator(accountId);
+            return (response.Succeeded, response.Error);
+        });
+
+    private Task MakeDefaultOwner(string accountId) =>
+        Act(accountId, $"owner:{accountId}", async () =>
+        {
+            var response = await Administration.AssignOwner(_defaultTenantId!, accountId);
+            return (response.Succeeded, response.Error);
+        });
+
+    private Task EraseAccount(string accountId) =>
+        Act(accountId, $"erase:{accountId}", async () =>
+        {
+            var response = await Administration.Erase(accountId);
+            return (response.Succeeded, response.Error);
+        });
+
+    // One row's action: the row's error is cleared, the button reads as working, and a
+    // success re-reads the listings so the row shows what the server now says.
+    private async Task Act(string rowId, string working, Func<Task<(bool Succeeded, ApiError? Error)>> action)
+    {
+        _errors.Remove(rowId);
+        _working = working;
+        var (succeeded, error) = await action();
+        _working = null;
+        if (!succeeded)
+        {
+            _errors[rowId] = error?.Message ?? "That did not work.";
+            return;
+        }
+
+        await Load();
+    }
+}

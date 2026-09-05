@@ -1,0 +1,46 @@
+@*
+    One row of an administrative listing, the shape both the operator's and the owner's pages
+    use: an identity in monospace with its status badges and a timestamp, the row's actions,
+    and the row's own error. Identifiers, status and timestamps are all a listing carries.
+*@
+
+<li class="admin-row" data-id="@Id">
+    <div class="admin-identity">
+        <code>@Id</code>
+        @foreach (var badge in Badges)
+        {
+            <span class="dev-badge">@badge</span>
+        }
+        @if (Timestamp is not null)
+        {
+            <small>@Timestamp</small>
+        }
+    </div>
+    <div class="admin-actions">
+        @ChildContent
+    </div>
+    @if (Error is not null)
+    {
+        <span class="field-error" role="alert">@Error</span>
+    }
+</li>
+
+@code {
+    [Parameter]
+    public required string Id { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<string> Badges { get; set; } = [];
+
+    [Parameter]
+    public string? Timestamp { get; set; }
+
+    [Parameter]
+    public string? Error { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    public static string Day(DateTimeOffset? at) =>
+        at is { } value ? value.ToLocalTime().ToString("d MMM yyyy") : "";
+}

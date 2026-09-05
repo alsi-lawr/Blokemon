@@ -25,7 +25,7 @@ public static class HandoffExchangeEndpoints
         "Confirm from a channel you already play in, or sign in with your passkey."
     );
 
-    public static void Map(IEndpointRouteBuilder endpoints) =>
+    public static RouteHandlerBuilder Map(IEndpointRouteBuilder endpoints) =>
         endpoints.MapPost(HandoffExchange.Route, Exchange);
 
     private static async Task<ApiResponse<IssuedSessionView>> Exchange(

@@ -1,0 +1,134 @@
+@page "/owner"
+@inject AdministrationApiClient Administration
+@inject SessionHolder Session
+
+<PageTitle>Your channel · Blokemon</PageTitle>
+
+<div class="admin-page">
+    <header class="topline">
+        <div>
+            <span class="eyebrow">Channel owner</span>
+            <h1>@(_tenants is { Length: > 0 } ? string.Join(", ", _tenants.Select(static tenant => tenant.Label)) : "Your channel").</h1>
+        </div>
+    </header>
+
+    @if (_refused is not null)
+    {
+        <div class="panel">
+            <FailurePanel Message="@_refused" />
+            <a class="primary button" href="/">Return home</a>
+        </div>
+    }
+    else if (_tenants is null)
+    {
+        <LoadingPanel />
+    }
+    else
+    {
+        <div class="grid">
+            @foreach (var tenant in _tenants)
+            {
+                var approvals = _approvals.TryGetValue(tenant.Id, out var listed) ? listed : [];
+                <section class="panel admin-players" aria-labelledby="@($"players-{tenant.Slug}")" data-tenant="@tenant.Slug">
+                    <h2 id="@($"players-{tenant.Slug}")">Players@(_tenants.Length > 1 ? $" · {tenant.Label}" : "")</h2>
+                    <p>Everyone this channel has signed in. Excluding someone refuses them here and nowhere else.</p>
+                    @if (approvals.Length == 0)
+                    {
+                        <small class="admin-empty">No one has signed in through @tenant.Label yet.</small>
+                    }
+                    else
+                    {
+                        <ul class="admin-list" aria-label="@($"Players of {tenant.Label}")">
+                            @foreach (var approval in approvals)
+                            {
+                                var excluded = approval.ExcludedAt is not null;
+                                <AdminRow Id="@approval.AccountId" Badges="@Badges(approval)" Timestamp="@Timestamp(approval)" Error="@ErrorOf(tenant.Id, approval.AccountId)">
+                                    @if (excluded)
+                                    {
+                                        <button type="button" class="quiet" @onclick="() => Readmit(tenant.Id, approval.AccountId)" disabled="@(_working is not null)">@(_working == $"readmit:{tenant.Id}:{approval.AccountId}" ? "Readmitting…" : "Readmit")</button>
+                                    }
+                                    else
+                                    {
+                                        <ConfirmedAction Verb="Exclude" WorkingLabel="Excluding…" Working="@(_working == $"exclude:{tenant.Id}:{approval.AccountId}")" Disabled="@(_working is not null)" OnConfirm="() => Exclude(tenant.Id, approval.AccountId)" />
+                                    }
+                                </AdminRow>
+                            }
+                        </ul>
+                    }
+                </section>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private OwnedTenantView[]? _tenants;
+    private readonly Dictionary<string, ApprovalSummaryView[]> _approvals = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _errors = new(StringComparer.Ordinal);
+    private string? _refused;
+    private string? _working;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Session.Load();
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        var owned = await Administration.OwnedTenants();
+        if (!owned.Succeeded)
+        {
+            _refused = owned.Error?.Message ?? "You do not own a channel on this server.";
+            return;
+        }
+
+        if (owned.Value is not { Length: > 0 } tenants)
+        {
+            _refused = "You do not own a channel on this server.";
+            return;
+        }
+
+        foreach (var tenant in tenants)
+        {
+            var approvals = await Administration.Approvals(tenant.Id);
+            _approvals[tenant.Id] = approvals.Value ?? [];
+        }
+
+        _tenants = tenants;
+    }
+
+    private static IReadOnlyList<string> Badges(ApprovalSummaryView approval) =>
+        [approval.ExcludedAt is not null ? "Excluded" : approval.Status ?? "Unknown"];
+
+    private static string Timestamp(ApprovalSummaryView approval) =>
+        approval.ExcludedAt is { } excluded ? $"excluded {AdminRow.Day(excluded)}"
+        : approval.ApprovedAt is { } approved ? $"since {AdminRow.Day(approved)}"
+        : "";
+
+    private string? ErrorOf(string tenantId, string accountId) =>
+        _errors.TryGetValue($"{tenantId}:{accountId}", out var error) ? error : null;
+
+    private Task Exclude(string tenantId, string accountId) =>
+        Act(tenantId, accountId, "exclude", () => Administration.Exclude(tenantId, accountId));
+
+    private Task Readmit(string tenantId, string accountId) =>
+        Act(tenantId, accountId, "readmit", () => Administration.Readmit(tenantId, accountId));
+
+    private async Task Act(string tenantId, string accountId, string verb, Func<Task<ApiResponse<ExclusionView>>> action)
+    {
+        var row = $"{tenantId}:{accountId}";
+        _errors.Remove(row);
+        _working = $"{verb}:{row}";
+        var response = await action();
+        _working = null;
+        if (!response.Succeeded)
+        {
+            _errors[row] = response.Error?.Message ?? "That did not work.";
+            return;
+        }
+
+        var approvals = await Administration.Approvals(tenantId);
+        _approvals[tenantId] = approvals.Value ?? [];
+    }
+}

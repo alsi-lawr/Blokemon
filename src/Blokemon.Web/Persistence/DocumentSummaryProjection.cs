@@ -5,7 +5,8 @@ namespace Blokemon.Web.Persistence;
 
 /// <summary>
 /// The declared per-type summary a listing surfaces: lifecycle fields for account and tenant
-/// documents, the expiry for hand-off and session documents, and nothing for any other type.
+/// documents, the expiry for hand-off and session documents, the status and timestamps of an
+/// approval document (BLOKEMON-152's owner listing), and nothing for any other type.
 /// Field names follow the application's camel-cased document members.
 /// </summary>
 public static class DocumentSummaryProjection
@@ -35,6 +36,18 @@ public static class DocumentSummaryProjection
             return Read(
                 json,
                 static root => new DocumentProjection.Expiry(Timestamp(root, "expiresAt"))
+            );
+        }
+
+        if (key.StartsWith("approval/", StringComparison.Ordinal))
+        {
+            return Read(
+                json,
+                static root => new DocumentProjection.Approval(
+                    Text(root, "status"),
+                    Timestamp(root, "approvedAt"),
+                    Timestamp(root, "excludedAt")
+                )
             );
         }
 

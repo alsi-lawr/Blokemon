@@ -1,0 +1,162 @@
+/* The operator and owner pages: plain administrative lists on the shell's panels. Rows carry an
+   identity, its status badges and a timestamp on the left and the row's actions on the right;
+   on a phone the actions stack full width beneath. Every control is a 44px target. */
+.admin-list {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-row {
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-identity {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.admin-identity code,
+.admin-token code,
+.admin-outcomes code {
+  font: 500 13px ui-monospace, "SFMono-Regular", Menlo, monospace;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
+.admin-identity small,
+.admin-since {
+  color: var(--muted);
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: end;
+  gap: 8px;
+
+  @media (max-width: 720px) {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+}
+
+.admin-actions button {
+  min-height: 44px;
+  margin: 0;
+}
+
+.admin-question {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.admin-row .field-error {
+  grid-column: 1 / -1;
+}
+
+/* The admission form: four labelled fields in two columns, one on a phone. */
+.admin-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin-top: 16px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-form label {
+  display: grid;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.admin-form input {
+  width: 100%;
+  min-height: 44px;
+  color: var(--ink);
+  border: 1px solid #454638;
+  border-radius: 9px;
+  background: #10120e;
+  padding: 11px 13px;
+}
+
+.admin-form .actions,
+.admin-form .field-error {
+  grid-column: 1 / -1;
+}
+
+.admin-form .actions {
+  margin-top: 4px;
+}
+
+.admin-form button {
+  min-height: 44px;
+}
+
+/* The integration token, shown once: the notice holds the chip and the one way to copy it. */
+.admin-token {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.admin-token .actions {
+  margin-top: 2px;
+}
+
+.admin-token button {
+  min-height: 44px;
+}
+
+.admin-since {
+  display: block;
+  margin-top: 12px;
+}
+
+.admin-outcomes {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+  margin: 12px 0 0;
+}
+
+.admin-outcomes dd {
+  margin: 0;
+}
+
+.admin-empty {
+  display: block;
+  margin-top: 14px;
+  color: var(--muted);
+}
+
+.admin-page .panel h2 {
+  margin-top: 0;
+}
+
+/* The profile's erase-account panel shares the purge panel's two-step shape; its controls are
+   the same 44px targets as the administrative rows. */
+.erase-account .actions button {
+  min-height: 44px;
+}

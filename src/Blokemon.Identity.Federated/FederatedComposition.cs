@@ -17,12 +17,15 @@ public static class FederatedComposition
         return services;
     }
 
-    public static IEndpointRouteBuilder MapBlokeBotChannels(this IEndpointRouteBuilder endpoints)
+    /// <summary>
+    /// Maps the channel, operator-admission and exchange routes; returns the hand-off exchange
+    /// route so the host can add its own conventions to the one route here that signs in.
+    /// </summary>
+    public static RouteHandlerBuilder MapBlokeBotChannels(this IEndpointRouteBuilder endpoints)
     {
         var api = endpoints.MapGroup("/api");
         ChannelEndpoints.Map(api.MapGroup("/tenant"));
         OperatorTenantEndpoints.Map(api.MapGroup("/operator"));
-        HandoffExchangeEndpoints.Map(endpoints);
-        return endpoints;
+        return HandoffExchangeEndpoints.Map(endpoints);
     }
 }

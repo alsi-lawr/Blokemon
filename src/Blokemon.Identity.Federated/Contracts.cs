@@ -1,28 +1,7 @@
 namespace Blokemon.Identity.Federated;
 
-/// <summary>What an operator states to admit a channel, or the default tenant's core issuer.</summary>
-public sealed record TenantAdmissionRequest(
-    string? Slug,
-    string? Label,
-    string? BroadcasterTwitchUserId,
-    string? ParentOrigin
-);
-
-/// <summary>
-/// A tenant as admission or rotation leaves it, with its integration token: the one time the
-/// token exists in clear.
-/// </summary>
-public sealed record AdmittedTenantView(
-    string Id,
-    string Slug,
-    string Label,
-    string Status,
-    string Token,
-    DateTimeOffset IssuedAt
-);
-
-/// <summary>A tenant's lifecycle state after an operator's or the channel's own closure or revocation.</summary>
-public sealed record TenantStatusView(string Id, string Slug, string Status);
+// The channel's own calls. The operator's admission contracts are Blokemon.App.Contracts'
+// (TenantAdmissionRequest, AdmittedTenantView, TenantStatusView), shared with the operator page.
 
 /// <summary>What a channel states to hand a viewer off: the Twitch user id, and hints.</summary>
 public sealed record HandoffRequest(string? TwitchUserId, string? Login, string? DisplayName);

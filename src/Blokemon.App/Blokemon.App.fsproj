@@ -52,6 +52,17 @@
     <Compile Include="RateLimiter.fs" />
     <Compile Include="HandoffCodes.fs" />
     <Compile Include="TenantAdmission.fs" />
+    <!--
+      Roles and the account lifecycle (BLOKEMON-152): owner and operator authority derived on
+      each call, the operator's account-wide operations, erasure to a tombstone, the listings
+      over the summary projection, and the sign-in outcome counts.
+    -->
+    <Compile Include="Roles.fs" />
+    <Compile Include="AccountLifecycle.fs" />
+    <Compile Include="AccountErasure.fs" />
+    <Compile Include="Exclusions.fs" />
+    <Compile Include="Listings.fs" />
+    <Compile Include="SignInDiagnostics.fs" />
     <Compile Include="PlayModeApplication.fs" />
     <Compile Include="MatchMigrationTypes.fs" />
     <!--

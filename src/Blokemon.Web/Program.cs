@@ -92,7 +92,10 @@ app.MapIdentityEndpoints();
 app.MapFirstPartyEndpoints();
 app.MapApprovalEndpoints();
 app.MapContinuationEndpoints();
-app.MapBlokeBotChannels();
+app.MapAccountEndpoints();
+app.MapOperatorEndpoints();
+app.MapTenantOwnerEndpoints();
+app.MapBlokeBotChannels().AddEndpointFilter<SignInDiagnosticsFilter>();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

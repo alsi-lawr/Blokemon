@@ -18,7 +18,7 @@ public sealed class ServerSessionTests
 {
     private static readonly Guid MatchId = Guid.Parse("c6111111-1111-1111-1111-111111111111");
 
-    /// <summary>Every route that requires a session: the eleven application routes minus the state route, BLOKEMON-149's own, BLOKEMON-150's account-bound routes, and BLOKEMON-151's continuation, approval and operator admission routes.</summary>
+    /// <summary>Every route that requires a session: the eleven application routes minus the state route, BLOKEMON-149's own, BLOKEMON-150's account-bound routes, BLOKEMON-151's continuation, approval and operator admission routes, and BLOKEMON-152's account, operator and owner routes.</summary>
     private static (HttpMethod Method, string Path, object? Body)[] SessionRequiredRoutes() =>
         [
             (HttpMethod.Post, "/api/profile", new CreateProfileRequest(Guid.NewGuid(), "P")),
@@ -56,6 +56,25 @@ public sealed class ServerSessionTests
             (HttpMethod.Get, "/api/session/approvals", null),
             (HttpMethod.Post, $"/api/session/approvals/{MatchId:D}", new { }),
             (HttpMethod.Post, "/api/operator/bootstrap", new OperatorBootstrapRequest("x")),
+            // The account, operator and owner routes (BLOKEMON-152).
+            (HttpMethod.Post, "/api/session/erase", new { }),
+            (HttpMethod.Get, "/api/session/roles", null),
+            (HttpMethod.Get, "/api/operator/accounts", null),
+            (HttpMethod.Get, "/api/operator/tenants", null),
+            (HttpMethod.Get, "/api/operator/diagnostics", null),
+            (HttpMethod.Post, $"/api/operator/accounts/{MatchId:D}/disable", new { }),
+            (HttpMethod.Post, $"/api/operator/accounts/{MatchId:D}/enable", new { }),
+            (HttpMethod.Post, $"/api/operator/accounts/{MatchId:D}/erase", new { }),
+            (HttpMethod.Post, $"/api/operator/accounts/{MatchId:D}/grant-operator", new { }),
+            (
+                HttpMethod.Post,
+                $"/api/operator/tenants/{MatchId:D}/owner",
+                new OwnerAssignmentRequest(MatchId.ToString("D"))
+            ),
+            (HttpMethod.Get, "/api/owner/tenants", null),
+            (HttpMethod.Get, $"/api/owner/{MatchId:D}/approvals", null),
+            (HttpMethod.Post, $"/api/owner/{MatchId:D}/accounts/{MatchId:D}/exclude", new { }),
+            (HttpMethod.Post, $"/api/owner/{MatchId:D}/accounts/{MatchId:D}/readmit", new { }),
             // The operator's admission routes (BLOKEMON-151).
             (HttpMethod.Post, "/api/operator/tenants", new { slug = "x", label = "x" }),
             (HttpMethod.Post, $"/api/operator/tenants/{MatchId:D}/rotate", new { }),

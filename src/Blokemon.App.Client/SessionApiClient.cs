@@ -80,6 +80,29 @@ public sealed class SessionApiClient(HttpClient http)
             cancellationToken
         );
 
+    /// <summary>The roles the held session holds now, derived by the server on this call.</summary>
+    public Task<ApiResponse<SessionRolesView>> Roles(
+        CancellationToken cancellationToken = default
+    ) =>
+        ApiEnvelopeTransport.Get<SessionRolesView>(
+            http,
+            "api/session/roles",
+            UnavailableError,
+            cancellationToken
+        );
+
+    /// <summary>Erases the signed-in person's own account; the server says which sessions may.</summary>
+    public Task<ApiResponse<AccountErasedView>> Erase(
+        CancellationToken cancellationToken = default
+    ) =>
+        ApiEnvelopeTransport.Post<object, AccountErasedView>(
+            http,
+            "api/session/erase",
+            new(),
+            UnavailableError,
+            cancellationToken
+        );
+
     public Task<ApiResponse<SignOutView>> SignOut(CancellationToken cancellationToken = default) =>
         ApiEnvelopeTransport.Post<object, SignOutView>(
             http,
