@@ -1,0 +1,73 @@
+@page "/signin"
+@inject TenantContext Tenants
+
+<PageTitle>Sign in · Blokemon</PageTitle>
+
+@if (_descriptor is null && _error is null)
+{
+    <LoadingPanel />
+}
+else
+{
+    @if (_error is not null)
+    {
+        <FailurePanel Message="@_error" />
+    }
+    <div class="profile-setup">
+        <div class="panel setup-card sign-in">
+            <span class="eyebrow">Sign in</span>
+            <h1>Sign in to play on this server.</h1>
+            <p>Your player, cards, decks and battles are saved by this server.</p>
+            @if (Situation is not null)
+            {
+                <p class="notice sign-in-situation">@Situation</p>
+            }
+            <div class="sign-in-providers" aria-label="Ways to sign in">
+                @if (_descriptor is not null)
+                {
+                    @* The enabled providers' own sign-in controls arrive with the providers. *@
+                    @if (_descriptor.EnabledProviders.Length == 0 && _descriptor.CoreSignIn is null)
+                    {
+                        <p class="sign-in-empty">No sign-in is set up on this server yet.</p>
+                    }
+                    @if (_descriptor.CoreSignIn is { } core)
+                    {
+                        <a class="primary button full" href="@core.Url" target="_top" rel="noopener">@core.Label</a>
+                    }
+                }
+            </div>
+            <div class="actions"><a class="quiet button" href="/">Keep playing in this browser</a></div>
+        </div>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Reason { get; set; }
+
+    private TenantDescriptorView? _descriptor;
+    private string? _error;
+
+    // The moment, not the instruction: a visitor sent here because a session ended is in a
+    // different situation from one who chose to sign in, and the page says which.
+    private string? Situation =>
+        Reason switch
+        {
+            "expired" => "Your last sign-in has ended.",
+            "required" => "This server needs you to sign in first.",
+            _ => null,
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Tenants.Resolve(null);
+        if (response.Succeeded)
+        {
+            _descriptor = response.Value;
+        }
+        else
+        {
+            _error = response.Error?.Message;
+        }
+    }
+}

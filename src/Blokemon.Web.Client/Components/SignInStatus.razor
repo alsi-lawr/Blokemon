@@ -1,0 +1,48 @@
+@*
+    The one card every silent sign-in surface shows: which tenant, and which moment. The moment
+    is named rather than instructed - a visitor waiting on a channel and a visitor whose sign-in
+    failed are shown the same card, so the card has to say which one they are.
+*@
+<div class="profile-setup">
+    <div class="panel setup-card sign-in-status" role="status" aria-live="polite">
+        <span class="eyebrow">@Eyebrow</span>
+        <h1>@Heading</h1>
+        @if (Flow.Stage == SignInStage.Failed && Flow.Error is not null)
+        {
+            <FailurePanel Message="@Flow.Error.Message" />
+        }
+        @if (Flow.Stage == SignInStage.Failed)
+        {
+            <div class="actions"><a class="quiet button" href="/">Return home</a></div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public required SignInFlow Flow { get; set; }
+
+    [Parameter]
+    public required string Slug { get; set; }
+
+    [Parameter]
+    public bool Hosted { get; set; }
+
+    private string Label => Flow.Tenant?.Label ?? Slug;
+
+    private string Eyebrow => Flow.Tenant is null ? "Channel" : Flow.Tenant.Label;
+
+    // Every named stage has its sentence; the suppression is for a value cast in from outside
+    // the names the enum declares, which the flow never produces.
+#pragma warning disable CS8524
+    private string Heading =>
+        Flow.Stage switch
+        {
+            SignInStage.Idle or SignInStage.Finding => $"Finding {Slug}…",
+            SignInStage.Waiting => $"Waiting for {Label} to sign you in…",
+            SignInStage.SigningIn => "Signing you in…",
+            SignInStage.SignedIn => $"Signed in as {Flow.DisplayName}.",
+            SignInStage.Failed => Hosted ? "That did not sign you in." : "That link did not sign you in.",
+        };
+#pragma warning restore CS8524
+}

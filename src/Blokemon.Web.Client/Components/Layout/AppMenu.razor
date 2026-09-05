@@ -2,11 +2,19 @@
     The right-hand end of the bar: one button holding the things that are the player's own rather
     than the table's. Nothing about which game is being saved where belongs in here - that is a
     property of the installation, not a setting anybody is being offered - so the menu carries only
-    the two places a player goes to change something about themselves.
+    the places a player goes to change something about themselves, and, while they are signed in,
+    who they are signed in as and the way out. Those two exist only with a session: they are facts
+    about the player, and a player with nothing to sign into has no line here about it.
 
     The panel is dismissed by anything that means "not this": a press anywhere else, Escape, or
-    picking one of the two things in it.
+    picking one of the things in it.
 *@
+@implements IDisposable
+@inject SessionHolder Session
+@inject SessionApiClient SessionApi
+@inject IApplicationStateRefresher Refresher
+@inject NavigationManager Navigation
+
 <div class="app-menu" @onkeydown="Key">
     <button type="button"
             class="app-menu-button"
@@ -29,6 +37,13 @@
     {
         <div class="app-menu-away" @onclick="Close"></div>
         <div class="app-menu-panel" role="menu">
+            @if (Session.Current is { } held)
+            {
+                <div class="app-menu-identity" role="none">
+                    <span>Signed in as</span>
+                    <strong>@(held.DisplayName ?? "you")</strong>
+                </div>
+            }
             <a class="app-menu-item" role="menuitem" href="profile" @onclick="Close">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="12" cy="8.4" r="3.6" />
@@ -46,6 +61,15 @@
                 </svg>
                 <span>Settings</span>
             </button>
+            @if (Session.Current is not null)
+            {
+                <button type="button" class="app-menu-item app-menu-sign-out" role="menuitem" @onclick="SignOut" disabled="@_signingOut">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M10 4.5H5.5v15H10M14.5 8l4 4-4 4M8.5 12h10" />
+                    </svg>
+                    <span>@(_signingOut ? "Signing out…" : "Sign out")</span>
+                </button>
+            }
         </div>
     }
 </div>
@@ -58,6 +82,31 @@
 @code {
     private bool _open;
     private bool _settings;
+    private bool _signingOut;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += SessionChanged;
+        await Session.Load();
+    }
+
+    private void SessionChanged() => _ = InvokeAsync(StateHasChanged);
+
+    // The server's copy is revoked first, then the browser's; if the server could not be
+    // reached the browser's copy still goes, because a token the server will not honour is
+    // not worth keeping. Home reloads its state on arrival, so nothing signed-in lingers.
+    private async Task SignOut()
+    {
+        _signingOut = true;
+        await SessionApi.SignOut();
+        await Session.Discard();
+        _signingOut = false;
+        _open = false;
+        await Refresher.Refresh();
+        Navigation.NavigateTo("/");
+    }
+
+    public void Dispose() => Session.Changed -= SessionChanged;
 
     private void Toggle() => _open = !_open;
 

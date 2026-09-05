@@ -5,10 +5,15 @@
 @inject IPlayModeOperations Modes
 @inject IJSRuntime Js
 @inject SoundBoard Sound
+@inject SignInFlow SignIn
 
 <PageTitle>Home · Blokemon</PageTitle>
 
-@if (!_modeLoaded)
+@if (_signingIn)
+{
+    <SignInStatus Flow="SignIn" Slug="@Tenants.DefaultSlug.Value" />
+}
+else if (!_modeLoaded)
 {
     <LoadingPanel />
 }
@@ -305,11 +310,22 @@ else
     private bool _working;
     private bool _choosingMode;
     private bool _modeLoaded;
+    private bool _signingIn;
     private bool _skipAnimations;
     private bool _focusCeremonyDone;
 
     protected override async Task OnInitializedAsync()
     {
+        // A hand-off in the fragment is a sign-in to the default tenant arriving top-level; it
+        // is exchanged before the page decides what to show, and a failure stays on screen.
+        SignIn.Changed += SignInChanged;
+        _signingIn = await SignIn.EnterRoot() || SignIn.Stage == SignInStage.Failed;
+        if (SignIn.Stage == SignInStage.Failed)
+        {
+            return;
+        }
+
+        _signingIn = false;
         _mode = await Modes.Mode();
         _modeLoaded = true;
         if (_mode.Selected is null)
@@ -449,8 +465,11 @@ else
 
     private static string TypeClass(string type) => $"type-{type.ToLowerInvariant()}";
 
+    private void SignInChanged() => _ = InvokeAsync(StateHasChanged);
+
     public async ValueTask DisposeAsync()
     {
+        SignIn.Changed -= SignInChanged;
         _ceremonySequence++;
         if (_presentationModule is null)
         {

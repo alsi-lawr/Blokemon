@@ -9,6 +9,13 @@
     <Compile Include="AccountScopedDocumentTests.fs" />
     <Compile Include="IdentityLinkTests.fs" />
     <Compile Include="ApprovalTests.fs" />
+    <Compile Include="IdentityFixtures.fs" />
+    <Compile Include="SessionTests.fs" />
+    <Compile Include="TenantTests.fs" />
+    <Compile Include="IdentityConfigurationTests.fs" />
+    <Compile Include="SignInCompletionTests.fs" />
+    <Compile Include="OperatorBootstrapTests.fs" />
+    <Compile Include="ReauthenticationTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Blokemon.App/Blokemon.App.fsproj" />
@@ -19,6 +26,8 @@
       stays the only host and an FsUnit assertion failure surfaces as an ordinary TUnit failure.
     -->
     <PackageReference Include="FsUnit" />
+    <!-- The identity configuration tests build their settings in memory. -->
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="TUnit" />
     <!--
       Central package management sets DisableImplicitFSharpCoreReference, so without this

@@ -85,3 +85,17 @@ public abstract record DocumentProjection
     /// For hand-off and session documents.
     public sealed record Expiry(DateTimeOffset? ExpiresAt) : DocumentProjection;
 }
+
+/// A store that can enumerate its documents by key prefix. The server store lists; the
+/// browser store, which holds one player's few documents, does not.
+public interface IDocumentListing
+{
+    /// <summary>
+    /// Every document whose key starts with <paramref name="prefix"/>, in key order: the key,
+    /// its revision and the summary declared for its type, never the document body.
+    /// </summary>
+    Task<IReadOnlyList<DocumentSummary>> List(
+        string prefix,
+        CancellationToken cancellationToken = default
+    );
+}

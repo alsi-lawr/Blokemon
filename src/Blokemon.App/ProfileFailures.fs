@@ -21,6 +21,10 @@ module internal ProfileFailures =
             UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
         )
 
+    /// The one-profile rule's refusal; a replayed creation is answered with the profile instead.
+    [<Literal>]
+    let ProfileExistsCode = "profile.exists"
+
     let conflict () =
         ApiError("state.conflict", "The saved data changed. Select the action again.")
 

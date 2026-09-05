@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Blokemon.Web.Persistence;
 
 public sealed class StateDocumentStore(IDbContextFactory<BlokemonDbContext> contexts)
-    : IStateDocumentStore
+    : IStateDocumentStore,
+        IDocumentListing
 {
     public async Task<StoredDocument?> Read(
         string key,

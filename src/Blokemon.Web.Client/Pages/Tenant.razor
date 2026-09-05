@@ -1,0 +1,34 @@
+@page "/t/{Slug}"
+@implements IDisposable
+@inject SignInFlow Flow
+
+<PageTitle>@(Flow.Tenant?.Label ?? Slug) · Blokemon</PageTitle>
+
+<SignInStatus Flow="Flow" Slug="@Slug" Hosted="true" />
+
+@code {
+    // The hosted route. The receiver listens from here on for the whole session, so a parent
+    // page that re-asserts a signed-out player later is heard wherever the player is.
+    [Parameter]
+    public required string Slug { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Flow.Changed += Changed;
+        await Flow.EnterTenant(Slug);
+    }
+
+    private void Changed()
+    {
+        _ = InvokeAsync(() =>
+        {
+            StateHasChanged();
+            if (Flow.Stage == SignInStage.SignedIn)
+            {
+                Flow.OpenGame();
+            }
+        });
+    }
+
+    public void Dispose() => Flow.Changed -= Changed;
+}

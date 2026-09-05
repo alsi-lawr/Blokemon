@@ -7,7 +7,8 @@ open System.Threading.Tasks
 open Blokemon.App.Contracts
 
 /// An in-memory document store with the same create-once and revision-checked rules as the
-/// hosts' stores, plus a view of every key it holds.
+/// hosts' stores, plus a view of every key it holds. Its listing carries keys and revisions
+/// only; the server store's per-type projection is that store's own.
 type MemoryDocumentStore() =
 
     let documents = Dictionary<string, StoredDocument>(StringComparer.Ordinal)
@@ -84,3 +85,18 @@ type MemoryDocumentStore() =
                     | _ -> DocumentDeleteResult.Conflict()
 
                 Task.FromResult result)
+
+    interface IDocumentListing with
+
+        member _.List(prefix: string, _cancellationToken: CancellationToken) =
+            lock gate (fun () ->
+                let summaries =
+                    documents
+                    |> Seq.filter (fun pair ->
+                        pair.Key.StartsWith(prefix, StringComparison.Ordinal))
+                    |> Seq.sortBy (fun pair -> pair.Key)
+                    |> Seq.map (fun pair -> DocumentSummary(pair.Key, pair.Value.Revision, null))
+                    |> Seq.toArray
+                    :> IReadOnlyList<DocumentSummary>
+
+                Task.FromResult summaries)

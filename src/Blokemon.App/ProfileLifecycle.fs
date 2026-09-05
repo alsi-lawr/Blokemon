@@ -56,7 +56,7 @@ module internal ProfileLifecycle =
                         return
                             failed<ApplicationView> (
                                 ApiError(
-                                    "profile.exists",
+                                    ProfileExistsCode,
                                     match context.Principal with
                                     | ApplicationPrincipal.BrowserLocal ->
                                         "This machine already has a local profile."

@@ -189,7 +189,7 @@ class WebSocket:
 
 
 class Chrome:
-    def __init__(self, temporary_root):
+    def __init__(self, temporary_root, extra_arguments=()):
         self.browser = self._find_browser()
         self.profile = temporary_root / "chrome-profile"
         self.profile.mkdir()
@@ -213,6 +213,7 @@ class Chrome:
                 "--no-first-run",
                 "--remote-debugging-port=0",
                 f"--user-data-dir={self.profile}",
+                *extra_arguments,
                 "about:blank",
             ],
             stdout=subprocess.DEVNULL,
@@ -265,6 +266,8 @@ class DevTools:
     def __init__(self, url):
         self.websocket = WebSocket(url)
         self.next_id = 1
+        # Events Chrome sends while a command is awaited, for the checks that read them.
+        self.events = []
         self.command("Page.enable")
         self.command("Runtime.enable")
 
@@ -281,6 +284,8 @@ class DevTools:
         while True:
             response = self.websocket.receive_json()
             if response.get("id") != command_id:
+                if "method" in response:
+                    self.events.append(response)
                 continue
             if "error" in response:
                 raise DevToolsError(f"{method}: {response['error']}")

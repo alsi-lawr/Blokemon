@@ -4,6 +4,7 @@ using Blokemon.App.Contracts;
 using Blokemon.Product;
 using Blokemon.Web.Client.Application;
 using Blokemon.Web.Client.Pages;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Shouldly;
@@ -496,6 +497,7 @@ public sealed class ApplicationSnapshotCoordinatorTests
         using var http = new HttpClient { BaseAddress = new Uri("https://browser.invalid/") };
         await using var services = new ServiceCollection()
             .AddSingleton<IJSRuntime>(new UnusedJsRuntime())
+            .AddSingleton<NavigationManager>(new UnusedNavigation())
             .AddBlokemonClient(
                 http,
                 BlokemonCatalogue.FromBootstrapJson(bootstrap),
@@ -990,6 +992,15 @@ public sealed class ApplicationSnapshotCoordinatorTests
                 return ValueTask.FromResult(default(TValue)!);
             }
         }
+    }
+
+    private sealed class UnusedNavigation : NavigationManager
+    {
+        public UnusedNavigation() =>
+            Initialize("https://browser.invalid/", "https://browser.invalid/");
+
+        protected override void NavigateToCore(string uri, NavigationOptions options) =>
+            throw new NotSupportedException();
     }
 
     private sealed class UnusedJsRuntime : IJSRuntime

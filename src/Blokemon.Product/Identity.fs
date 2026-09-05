@@ -80,6 +80,14 @@ type TenantStatus =
     | Closed = 1
     | Revoked = 2
 
+/// How a session was obtained, exhaustively. The actions reserved to a person's own credential
+/// require FirstParty; a Recovery session may only enrol a replacement credential; an Issuer
+/// session was handed in by a tenant's admitted installation.
+type SessionProvenance =
+    | FirstParty = 0
+    | Recovery = 1
+    | Issuer = 2
+
 /// Why a provider name or a provider's subject was rejected.
 type ExternalIdentityFailure =
     | Required = 0

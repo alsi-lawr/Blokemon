@@ -287,3 +287,31 @@
   border-radius: 50%;
   background: var(--gold-soft);
 }
+
+/* Who the player is signed in as: a fact above the items, and the way out below them. Both
+   exist only while a session does. */
+.app-menu-identity {
+  display: grid;
+  gap: 1px;
+  padding: 8px 12px 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #34351f;
+}
+
+.app-menu-identity span {
+  color: var(--gold);
+  font: 700 10px "Jost", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.17em;
+}
+
+.app-menu-identity strong {
+  overflow-wrap: anywhere;
+  font: 700 15px "Jost", sans-serif;
+}
+
+.app-menu-sign-out {
+  margin-top: 4px;
+  border-top: 1px solid #34351f;
+  border-radius: 0 0 10px 10px;
+}

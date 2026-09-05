@@ -51,13 +51,27 @@ type BrowserSettings =
       [<property: JsonRequired>]
       Mode: PlayMode }
 
+/// The host's way of obtaining a new session when the server refuses the one it holds. Which
+/// mechanism does that is the host's own: this tier names no provider and no parent page.
+type IReauthenticationHost =
+    abstract Reauthenticate:
+        reason: ReauthenticationReason * cancellationToken: CancellationToken -> Task
+
+module ReauthenticationHost =
+
+    /// A host with nothing to do; the typed error still reaches the caller.
+    let none =
+        { new IReauthenticationHost with
+            member _.Reauthenticate(_, _) = Task.CompletedTask }
+
 [<Sealed>]
 type PlayModeApplication
     (
         server: IBlokemonApplication,
         browser: IBlokemonApplication,
         browserDocuments: IStateDocumentStore,
-        availability: PlayModeAvailability
+        availability: PlayModeAvailability,
+        reauthentication: IReauthenticationHost
     ) =
 
     static let settingsKey = "settings"
@@ -160,19 +174,46 @@ type PlayModeApplication
                     )
             else
                 try
-                    let target =
-                        if selected.Value = PlayMode.BrowserLocal then
-                            browser
-                        else
-                            server
+                    if selected.Value = PlayMode.BrowserLocal then
+                        return! operation browser cancellationToken
+                    else
+                        let! response = operation server cancellationToken
 
-                    return! operation target cancellationToken
+                        // The server's typed refusal of the session becomes the host's cue to
+                        // obtain a new one; the refusal itself still reaches the caller.
+                        let reason =
+                            if response.Succeeded then
+                                Nullable()
+                            else
+                                SessionFailures.reauthentication response.Error
+
+                        if reason.HasValue then
+                            do! reauthentication.Reauthenticate(reason.Value, cancellationToken)
+
+                        return response
                 with :? DocumentStorageException as storage ->
                     return
                         failed<'T> (
                             ApiError(storageCode storage.Failure, storageMessage storage.Failure)
                         )
         }
+
+    /// A play-mode application whose host has no way to re-authenticate: the browser-local
+    /// hosts and the tests that drive the mode choice.
+    new
+        (
+            server: IBlokemonApplication,
+            browser: IBlokemonApplication,
+            browserDocuments: IStateDocumentStore,
+            availability: PlayModeAvailability
+        ) =
+        PlayModeApplication(
+            server,
+            browser,
+            browserDocuments,
+            availability,
+            ReauthenticationHost.none
+        )
 
     /// Where this player's game is saved.
     member _.Mode([<Optional>] cancellationToken: CancellationToken) =

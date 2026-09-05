@@ -25,9 +25,13 @@ public static class ProjectionEvidenceComposition
 
     public static async Task AddProjectionEvidence(
         this IServiceCollection services,
+        HttpClient http,
+        SessionTokenStore tokens,
         string bootstrapJson
     )
     {
+        services.AddSingleton(http);
+        services.AddSingleton(tokens);
         _submittedMechanicalType = null;
         var catalogue = EvidenceCatalogue(bootstrapJson);
         var documents = new MemoryStateDocumentStore();

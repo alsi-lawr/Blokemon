@@ -3,6 +3,7 @@ using Blokemon.App.Contracts;
 using Blokemon.Web.Api;
 using Blokemon.Web.Components;
 using Blokemon.Web.Content;
+using Blokemon.Web.Identity;
 using Blokemon.Web.Persistence;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
@@ -25,8 +26,9 @@ builder.Services.AddScoped<IStateDocumentStore>(static provider =>
     provider.GetRequiredService<StateDocumentStore>()
 );
 
-// No application service is registered: server documents are keyed by account, and until
-// BLOKEMON-149 introduces sessions no request names one, so every /api route refuses.
+// Server documents are keyed by account, so the application service is built per request for
+// the account the session names (ServerApplications) rather than registered here.
+builder.Services.AddServerIdentity(builder.Configuration);
 builder.Services.AddScoped(serviceProvider => new HttpClient
 {
     BaseAddress = new Uri(serviceProvider.GetRequiredService<NavigationManager>().BaseUri),
@@ -66,6 +68,7 @@ app.UseStaticFiles(
         RequestPath = "/fonts",
     }
 );
+app.UseApiSessions();
 app.MapGet(
     "/healthz",
     () =>
@@ -80,6 +83,7 @@ app.MapGet(
         )
 );
 app.MapApplicationEndpoints();
+app.MapIdentityEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
@@ -91,6 +95,8 @@ await using (var scope = app.Services.CreateAsyncScope())
     await using var database = await contexts.CreateDbContextAsync();
     await database.Database.MigrateAsync();
 }
+
+await app.StartIdentity();
 
 app.Run();
 

@@ -1,0 +1,36 @@
+/* The sign-in page and the silent sign-in surfaces, on the centred setup card the profile page
+   already uses for the one thing there is to do. */
+.sign-in-providers {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.sign-in-empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.sign-in .primary.button {
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+}
+
+.sign-in .actions {
+  justify-content: center;
+}
+
+/* A situation, not a failure: the notice's amber, without the failure's red. */
+.sign-in-situation {
+  margin: 0 0 8px;
+  color: #f2d598;
+}
+
+.sign-in-status .failure {
+  margin: 22px 0 0;
+}
+
+.sign-in-status .actions {
+  margin-top: 18px;
+}

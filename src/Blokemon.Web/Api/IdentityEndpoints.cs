@@ -1,0 +1,158 @@
+using Blokemon.App;
+using Blokemon.App.Contracts;
+using Blokemon.Product;
+using Blokemon.Web.Identity;
+using Blokemon.Web.Persistence;
+
+namespace Blokemon.Web.Api;
+
+/// <summary>
+/// The session, tenant and operator routes this ticket owns: sign-out, the tenant descriptor
+/// and the operator bootstrap. The provider ceremonies and exchanges belong to BLOKEMON-150 and
+/// 151 and are anonymous in <see cref="ApiSessionPolicy"/> ahead of their arrival.
+/// </summary>
+public static class IdentityEndpoints
+{
+    public static IEndpointRouteBuilder MapIdentityEndpoints(this IEndpointRouteBuilder endpoints)
+    {
+        var api = endpoints.MapGroup("/api");
+        api.MapPost(
+            "/session/signout",
+            static async (
+                CurrentSession current,
+                StateDocumentStore documents,
+                TimeProvider time,
+                CancellationToken cancellationToken
+            ) =>
+            {
+                if (current.Session is not { } session)
+                {
+                    return new ApiResponse<SignOutView>(false, null, SessionFailures.required());
+                }
+
+                await Sessions.revoke(documents, session.Id, cancellationToken);
+                return new ApiResponse<SignOutView>(true, new(time.GetUtcNow()), null);
+            }
+        );
+        api.MapGet(
+            "/tenant/{slug}",
+            static async (
+                string slug,
+                StateDocumentStore documents,
+                IdentityProviderRegistry registry,
+                IdentityConfiguration identity,
+                CancellationToken cancellationToken
+            ) =>
+            {
+                var tenant = TenantSlug.Create(slug)
+                    is DomainResult<TenantSlug, TenantSlugFailure>.Succeeded parsed
+                    ? await Tenants.findBySlug(
+                        documents,
+                        documents,
+                        parsed.Value,
+                        cancellationToken
+                    )
+                    : null;
+                return tenant is { Value: { } found }
+                    ? new ApiResponse<TenantDescriptorView>(
+                        true,
+                        Describe(found, registry, identity),
+                        null
+                    )
+                    : new ApiResponse<TenantDescriptorView>(
+                        false,
+                        null,
+                        new("tenant.not_found", "That channel is not on this server.")
+                    );
+            }
+        );
+        api.MapPost(
+            "/operator/bootstrap",
+            static async (
+                OperatorBootstrapRequest request,
+                HttpContext context,
+                CurrentSession current,
+                StateDocumentStore documents,
+                IdentityConfiguration identity,
+                OperatorBootstrapLockout lockout,
+                TimeProvider time,
+                CancellationToken cancellationToken
+            ) =>
+            {
+                if (current.Session is not { } session)
+                {
+                    return new ApiResponse<OperatorBootstrapView>(
+                        false,
+                        null,
+                        SessionFailures.required()
+                    );
+                }
+
+                var now = time.GetUtcNow();
+                var client = OperatorBootstrapLockout.ClientOf(context);
+                if (lockout.IsLockedOut(client, now))
+                {
+                    return new ApiResponse<OperatorBootstrapView>(
+                        false,
+                        null,
+                        OperatorBootstrap.locked()
+                    );
+                }
+
+                var redeemed = await OperatorBootstrap.redeem(
+                    documents,
+                    identity.OperatorBootstrapCode,
+                    session,
+                    request.Code,
+                    now,
+                    cancellationToken
+                );
+                if (
+                    redeemed
+                    is DomainResult<DateTimeOffset, OperatorBootstrapFailure>.Succeeded success
+                )
+                {
+                    return new ApiResponse<OperatorBootstrapView>(true, new(success.Value), null);
+                }
+
+                var failure = (
+                    (DomainResult<DateTimeOffset, OperatorBootstrapFailure>.Failed)redeemed
+                ).Error;
+                if (failure.IsRefused)
+                {
+                    lockout.RecordFailure(client, now);
+                }
+
+                return new ApiResponse<OperatorBootstrapView>(
+                    false,
+                    null,
+                    OperatorBootstrap.toError(failure)
+                );
+            }
+        );
+        return endpoints;
+    }
+
+    private static TenantDescriptorView Describe(
+        TenantDocument tenant,
+        IdentityProviderRegistry registry,
+        IdentityConfiguration identity
+    )
+    {
+        var core = IdentityProviderName.Create(CoreSignIn.ProviderName)
+            is DomainResult<IdentityProviderName, ExternalIdentityFailure>.Succeeded name
+            ? identity.Provider(name.Value)
+            : null;
+        return new(
+            tenant.Id,
+            tenant.Slug,
+            tenant.DisplayLabel,
+            registry.Enabled.Select(static name => name.Value).ToArray(),
+            tenant.RegisteredParentOrigin,
+            core?.CoreSignInUrl is { } url
+                ? new CoreSignInView(CoreSignIn.Label, url.ToString())
+                : null,
+            HandoffExchange.ClientPath
+        );
+    }
+}

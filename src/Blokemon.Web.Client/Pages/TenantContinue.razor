@@ -1,0 +1,34 @@
+@page "/t/{Slug}/continue"
+@implements IDisposable
+@inject SignInFlow Flow
+
+<PageTitle>@(Flow.Tenant?.Label ?? Slug) · Blokemon</PageTitle>
+
+<SignInStatus Flow="Flow" Slug="@Slug" />
+
+@code {
+    // The top-level continuation window: the code in the fragment is exchanged once and the
+    // game opens here, outside any frame.
+    [Parameter]
+    public required string Slug { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Flow.Changed += Changed;
+        await Flow.EnterContinuation(Slug);
+    }
+
+    private void Changed()
+    {
+        _ = InvokeAsync(() =>
+        {
+            StateHasChanged();
+            if (Flow.Stage == SignInStage.SignedIn)
+            {
+                Flow.OpenGame();
+            }
+        });
+    }
+
+    public void Dispose() => Flow.Changed -= Changed;
+}

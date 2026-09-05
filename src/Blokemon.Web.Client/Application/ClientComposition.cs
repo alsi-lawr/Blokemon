@@ -5,6 +5,7 @@ using Blokemon.App.Contracts;
 using Blokemon.Product;
 using Blokemon.Web.Client.Persistence;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Blokemon.Web.Client.Application;
 
@@ -15,10 +16,12 @@ public static class ClientComposition
         HttpClient http,
         BlokemonCatalogue catalogue,
         PlayModeAvailability playModes,
-        EconomyRules economy
+        EconomyRules economy,
+        SessionTokenStore? tokens = null
     )
     {
         services.AddSingleton(http);
+        services.AddSingleton(tokens ?? new SessionTokenStore());
         services.AddSingleton(catalogue);
         services.AddSingleton(playModes);
         services.AddSingleton(economy);
@@ -42,7 +45,8 @@ public static class ClientComposition
                 provider.GetRequiredService<BlokemonApiClient>(),
                 provider.GetRequiredService<LocalApplicationService>(),
                 provider.GetRequiredService<IStateDocumentStore>(),
-                provider.GetRequiredService<PlayModeAvailability>()
+                provider.GetRequiredService<PlayModeAvailability>(),
+                provider.GetRequiredService<IReauthenticationHost>()
             )
         );
         services.AddScoped<IBlokemonApplication>(static provider =>
@@ -56,6 +60,17 @@ public static class ClientComposition
 
     internal static IServiceCollection AddApplicationCapabilities(this IServiceCollection services)
     {
+        // The session the browser holds, the tenant it runs as, the hosted-mode receiver and
+        // the way this host re-authenticates; every composition that renders the shell needs
+        // them because the menu shows the signed-in state.
+        services.TryAddSingleton<SessionTokenStore>();
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<SessionApiClient>();
+        services.AddScoped<SessionHolder>();
+        services.AddScoped<TenantContext>();
+        services.AddScoped<HostedFrame>();
+        services.AddScoped<SignInFlow>();
+        services.AddScoped<IReauthenticationHost, ClientReauthentication>();
         services.AddScoped<IApplicationDocumentInvalidations, BrowserDocumentInvalidations>();
         services.AddScoped<ApplicationSnapshotCoordinator>();
         services.AddScoped<IApplicationStateReader>(static provider =>

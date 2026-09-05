@@ -1,5 +1,3 @@
-using System.Net.Http.Json;
-using System.Text.Json;
 using Blokemon.App.Contracts;
 
 namespace Blokemon.App.Client;
@@ -80,54 +78,24 @@ public sealed class BlokemonApiClient(HttpClient http) : IBlokemonApplication
         CancellationToken cancellationToken = default
     ) => Post<object, ApplicationView>("api/purge", new(), cancellationToken);
 
-    private async Task<ApiResponse<T>> Get<T>(string path, CancellationToken cancellationToken)
-    {
-        try
-        {
-            return await http.GetFromJsonAsync<ApiResponse<T>>(path, cancellationToken)
-                ?? Unavailable<T>();
-        }
-        catch (HttpRequestException)
-        {
-            return Unavailable<T>();
-        }
-        catch (JsonException)
-        {
-            return Unavailable<T>();
-        }
-        catch (NotSupportedException)
-        {
-            return Unavailable<T>();
-        }
-    }
+    private static readonly ApiError UnavailableError = new(
+        "unavailable",
+        "The local game service is unavailable."
+    );
 
-    private async Task<ApiResponse<TResponse>> Post<TRequest, TResponse>(
+    private Task<ApiResponse<T>> Get<T>(string path, CancellationToken cancellationToken) =>
+        ApiEnvelopeTransport.Get<T>(http, path, UnavailableError, cancellationToken);
+
+    private Task<ApiResponse<TResponse>> Post<TRequest, TResponse>(
         string path,
         TRequest request,
         CancellationToken cancellationToken
-    )
-    {
-        try
-        {
-            using var response = await http.PostAsJsonAsync(path, request, cancellationToken);
-            return await response.Content.ReadFromJsonAsync<ApiResponse<TResponse>>(
-                    cancellationToken
-                ) ?? Unavailable<TResponse>();
-        }
-        catch (HttpRequestException)
-        {
-            return Unavailable<TResponse>();
-        }
-        catch (JsonException)
-        {
-            return Unavailable<TResponse>();
-        }
-        catch (NotSupportedException)
-        {
-            return Unavailable<TResponse>();
-        }
-    }
-
-    private static ApiResponse<T> Unavailable<T>() =>
-        new(false, default, new("unavailable", "The local game service is unavailable."));
+    ) =>
+        ApiEnvelopeTransport.Post<TRequest, TResponse>(
+            http,
+            path,
+            request,
+            UnavailableError,
+            cancellationToken
+        );
 }

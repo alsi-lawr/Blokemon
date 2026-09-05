@@ -36,6 +36,7 @@
     <link rel="stylesheet" href="@Assets["css/action-dock.css"]" />
     <link rel="stylesheet" href="@Assets["css/action-sheet.css"]" />
     <link rel="stylesheet" href="@Assets["css/profile.css"]" />
+    <link rel="stylesheet" href="@Assets["css/sign-in.css"]" />
     <link rel="stylesheet" href="@Assets["css/cue-states.css"]" />
     <link rel="stylesheet" href="@Assets["css/motion-pops.css"]" />
     <link rel="stylesheet" href="@Assets["css/motion-draw.css"]" />
@@ -57,6 +58,8 @@
 <body>
     <Blokemon.Web.Client.App @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
     <ReconnectModal />
+    <!-- Loaded by the page so a hosting parent's early message is retained before the application starts. -->
+    <script type="module" src="signIn.js"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
