@@ -2,7 +2,8 @@
     The offer to a signed-in player whose account has no passkey: the D-039 mitigation, worded
     as the design words it. It runs the ceremony here when this document can, and otherwise
     moves the session to a top-level window where the same offer runs in place. It leaves only
-    when the account gains a passkey.
+    when the account gains a passkey. The band's sentence names the moment: the offer, the
+    window that opened, or the window the browser blocked (with the button back).
 *@
 @inject PasskeyFlow Passkeys
 @inject PasskeyCeremony Ceremony
@@ -11,9 +12,9 @@
 
 @if (_offered)
 {
-    <div class="notice passkey-offer" role="status">
-        <p>@(_opened ? "Continue in the window that opened." : "Add a passkey so you can play anywhere and confirm new channels.")</p>
-        @if (!_opened)
+    <div class="notice passkey-offer" role="status" data-moment="@_moment.ToString().ToLowerInvariant()">
+        <p>@Sentence</p>
+        @if (_moment != Moment.Opened)
         {
             <button type="button" class="secondary" @onclick="Add" disabled="@_working">@(_working ? "Waiting for your passkey…" : "Add a passkey")</button>
         }
@@ -25,10 +26,20 @@
 }
 
 @code {
+    private enum Moment { Offer, Opened, Blocked }
+
     private bool _offered;
     private bool _working;
-    private bool _opened;
+    private Moment _moment;
     private string? _error;
+
+    private string Sentence =>
+        _moment switch
+        {
+            Moment.Opened => "Continue in the window that opened.",
+            Moment.Blocked => ContinuationWindow.Blocked.Message,
+            _ => "Add a passkey so you can play anywhere and confirm new channels.",
+        };
 
     protected override async Task OnInitializedAsync()
     {
@@ -59,10 +70,15 @@
         _working = false;
         if (opened.Succeeded)
         {
-            _opened = true;
+            _moment = Moment.Opened;
+        }
+        else if (opened.Error?.Code == ContinuationWindow.Blocked.Code)
+        {
+            _moment = Moment.Blocked;
         }
         else
         {
+            _moment = Moment.Offer;
             _error = opened.Error?.Message;
         }
     }

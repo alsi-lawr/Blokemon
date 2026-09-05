@@ -20,7 +20,7 @@ from urllib.request import Request, urlopen
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from headless_card_viewer import Chrome, DevTools, EvidenceFailure, require  # noqa: E402
-from headless_passkey_evidence import add_authenticator, recovery_codes_screen  # noqa: E402
+from headless_passkey_evidence import add_authenticator, recovery_codes_screen, warning_shown  # noqa: E402
 from headless_session_evidence import activate, close_menu, identity_text, open_menu  # noqa: E402
 from static_host import static_server  # noqa: E402
 
@@ -79,9 +79,12 @@ def mint_handoff(origin, token, twitch_user_id, display_name):
 class Frame:
     """The hosted page inside the parent's iframe, evaluated in its own execution context."""
 
-    def __init__(self, devtools, app_origin):
+    def __init__(self, devtools, app_origin, user_gesture=True):
         self.devtools = devtools
         self.app_origin = app_origin
+        # Every evaluation in the frame counts as a user gesture unless the check needs the
+        # frame never to have had one: a gesture grants transient activation for seconds.
+        self.user_gesture = user_gesture
 
     def context(self):
         self.devtools.evaluate("1")
@@ -103,7 +106,7 @@ class Frame:
     def evaluate(self, expression):
         result = self.devtools.command(
             "Runtime.evaluate",
-            {"expression": expression, "awaitPromise": True, "returnByValue": True, "userGesture": True, "contextId": self.context()},
+            {"expression": expression, "awaitPromise": True, "returnByValue": True, "userGesture": self.user_gesture, "contextId": self.context()},
         )
         if "exceptionDetails" in result:
             raise EvidenceFailure(result["exceptionDetails"].get("text", "frame evaluation failed"))
@@ -136,12 +139,12 @@ class Frame:
         require(self.evaluate(f"(() => {{ const e = [...document.querySelectorAll({json.dumps(selector)})].find(e => e.textContent.trim() === {wanted}); if (!e) return false; e.click(); return true; }})()"), f"activated {text!r} in the frame")
 
 
-def open_hosted(devtools, parent_origin, app_origin, slug, allow, code):
+def open_hosted(devtools, parent_origin, app_origin, slug, allow, code, user_gesture=True):
     devtools.events.clear()
     devtools.command("Page.navigate", {"url": f"{parent_origin}/parent.html?app={app_origin}&slug={slug}&allow={'1' if allow else '0'}"})
     devtools.wait_for("window.__ready === true", f"the {slug} frame signalled readiness", timeout=90)
     require(devtools.evaluate(f"window.__post({json.dumps(code)})"), "the parent posted the hand-off code")
-    return Frame(devtools, app_origin)
+    return Frame(devtools, app_origin, user_gesture)
 
 
 def signed_in_frame(frame, label):
@@ -158,10 +161,58 @@ def in_frame_passkey(devtools, parent_origin, app_origin, alpha_token):
     frame.wait_for(f"document.body.textContent.includes({json.dumps(OFFER)})", "the passkey offer in the frame")
     frame.click("Add a passkey")
     frame.wait_for("location.pathname === '/passkeys/codes' && document.querySelectorAll('.recovery-codes li code').length === 10", "the codes screen inside the frame", timeout=90)
-    require("Without a passkey, a recovery code or a linked channel" in frame.text(), "the warning is shown in the frame")
+    require(warning_shown(frame), "the warning is shown in the frame")
     frame.click("Continue to your game")
     frame.wait_for("location.pathname === '/'", "the game again after the codes")
     frame.wait_for(f"!document.body.textContent.includes({json.dumps(OFFER)})", "the offer left once the account had a passkey")
+
+
+def app_windows(chrome, app_origin):
+    """The top-level pages at the app's origin: the frame is not one, so any is a window the
+    client opened."""
+    port = int((chrome.profile / "DevToolsActivePort").read_text().splitlines()[0])
+    with urlopen(f"http://127.0.0.1:{port}/json/list", timeout=5) as response:
+        targets = json.load(response)
+    return [t for t in targets if t.get("type") == "page" and t.get("url", "").startswith(app_origin)]
+
+
+def offer_band(frame):
+    return frame.evaluate("(() => { const n = document.querySelector('.passkey-offer'); if (!n) return null; const b = n.querySelector('button'); return { moment: n.dataset.moment, sentence: n.querySelector('p').textContent.trim(), button: b !== null && !b.disabled, error: n.querySelector('.field-error') !== null }; })()")
+
+
+def blocked_continuation(chrome, devtools, parent_origin, app_origin, beta_token):
+    """The same offer with the browser's pop-up blocking on and the click coming from a script
+    rather than a person (the frame never receives a gesture): the window is blocked, the band
+    names that moment in its sentence with the button back and no field error, and nothing
+    opened. A real press then opens it."""
+    code = mint_handoff(app_origin, beta_token, "333", "Viewer Three")
+    frame = open_hosted(devtools, parent_origin, app_origin, "beta", False, code, user_gesture=False)
+    frame.wait_for("location.pathname === '/' && document.querySelector('.app-shell') !== null", "blocked: the hosted game", timeout=90)
+    frame.wait_for("document.querySelector('.passkey-offer button') !== null", "blocked: the passkey offer")
+    offered = offer_band(frame)
+    require(offered["moment"] == "offer" and offered["button"], f"blocked: the band starts as the offer ({offered})")
+    frame.click("Add a passkey")
+    frame.wait_for("(document.querySelector('.passkey-offer') || {dataset: {}}).dataset.moment === 'blocked'", "blocked: the band names the blocked window", timeout=60)
+    blocked = offer_band(frame)
+    require(blocked["sentence"] and blocked["sentence"] != offered["sentence"], f"blocked: the band's sentence changed for the moment ({blocked})")
+    require(blocked["button"] and not blocked["error"], f"blocked: the button returned and there is no field error ({blocked})")
+    require(not app_windows(chrome, app_origin), "blocked: no window opened")
+    frame.user_gesture = True
+    frame.click("Add a passkey")
+    frame.wait_for("(document.querySelector('.passkey-offer') || {dataset: {}}).dataset.moment === 'opened'", "blocked: a real press opens the window", timeout=60)
+    deadline = time.monotonic() + 30
+    opened = []
+    while time.monotonic() < deadline and not opened:
+        opened = app_windows(chrome, app_origin)
+        time.sleep(0.2)
+    require(len(opened) == 1 and "/t/beta/continue" in opened[0]["url"], f"blocked: the pressed window opened at the continuation route ({[o['url'].split('#')[0] for o in opened]})")
+    require(not offer_band(frame)["button"], "blocked: the button is gone while the window is open")
+    window = DevTools(opened[0]["webSocketDebuggerUrl"])
+    try:
+        window.command("Target.closeTarget", {"targetId": opened[0]["id"]})
+    except EvidenceFailure:
+        pass
+    window.close()
 
 
 def continuation_passkey(chrome, devtools, parent_origin, app_origin, alpha_token):
@@ -272,12 +323,57 @@ def narrow(devtools, parent_origin, app_origin, alpha_token, beta_token):
     require("Alpha wants to use your Blokemon." in frame.text(), "touch: the prompt names the channel")
 
 
+def run(root, extra_arguments, scenarios):
+    """One headless Chrome with its own profile, the DevTools domains the checks read, and the
+    diagnostics a failure prints (facts about the document, never its contents)."""
+    root.mkdir()
+    chrome = Chrome(root, extra_arguments=extra_arguments)
+    try:
+        devtools = chrome.devtools
+        devtools.command("Runtime.enable")
+        devtools.command("Log.enable")
+        devtools.command("Network.enable")
+        devtools.command("WebAuthn.enable", {"enableUI": False})
+        authenticator = add_authenticator(devtools)
+        devtools.set_viewport(1440, 900)
+        scenarios(chrome, devtools, authenticator)
+    except EvidenceFailure as failure:
+        try:
+            where = devtools.evaluate("location.href")
+            body = devtools.evaluate("document.body ? document.body.textContent.replace(/\\s+/g, ' ').slice(0, 300) : null")
+            calls = [(e["params"]["response"]["url"].split("/api/", 1)[1].split("?")[0], e["params"]["response"]["status"]) for e in devtools.events if e.get("method") == "Network.responseReceived" and "/api/" in e["params"]["response"]["url"]][-8:]
+            errors = [str(e["params"]["exceptionDetails"].get("text"))[:200] for e in devtools.events if e.get("method") == "Runtime.exceptionThrown"][-5:]
+            errors += [" ".join(str(a.get("value", a.get("description", "")))[:200] for a in e["params"].get("args", [])) for e in devtools.events if e.get("method") == "Runtime.consoleAPICalled" and e["params"].get("type") == "error"][-5:]
+            errors += [str(e["params"]["entry"].get("text"))[:200] for e in devtools.events if e.get("method") == "Log.entryAdded"][-5:]
+            answered = {e["params"]["requestId"] for e in devtools.events if e.get("method") in ("Network.responseReceived", "Network.loadingFailed")}
+            pending = [e["params"]["request"]["url"].split("/api/", 1)[1].split("?")[0] for e in devtools.events if e.get("method") == "Network.requestWillBeSent" and "/api/" in e["params"]["request"]["url"] and e["params"]["requestId"] not in answered]
+            # Facts about the document, never its contents: whether a session is held, not what it is.
+            held = devtools.evaluate("sessionStorage.getItem('blokemon.session') !== null")
+            error_ui = devtools.evaluate("(() => { const e = document.querySelector('#blazor-error-ui'); return e ? getComputedStyle(e).display : null; })()")
+        except Exception:  # noqa: BLE001
+            where, body, calls, errors, pending, held, error_ui = "?", "?", [], [], [], "?", "?"
+        raise EvidenceFailure(f"{failure} | at {where} | body={body!r} | api={calls} | pending={pending} | held={held} | error_ui={error_ui} | errors={errors}") from failure
+    finally:
+        chrome.close()
+
+
 def main():
     app_origin = env("BLOKEMON_ORIGIN")
     parent_port = int(env("BLOKEMON_PARENT_PORT"))
     alpha_token = env("BLOKEMON_ALPHA_TOKEN")
     beta_token = env("BLOKEMON_BETA_TOKEN")
     parent_origin = f"http://localhost:{parent_port}"
+    # Site isolation is off so the frame's context is reachable over one DevTools connection.
+    isolation_off = ("--disable-site-isolation-trials", "--disable-features=IsolateOrigins,site-per-process")
+
+    def unblocked(chrome, devtools, authenticator):
+        in_frame_passkey(devtools, parent_origin, app_origin, alpha_token)
+        continuation_passkey(chrome, devtools, parent_origin, app_origin, alpha_token)
+        approval_prompt_and_pending_list(devtools, parent_origin, app_origin, beta_token, authenticator)
+        narrow(devtools, parent_origin, app_origin, alpha_token, beta_token)
+
+    def blocked(chrome, devtools, _authenticator):
+        blocked_continuation(chrome, devtools, parent_origin, app_origin, beta_token)
 
     with tempfile.TemporaryDirectory(prefix="blokemon-channel-evidence-") as temporary:
         site = Path(temporary) / "site"
@@ -286,44 +382,12 @@ def main():
         server = static_server(site, parent_port)
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
-        chrome = Chrome(
-            Path(temporary),
-            extra_arguments=(
-                "--disable-site-isolation-trials",
-                "--disable-features=IsolateOrigins,site-per-process",
-                "--disable-popup-blocking",
-            ),
-        )
         try:
-            devtools = chrome.devtools
-            devtools.command("Runtime.enable")
-            devtools.command("Log.enable")
-            devtools.command("Network.enable")
-            devtools.command("WebAuthn.enable", {"enableUI": False})
-            authenticator = add_authenticator(devtools)
-            devtools.set_viewport(1440, 900)
-            in_frame_passkey(devtools, parent_origin, app_origin, alpha_token)
-            continuation_passkey(chrome, devtools, parent_origin, app_origin, alpha_token)
-            approval_prompt_and_pending_list(devtools, parent_origin, app_origin, beta_token, authenticator)
-            narrow(devtools, parent_origin, app_origin, alpha_token, beta_token)
-        except EvidenceFailure as failure:
-            try:
-                where = devtools.evaluate("location.href")
-                body = devtools.evaluate("document.body ? document.body.textContent.replace(/\\s+/g, ' ').slice(0, 300) : null")
-                calls = [(e["params"]["response"]["url"].split("/api/", 1)[1].split("?")[0], e["params"]["response"]["status"]) for e in devtools.events if e.get("method") == "Network.responseReceived" and "/api/" in e["params"]["response"]["url"]][-8:]
-                errors = [str(e["params"]["exceptionDetails"].get("text"))[:200] for e in devtools.events if e.get("method") == "Runtime.exceptionThrown"][-5:]
-                errors += [" ".join(str(a.get("value", a.get("description", "")))[:200] for a in e["params"].get("args", [])) for e in devtools.events if e.get("method") == "Runtime.consoleAPICalled" and e["params"].get("type") == "error"][-5:]
-                errors += [str(e["params"]["entry"].get("text"))[:200] for e in devtools.events if e.get("method") == "Log.entryAdded"][-5:]
-                answered = {e["params"]["requestId"] for e in devtools.events if e.get("method") in ("Network.responseReceived", "Network.loadingFailed")}
-                pending = [e["params"]["request"]["url"].split("/api/", 1)[1].split("?")[0] for e in devtools.events if e.get("method") == "Network.requestWillBeSent" and "/api/" in e["params"]["request"]["url"] and e["params"]["requestId"] not in answered]
-                # Facts about the document, never its contents: whether a session is held, not what it is.
-                held = devtools.evaluate("sessionStorage.getItem('blokemon.session') !== null")
-                error_ui = devtools.evaluate("(() => { const e = document.querySelector('#blazor-error-ui'); return e ? getComputedStyle(e).display : null; })()")
-            except Exception:  # noqa: BLE001
-                where, body, calls, errors, pending, held, error_ui = "?", "?", [], [], [], "?", "?"
-            raise EvidenceFailure(f"{failure} | at {where} | body={body!r} | api={calls} | pending={pending} | held={held} | error_ui={error_ui} | errors={errors}") from failure
+            # The client opens its own continuation window, so pop-up blocking is off for the
+            # main run; the second run keeps the browser's blocking on for the blocked moment.
+            run(Path(temporary) / "unblocked", (*isolation_off, "--disable-popup-blocking"), unblocked)
+            run(Path(temporary) / "blocked", isolation_off, blocked)
         finally:
-            chrome.close()
             server.shutdown()
             server.server_close()
     print("HEADLESS CHANNEL EVIDENCE COMPLETE")

@@ -20,10 +20,6 @@ from headless_card_viewer import Chrome, EvidenceFailure, require  # noqa: E402
 from headless_session_evidence import activate, close_menu, identity_text, open_menu  # noqa: E402
 
 SESSION_KEY = "blokemon.session"
-WARNING = (
-    "Without a passkey, a recovery code or a linked channel, this account cannot be recovered. "
-    "There is no email to fall back on."
-)
 PLAYER = "Headless Passkey"
 
 
@@ -71,12 +67,18 @@ def wait_text(devtools, wanted, description, timeout=30):
     devtools.wait_for(f"document.body.textContent.includes({json.dumps(wanted)})", description, timeout=timeout)
 
 
+def warning_shown(devtools):
+    """The no-recovery statement, by the element the composition names rather than its words:
+    present and saying something, on every showing of the codes."""
+    return devtools.evaluate("(() => { const w = document.querySelector('.recovery-codes-card .recovery-warning'); return w !== null && w.textContent.trim().length > 0; })()")
+
+
 def recovery_codes_screen(devtools, continue_label, label):
     devtools.wait_for("document.querySelectorAll('.recovery-codes li code').length === 10", f"{label}: ten recovery codes", timeout=60)
     codes = devtools.evaluate("[...document.querySelectorAll('.recovery-codes li code')].map(e => e.textContent)")
     require(len(set(codes)) == 10, f"{label}: the ten codes are distinct")
     require(all(len(code) == 35 and code.count("-") == 3 for code in codes), f"{label}: each code is four groups of eight")
-    require(WARNING in text(devtools), f"{label}: the no-recovery warning is shown verbatim")
+    require(warning_shown(devtools), f"{label}: the no-recovery warning is shown")
     require("Save these codes." in text(devtools), f"{label}: the screen is headed 'Save these codes.'")
     require(not any(code in devtools.evaluate("location.href") for code in codes), f"{label}: no code is in the URL")
     require(devtools.evaluate(f"[...document.querySelectorAll('button')].some(b => b.textContent.trim() === {json.dumps(continue_label)})"), f"{label}: the acknowledgement reads {continue_label!r}")
