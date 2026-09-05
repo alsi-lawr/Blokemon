@@ -58,6 +58,13 @@ else
                                 <span class="field-error" role="alert">@_declined</span>
                             }
                         }
+                    }
+                    @foreach (var link in _descriptor.SignInLinks ?? [])
+                    {
+                        <a class="secondary button full sign-in-link" href="@link.Url" target="_top" rel="noopener">@link.Label</a>
+                    }
+                    @if (FirstParty)
+                    {
                         <a class="secondary button full" href="signin/create">Create an account</a>
                     }
                     @if (_descriptor.CoreSignIn is { } core)
@@ -100,6 +107,7 @@ else
         {
             "expired" => "Your last sign-in has ended.",
             "required" => "This server needs you to sign in first.",
+            "external" => "That sign-in did not complete. Try again.",
             _ => null,
         };
 

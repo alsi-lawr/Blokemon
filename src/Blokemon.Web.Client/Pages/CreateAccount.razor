@@ -35,6 +35,14 @@
             }
             <button type="button" class="secondary button full" @onclick="CreateWithPasskey" disabled="@(_working != Working.None || _unsupported)">@(_working == Working.Passkey ? "Waiting for your passkey…" : "Create with a passkey")</button>
         }
+        @foreach (var link in _links)
+        {
+            @if (!_passkeys)
+            {
+                <p class="sign-in-or">or</p>
+            }
+            <a class="secondary button full sign-in-link" href="@link.Url" target="_top" rel="noopener">@link.Label</a>
+        }
         @if (_failure is not null)
         {
             <span class="field-error" role="alert">@_failure</span>
@@ -54,11 +62,14 @@
     private Working _working;
     private bool _unsupported;
     private bool _passkeys;
+    private CoreSignInView[] _links = [];
 
+    // An external sign-in makes the account on its first use, so it is offered here too.
     protected override async Task OnInitializedAsync()
     {
         var descriptor = await Tenants.Resolve(null);
         _passkeys = descriptor.Succeeded && descriptor.Value is { Passkeys: true };
+        _links = descriptor.Value?.SignInLinks ?? [];
         _unsupported = !await Ceremony.Available();
     }
 

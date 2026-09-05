@@ -27,6 +27,9 @@ public static class ApiSessionPolicy
         // The first-party simple login (BLOKEMON-163): create an account, sign in.
         ("POST", "/api/session/firstparty/password/register"),
         ("POST", "/api/session/firstparty/password"),
+        // The Google sign-in (BLOKEMON-164): the redirect out and the callback in.
+        ("GET", "/api/session/google/start"),
+        ("GET", "/api/session/google/callback"),
         // The hand-off and continuation exchanges.
         ("POST", HandoffExchange.Route),
         ("POST", "/api/session/resume"),

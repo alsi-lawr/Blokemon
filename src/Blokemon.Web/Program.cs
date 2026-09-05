@@ -6,6 +6,7 @@ using Blokemon.Web.Components;
 using Blokemon.Web.Content;
 using Blokemon.Web.Hosting;
 using Blokemon.Web.Identity;
+using Blokemon.Web.Identity.Google;
 using Blokemon.Web.Identity.Passkeys;
 using Blokemon.Web.Persistence;
 using Microsoft.AspNetCore.Components;
@@ -109,6 +110,7 @@ app.MapGet(
 app.MapApplicationEndpoints();
 app.MapIdentityEndpoints();
 app.MapFirstPartyEndpoints();
+app.MapGoogleSignIn();
 app.MapApprovalEndpoints();
 app.MapContinuationEndpoints();
 app.MapAccountEndpoints();

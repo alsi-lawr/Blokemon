@@ -1,8 +1,8 @@
 namespace Blokemon.App.Contracts;
 
 /// <summary>
-/// An external sign-in page the sign-in page offers as a top-level navigation. The label comes
-/// from the server with the URL, so the client names no provider.
+/// An external sign-in the sign-in page offers as a top-level navigation. The label comes from
+/// the server with the URL, so the client names no provider.
 /// </summary>
 public sealed record CoreSignInView(string Label, string Url);
 
@@ -11,8 +11,9 @@ public sealed record CoreSignInView(string Label, string Url);
 /// the server enables, the exact origin of the page that may embed it, the core sign-in when
 /// one is configured, the route at which a hand-off code for this tenant is exchanged, and
 /// whether the first-party provider offers passkey ceremonies beside the simple login. The
-/// server names that route so the client names no provider. Nothing else about the tenant
-/// leaves the server this way.
+/// server names that route so the client names no provider. The sign-in links are the other
+/// external sign-ins the server offers, each a label and a URL to navigate to top-level.
+/// Nothing else about the tenant leaves the server this way.
 /// </summary>
 public sealed record TenantDescriptorView(
     string Id,
@@ -22,7 +23,8 @@ public sealed record TenantDescriptorView(
     string? RegisteredParentOrigin,
     CoreSignInView? CoreSignIn,
     string HandoffExchangePath,
-    bool Passkeys = false
+    bool Passkeys = false,
+    CoreSignInView[]? SignInLinks = null
 );
 
 /// <summary>

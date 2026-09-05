@@ -3,6 +3,7 @@ using Blokemon.App.Catalogue;
 using Blokemon.App.Contracts;
 using Blokemon.Identity.Federated;
 using Blokemon.Product;
+using Blokemon.Web.Identity.Google;
 using Blokemon.Web.Identity.Passkeys;
 using Blokemon.Web.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,23 @@ public static class IdentityComposition
             provider.GetRequiredService<PasskeyChallenges>(),
             provider.GetRequiredService<IDbContextFactory<BlokemonDbContext>>()
         ));
+        // The Google provider likewise; enabling it needs its OAuth client, checked here so
+        // the host fails before it listens, naming the keys.
+        if (
+            identity.Provider(GoogleSignIn.Name) is { Enabled: true } google
+            && (google.ClientId is null || google.ClientSecret is null)
+        )
+        {
+            throw new InvalidOperationException(
+                $"{IdentityConfigurationModule.providerClientIdKey("Google")} and "
+                    + $"{IdentityConfigurationModule.providerClientSecretKey("Google")} are required "
+                    + "when the Google provider is enabled."
+            );
+        }
+        services.AddSingleton(GoogleDiscovery.Google);
+        services.AddSingleton<GoogleAuthorizations>();
+        services.AddHttpClient(GoogleSignIn.HttpClientName);
+        services.AddSingleton<IIdentityProvider, GoogleProvider>();
         services.AddScoped<CurrentSession>();
         services.AddScoped<ServerApplications>();
         services.AddScoped(static provider => new SignInServices(

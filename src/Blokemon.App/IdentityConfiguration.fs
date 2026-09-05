@@ -14,6 +14,10 @@ type ProviderSettings =
         /// An external sign-in page that signs a person in through this provider and returns
         /// top-level with a hand-off; the sign-in page offers it only when it is configured.
         CoreSignInUrl: Uri | null
+        /// The OAuth client a provider that signs in through an external authorization server
+        /// presents there: both stated, or neither.
+        ClientId: string | null
+        ClientSecret: string | null
     }
 
 /// The passkey relying party. The first-party provider offers passkey ceremonies only when it is
@@ -92,6 +96,11 @@ module IdentityConfiguration =
     let providerCoreSignInUrlKey (section: string) =
         $"{ProvidersKey}:{section}:CoreSignInUrl"
 
+    let providerClientIdKey (section: string) = $"{ProvidersKey}:{section}:ClientId"
+
+    let providerClientSecretKey (section: string) =
+        $"{ProvidersKey}:{section}:ClientSecret"
+
     let private invalid (message: string) =
         raise (InvalidOperationException message)
 
@@ -137,9 +146,27 @@ module IdentityConfiguration =
             | text when String.IsNullOrWhiteSpace text -> null
             | text -> absoluteHttpUri (providerCoreSignInUrlKey section.Key) text
 
+        let optional (key: string) : string | null =
+            match section[key] with
+            | null -> null
+            | text when String.IsNullOrWhiteSpace text -> null
+            | text -> text.Trim()
+
+        let clientId = optional "ClientId"
+        let clientSecret = optional "ClientSecret"
+
+        match clientId, clientSecret with
+        | NonNull _, Null ->
+            invalid $"{providerClientSecretKey section.Key} is required with the client id."
+        | Null, NonNull _ ->
+            invalid $"{providerClientIdKey section.Key} is required with the client secret."
+        | _ -> ()
+
         { Name = name
           Enabled = enabled
-          CoreSignInUrl = coreSignInUrl }
+          CoreSignInUrl = coreSignInUrl
+          ClientId = clientId
+          ClientSecret = clientSecret }
 
     /// The relying party when the deployment states it: both keys, or neither.
     let private passkeys (configuration: IConfiguration) =

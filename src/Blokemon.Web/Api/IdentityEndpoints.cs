@@ -3,6 +3,7 @@ using Blokemon.App.Contracts;
 using Blokemon.Identity.Federated;
 using Blokemon.Product;
 using Blokemon.Web.Identity;
+using Blokemon.Web.Identity.Google;
 using Blokemon.Web.Persistence;
 
 namespace Blokemon.Web.Api;
@@ -57,7 +58,10 @@ public static class IdentityEndpoints
                 return tenant is { Value: { } found }
                     ? new ApiResponse<TenantDescriptorView>(
                         true,
-                        TenantDescriptors.Describe(found, registry, identity),
+                        TenantDescriptors.Describe(found, registry, identity) with
+                        {
+                            SignInLinks = GoogleSignIn.Links(registry, found.Slug),
+                        },
                         null
                     )
                     : new ApiResponse<TenantDescriptorView>(

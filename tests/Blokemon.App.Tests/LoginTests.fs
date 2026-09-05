@@ -17,7 +17,7 @@ type LoginTests() =
     let register (documents: MemoryDocumentStore) account text password =
         Logins.register documents account (name text) password now Unchecked.defaultof<_>
 
-    let verify (documents: MemoryDocumentStore) text password =
+    let verify (documents: MemoryDocumentStore) (text: string | null) (password: string | null) =
         Logins.verify documents text password Unchecked.defaultof<_>
 
     [<Test>]

@@ -133,6 +133,38 @@ type IdentityConfigurationTests() =
         | None -> failwith "Expected passkey settings."
 
     [<Test>]
+    member _.``a provider section should carry its oauth client as both values or neither``() =
+        failsNaming
+            (IdentityConfiguration.providerClientSecretKey "Google")
+            [ IdentityConfiguration.providerEnabledKey "Google", "true"
+              IdentityConfiguration.providerClientIdKey "Google", "client-id" ]
+
+        failsNaming
+            (IdentityConfiguration.providerClientIdKey "Google")
+            [ IdentityConfiguration.providerClientSecretKey "Google", "client-secret" ]
+
+        let resolved =
+            identityConfiguration
+                [ IdentityConfiguration.providerEnabledKey "Google", "true"
+                  IdentityConfiguration.providerClientIdKey "Google", " client-id "
+                  IdentityConfiguration.providerClientSecretKey "Google", "client-secret" ]
+
+        let google = Unchecked.nonNull (resolved.Provider(providerName "google"))
+
+        google.ClientId |> should equal "client-id"
+        google.ClientSecret |> should equal "client-secret"
+
+        let bare =
+            Unchecked.nonNull (
+                (identityConfiguration
+                    [ IdentityConfiguration.providerEnabledKey "Example", "false" ])
+                    .Provider(providerName "example")
+            )
+
+        bare.ClientId |> should be Null
+        bare.ClientSecret |> should be Null
+
+    [<Test>]
     member _.``a provider section should be named in lower case and keep its optional core sign in url``
         ()
         =

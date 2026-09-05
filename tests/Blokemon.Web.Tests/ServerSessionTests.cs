@@ -215,6 +215,7 @@ public sealed class ServerSessionTests
                 "label",
                 "passkeys",
                 "registeredParentOrigin",
+                "signInLinks",
                 "slug",
             ]);
         value["id"]!.GetValue<string>().ShouldBe(tenant.Id);
@@ -226,8 +227,10 @@ public sealed class ServerSessionTests
             .ShouldBe([TestIdentityProvider.ProviderName]);
         value["registeredParentOrigin"].ShouldBeNull();
         value["coreSignIn"].ShouldBeNull();
-        // No relying party is configured, so the first-party provider offers no passkeys.
+        // No relying party is configured, so the first-party provider offers no passkeys, and no
+        // Google client, so there is no sign-in link.
         value["passkeys"]!.GetValue<bool>().ShouldBeFalse();
+        value["signInLinks"]!.AsArray().Count.ShouldBe(0);
         // The host names the hand-off exchange route (BLOKEMON-151's) so the client need not.
         value["handoffExchangePath"]!.GetValue<string>().ShouldBe("api/session/blokebot");
 
@@ -269,13 +272,13 @@ public sealed class ServerSessionTests
         health.StatusCode.ShouldBe(HttpStatusCode.OK);
         descriptor!.Value!.EnabledProviders.ShouldBeEmpty();
         descriptor.Value.CoreSignIn.ShouldBeNull();
-        // The federation's provider and the first-party one are the implementations a
-        // published host ships; the registry lists each only when the deployment enables it,
-        // and the test double is never here.
+        // The federation's provider, the first-party one and the Google one are the
+        // implementations a published host ships; the registry lists each only when the
+        // deployment enables it, and the test double is never here.
         host.Factory.Services.GetServices<IIdentityProvider>()
             .Select(static provider => provider.Name.Value)
             .Order()
-            .ShouldBe(["blokebot", "firstparty"]);
+            .ShouldBe(["blokebot", "firstparty", "google"]);
     }
 
     // The two names below are the host's own (Blokemon.Web owns them); this test project is
