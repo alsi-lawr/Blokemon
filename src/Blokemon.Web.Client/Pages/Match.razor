@@ -157,6 +157,10 @@ else
        the animation's first frame, and a value written in afterwards would arrive too late. *@
     <section class="battle-screen @AnimationClass() @DockClass() @SheetClass(frame, auras, sheet)"
              style="@MotionStyle()" aria-label="Blokemon match table" @ref="_battleScreen">
+      @* The table is the element that goes full screen, and a browser paints nothing outside the
+         full-screen element's subtree: a viewer opened by the app-wide host would render behind it
+         and never be seen. So the table hosts the viewers for every card it draws itself. *@
+      <CardViewerHost>
       <div class="battle-canvas">
         <MatchHud Frame="frame"
                   Difficulty="match.Difficulty"
@@ -263,6 +267,7 @@ else
                                 Closed="CloseEmpties" />
         }
       </div>
+      </CardViewerHost>
     </section>
 }
 

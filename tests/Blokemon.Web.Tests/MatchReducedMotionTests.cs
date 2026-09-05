@@ -2,6 +2,7 @@ using Blokemon.App.Contracts;
 using Blokemon.Web.Client.Application;
 using Blokemon.Web.Client.Components;
 using Blokemon.Web.Client.Pages;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Shouldly;
@@ -30,6 +31,7 @@ public sealed class MatchReducedMotionTests
             .AddSingleton<IMatchOperations>(application)
             .AddSingleton<IMatchRecoveryOperations>(application)
             .AddSingleton<IJSRuntime>(browser)
+            .AddSingleton<NavigationManager>(new BrowserNavigation())
             .AddSingleton<SoundBoard>()
             .BuildServiceProvider();
         await using var harness = ComponentHarness.For(services);
@@ -276,5 +278,16 @@ public sealed class MatchReducedMotionTests
             DiscardMatchHistoryRequest request,
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
+    }
+
+    // The table hosts its card viewers itself and that host watches the route, so the page
+    // needs somewhere to be.
+    private sealed class BrowserNavigation : NavigationManager
+    {
+        public BrowserNavigation() =>
+            Initialize("https://blokemon.test/", "https://blokemon.test/");
+
+        protected override void NavigateToCore(string uri, NavigationOptions options) =>
+            Uri = ToAbsoluteUri(uri).AbsoluteUri;
     }
 }
