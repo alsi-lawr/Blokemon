@@ -11,7 +11,7 @@
         "aarch64-linux"
         "aarch64-darwin"
       ];
-      releaseVersion = "0.4.1";
+      releaseVersion = "0.5.0";
       imageSource = "https://github.com/alsi-lawr/Blokemon";
       imageRevision = self.rev or self.dirtyRev or "unknown";
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
