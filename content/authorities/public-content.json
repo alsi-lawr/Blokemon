@@ -1,6 +1,6 @@
 {
   "schemaVersion": "blokemon-public-content-schema-1999-candidate.1",
-  "contentVersion": "blokemon-public-content-1999-candidate.2",
+  "contentVersion": "blokemon-public-content-1999-candidate.3",
   "mechanicalManifestVersion": "base-jungle-fossil-1999-card-semantics-candidate.3",
   "terminologyVersion": "blokemon-public-terminology-1999-candidate.1",
   "humanApprovalStatus": "Accepted",
@@ -386,9 +386,9 @@
     {
       "id": "TERM-COST-002",
       "category": "Cost",
-      "singular": "Colorless Energy",
-      "plural": "Colorless Energy",
-      "definition": "A Colorless Energy requirement that any type of Energy can satisfy."
+      "singular": "Local Energy",
+      "plural": "Local Energy",
+      "definition": "A Local Energy requirement that any type of Energy can satisfy."
     },
     {
       "id": "TERM-COST-003",
@@ -699,7 +699,7 @@
         {
           "mechanicalId": "BLK-003-T01",
           "name": "Energy Trans",
-          "effectText": "As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Blokemon and attach it to a different one. This power can't be used if Howard Marks is Asleep, Confused, or Paralyzed."
+          "effectText": "As often as you like during your turn (before your attack), you may take 1 Blazed Energy card attached to 1 of your Blokemon and attach it to a different one. This power can't be used if Howard Marks is Asleep, Confused, or Paralyzed."
         }
       ],
       "attacks": [
@@ -735,7 +735,7 @@
         {
           "mechanicalId": "BLK-004-B02",
           "name": "Ember",
-          "effectText": "Discard 1 Fire Energy card attached to Dave Lister in order to use this attack."
+          "effectText": "Discard 1 Curry Energy card attached to Dave Lister in order to use this attack."
         }
       ],
       "rules": [],
@@ -764,7 +764,7 @@
         {
           "mechanicalId": "BLK-005-B02",
           "name": "Flamethrower",
-          "effectText": "Discard 1 Fire Energy card attached to Four-Naan Jeremy in order to use this attack."
+          "effectText": "Discard 1 Curry Energy card attached to Four-Naan Jeremy in order to use this attack."
         }
       ],
       "rules": [],
@@ -787,13 +787,13 @@
         {
           "mechanicalId": "BLK-006-T01",
           "name": "Energy Burn",
-          "effectText": "As often as you like during your turn (before your attack), you may turn all Energy attached to Brick Lane Boss into Fire Energy for the rest of the turn. This power can't be used if Brick Lane Boss is Asleep, Confused, or Paralyzed."
+          "effectText": "As often as you like during your turn (before your attack), you may turn all Energy attached to Brick Lane Boss into Curry Energy for the rest of the turn. This power can't be used if Brick Lane Boss is Asleep, Confused, or Paralyzed."
         }
       ],
       "attacks": [
         {
           "mechanicalId": "BLK-006-B01",
-          "name": "Fire Spin",
+          "name": "Phaal Spin",
           "effectText": "Discard 2 Energy cards attached to Brick Lane Boss in order to use this attack."
         }
       ],
@@ -875,14 +875,14 @@
         {
           "mechanicalId": "BLK-009-T01",
           "name": "Rain Dance",
-          "effectText": "As often as you like during your turn (before your attack), you may attach 1 Water Energy card to 1 of your Water Blokemon. (This doesn't use up your 1 Energy card attachment for the turn.) This power can't be used if Parkrun is Asleep, Confused, or Paralyzed."
+          "effectText": "As often as you like during your turn (before your attack), you may attach 1 Sober Energy card to 1 of your Sober Blokemon. (This doesn't use up your 1 Energy card attachment for the turn.) This power can't be used if Parkrun is Asleep, Confused, or Paralyzed."
         }
       ],
       "attacks": [
         {
           "mechanicalId": "BLK-009-B01",
           "name": "Hydro Pump",
-          "effectText": "Does 40 damage plus 10 more damage for each Water Energy attached to Parkrun but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
+          "effectText": "Does 40 damage plus 10 more damage for each Sober Energy attached to Parkrun but not used to pay for this attack's Energy cost. Extra Sober Energy after the 2nd doesn't count."
         }
       ],
       "rules": [],
@@ -1606,7 +1606,7 @@
         {
           "mechanicalId": "BLK-035-B02",
           "name": "Metronome",
-          "effectText": "Choose 1 of the Defending Blokemon's attacks. Metronome copies that attack except for its Energy costs and anything else required in order to use that attack, such as discarding Energy cards. (No matter what type the Defending Blokemon is, First Bump's type is still Colorless.)"
+          "effectText": "Choose 1 of the Defending Blokemon's attacks. Metronome copies that attack except for its Energy costs and anything else required in order to use that attack, such as discarding Energy cards. (No matter what type the Defending Blokemon is, First Bump's type is still Local.)"
         }
       ],
       "rules": [],
@@ -1630,7 +1630,7 @@
         {
           "mechanicalId": "BLK-036-B01",
           "name": "Metronome",
-          "effectText": "Choose 1 of the Defending Blokemon's attacks. Metronome copies that attack except for its Energy costs and anything else required in order to use that attack, such as discarding Energy cards. (No matter what type the Defending Blokemon is, Second Wind's type is still Colorless.)"
+          "effectText": "Choose 1 of the Defending Blokemon's attacks. Metronome copies that attack except for its Energy costs and anything else required in order to use that attack, such as discarding Energy cards. (No matter what type the Defending Blokemon is, Second Wind's type is still Local.)"
         },
         {
           "mechanicalId": "BLK-036-B02",
@@ -1687,8 +1687,8 @@
         },
         {
           "mechanicalId": "BLK-038-B02",
-          "name": "Fire Blast",
-          "effectText": "Discard 1 Fire Energy card attached to Curry Mile in order to use this attack."
+          "name": "Madras Blast",
+          "effectText": "Discard 1 Curry Energy card attached to Curry Mile in order to use this attack."
         }
       ],
       "rules": [],
@@ -2002,7 +2002,7 @@
         {
           "mechanicalId": "BLK-049-T01",
           "name": "Shift",
-          "effectText": "Once during your turn (before your attack), you may change the type of Space Cadet to the type of any other Blokemon in play other than Colorless. This power can't be used if Space Cadet is Asleep, Confused, or Paralyzed."
+          "effectText": "Once during your turn (before your attack), you may change the type of Space Cadet to the type of any other Blokemon in play other than Local. This power can't be used if Space Cadet is Asleep, Confused, or Paralyzed."
         }
       ],
       "attacks": [
@@ -2285,7 +2285,7 @@
         {
           "mechanicalId": "BLK-059-B01",
           "name": "Flamethrower",
-          "effectText": "Discard 1 Fire Energy card attached to Bradford in order to use this attack."
+          "effectText": "Discard 1 Curry Energy card attached to Bradford in order to use this attack."
         },
         {
           "mechanicalId": "BLK-059-B02",
@@ -2313,8 +2313,8 @@
       "attacks": [
         {
           "mechanicalId": "BLK-060-B01",
-          "name": "Water Gun",
-          "effectText": "Does 10 damage plus 10 more damage for each Water Energy attached to Lime and Soda but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd don't count."
+          "name": "Soda Gun",
+          "effectText": "Does 10 damage plus 10 more damage for each Sober Energy attached to Lime and Soda but not used to pay for this attack's Energy cost. Extra Sober Energy after the 2nd don't count."
         }
       ],
       "rules": [],
@@ -2366,8 +2366,8 @@
       "attacks": [
         {
           "mechanicalId": "BLK-062-B01",
-          "name": "Water Gun",
-          "effectText": "Does 30 damage plus 10 more damage for each Water Energy attached to Zero Point Zero but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
+          "name": "Soda Gun",
+          "effectText": "Does 30 damage plus 10 more damage for each Sober Energy attached to Zero Point Zero but not used to pay for this attack's Energy cost. Extra Sober Energy after the 2nd doesn't count."
         },
         {
           "mechanicalId": "BLK-062-B02",
@@ -2420,7 +2420,7 @@
         {
           "mechanicalId": "BLK-064-B01",
           "name": "Recover",
-          "effectText": "Discard 1 Psychic Energy card attached to Gurning in order to use this attack. Remove all damage counters from Gurning."
+          "effectText": "Discard 1 Geeked Energy card attached to Gurning in order to use this attack. Remove all damage counters from Gurning."
         },
         {
           "mechanicalId": "BLK-064-B02",
@@ -2853,7 +2853,7 @@
         {
           "mechanicalId": "BLK-079-B02",
           "name": "Scavenge",
-          "effectText": "Discard 1 Psychic Energy card attached to Coming Up in order to use this attack. Put a Trainer card from your discard pile into your hand."
+          "effectText": "Discard 1 Geeked Energy card attached to Coming Up in order to use this attack. Put a Trainer card from your discard pile into your hand."
         }
       ],
       "rules": [],
@@ -3017,7 +3017,7 @@
         {
           "mechanicalId": "BLK-085-T01",
           "name": "Retreat Aid",
-          "effectText": "As long as The Lads is Benched, pay Colorless less to retreat your Active Blokemon."
+          "effectText": "As long as The Lads is Benched, pay 1 Local Energy less to retreat your Active Blokemon."
         }
       ],
       "attacks": [
@@ -3223,7 +3223,7 @@
         {
           "mechanicalId": "BLK-092-B02",
           "name": "Destiny Bond",
-          "effectText": "Discard 1 Psychic Energy card attached to Kitchen Afterparty in order to use this attack. If a Blokemon Knocks Out Kitchen Afterparty during your opponent's next turn, Knock Out that Blokemon."
+          "effectText": "Discard 1 Geeked Energy card attached to Kitchen Afterparty in order to use this attack. If a Blokemon Knocks Out Kitchen Afterparty during your opponent's next turn, Knock Out that Blokemon."
         }
       ],
       "rules": [],
@@ -3597,7 +3597,7 @@
         {
           "mechanicalId": "BLK-105-B02",
           "name": "Call for Friend",
-          "effectText": "Search your deck for a Fighting Basic Blokemon card and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)"
+          "effectText": "Search your deck for a Lairy Basic Blokemon card and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)"
         }
       ],
       "rules": [],
@@ -3929,8 +3929,8 @@
       "attacks": [
         {
           "mechanicalId": "BLK-117-B01",
-          "name": "Water Gun",
-          "effectText": "Does 20 damage plus 10 more damage for each Water Energy attached to One Year Chip but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
+          "name": "Soda Gun",
+          "effectText": "Does 20 damage plus 10 more damage for each Sober Energy attached to One Year Chip but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
         },
         {
           "mechanicalId": "BLK-117-B02",
@@ -4036,7 +4036,7 @@
         {
           "mechanicalId": "BLK-121-B01",
           "name": "Recover",
-          "effectText": "Discard 1 Water Energy card attached to Marathon in order to use this attack. Remove all damage counters from Marathon."
+          "effectText": "Discard 1 Sober Energy card attached to Marathon in order to use this attack. Remove all damage counters from Marathon."
         },
         {
           "mechanicalId": "BLK-121-B02",
@@ -4181,13 +4181,13 @@
       "attacks": [
         {
           "mechanicalId": "BLK-126-B01",
-          "name": "Fire Punch",
+          "name": "Chilli Punch",
           "effectText": null
         },
         {
           "mechanicalId": "BLK-126-B02",
           "name": "Flamethrower",
-          "effectText": "Discard 1 Fire Energy card attached to Mr Vesta in order to use this attack."
+          "effectText": "Discard 1 Curry Energy card attached to Mr Vesta in order to use this attack."
         }
       ],
       "rules": [],
@@ -4297,7 +4297,7 @@
       "attacks": [
         {
           "mechanicalId": "BLK-130-B01",
-          "name": "Dragon Rage",
+          "name": "Sober Rage",
           "effectText": null
         },
         {
@@ -4326,8 +4326,8 @@
       "attacks": [
         {
           "mechanicalId": "BLK-131-B01",
-          "name": "Water Gun",
-          "effectText": "Does 10 damage plus 10 more damage for each Water Energy attached to Last Bus Home but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
+          "name": "Soda Gun",
+          "effectText": "Does 10 damage plus 10 more damage for each Sober Energy attached to Last Bus Home but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
         },
         {
           "mechanicalId": "BLK-131-B02",
@@ -4413,8 +4413,8 @@
         },
         {
           "mechanicalId": "BLK-134-B02",
-          "name": "Water Gun",
-          "effectText": "Does 30 damage plus 10 more damage for each Water Energy attached to Teetotal Terry but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
+          "name": "Soda Gun",
+          "effectText": "Does 30 damage plus 10 more damage for each Sober Energy attached to Teetotal Terry but not used to pay for this attack's Energy cost. Extra Sober Energy after the 2nd doesn't count."
         }
       ],
       "rules": [],
@@ -4472,7 +4472,7 @@
         {
           "mechanicalId": "BLK-136-B02",
           "name": "Flamethrower",
-          "effectText": "Discard 1 Fire Energy card attached to Bombay Bandit in order to use this attack."
+          "effectText": "Discard 1 Curry Energy card attached to Bombay Bandit in order to use this attack."
         }
       ],
       "rules": [],
@@ -4496,12 +4496,12 @@
         {
           "mechanicalId": "BLK-137-B01",
           "name": "Conversion 1",
-          "effectText": "If the Defending Blokemon has a Weakness, you may change it to a type of your choice other than Colorless."
+          "effectText": "If the Defending Blokemon has a Weakness, you may change it to a type of your choice other than Local."
         },
         {
           "mechanicalId": "BLK-137-B02",
           "name": "Conversion 2",
-          "effectText": "Change Facebook Dad's Resistance to a type of your choice other than Colorless."
+          "effectText": "Change Facebook Dad's Resistance to a type of your choice other than Local."
         }
       ],
       "rules": [],
@@ -4530,8 +4530,8 @@
       "attacks": [
         {
           "mechanicalId": "BLK-138-B01",
-          "name": "Water Gun",
-          "effectText": "Does 10 damage plus 10 more damage for each Water Energy attached to Old Habit but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
+          "name": "Soda Gun",
+          "effectText": "Does 10 damage plus 10 more damage for each Sober Energy attached to Old Habit but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
         }
       ],
       "rules": [],
@@ -4554,8 +4554,8 @@
       "attacks": [
         {
           "mechanicalId": "BLK-139-B01",
-          "name": "Water Gun",
-          "effectText": "Does 20 damage plus 10 more damage for each Water Energy attached to New Life but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
+          "name": "Soda Gun",
+          "effectText": "Does 20 damage plus 10 more damage for each Sober Energy attached to New Life but not used to pay for this attack's Energy cost. You can't add more than 20 damage in this way."
         },
         {
           "mechanicalId": "BLK-139-B02",
@@ -4582,7 +4582,7 @@
       "pokemonPowers": [
         {
           "mechanicalId": "BLK-140-T01",
-          "name": "Kabuto Armor",
+          "name": "Flat Cap Armor",
           "effectText": "Whenever an attack (even your own) does damage to Flat Cap (after applying Weakness and Resistance), that attack does half the damage to Flat Cap (rounded down to the nearest 10). (Any other effects of attacks still happen.) This power stops working while Flat Cap is Asleep, Confused, or Paralyzed."
         }
       ],
@@ -4761,7 +4761,7 @@
         {
           "mechanicalId": "BLK-146-B01",
           "name": "Wildfire",
-          "effectText": "You may discard any number of Fire Energy cards attached to Fat Les when you use this attack. If you do, discard that many cards from the top of your opponent's deck."
+          "effectText": "You may discard any number of Curry Energy cards attached to Fat Les when you use this attack. If you do, discard that many cards from the top of your opponent's deck."
         },
         {
           "mechanicalId": "BLK-146-B02",
@@ -4872,13 +4872,13 @@
       "attacks": [
         {
           "mechanicalId": "BLK-150-B01",
-          "name": "Psychic",
+          "name": "Mind Games",
           "effectText": "Does 10 damage plus 10 more damage for each Energy card attached to the Defending Blokemon."
         },
         {
           "mechanicalId": "BLK-150-B02",
           "name": "Barrier",
-          "effectText": "Discard 1 Psychic Energy card attached to Super Hans in order to prevent all effects of attacks, including damage, done to Super Hans during your opponent's next turn."
+          "effectText": "Discard 1 Geeked Energy card attached to Super Hans in order to prevent all effects of attacks, including damage, done to Super Hans during your opponent's next turn."
         }
       ],
       "rules": [],
@@ -5287,42 +5287,42 @@
     {
       "id": "ENERGY-LAIRY",
       "name": "Front",
-      "definition": "Basic Fighting Energy. Attach it to a Blokemon to provide 1 Fighting Energy.",
+      "definition": "Basic Lairy Energy. Attach it to a Blokemon to provide 1 Lairy Energy.",
       "symbolKey": "energy-lairy",
       "accessibleLabel": "Front, Basic Energy"
     },
     {
       "id": "ENERGY-CURRY",
       "name": "Heat",
-      "definition": "Basic Fire Energy. Attach it to a Blokemon to provide 1 Fire Energy.",
+      "definition": "Basic Curry Energy. Attach it to a Blokemon to provide 1 Curry Energy.",
       "symbolKey": "energy-curry",
       "accessibleLabel": "Heat, Basic Energy"
     },
     {
       "id": "ENERGY-BLAZED",
       "name": "Haze",
-      "definition": "Basic Grass Energy. Attach it to a Blokemon to provide 1 Grass Energy.",
+      "definition": "Basic Blazed Energy. Attach it to a Blokemon to provide 1 Blazed Energy.",
       "symbolKey": "energy-blazed",
       "accessibleLabel": "Haze, Basic Energy"
     },
     {
       "id": "ENERGY-BEER",
       "name": "Dutch Courage",
-      "definition": "Basic Lightning Energy. Attach it to a Blokemon to provide 1 Lightning Energy.",
+      "definition": "Basic Beer Energy. Attach it to a Blokemon to provide 1 Beer Energy.",
       "symbolKey": "energy-beer",
       "accessibleLabel": "Dutch Courage, Basic Energy"
     },
     {
       "id": "ENERGY-GEEKED",
       "name": "Rush",
-      "definition": "Basic Psychic Energy. Attach it to a Blokemon to provide 1 Psychic Energy.",
+      "definition": "Basic Geeked Energy. Attach it to a Blokemon to provide 1 Geeked Energy.",
       "symbolKey": "energy-geeked",
       "accessibleLabel": "Rush, Basic Energy"
     },
     {
       "id": "ENERGY-SOBER",
       "name": "Resolve",
-      "definition": "Basic Water Energy. Attach it to a Blokemon to provide 1 Water Energy.",
+      "definition": "Basic Sober Energy. Attach it to a Blokemon to provide 1 Sober Energy.",
       "symbolKey": "energy-sober",
       "accessibleLabel": "Resolve, Basic Energy"
     }

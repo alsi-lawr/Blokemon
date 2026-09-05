@@ -14,7 +14,7 @@ module BlokemonPublicContentValidator =
     let SchemaVersion = "blokemon-public-content-schema-1999-candidate.1"
 
     [<Literal>]
-    let ContentVersion = "blokemon-public-content-1999-candidate.2"
+    let ContentVersion = "blokemon-public-content-1999-candidate.3"
 
     [<Literal>]
     let TerminologyVersion = "blokemon-public-terminology-1999-candidate.1"
@@ -553,6 +553,37 @@ module BlokemonPublicContentValidator =
                     $"Public content carries the source game's vocabulary: {rejected}."
                     issues
 
+    /// The names a player reads on an effect: every Blokemon Power, attack and rule, and every
+    /// Trainer effect.
+    let private effectNames (manifest: BlokemonPublicContentManifest) =
+        seq {
+            for card in manifest.Collectibles do
+                for effect in Array.concat [ card.PokemonPowers; card.Attacks; card.Rules ] do
+                    yield effect.Name
+
+            for trainer in manifest.Trainers do
+                for effect in trainer.Effects do
+                    yield effect.Name
+        }
+
+    /// The source game's type names never reach a player either: mechanics copy names a type by
+    /// its approved label, so the mechanical name capitalised as a type is a defect wherever it
+    /// stands in an effect's text or name, a term or an Energy definition.
+    let private validateSourceTypes
+        (manifest: BlokemonPublicContentManifest)
+        (mechanics: BlokemonRuntimeManifest)
+        (issues: ResizeArray<BlokemonPublicContentIssue>)
+        =
+        for value in Seq.append (mechanicsStrings manifest) (effectNames manifest) do
+            for mapping in mechanics.ApprovedMechanicalDisplayMap do
+                let name = string mapping.MechanicalType
+
+                check
+                    (not (Regex.IsMatch(value, $@"(?<![A-Za-z]){Regex.Escape(name)}(?![A-Za-z])")))
+                    "text.source-type"
+                    $"Public mechanics text names the source game's type {name}; the approved type is {mapping.ApprovedLabel}."
+                    issues
+
     /// Validates the public content authority against the rules this repository owns.
     let ValidateDocument
         (manifest: BlokemonPublicContentManifest)
@@ -599,5 +630,6 @@ module BlokemonPublicContentValidator =
         validatePublicStrings manifest issues
         validateMechanicsVocabulary manifest issues
         validateSourceVocabulary manifest issues
+        validateSourceTypes manifest mechanics issues
 
         { BlokemonPublicContentValidation.Issues = issues.ToArray() }

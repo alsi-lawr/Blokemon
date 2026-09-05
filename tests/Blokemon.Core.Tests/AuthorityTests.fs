@@ -175,6 +175,37 @@ type AuthorityTests() =
         Authorities.publicCodes document |> should contain "text.source-vocabulary"
 
     [<Test>]
+    [<Arguments("Discard 1 Fire Energy card attached to this Blokemon.")>]
+    [<Arguments("Attach it to 1 of your Water Blokemon.")>]
+    [<Arguments("This attack's type is still Colorless.")>]
+    member _.``public content should reject the source game's type names in mechanics copy``
+        (text: string)
+        =
+        let document = Authorities.publicDocument ()
+        let effect = Authorities.firstTrainerEffect document
+        effect["effectText"] <- JsonValue.Create(text)
+
+        Authorities.publicCodes document |> should contain "text.source-type"
+
+    [<Test>]
+    member _.``public content should reject the source game's type names in an attack's name``() =
+        let document = Authorities.publicDocument ()
+        let effect = Authorities.firstTrainerEffect document
+        effect["name"] <- JsonValue.Create("Water Gun")
+
+        Authorities.publicCodes document |> should contain "text.source-type"
+
+    [<Test>]
+    member _.``public content should keep ordinary English that shares a type name's letters``() =
+        let document = Authorities.publicDocument ()
+        let effect = Authorities.firstTrainerEffect document
+
+        effect["effectText"] <-
+            JsonValue.Create("Pour a glass of water for the Defending Blokemon.")
+
+        Authorities.publicCodes document |> should not' (contain "text.source-type")
+
+    [<Test>]
     member _.``public content should reject the source game's vocabulary in a Trainer's effect name``
         ()
         =
