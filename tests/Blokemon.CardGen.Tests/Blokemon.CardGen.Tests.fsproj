@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="TrainerFaceTests.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Blokemon.CardGen/Blokemon.CardGen.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      FsUnit's NUnit flavour registers no Microsoft Testing Platform test framework, so TUnit
+      stays the only host and an FsUnit assertion failure surfaces as an ordinary TUnit failure.
+    -->
+    <PackageReference Include="FsUnit" />
+    <PackageReference Include="TUnit" />
+    <!--
+      Central package management sets DisableImplicitFSharpCoreReference, so without this
+      reference the project builds green and fails at runtime with a missing FSharp.Core.
+    -->
+    <PackageReference Include="FSharp.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content
+      Include="../../content/authorities/mechanics.json;../../content/authorities/public-content.json;../../content/authorities/printing.json"
+      Link="content/authorities/%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <!-- The set authority is read against the approved illustrations; only their names are indexed. -->
+    <Content
+      Include="../../content/art/*.svg"
+      Link="content/art/%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
+</Project>

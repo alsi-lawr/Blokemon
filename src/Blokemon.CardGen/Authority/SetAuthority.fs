@@ -280,7 +280,12 @@ module SetAuthority =
             (CardId.create published.Id)
             ([ CardRegion.PrintedField ] @ lineage @ face)
 
-    let private toTrainer (published: BlokemonPublicTrainer) (art: ArtIndex) number =
+    let private toTrainer
+        (published: BlokemonPublicTrainer)
+        (mechanical: BlokemonKit)
+        (art: ArtIndex)
+        number
+        =
         let effects =
             [ for effect in published.Effects ->
                   CardEntry.rule
@@ -304,7 +309,7 @@ module SetAuthority =
                       Some
                           "Trainer card. Played from hand, then discarded unless its own text says otherwise.",
                       Some published.Id,
-                      Some Rarity.Uncommon,
+                      Some(toRarity mechanical.ProductBucket false (CardId.create published.Id)),
                       Some number
                   ) ] }
 
@@ -362,6 +367,8 @@ module SetAuthority =
             |> Seq.map (fun collectible -> collectible.Id, collectible)
             |> indexed
 
+        let mechanicalKits = mechanics.Kits |> Seq.map (fun kit -> kit.Id, kit) |> indexed
+
         let names =
             content.Collectibles
             |> Seq.map (fun card -> card.Id, card.ApprovedName)
@@ -403,7 +410,7 @@ module SetAuthority =
           Trainers =
             ImmutableArray.CreateRange
                 [ for trainer in content.Trainers ->
-                      toTrainer trainer art trainerNumbers[trainer.Id] ]
+                      toTrainer trainer mechanicalKits[trainer.Id] art trainerNumbers[trainer.Id] ]
           Energy =
             ImmutableArray.CreateRange
                 [ for index in 0 .. content.Energy.Length - 1 ->

@@ -21,6 +21,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Blokemon.App.Tests/Blokemon.App.Tests.fsproj" />
+    <Project Path="tests/Blokemon.CardGen.Tests/Blokemon.CardGen.Tests.fsproj" />
     <Project Path="tests/Blokemon.Core.Tests/Blokemon.Core.Tests.fsproj" />
     <Project Path="tests/Blokemon.Cpu.Tests/Blokemon.Cpu.Tests.fsproj" />
     <Project Path="tests/Blokemon.Game.Tests/Blokemon.Game.Tests.fsproj" />
