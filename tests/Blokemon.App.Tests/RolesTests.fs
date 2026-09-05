@@ -191,7 +191,7 @@ type RolesTests() =
             let! core = Tenants.ensureDefault documents documents now Unchecked.defaultof<_>
             let owner = AccountId.Mint()
             let other = AccountId.Mint()
-            do! create documents (accountKey owner) (newAccount owner now)
+            do! create documents (accountKey owner) (newAccount owner Terms.Version now)
             let! channel = channel documents "the-regular" "1001"
 
             let! unassigned =

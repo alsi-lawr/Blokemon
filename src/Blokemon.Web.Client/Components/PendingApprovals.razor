@@ -8,15 +8,15 @@
 
 @if (_pending is { Length: > 0 })
 {
-    <div class="panel setup-card pending-approvals" aria-labelledby="approvals-heading">
-        <h2 id="approvals-heading">Channels waiting for you</h2>
+    <section class="panel profile-panel pending-approvals" aria-labelledby="approvals-heading">
+        <div class="panel-head"><h2 id="approvals-heading"><Icon Name="radio-tower" /> Channels waiting for you</h2></div>
         <p>These channels asked to use your Blokemon. Approving one lets it sign you in.</p>
         <ul class="approval-list" aria-label="Channels waiting for your approval">
             @foreach (var channel in _pending)
             {
                 <li>
                     <span>@channel.Label</span>
-                    <button type="button" class="secondary" @onclick="() => Approve(channel)" disabled="@(_working is not null)">@(_working == channel.TenantId ? "Approving…" : "Approve")</button>
+                    <button type="button" class="secondary" @onclick="() => Approve(channel)" disabled="@(_working is not null)"><Icon Name="badge-check" /> @(_working == channel.TenantId ? "Approving…" : "Approve")</button>
                     @if (_errors.TryGetValue(channel.TenantId, out var error))
                     {
                         <span class="field-error" role="alert">@error</span>
@@ -24,7 +24,7 @@
                 </li>
             }
         </ul>
-    </div>
+    </section>
 }
 
 @code {

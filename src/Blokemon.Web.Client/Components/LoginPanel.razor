@@ -1,14 +1,14 @@
 @*
     The profile's login panel: the account's player name, and the password set or changed with
-    it. An account that came in by passkey has no name yet and chooses one here; setting the
-    first password on an account with no other credential brings recovery codes, as the first
-    passkey does. The panel keeps one shape: loading, error and empty states fill it.
+    it. An account that came in by passkey or Google has no name yet and chooses one here;
+    setting the first password on an account with no other credential brings recovery codes, as
+    the first passkey does. The panel keeps one shape: loading, error and empty states fill it.
 *@
 @inject PasskeyFlow Passkeys
 @inject NavigationManager Navigation
 
-<div class="panel setup-card login-panel" aria-labelledby="login-heading">
-    <h2 id="login-heading">Player name and password</h2>
+<section class="panel profile-panel login-panel" aria-labelledby="login-heading">
+    <div class="panel-head"><h2 id="login-heading"><Icon Name="lock-keyhole" /> Player name and password</h2></div>
     <p>Sign in on any device with your player name and password.</p>
     @if (_state is null && _error is null)
     {
@@ -41,12 +41,12 @@
                     <span class="field-error" role="alert">@_passwordValidation</span>
                 }
                 <div class="actions">
-                    <button type="submit" class="secondary" disabled="@_working">@(_working ? "Saving…" : _state.LoginName is null ? "Set a password" : "Change password")</button>
+                    <button type="submit" class="secondary" disabled="@_working"><Icon Name="@(_state.LoginName is null ? "plus" : "pencil")" /> @(_working ? "Saving…" : _state.LoginName is null ? "Set a password" : "Change password")</button>
                 </div>
             </form>
             @if (_saved)
             {
-                <p class="muted login-saved" role="status">Password saved.</p>
+                <p class="muted login-saved" role="status"><Icon Name="check" /> Password saved.</p>
             }
         }
     }
@@ -54,7 +54,7 @@
     {
         <span class="field-error" role="alert">@_error</span>
     }
-</div>
+</section>
 
 @code {
     private PasskeyStateView? _state;

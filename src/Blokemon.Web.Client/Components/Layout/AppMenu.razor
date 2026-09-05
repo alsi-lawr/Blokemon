@@ -6,7 +6,8 @@
     who they are signed in as and the way out. Those two exist only with a session: they are facts
     about the player, and a player with nothing to sign into has no line here about it. The two
     role items are the same kind of fact - what this person may do here - and exist only while the
-    server derives that role for the held session.
+    server derives that role for the held session. The two notices are for everyone, signed in or
+    not, because they are what a person reads before they decide to have an account.
 
     The panel is dismissed by anything that means "not this": a press anywhere else, Escape, or
     picking one of the things in it.
@@ -43,51 +44,43 @@
             {
                 <div class="app-menu-identity" role="none">
                     <span>Signed in as</span>
-                    <strong>@(held.DisplayName ?? "you")</strong>
+                    <strong>@(held.DisplayName ?? "New player")</strong>
                 </div>
             }
             <a class="app-menu-item" role="menuitem" href="profile" @onclick="Close">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="8.4" r="3.6" />
-                    <path d="M4.9 20.2a7.3 7.3 0 0 1 14.2 0" />
-                </svg>
+                <Icon Name="user" />
                 <span>Profile</span>
             </a>
             @if (_roles is { OwnedTenants.Length: > 0 })
             {
                 <a class="app-menu-item" role="menuitem" href="owner" @onclick="Close">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M6 20.5V4h10.5l-2 3.5 2 3.5H6" />
-                    </svg>
+                    <Icon Name="radio-tower" />
                     <span>Your channel</span>
                 </a>
             }
             @if (_roles is { Operator: true })
             {
                 <a class="app-menu-item" role="menuitem" href="operator" @onclick="Close">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <circle cx="8" cy="12" r="3.6" />
-                        <path d="M11.6 12h8.9M17 12v3.2M20 12v2.2" />
-                    </svg>
+                    <Icon Name="shield" />
                     <span>Operator</span>
                 </a>
             }
             <button type="button" class="app-menu-item" role="menuitem" @onclick="OpenSettings">
-                @* Two sliders, which is what is behind this, rather than a cog - a cog at this
-                   size loses its teeth and reads as a sun. *@
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M3.5 8.5h9.6M17.4 8.5h3.1M3.5 15.5h3.1M11.4 15.5h9.1" />
-                    <circle cx="15.2" cy="8.5" r="2.2" />
-                    <circle cx="9.2" cy="15.5" r="2.2" />
-                </svg>
+                <Icon Name="settings-2" />
                 <span>Settings</span>
             </button>
+            <a class="app-menu-item app-menu-notice" role="menuitem" href="privacy" @onclick="Close">
+                <Icon Name="shield-check" />
+                <span>Privacy notice</span>
+            </a>
+            <a class="app-menu-item" role="menuitem" href="terms" @onclick="Close">
+                <Icon Name="file-text" />
+                <span>Terms of service</span>
+            </a>
             @if (Session.Current is not null)
             {
                 <button type="button" class="app-menu-item app-menu-sign-out" role="menuitem" @onclick="SignOut" disabled="@_signingOut">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M10 4.5H5.5v15H10M14.5 8l4 4-4 4M8.5 12h10" />
-                    </svg>
+                    <Icon Name="log-out" />
                     <span>@(_signingOut ? "Signing out…" : "Sign out")</span>
                 </button>
             }

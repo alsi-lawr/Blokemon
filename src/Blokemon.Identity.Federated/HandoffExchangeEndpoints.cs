@@ -22,7 +22,7 @@ public static class HandoffExchangeEndpoints
 
     public static readonly ApiError ApprovalPending = new(
         "approval.pending",
-        "Confirm from a channel you already play in, or sign in with your passkey."
+        "Confirm from a channel you already play in, or sign in with your own password, passkey or Google account."
     );
 
     public static RouteHandlerBuilder Map(IEndpointRouteBuilder endpoints) =>
@@ -52,6 +52,42 @@ public static class HandoffExchangeEndpoints
             return ChannelCalls.Fail<IssuedSessionView>(
                 new("tenant.not_found", "That channel is not on this server.")
             );
+        }
+
+        // A code that would create an account needs the person's acceptance of the current
+        // terms, and the code is single-use: it is read, not spent, to find out, so the client
+        // can show the terms and exchange the same code once they are accepted.
+        if (!Terms.accepted(request.AcceptedTerms))
+        {
+            var peeked = await HandoffCodes.peek(
+                documents,
+                request.Code,
+                HandoffKind.Channel,
+                Tenants.idOf(routed),
+                time.GetUtcNow(),
+                cancellationToken
+            );
+            if (
+                peeked
+                    is DomainResult<HandoffDocument, HandoffFailure>.Succeeded
+                    {
+                        Value: { Subject: { } subject },
+                    }
+                && ExternalSubject.Create(subject)
+                    is DomainResult<
+                        ExternalSubject,
+                        ExternalIdentityFailure
+                    >.Succeeded parsedSubject
+                && await IssuerAdmission.wouldCreateAccount(
+                    documents,
+                    BlokeBotProvider.LinkProvider,
+                    parsedSubject.Value,
+                    cancellationToken
+                )
+            )
+            {
+                return ChannelCalls.Fail<IssuedSessionView>(Terms.required);
+            }
         }
 
         var exchanged = await provider.Exchange(
@@ -95,6 +131,7 @@ public static class HandoffExchangeEndpoints
             listing,
             success.Value.Identity,
             current,
+            request.AcceptedTerms,
             time.GetUtcNow(),
             cancellationToken
         );
@@ -118,7 +155,7 @@ public static class HandoffExchangeEndpoints
         };
     }
 
-    private static async Task<string> DisplayName(
+    private static async Task<string?> DisplayName(
         SignInServices services,
         Session session,
         CancellationToken cancellationToken
@@ -138,7 +175,7 @@ public static class HandoffExchangeEndpoints
             ProfileAuthorityPolicy.Preserve
         );
         var state = await application.State(cancellationToken);
-        return state.Value?.Profile?.DisplayName ?? SignInCompletion.FallbackDisplayName;
+        return state.Value?.Profile?.DisplayName;
     }
 
     private static IdentityProviderName Name(string name) =>

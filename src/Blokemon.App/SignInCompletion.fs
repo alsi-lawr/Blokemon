@@ -47,11 +47,14 @@ module SignInCompletion =
 
     /// The account the link names, or the candidate once the link is created for it. The
     /// candidate is minted here for an ordinary first sign-in and supplied by a provider whose
-    /// subject is the account id itself.
+    /// subject is the account id itself. A link to an account that does not exist yet is the
+    /// account's creation, and needs the person's acceptance of the current terms; a link that
+    /// adds a way in to an account that already exists needs nothing new.
     let private resolveAccount
         (documents: IStateDocumentStore)
         (identity: VerifiedIdentity)
         (candidate: unit -> AccountId)
+        (terms: string | null)
         (now: DateTimeOffset)
         (cancellationToken: CancellationToken)
         : Task<DomainResult<AccountId, SignInFailure>> =
@@ -64,36 +67,45 @@ module SignInCompletion =
             | LinkResolution.Damaged -> return DomainResult.Failed SignInFailure.Damaged
             | LinkResolution.Unlinked ->
                 let account = candidate ()
+                let! existing = Accounts.load documents account cancellationToken
 
-                let! created =
-                    IdentityLinks.create
-                        documents
-                        { Provider = identity.Provider
-                          Subject = identity.Subject
-                          Account = account }
-                        now
-                        cancellationToken
+                match existing with
+                | AccountRecord.Absent when not (Terms.accepted terms) ->
+                    // A first sign-in creates an account; without the person's acceptance of
+                    // the current terms nothing is written, not even the link.
+                    return DomainResult.Failed SignInFailure.TermsRequired
+                | _ ->
 
-                match created with
-                | DomainResult.Succeeded() -> return DomainResult.Succeeded account
-                | DomainResult.Failed IdentityLinkFailure.AlreadyLinked ->
-                    // A concurrent first sign-in for the same subject won the link; this one
-                    // follows it. The minted id was never written anywhere.
-                    let! again =
-                        IdentityLinks.resolve
+                    let! created =
+                        IdentityLinks.create
                             documents
-                            identity.Provider
-                            identity.Subject
+                            { Provider = identity.Provider
+                              Subject = identity.Subject
+                              Account = account }
+                            now
                             cancellationToken
 
-                    match again with
-                    | LinkResolution.Linked winner -> return DomainResult.Succeeded winner
-                    | _ -> return DomainResult.Failed SignInFailure.Conflict
+                    match created with
+                    | DomainResult.Succeeded() -> return DomainResult.Succeeded account
+                    | DomainResult.Failed IdentityLinkFailure.AlreadyLinked ->
+                        // A concurrent first sign-in for the same subject won the link; this one
+                        // follows it. The minted id was never written anywhere.
+                        let! again =
+                            IdentityLinks.resolve
+                                documents
+                                identity.Provider
+                                identity.Subject
+                                cancellationToken
+
+                        match again with
+                        | LinkResolution.Linked winner -> return DomainResult.Succeeded winner
+                        | _ -> return DomainResult.Failed SignInFailure.Conflict
         }
 
     let private ensureAccount
         (documents: IStateDocumentStore)
         (account: AccountId)
+        (terms: string | null)
         (now: DateTimeOffset)
         (cancellationToken: CancellationToken)
         : Task<DomainResult<AccountDocument, SignInFailure>> =
@@ -105,7 +117,7 @@ module SignInCompletion =
             | AccountRecord.Erased _ -> return DomainResult.Failed SignInFailure.AccountErased
             | AccountRecord.Damaged -> return DomainResult.Failed SignInFailure.Damaged
             | AccountRecord.Absent ->
-                let document = newAccount account now
+                let document = newAccount account terms now
 
                 let! write =
                     documents.Create(
@@ -124,7 +136,7 @@ module SignInCompletion =
                     | _ -> return DomainResult.Failed SignInFailure.Conflict
         }
 
-    let private ensureProfile
+    let private createProfile
         (services: SignInServices)
         (account: AccountId)
         (tenant: TenantId)
@@ -170,22 +182,39 @@ module SignInCompletion =
                 | Null -> return DomainResult.Failed SignInFailure.Conflict
         }
 
+    /// A provider that offers a display-name hint names the first profile; one that offers
+    /// none leaves the account without a profile, and the client asks the person for their
+    /// player name before the game. Nothing a provider knows about a person becomes visible
+    /// unless the person chose it.
+    let private ensureProfile
+        (services: SignInServices)
+        (account: AccountId)
+        (tenant: TenantId)
+        (hint: string | null)
+        (cancellationToken: CancellationToken)
+        : Task<DomainResult<unit, SignInFailure>> =
+        match hint with
+        | null -> task { return DomainResult.Succeeded() }
+        | _ -> createProfile services account tenant hint cancellationToken
+
     let private completeWith
         (services: SignInServices)
         (identity: VerifiedIdentity)
         (candidate: unit -> AccountId)
+        (terms: string | null)
         (tenant: TenantId)
         (now: DateTimeOffset)
         (cancellationToken: CancellationToken)
         : Task<DomainResult<IssuedSession, SignInFailure>> =
         task {
             let documents = services.Documents
-            let! resolved = resolveAccount documents identity candidate now cancellationToken
+
+            let! resolved = resolveAccount documents identity candidate terms now cancellationToken
 
             match resolved with
             | DomainResult.Failed failure -> return DomainResult.Failed failure
             | DomainResult.Succeeded account ->
-                let! ensured = ensureAccount documents account now cancellationToken
+                let! ensured = ensureAccount documents account terms now cancellationToken
 
                 match ensured with
                 | DomainResult.Failed failure -> return DomainResult.Failed failure
@@ -225,15 +254,17 @@ module SignInCompletion =
                             return DomainResult.Succeeded issued
         }
 
-    /// Completes a sign-in for an identity a provider has already verified.
+    /// Completes a sign-in for an identity a provider has already verified. The terms are the
+    /// version the person accepted, needed only when this sign-in creates the account.
     let complete
         (services: SignInServices)
         (identity: VerifiedIdentity)
+        (terms: string | null)
         (tenant: TenantId)
         (now: DateTimeOffset)
         (cancellationToken: CancellationToken)
         : Task<DomainResult<IssuedSession, SignInFailure>> =
-        completeWith services identity AccountId.Mint tenant now cancellationToken
+        completeWith services identity AccountId.Mint terms tenant now cancellationToken
 
     /// Completes a sign-in whose identity is the account itself: the first-party provider's
     /// subject is the account id, so a first registration names the account it creates rather
@@ -242,11 +273,12 @@ module SignInCompletion =
         (services: SignInServices)
         (identity: VerifiedIdentity)
         (account: AccountId)
+        (terms: string | null)
         (tenant: TenantId)
         (now: DateTimeOffset)
         (cancellationToken: CancellationToken)
         : Task<DomainResult<IssuedSession, SignInFailure>> =
-        completeWith services identity (fun () -> account) tenant now cancellationToken
+        completeWith services identity (fun () -> account) terms tenant now cancellationToken
 
     /// Verifies a proof through the named enabled provider, then completes the sign-in.
     let signIn
@@ -254,6 +286,7 @@ module SignInCompletion =
         (registry: IdentityProviderRegistry)
         (provider: IdentityProviderName)
         (proof: string)
+        (terms: string | null)
         (tenant: TenantId)
         (now: DateTimeOffset)
         (cancellationToken: CancellationToken)
@@ -276,5 +309,5 @@ module SignInCompletion =
                 match verified with
                 | DomainResult.Failed failure -> return DomainResult.Failed failure
                 | DomainResult.Succeeded identity ->
-                    return! complete services identity tenant now cancellationToken
+                    return! complete services identity terms tenant now cancellationToken
         }

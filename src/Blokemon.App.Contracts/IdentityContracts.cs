@@ -32,7 +32,15 @@ public sealed record TenantDescriptorView(
 /// is running as (null at the root, the default tenant) so the exchange can refuse a code
 /// bound to another tenant.
 /// </summary>
-public sealed record SessionExchangeRequest(string Code, string? Slug = null);
+/// <summary>
+/// A hand-off or continuation code to exchange. The accepted terms are the version the person
+/// agreed to, needed only when the exchange would create an account.
+/// </summary>
+public sealed record SessionExchangeRequest(
+    string Code,
+    string? Slug = null,
+    string? AcceptedTerms = null
+);
 
 /// <summary>
 /// A session as the client receives it, once: the bearer token, when it expires, the display
@@ -42,7 +50,7 @@ public sealed record SessionExchangeRequest(string Code, string? Slug = null);
 public sealed record IssuedSessionView(
     string Token,
     DateTimeOffset ExpiresAt,
-    string DisplayName,
+    string? DisplayName,
     bool Recovery = false
 );
 

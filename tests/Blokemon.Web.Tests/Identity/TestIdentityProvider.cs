@@ -171,6 +171,7 @@ internal sealed class SessionHost : IAsyncDisposable
             registry,
             Provider.Name,
             proof,
+            Terms.Version,
             target,
             time.GetUtcNow(),
             CancellationToken.None

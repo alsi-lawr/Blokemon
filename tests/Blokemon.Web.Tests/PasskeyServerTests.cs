@@ -477,7 +477,7 @@ public sealed class PasskeyServerTests
             await Post<PasskeyOptionsView>(
                 client,
                 $"{Prefix}/register/options",
-                new PasskeyRegisterOptionsRequest("x")
+                new PasskeyRegisterOptionsRequest("x", Terms.Version)
             )
         ).Error!.Code.ShouldBe("passkey.unavailable");
         (
@@ -509,7 +509,68 @@ public sealed class PasskeyServerTests
         referencing.ShouldBe(["src/Blokemon.Web/Blokemon.Web.csproj"]);
     }
 
+    [Test]
+    public async Task Registration_NeedsTheCurrentTerms_AndWritesNothingWithoutThem()
+    {
+        await using var host = PasskeyHost();
+        using var authenticator = new SoftwareAuthenticator(Origin, RpId);
+        var before = await host.WithStore(store => store.List(""));
+        using var client = host.Client();
+
+        foreach (var terms in new string?[] { null, "", "2020-01-01" })
+        {
+            var refused = await Post<PasskeyOptionsView>(
+                client,
+                $"{Prefix}/register/options",
+                new PasskeyRegisterOptionsRequest("Keyed", terms)
+            );
+            refused.Error!.Code.ShouldBe("terms.required", terms ?? "null");
+        }
+
+        (await host.WithStore(store => store.List(""))).ShouldBe(before);
+
+        // Agreed to, the account records the version that was agreed.
+        var registered = await Register(host, authenticator, "Keyed");
+        var account = await AccountOf(host, registered.Session.Token);
+        (await host.WithStore(store => store.Read($"account/{account}")))!.Json.ShouldContain(
+            $"\"termsVersion\":\"{Terms.Version}\""
+        );
+    }
+
+    [Test]
+    public async Task TheCredentialState_NamesAChannelOnlyAccount_AndNoOther()
+    {
+        await using var host = PasskeyHost();
+        using var ownKey = new SoftwareAuthenticator(Origin, RpId);
+        using var channelKey = new SoftwareAuthenticator(Origin, RpId);
+
+        // A channel's session on an account with nothing of its own: the one case.
+        var channel = await host.SignIn("viewer-11", "Viewer", SessionProvenance.Issuer);
+        (await State(host, channel.Token)).ChannelOnly.ShouldBeTrue();
+
+        // The person's own sign-in, by an external account with no password and no passkey.
+        var external = await host.SignIn("google-11", "Server Player");
+        (await State(host, external.Token)).ChannelOnly.ShouldBeFalse();
+
+        // An account with a passkey, from its own session and from a channel's.
+        var registered = await Register(host, ownKey, "Own");
+        (await State(host, registered.Session.Token)).ChannelOnly.ShouldBeFalse();
+        var enrolled = await Enrol(host, channel.Token, channelKey);
+        enrolled.Succeeded.ShouldBeTrue(enrolled.Error?.Message);
+        (await State(host, channel.Token)).ChannelOnly.ShouldBeFalse();
+    }
+
     // ---- helpers ------------------------------------------------------------------------------
+
+    internal static async Task<PasskeyStateView> State(SessionHost host, string token)
+    {
+        using var client = host.Client(token);
+        var state = await client.GetFromJsonAsync<ApiResponse<PasskeyStateView>>(
+            $"{Prefix}/credentials"
+        );
+        state!.Succeeded.ShouldBeTrue(state.Error?.Message);
+        return state.Value!;
+    }
 
     internal static async Task<AccountRegistrationView> Register(
         SessionHost host,
@@ -521,7 +582,7 @@ public sealed class PasskeyServerTests
         var options = await Options(
             client,
             $"{Prefix}/register/options",
-            new PasskeyRegisterOptionsRequest(displayName)
+            new PasskeyRegisterOptionsRequest(displayName, Terms.Version)
         );
         options.Options.GetProperty("rp").GetProperty("id").GetString().ShouldBe(RpId);
         options

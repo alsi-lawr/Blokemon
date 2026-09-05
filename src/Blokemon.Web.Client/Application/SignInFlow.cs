@@ -13,6 +13,12 @@ public enum SignInStage
     Finding,
     Waiting,
     SigningIn,
+
+    /// <summary>
+    /// The exchange would create an account, and the person has not yet accepted the terms:
+    /// the code is unspent, and the surface shows the terms before trying again.
+    /// </summary>
+    TermsRequired,
     SignedIn,
     Failed,
 }
@@ -35,6 +41,7 @@ public sealed class SignInFlow(
 )
 {
     private IJSObjectReference? _module;
+    private (string Path, string Code)? _awaitingTerms;
 
     public SignInStage Stage { get; private set; }
 
@@ -109,6 +116,21 @@ public sealed class SignInFlow(
         await Exchange(SessionApiClient.ContinuationExchangePath, code, cancellationToken);
     }
 
+    /// <summary>
+    /// The person has accepted the terms the surface showed: the same code is exchanged again,
+    /// this time carrying the accepted version, and the account is created.
+    /// </summary>
+    public async Task<bool> AcceptTerms(CancellationToken cancellationToken = default)
+    {
+        if (_awaitingTerms is not { } pending)
+        {
+            return false;
+        }
+
+        _awaitingTerms = null;
+        return await Exchange(pending.Path, pending.Code, cancellationToken, Terms.Version);
+    }
+
     private async Task<bool> Describe(string? slug, CancellationToken cancellationToken)
     {
         var response = await tenants.Resolve(slug, cancellationToken);
@@ -128,17 +150,30 @@ public sealed class SignInFlow(
             ? Exchange(path, code, cancellationToken)
             : Task.FromResult(false);
 
-    private async Task<bool> Exchange(string path, string code, CancellationToken cancellationToken)
+    private async Task<bool> Exchange(
+        string path,
+        string code,
+        CancellationToken cancellationToken,
+        string? acceptedTerms = null
+    )
     {
         Move(SignInStage.SigningIn);
         var response = await api.Exchange(
             path,
             code,
             Tenant is { Slug: var slug } && slug != Tenants.DefaultSlug.Value ? slug : null,
+            acceptedTerms,
             cancellationToken
         );
         if (!response.Succeeded || response.Value is null)
         {
+            if (response.Error?.Code == Terms.required.Code)
+            {
+                _awaitingTerms = (path, code);
+                Move(SignInStage.TermsRequired);
+                return false;
+            }
+
             Fail(response.Error);
             return false;
         }

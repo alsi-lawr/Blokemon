@@ -433,7 +433,7 @@ public sealed class StateDocumentStoreTests
         var createdAt = new DateTimeOffset(2026, 9, 3, 12, 0, 0, TimeSpan.Zero);
         var expiresAt = createdAt.AddHours(8);
         var accountJson = JsonSerializer.Serialize(
-            TenancyDocuments.newAccount(account, createdAt),
+            TenancyDocuments.newAccount(account, Terms.Version, createdAt),
             TenancyDocuments.json
         );
         var tenantJson = JsonSerializer.Serialize(

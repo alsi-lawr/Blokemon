@@ -161,6 +161,34 @@ small,
   color: var(--muted);
 }
 
+/* A lead paragraph under a heading: the page's one sentence of context, in the ink rather than
+   the muted grey, with room above and below it. */
+.lead {
+  margin: 10px 0 24px;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+/*
+  The icon set is one sprite of symbols rendered once by the layout, so it takes no room of its
+  own, and every icon is a <use> sized by the text it sits in and coloured by it: the symbols
+  stroke currentColor, so an icon in a gold heading is gold and one in a muted line is muted.
+*/
+.icon-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.icon {
+  width: 1.15em;
+  height: 1.15em;
+  flex: 0 0 auto;
+  vertical-align: -0.22em;
+}
+
 .visually-hidden {
   position: absolute !important;
   width: 1px !important;

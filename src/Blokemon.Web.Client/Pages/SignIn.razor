@@ -47,12 +47,12 @@ else
                             {
                                 <span class="field-error" role="alert">@_validation</span>
                             }
-                            <button type="submit" class="primary full sign-in-password" disabled="@(_working != Working.None)">@(_working == Working.Password ? "Signing in…" : "Sign in")</button>
+                            <button type="submit" class="primary full sign-in-password" disabled="@(_working != Working.None)"><Icon Name="log-in" /> @(_working == Working.Password ? "Signing in…" : "Sign in")</button>
                         </form>
                         @if (_descriptor.Passkeys)
                         {
                             <p class="sign-in-or">or</p>
-                            <button type="button" class="secondary button full sign-in-passkey" @onclick="SignInWithPasskey" disabled="@(_working != Working.None)">@(_working == Working.Passkey ? "Waiting for your passkey…" : "Sign in with a passkey")</button>
+                            <button type="button" class="secondary button full sign-in-passkey" @onclick="SignInWithPasskey" disabled="@(_working != Working.None)"><Icon Name="key-round" /> @(_working == Working.Passkey ? "Waiting for your passkey…" : "Sign in with a passkey")</button>
                             @if (_declined is not null)
                             {
                                 <span class="field-error" role="alert">@_declined</span>
@@ -61,11 +61,11 @@ else
                     }
                     @foreach (var link in _descriptor.SignInLinks ?? [])
                     {
-                        <a class="secondary button full sign-in-link" href="@link.Url" target="_top" rel="noopener">@link.Label</a>
+                        <a class="secondary button full sign-in-link" href="@link.Url" target="_top" rel="noopener"><Icon Name="log-in" /> @link.Label</a>
                     }
                     @if (FirstParty)
                     {
-                        <a class="secondary button full" href="signin/create">Create an account</a>
+                        <a class="secondary button full" href="signin/create"><Icon Name="user-round-plus" /> Create an account</a>
                     }
                     @if (_descriptor.CoreSignIn is { } core)
                     {
@@ -77,7 +77,8 @@ else
             {
                 <p class="sign-in-recover">Lost your password or passkey? <a href="recover">Use a recovery code</a></p>
             }
-            <div class="actions"><a class="quiet button" href="/">Keep playing in this browser</a></div>
+            <div class="actions"><a class="quiet button" href="/"><Icon Name="monitor-smartphone" /> Keep playing in this browser</a></div>
+            <p class="sign-in-legal"><a href="terms">Terms of Service</a> · <a href="privacy">Privacy Notice</a></p>
         </div>
     </div>
 }

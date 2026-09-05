@@ -1,9 +1,11 @@
 @*
-    The offer to a signed-in player whose account has no passkey: the D-039 mitigation, worded
-    as the design words it. It runs the ceremony here when this document can, and otherwise
-    moves the session to a top-level window where the same offer runs in place. It leaves only
-    when the account gains a passkey. The band's sentence names the moment: the offer, the
-    window that opened, or the window the browser blocked (with the button back).
+    The offer to a signed-in player whose account has no way in of its own: a channel-only
+    account (the D-039 mitigation, worded as the design words it), which the server names as
+    such from the session and the credentials. A password, a passkey or a Google sign-in is the
+    person's own way in already, so those sessions are offered nothing. The passkey runs here when this document can, and otherwise moves the
+    session to a top-level window where the same offer runs in place; the password is set on
+    the profile. The band's sentence names the moment: the offer, the window that opened, or the
+    window the browser blocked (with the button back).
 *@
 @inject PasskeyFlow Passkeys
 @inject PasskeyCeremony Ceremony
@@ -13,10 +15,13 @@
 @if (_offered)
 {
     <div class="notice passkey-offer" role="status" data-moment="@_moment.ToString().ToLowerInvariant()">
-        <p>@Sentence</p>
+        <p><Icon Name="key-round" /> @Sentence</p>
         @if (_moment != Moment.Opened)
         {
-            <button type="button" class="secondary" @onclick="Add" disabled="@_working">@(_working ? "Waiting for your passkey…" : "Add a passkey")</button>
+            <div class="passkey-offer-actions">
+                <button type="button" class="secondary" @onclick="Add" disabled="@_working"><Icon Name="key-round" /> @(_working ? "Waiting for your passkey…" : "Add a passkey")</button>
+                <a class="quiet button" href="profile"><Icon Name="lock-keyhole" /> Set a password</a>
+            </div>
         }
         @if (_error is not null)
         {
@@ -38,13 +43,13 @@
         {
             Moment.Opened => "Continue in the window that opened.",
             Moment.Blocked => ContinuationWindow.Blocked.Message,
-            _ => "Add a passkey so you can play anywhere and confirm new channels.",
+            _ => "Add a password or a passkey so you can sign in anywhere and confirm new channels.",
         };
 
     protected override async Task OnInitializedAsync()
     {
         var state = await Passkeys.State();
-        _offered = state.Succeeded && state.Value is { Passkeys.Length: 0, CanAddPasskey: true };
+        _offered = state.Succeeded && state.Value is { ChannelOnly: true, CanAddPasskey: true };
     }
 
     private async Task Add()
@@ -61,8 +66,13 @@
                 return;
             }
 
+            if (enrolled.Value?.RecoveryCodes is not null)
+            {
+                Navigation.NavigateTo("passkeys/codes");
+                return;
+            }
+
             _offered = false;
-            Navigation.NavigateTo("passkeys/codes");
             return;
         }
 

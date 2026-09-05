@@ -10,7 +10,11 @@
     <div class="panel setup-card sign-in create-account">
         <span class="eyebrow">New account</span>
         <h1>Create your account.</h1>
-        <p>Your player name is how other players see you. With a password it is also how you sign in, on any device; a passkey signs you in on this one.</p>
+        <p class="lead">Your player name is how other players see you. With a password it is also how you sign in, on any device; a passkey signs you in on this one.</p>
+        @if (Situation is not null)
+        {
+            <p class="notice sign-in-situation">@Situation</p>
+        }
         <form class="sign-in-login" @onsubmit="CreateWithPassword" @onsubmit:preventDefault>
             <label for="player-name">Player name</label>
             <input id="player-name" maxlength="32" autocomplete="username" autocapitalize="off" spellcheck="false" @bind="_name" disabled="@(_working != Working.None)" />
@@ -24,7 +28,12 @@
             {
                 <span class="field-error" role="alert">@_passwordValidation</span>
             }
-            <button type="submit" class="primary full" disabled="@(_working != Working.None)">@(_working == Working.Password ? "Creating…" : "Create account")</button>
+            <TermsConsent @bind-Accepted="_accepted" Disabled="@(_working != Working.None)" />
+            @if (_consentValidation is not null)
+            {
+                <span class="field-error" role="alert">@_consentValidation</span>
+            }
+            <button type="submit" class="primary full" disabled="@(_working != Working.None)"><Icon Name="user-round-plus" /> @(_working == Working.Password ? "Creating…" : "Create account")</button>
         </form>
         @if (_passkeys)
         {
@@ -33,7 +42,7 @@
             {
                 <p class="notice sign-in-situation">This browser cannot make passkeys.</p>
             }
-            <button type="button" class="secondary button full" @onclick="CreateWithPasskey" disabled="@(_working != Working.None || _unsupported)">@(_working == Working.Passkey ? "Waiting for your passkey…" : "Create with a passkey")</button>
+            <button type="button" class="secondary button full" @onclick="CreateWithPasskey" disabled="@(_working != Working.None || _unsupported)"><Icon Name="key-round" /> @(_working == Working.Passkey ? "Waiting for your passkey…" : "Create with a passkey")</button>
         }
         @foreach (var link in _links)
         {
@@ -41,28 +50,51 @@
             {
                 <p class="sign-in-or">or</p>
             }
-            <a class="secondary button full sign-in-link" href="@link.Url" target="_top" rel="noopener">@link.Label</a>
+            @* The link carries the accepted version only once the box is ticked; until then it
+               is not a link, and pressing it names the box. *@
+            @if (_accepted)
+            {
+                <a class="secondary button full sign-in-link" href="@($"{link.Url}&terms={Uri.EscapeDataString(Terms.Version)}")" target="_top" rel="noopener"><Icon Name="log-in" /> @link.Label</a>
+            }
+            else
+            {
+                <button type="button" class="secondary button full sign-in-link" @onclick="NeedsConsent"><Icon Name="log-in" /> @link.Label</button>
+            }
         }
         @if (_failure is not null)
         {
             <span class="field-error" role="alert">@_failure</span>
         }
-        <div class="actions"><a class="quiet button" href="signin">Back to sign in</a></div>
+        <div class="actions"><a class="quiet button" href="signin"><Icon Name="log-in" /> Back to sign in</a></div>
     </div>
 </div>
 
 @code {
     private enum Working { None, Password, Passkey }
 
+    [SupplyParameterFromQuery]
+    public string? Reason { get; set; }
+
     private string _name = string.Empty;
     private string _password = string.Empty;
     private string? _nameValidation;
     private string? _passwordValidation;
+    private string? _consentValidation;
     private string? _failure;
     private Working _working;
     private bool _unsupported;
     private bool _passkeys;
+    private bool _accepted;
     private CoreSignInView[] _links = [];
+
+    // A first external sign-in that arrived without the terms lands here with nothing stored:
+    // the situation is named, and the same link continues once the box is ticked.
+    private string? Situation =>
+        Reason switch
+        {
+            "terms" => "Agree to the terms below, then sign in with Google again to create your account.",
+            _ => null,
+        };
 
     // An external sign-in makes the account on its first use, so it is offered here too.
     protected override async Task OnInitializedAsync()
@@ -101,17 +133,26 @@
         return _passwordValidation is null;
     }
 
+    private bool Consented()
+    {
+        _consentValidation = _accepted ? null : "Tick the box to agree to the terms first.";
+        return _consentValidation is null;
+    }
+
+    private void NeedsConsent() => Consented();
+
     private async Task CreateWithPassword()
     {
         var validName = ValidLoginName();
-        if (!ValidPassword() || !validName)
+        var validPassword = ValidPassword();
+        if (!Consented() || !validPassword || !validName)
         {
             return;
         }
 
         _failure = null;
         _working = Working.Password;
-        var response = await Passkeys.CreateAccountWithPassword(_name.Trim(), _password);
+        var response = await Passkeys.CreateAccountWithPassword(_name.Trim(), _password, Terms.Version);
         _working = Working.None;
         if (!response.Succeeded)
         {
@@ -127,18 +168,19 @@
     private async Task CreateWithPasskey()
     {
         _passwordValidation = null;
-        if (!ValidDisplayName())
+        var validName = ValidDisplayName();
+        if (!Consented() || !validName)
         {
             return;
         }
 
         _failure = null;
         _working = Working.Passkey;
-        var response = await Passkeys.CreateAccount(_name.Trim());
+        var response = await Passkeys.CreateAccount(_name.Trim(), Terms.Version);
         _working = Working.None;
         if (!response.Succeeded)
         {
-            _failure = response.Error?.Message;
+            Failed(response.Error);
             return;
         }
 
@@ -155,6 +197,9 @@
                 break;
             case "login.password":
                 _passwordValidation = error.Message;
+                break;
+            case "terms.required":
+                _consentValidation = error.Message;
                 break;
             default:
                 _failure = error?.Message;

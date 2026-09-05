@@ -18,6 +18,7 @@ type OperatorBootstrapTests() =
                 SignInCompletion.complete
                     (services documents)
                     identity
+                    Terms.Version
                     (TenantId.Mint())
                     now
                     Unchecked.defaultof<_>

@@ -34,12 +34,13 @@ public sealed class SessionApiClient(HttpClient http)
         string path,
         string code,
         string? slug = null,
+        string? acceptedTerms = null,
         CancellationToken cancellationToken = default
     ) =>
         ApiEnvelopeTransport.Post<SessionExchangeRequest, IssuedSessionView>(
             http,
             path,
-            new(code, slug),
+            new(code, slug, acceptedTerms),
             UnavailableError,
             cancellationToken
         );

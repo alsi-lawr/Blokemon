@@ -1,0 +1,17 @@
+@*
+    One icon from the sprite, by its Lucide name, sized by the text it sits in. It is decorative
+    by default: the control's own text or aria-label carries the meaning, so the icon is hidden
+    from assistive technology unless a label is given, in which case it speaks that label.
+*@
+<svg class="icon @Class" aria-hidden="@(Label is null ? "true" : null)" role="@(Label is null ? null : "img")" aria-label="@Label" focusable="false"><use href="#icon-@Name" /></svg>
+
+@code {
+    [Parameter, EditorRequired]
+    public required string Name { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+}

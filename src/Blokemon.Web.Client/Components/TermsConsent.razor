@@ -1,0 +1,24 @@
+@*
+    The one consent control every account-creating path shows: a box the person ticks, naming
+    the Terms of Service and the Privacy Notice, each a link that opens on its own so the form
+    is not lost. The server refuses to create an account without the version this control
+    stands for, so nothing here is decorative.
+*@
+<label class="terms-consent">
+    <input id="accept-terms" type="checkbox" checked="@Accepted" disabled="@Disabled" @onchange="Changed" />
+    <span>I agree to the <a href="terms" target="_blank" rel="noopener">Terms of Service</a> and I have read the <a href="privacy" target="_blank" rel="noopener">Privacy Notice</a>.</span>
+</label>
+
+@code {
+    [Parameter]
+    public bool Accepted { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> AcceptedChanged { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private Task Changed(ChangeEventArgs args) =>
+        AcceptedChanged.InvokeAsync(args.Value is true);
+}

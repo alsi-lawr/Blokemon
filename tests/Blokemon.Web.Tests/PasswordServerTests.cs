@@ -91,7 +91,7 @@ public sealed class PasswordServerTests
             await PasskeyServerTests.Post<PasskeyOptionsView>(
                 client,
                 $"{Prefix}/register/options",
-                new PasskeyRegisterOptionsRequest("x")
+                new PasskeyRegisterOptionsRequest("x", Terms.Version)
             )
         ).Error!.Code.ShouldBe("passkey.unavailable");
     }
@@ -120,7 +120,7 @@ public sealed class PasswordServerTests
             var refused = await PasskeyServerTests.Post<AccountRegistrationView>(
                 client,
                 $"{Prefix}/password/register",
-                new PasswordRegistrationRequest(name, password)
+                new PasswordRegistrationRequest(name, password, AcceptedTerms: Terms.Version)
             );
             refused.Succeeded.ShouldBeFalse($"{name} / {password.Length} chars");
             refused.Error!.Code.ShouldBe(code, $"{name} / {password.Length} chars");
@@ -297,7 +297,7 @@ public sealed class PasswordServerTests
             await PasskeyServerTests.Post<AccountRegistrationView>(
                 client,
                 $"{Prefix}/password/register",
-                new PasswordRegistrationRequest("Alex", Password)
+                new PasswordRegistrationRequest("Alex", Password, AcceptedTerms: Terms.Version)
             )
         ).Error!.Code.ShouldBe("login.unavailable");
         (
@@ -308,6 +308,34 @@ public sealed class PasswordServerTests
             )
         ).Error!.Code.ShouldBe("login.unavailable");
         (await host.WithStore(store => store.List("login"))).ShouldBeEmpty();
+    }
+
+    [Test]
+    public async Task Registration_NeedsTheCurrentTerms_AndMutatesNothingWithoutThem()
+    {
+        await using var host = LoginHost();
+        var before = await host.WithStore(store => store.List(""));
+        using var client = host.Client();
+
+        foreach (var terms in new string?[] { null, "", "2020-01-01" })
+        {
+            var refused = await PasskeyServerTests.Post<AccountRegistrationView>(
+                client,
+                $"{Prefix}/password/register",
+                new PasswordRegistrationRequest("Agreed", Password, AcceptedTerms: terms)
+            );
+            refused.Error!.Code.ShouldBe("terms.required", terms ?? "null");
+        }
+
+        (await host.WithStore(store => store.List(""))).ShouldBe(before);
+        (await host.WithStore(store => store.List("login"))).ShouldBeEmpty();
+
+        // Agreed to, the same name registers and the account records the version agreed.
+        var registered = await Register(host, "Agreed", Password);
+        var account = await PasskeyServerTests.AccountOf(host, registered.Session.Token);
+        (await host.WithStore(store => store.Read($"account/{account}")))!.Json.ShouldContain(
+            $"\"termsVersion\":\"{Terms.Version}\""
+        );
     }
 
     // ---- helpers ------------------------------------------------------------------------------
@@ -322,7 +350,7 @@ public sealed class PasswordServerTests
         var registered = await PasskeyServerTests.Post<AccountRegistrationView>(
             client,
             $"{Prefix}/password/register",
-            new PasswordRegistrationRequest(name, password)
+            new PasswordRegistrationRequest(name, password, AcceptedTerms: Terms.Version)
         );
         registered.Succeeded.ShouldBeTrue(registered.Error?.Message);
         return registered.Value!;

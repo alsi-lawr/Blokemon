@@ -41,7 +41,7 @@ public sealed class GoogleServerTests
         await using var _ = host;
         using var client = Plain(host);
 
-        var start = await client.GetAsync("/api/session/google/start");
+        var start = await client.GetAsync($"/api/session/google/start?terms={Terms.Version}");
         start.StatusCode.ShouldBe(HttpStatusCode.Redirect);
         var location = start.Headers.Location!;
         location.Host.ShouldBe("accounts.google.com");
@@ -49,7 +49,8 @@ public sealed class GoogleServerTests
         query["client_id"].ToString().ShouldBe(StubGoogle.ClientId);
         query["redirect_uri"].ToString().ShouldBe("http://localhost/api/session/google/callback");
         query["response_type"].ToString().ShouldBe("code");
-        query["scope"].ToString().ShouldContain("openid");
+        // Only the subject is asked for: no profile, no email, nothing of Google's to show.
+        query["scope"].ToString().ShouldBe("openid");
         query["code_challenge_method"].ToString().ShouldBe("S256");
         var state = query["state"].ToString();
         var nonce = query["nonce"].ToString();
@@ -79,14 +80,18 @@ public sealed class GoogleServerTests
 
         var signedIn = await Resume(host, landing);
         signedIn.Succeeded.ShouldBeTrue(signedIn.Error?.Message);
-        signedIn.Value!.DisplayName.ShouldBe("Googly Player");
+        // The account has no player yet: the name is the person's to choose, not Google's.
+        signedIn.Value!.DisplayName.ShouldBeNull();
         var account = await PasskeyServerTests.AccountOf(host, signedIn.Value.Token);
         var keys = (await host.WithStore(store => store.List("")))
             .Select(static s => s.Key)
             .ToList();
         keys.ShouldContain($"link/google/{stub.Subject}");
         keys.ShouldContain($"account/{account}");
-        keys.ShouldContain($"a/{account}/profile");
+        keys.ShouldNotContain($"a/{account}/profile");
+        (await host.WithStore(store => store.Read($"account/{account}")))!.Json.ShouldContain(
+            $"\"termsVersion\":\"{Terms.Version}\""
+        );
         // The callback's own session was revoked: the browser holds the continuation's only.
         (await host.WithStore(store => store.List("session/"))).Count.ShouldBe(1);
         var session = await host.WithStore(store =>
@@ -180,7 +185,7 @@ public sealed class GoogleServerTests
         stub.Validity = TimeSpan.FromMinutes(5);
         stub.Status = HttpStatusCode.OK;
         stub.Subject = "1234567890";
-        var good = await Start(client, stub);
+        var good = await Start(client, stub, Terms.Version);
         var first = await client.GetAsync(
             $"/api/session/google/callback?code={StubGoogle.Code}&state={good}"
         );
@@ -232,22 +237,56 @@ public sealed class GoogleServerTests
             .Message.ShouldContain("Blokemon:Identity:Providers:Google:ClientId");
     }
 
+    [Test]
+    public async Task Callback_ForANewSubjectWithoutTheTerms_LandsOnTheCreatePage_AndStoresNothing()
+    {
+        var (host, stub) = GoogleHost();
+        await using var _ = host;
+        var before = await host.WithStore(store => store.List(""));
+
+        (await SignInThroughGoogle(host, stub)).ShouldBe(GoogleEndpoints.TermsRoute);
+        (await host.WithStore(store => store.List(""))).ShouldBe(before);
+        (await host.WithStore(store => store.List("link/"))).ShouldBeEmpty();
+        (await host.WithStore(store => store.List("session/"))).ShouldBeEmpty();
+
+        // Agreed to on the create page, the next round makes the account; a returning subject
+        // is asked for nothing.
+        var landing = await SignInThroughGoogle(host, stub, Terms.Version);
+        landing.ShouldStartWith("/t/core/continue#handoff=");
+        var signedIn = await Resume(host, landing);
+        signedIn.Succeeded.ShouldBeTrue(signedIn.Error?.Message);
+        (await SignInThroughGoogle(host, stub)).ShouldStartWith("/t/core/continue#handoff=");
+        (await host.WithStore(store => store.List("account/"))).Count.ShouldBe(1);
+    }
+
     // ---- helpers ------------------------------------------------------------------------------
 
     /// <summary>Starts a sign-in and tells the stub the nonce Google would have been given; the state.</summary>
-    private static async Task<string> Start(HttpClient client, StubGoogle stub)
+    private static async Task<string> Start(
+        HttpClient client,
+        StubGoogle stub,
+        string? terms = null
+    )
     {
-        var start = await client.GetAsync("/api/session/google/start");
+        var start = await client.GetAsync(
+            terms is null
+                ? "/api/session/google/start"
+                : $"/api/session/google/start?terms={Uri.EscapeDataString(terms)}"
+        );
         var query = QueryHelpers.ParseQuery(start.Headers.Location!.Query);
         stub.LastNonce = query["nonce"].ToString();
         return query["state"].ToString();
     }
 
     /// <summary>A whole round: the landing location the callback answered with.</summary>
-    private static async Task<string> SignInThroughGoogle(SessionHost host, StubGoogle stub)
+    private static async Task<string> SignInThroughGoogle(
+        SessionHost host,
+        StubGoogle stub,
+        string? terms = null
+    )
     {
         using var client = Plain(host);
-        var state = await Start(client, stub);
+        var state = await Start(client, stub, terms);
         var callback = await client.GetAsync(
             $"/api/session/google/callback?code={StubGoogle.Code}&state={state}"
         );

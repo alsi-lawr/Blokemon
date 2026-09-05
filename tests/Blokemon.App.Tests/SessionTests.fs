@@ -18,7 +18,10 @@ type SessionTests() =
             let! _ =
                 store.Create(
                     accountKey account,
-                    System.Text.Json.JsonSerializer.Serialize(newAccount account now, json)
+                    System.Text.Json.JsonSerializer.Serialize(
+                        newAccount account Terms.Version now,
+                        json
+                    )
                 )
 
             return account

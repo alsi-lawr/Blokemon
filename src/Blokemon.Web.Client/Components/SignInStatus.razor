@@ -1,17 +1,24 @@
 @*
     The one card every silent sign-in surface shows: which tenant, and which moment. The moment
     is named rather than instructed - a visitor waiting on a channel and a visitor whose sign-in
-    failed are shown the same card, so the card has to say which one they are.
+    failed are shown the same card, so the card has to say which one they are. A first sign-in
+    stops here for the terms: the account does not exist until they are accepted.
 *@
 <div class="profile-setup">
     <div class="panel setup-card sign-in-status @(ApprovalPending ? "approval-prompt" : null)" role="status" aria-live="polite">
         <span class="eyebrow">@Eyebrow</span>
         <h1>@Heading</h1>
-        @if (ApprovalPending)
+        @if (Flow.Stage == SignInStage.TermsRequired)
+        {
+            <p>@Label signs you in with your Twitch account, and Blokemon makes an account for you. Nothing is stored until you agree.</p>
+            <TermsConsent @bind-Accepted="_accepted" Disabled="@_accepting" />
+            <button type="button" class="primary full" @onclick="Accept" disabled="@(!_accepted || _accepting)"><Icon Name="check" /> @(_accepting ? "Signing you in…" : "Agree and continue")</button>
+        }
+        else if (ApprovalPending)
         {
             @* Not a failure: the channel asked, and this is where the answer is given. *@
             <p>@Flow.Error!.Message</p>
-            <a class="primary button full" href="signin" target="_top" rel="noopener">Sign in</a>
+            <a class="primary button full" href="signin" target="_top" rel="noopener"><Icon Name="log-in" /> Sign in</a>
         }
         else if (Flow.Stage == SignInStage.Failed && Flow.Error is not null)
         {
@@ -19,7 +26,7 @@
         }
         @if (Flow.Stage == SignInStage.Failed)
         {
-            <div class="actions"><a class="quiet button" href="/">Return home</a></div>
+            <div class="actions"><a class="quiet button" href="/"><Icon Name="house" /> Return home</a></div>
         }
     </div>
 </div>
@@ -34,12 +41,22 @@
     [Parameter]
     public bool Hosted { get; set; }
 
+    private bool _accepted;
+    private bool _accepting;
+
     private string Label => Flow.Tenant?.Label ?? Slug;
 
     private string Eyebrow => Flow.Tenant is null ? "Channel" : Flow.Tenant.Label;
 
     private bool ApprovalPending =>
         Flow.Stage == SignInStage.Failed && Flow.Error?.Code == "approval.pending";
+
+    private async Task Accept()
+    {
+        _accepting = true;
+        await Flow.AcceptTerms();
+        _accepting = false;
+    }
 
     // Every named stage has its sentence; the suppression is for a value cast in from outside
     // the names the enum declares, which the flow never produces.
@@ -50,7 +67,8 @@
             SignInStage.Idle or SignInStage.Finding => $"Finding {Slug}…",
             SignInStage.Waiting => $"Waiting for {Label} to sign you in…",
             SignInStage.SigningIn => "Signing you in…",
-            SignInStage.SignedIn => $"Signed in as {Flow.DisplayName}.",
+            SignInStage.TermsRequired => "Before your first sign-in.",
+            SignInStage.SignedIn => Flow.DisplayName is { } name ? $"Signed in as {name}." : "Signed in.",
             SignInStage.Failed when ApprovalPending => $"{Label} wants to use your Blokemon.",
             SignInStage.Failed => Hosted ? "That did not sign you in." : "That link did not sign you in.",
         };

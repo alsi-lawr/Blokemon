@@ -12,6 +12,7 @@ public sealed record PendingAuthorization(
     string CodeVerifier,
     string? Slug,
     string RedirectUri,
+    string? AcceptedTerms,
     DateTimeOffset ExpiresAt
 );
 
@@ -37,7 +38,8 @@ public sealed class GoogleAuthorizations(TimeProvider time)
         string nonce,
         string codeVerifier,
         string? slug,
-        string redirectUri
+        string redirectUri,
+        string? acceptedTerms
     )
     {
         var now = time.GetUtcNow();
@@ -54,6 +56,7 @@ public sealed class GoogleAuthorizations(TimeProvider time)
             codeVerifier,
             slug,
             redirectUri,
+            acceptedTerms,
             now + Lifetime
         );
         _pending[state] = issued;

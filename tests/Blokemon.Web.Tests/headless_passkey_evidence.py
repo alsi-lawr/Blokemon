@@ -15,6 +15,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -117,6 +118,27 @@ def sign_in_page(devtools, origin, label):
     require(devtools.evaluate("[...document.querySelectorAll('.sign-in-recover a')].some(a => a.getAttribute('href') === 'recover')"), f"{label}: the recovery line links to /recover")
 
 
+def wait_for_credentials(devtools, label):
+    """The offer decides itself from the credential state the server answers with; a check that
+    nothing is offered waits for that answer, after the events were cleared for the page."""
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
+        if any(e.get("method") == "Network.responseReceived" and "firstparty/credentials" in e["params"]["response"]["url"] for e in devtools.events):
+            devtools.evaluate("new Promise(r => setTimeout(r, 400))")
+            return
+        # Events arrive only while a command is in flight: this one is the pump.
+        devtools.evaluate("new Promise(r => setTimeout(r, 200))")
+    raise EvidenceFailure(f"{label}: the credential state was never asked for")
+
+
+def accept_terms(devtools):
+    """Ticks the consent box every account-creating path shows, after checking that it links
+    to the two notices it names."""
+    require(devtools.evaluate("[...document.querySelectorAll('.terms-consent a')].map(a => a.getAttribute('href')).sort().join('|')") == "privacy|terms", "the consent links to the terms and the privacy notice")
+    require(devtools.evaluate("(() => { const b = document.querySelector('#accept-terms'); if (!b) return false; if (!b.checked) b.click(); return true; })()"), "the consent box")
+    devtools.wait_for("document.querySelector('#accept-terms').checked === true", "the box ticked")
+
+
 def create_account(devtools, origin):
     sign_in_page(devtools, origin, "desktop")
     activate(devtools, "Create an account", selector="a")
@@ -126,14 +148,22 @@ def create_account(devtools, origin):
     activate(devtools, "Create with a passkey")
     wait_text(devtools, "Enter a player name from 1 to 32 characters.", "the player-name validation")
     devtools.set_value("#player-name", PLAYER)
+    # The terms next: nothing is made, and no ceremony runs, until the box is ticked.
+    activate(devtools, "Create with a passkey")
+    wait_text(devtools, "Tick the box to agree to the terms first.", "the consent validation")
+    require(held_session(devtools) is None and devtools.evaluate("location.pathname") == "/signin/create", "no consent, no account")
+    accept_terms(devtools)
     activate(devtools, "Create with a passkey")
     codes = recovery_codes_screen(devtools, "Continue to your game", "after creation")
     held = held_session(devtools)
     require(held is not None and held.get("recovery") is False, "the browser holds a first-party session")
     require(all(code not in json.dumps(held) for code in codes), "no code is in the held session")
+    devtools.events.clear()
     activate(devtools, "Continue to your game")
     devtools.wait_for("location.pathname === '/'", "home after the codes were acknowledged", timeout=30)
     wait_text(devtools, "Choose your first deck.", "the new player's game on the server", timeout=60)
+    wait_for_credentials(devtools, "passkey account")
+    require(devtools.evaluate("document.querySelector('.passkey-offer') === null"), "an account with a passkey is offered no passkey")
     open_menu(devtools)
     require(identity_text(devtools) == PLAYER, f"the menu shows 'Signed in as {PLAYER}'")
     close_menu(devtools)
@@ -293,13 +323,20 @@ def password_account(devtools, origin):
     devtools.set_value("#player-name", LOGIN_PLAYER)
     devtools.set_value("#player-password", PASSWORD)
     activate(devtools, "Create account")
+    wait_text(devtools, "Tick the box to agree to the terms first.", "the consent validation for a password account")
+    require(held_session(devtools) is None, "no consent, no password account")
+    accept_terms(devtools)
+    activate(devtools, "Create account")
     codes = recovery_codes_screen(devtools, "Continue to your game", "after a password creation")
     held = held_session(devtools)
     require(held is not None and held.get("recovery") is False, "the browser holds a first-party session from the password")
     require(PASSWORD not in json.dumps(held), "no password is in the held session")
+    devtools.events.clear()
     activate(devtools, "Continue to your game")
     devtools.wait_for("location.pathname === '/'", "home after the codes were acknowledged", timeout=30)
     wait_text(devtools, "Choose your first deck.", "the password player's game on the server", timeout=60)
+    wait_for_credentials(devtools, "password account")
+    require(devtools.evaluate("document.querySelector('.passkey-offer') === null"), "a password account is offered no passkey: the password is its own credential")
     open_menu(devtools)
     require(identity_text(devtools) == LOGIN_PLAYER, f"the menu shows 'Signed in as {LOGIN_PLAYER}'")
     close_menu(devtools)

@@ -175,18 +175,22 @@ internal static class ChannelHosting
         return (await response.Content.ReadFromJsonAsync<ApiResponse<T>>())!;
     }
 
-    /// <summary>Exchanges a hand-off code as the page running as the given slug (null: the root).</summary>
+    /// <summary>
+    /// Exchanges a hand-off code as the page running as the given slug (null: the root), with
+    /// the current terms accepted as a first sign-in's page would send them unless told otherwise.
+    /// </summary>
     public static async Task<ApiResponse<IssuedSessionView>> Exchange(
         this SessionHost host,
         string? code,
         string? slug,
-        string path = "/api/session/blokebot"
+        string path = "/api/session/blokebot",
+        string? terms = Terms.Version
     )
     {
         using var client = host.Client();
         using var response = await client.PostAsJsonAsync(
             path,
-            new SessionExchangeRequest(code!, slug)
+            new SessionExchangeRequest(code!, slug, terms)
         );
         return (await response.Content.ReadFromJsonAsync<ApiResponse<IssuedSessionView>>())!;
     }

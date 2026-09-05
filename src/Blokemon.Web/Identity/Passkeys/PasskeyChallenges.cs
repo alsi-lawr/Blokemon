@@ -8,8 +8,12 @@ public abstract record CeremonyBinding
 {
     private CeremonyBinding() { }
 
-    /// <summary>A registration that creates this account with this display name.</summary>
-    public sealed record NewAccount(AccountId Account, string DisplayName) : CeremonyBinding;
+    /// <summary>
+    /// A registration that creates this account with this display name, under the terms the
+    /// person accepted when the options were issued.
+    /// </summary>
+    public sealed record NewAccount(AccountId Account, string DisplayName, string? AcceptedTerms)
+        : CeremonyBinding;
 
     /// <summary>An enrolment onto the account a session names, from that session's provenance.</summary>
     public sealed record Enrolment(AccountId Account, SessionProvenance Provenance, TenantId Tenant)

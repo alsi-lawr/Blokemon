@@ -56,7 +56,7 @@ public sealed partial class MilestoneAuditTests
         await using var host = ChannelHosting.Create();
         var operatorToken = await host.OperatorToken();
         var (channel, _) = await host.AdmitChannel(operatorToken, "alpha", "Alpha");
-        var signedIn = await host.Exchange(await channel.HandoffCode("4242"), "alpha");
+        var signedIn = await host.Exchange(await channel.HandoffCode("4242", "Viewer"), "alpha");
         var account = (await host.SessionOf(signedIn.Value!.Token)).Account;
 
         var keys = (await host.WithStore(store => store.List("")))

@@ -37,6 +37,7 @@ type IssuerAdmissionTests() =
             documents
             (viewer subject)
             tenant
+            Terms.Version
             now
             Unchecked.defaultof<_>
 
@@ -73,6 +74,52 @@ type IssuerAdmissionTests() =
                 IssuerAdmission.hasLiveRoute documents documents account Unchecked.defaultof<_>
 
             routed |> should be True
+        }
+
+    [<Test>]
+    member _.``a hand-off should need the terms only while the subject has no account``() =
+        task {
+            let documents = MemoryDocumentStore()
+            let! tenant = channel documents "alpha"
+
+            let subject =
+                match ExternalSubject.Create "viewer-terms" with
+                | DomainResult.Succeeded subject -> subject
+                | DomainResult.Failed failure -> failwith $"{failure}"
+
+            let providerName =
+                match IdentityProviderName.Create provider with
+                | DomainResult.Succeeded name -> name
+                | DomainResult.Failed failure -> failwith $"{failure}"
+
+            let wouldCreate () =
+                IssuerAdmission.wouldCreateAccount
+                    documents
+                    providerName
+                    subject
+                    Unchecked.defaultof<_>
+
+            let! before = wouldCreate ()
+            before |> should be True
+
+            let! refused =
+                IssuerAdmission.admit
+                    (services documents)
+                    documents
+                    (viewer "viewer-terms")
+                    tenant
+                    null
+                    now
+                    Unchecked.defaultof<_>
+
+            failed refused |> should equal SignInFailure.TermsRequired
+            keysUnder documents "account/" |> should be Empty
+            keysUnder documents "link/" |> should be Empty
+
+            let! admitted = admit documents tenant "viewer-terms"
+            accountOf (succeeded admitted) |> ignore
+            let! after = wouldCreate ()
+            after |> should be False
         }
 
     [<Test>]

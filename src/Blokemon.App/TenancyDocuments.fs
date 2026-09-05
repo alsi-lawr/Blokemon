@@ -40,12 +40,18 @@ type TenantDocument =
 
 /// One person, stored at `account/{id}`. Lifecycle state only: it names no provider.
 type AccountDocument =
-    { SchemaVersion: int
-      Id: string
-      Status: AccountStatus
-      Operator: bool
-      CreatedAt: DateTimeOffset
-      ErasedAt: Nullable<DateTimeOffset> }
+    {
+        SchemaVersion: int
+        Id: string
+        Status: AccountStatus
+        Operator: bool
+        CreatedAt: DateTimeOffset
+        ErasedAt: Nullable<DateTimeOffset>
+        /// The terms of service version the person accepted when the account was created, and
+        /// when; null on accounts that predate the terms.
+        TermsVersion: string | null
+        TermsAcceptedAt: Nullable<DateTimeOffset>
+    }
 
 /// One external identity's route to its account, stored at `link/{provider}/{subject}`: the
 /// only key a provider subject ever appears in.
@@ -121,11 +127,20 @@ module internal TenancyDocuments =
           OwnerAccount = null
           CreatedAt = createdAt }
 
-    /// An account as first sign-in creates it.
-    let newAccount (id: AccountId) (createdAt: DateTimeOffset) : AccountDocument =
+    /// An account as first sign-in creates it, under the terms the person accepted.
+    let newAccount
+        (id: AccountId)
+        (terms: string | null)
+        (createdAt: DateTimeOffset)
+        : AccountDocument =
         { SchemaVersion = accountSchemaVersion
           Id = id.Value
           Status = AccountStatus.Active
           Operator = false
           CreatedAt = createdAt
-          ErasedAt = Nullable() }
+          ErasedAt = Nullable()
+          TermsVersion = terms
+          TermsAcceptedAt =
+            match terms with
+            | null -> Nullable()
+            | _ -> Nullable createdAt }

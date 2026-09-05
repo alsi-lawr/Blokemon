@@ -1,0 +1,102 @@
+@page "/privacy"
+
+<PageTitle>Privacy Notice · Blokemon</PageTitle>
+
+@*
+    Anonymous and linkable on its own: the notice a person can read before they create an
+    account, and the one the consent control on the create page names. Written in Simplified
+    Technical English. The date is the version the terms module carries.
+*@
+<article class="document" aria-labelledby="privacy-heading">
+    <header class="topline">
+        <div>
+            <span class="eyebrow">Privacy</span>
+            <h1 id="privacy-heading">Privacy Notice</h1>
+            <p class="document-lead">This notice tells you what Blokemon stores about you, why, and for how long. Last updated @Terms.Version.</p>
+        </div>
+    </header>
+
+    <div class="document-body">
+        <section>
+            <h2><Icon Name="mail" /> Who to contact</h2>
+            <p>The operator of blokemon.monster runs Blokemon. If you have a question about your data, write to <a href="mailto:privacy@blokemon.monster">privacy@blokemon.monster</a>.</p>
+        </section>
+
+        <section>
+            <h2><Icon Name="monitor-smartphone" /> Two ways to play</h2>
+            <p>You can play Blokemon in two ways. The way you choose decides where your data is.</p>
+            <ul>
+                <li><strong>Browser game.</strong> Your player, cards, decks and battles stay in the storage of your browser, on your device. The server receives nothing about your play. If you clear the site data of your browser, the game is gone.</li>
+                <li><strong>Server game.</strong> You create an account, and the server stores your player and your game. You can sign in from any device.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><Icon Name="server" /> What the server stores for an account</h2>
+            <p>The server stores only what it needs to sign you in and to keep your game.</p>
+            <ul>
+                <li><strong>Your account.</strong> An account number, the time you created the account, and the version of the Terms of Service that you accepted, with the time.</li>
+                <li><strong>Your player.</strong> The player name you chose, your cards, your decks, your battles, the packs you opened and the starter deck you claimed.</li>
+                <li><strong>A password.</strong> If you use a password, the server stores your player name and a hash of your password. The server never stores the password itself.</li>
+                <li><strong>A passkey.</strong> If you use a passkey, the server stores the public key and the identifier of the passkey, and the time you added it. The private key never leaves your device.</li>
+                <li><strong>Recovery codes.</strong> The server stores hashes of your recovery codes, never the codes themselves.</li>
+                <li><strong>Google.</strong> If you sign in with Google, the server stores only the account number that Google gives you. The server does not receive or store your name, your email address or your picture. You choose your player name yourself.</li>
+                <li><strong>Twitch channels.</strong> If a channel signs you in through BlokeBot, the server stores your Twitch user number and the display name that the channel sent. It also stores the channels that you approved for your account.</li>
+                <li><strong>Sessions.</strong> Each sign-in makes a session that lasts 8 hours. A sign-in code lasts 60 seconds and works one time.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><Icon Name="shield" /> What the server keeps for a short time</h2>
+            <ul>
+                <li><strong>Your network address.</strong> The server counts failed sign-ins for each network address, in memory, for 15 minutes. It uses the count to stop repeated guesses. It does not write the address to disk.</li>
+                <li><strong>Technical logs.</strong> The server keeps technical logs for 14 days. The logs count sign-in outcomes and record errors. They do not record your play.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><Icon Name="user" /> Who can see what</h2>
+            <ul>
+                <li><strong>Other players</strong> see your player name.</li>
+                <li><strong>A channel that signed you in</strong> knows your Twitch identity. The owner of a channel can see that your account is approved for that channel.</li>
+                <li><strong>The operator</strong> can see the list of accounts, their status and when they were created. The operator cannot see your password.</li>
+                <li><strong>Google</strong> learns that you signed in to Blokemon when you use "Sign in with Google". Blokemon sends nothing else to Google.</li>
+            </ul>
+            <p>The server does not sell your data and does not use it for advertising.</p>
+        </section>
+
+        <section>
+            <h2><Icon Name="server" /> Where the data is</h2>
+            <p>The server runs in a data center in Finland, operated by Hetzner Online GmbH. At this time the server does not keep backup copies of Blokemon data.</p>
+        </section>
+
+        <section>
+            <h2><Icon Name="trash" /> How long the data stays</h2>
+            <ul>
+                <li>Your account and your game stay until you erase your account.</li>
+                <li>After you erase your account, the server keeps only the account number and the time of erasure. This stops the erased account from coming back.</li>
+                <li>A session ends after 8 hours or when you sign out.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><Icon Name="user-x" /> Your choices</h2>
+            <ul>
+                <li><strong>Erase your account</strong> from your profile page. This removes your player, cards, decks, battles, passkeys, recovery codes and every channel's link to you.</li>
+                <li><strong>Purge your game</strong> from your profile page to delete your player and cards but keep your account.</li>
+                <li><strong>Sign out</strong> from the menu to end the session on that device.</li>
+                <li><strong>Clear the site data</strong> of your browser to remove a browser game.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2><Icon Name="file-text" /> Cookies and browser storage</h2>
+            <p>Blokemon uses no cookies. The browser keeps your session token in session storage, which the browser clears when you close the tab. The browser keeps your settings, your choice of game and a browser game in local storage.</p>
+        </section>
+
+        <section>
+            <h2><Icon Name="refresh-cw" /> Changes</h2>
+            <p>If this notice changes, the date at the top changes. The <a href="terms">Terms of Service</a> are a separate page.</p>
+        </section>
+    </div>
+</article>

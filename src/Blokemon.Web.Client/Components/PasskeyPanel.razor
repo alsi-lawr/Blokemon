@@ -1,13 +1,15 @@
 @*
-    The profile's passkeys panel: the account's passkeys, its recovery-code count, and exactly
-    the actions the server says this session may take. The panel is always the same shape, so
-    loading, error and empty states fill it rather than moving what sits below.
+    The profile's passkeys and recovery codes: two panels from one state, stacked in one place
+    on the grid, the account's passkeys with exactly the actions the server says this session
+    may take, and the count of recovery codes left with the way to make more. Both keep their
+    shape, so loading, error and empty states fill them rather than moving what sits beside them.
 *@
 @inject PasskeyFlow Passkeys
 @inject NavigationManager Navigation
 
-<div class="panel setup-card passkeys" aria-labelledby="passkeys-heading">
-    <h2 id="passkeys-heading">Passkeys</h2>
+<div class="profile-stack">
+<section class="panel profile-panel passkeys" aria-labelledby="passkeys-heading">
+    <div class="panel-head"><h2 id="passkeys-heading"><Icon Name="key-round" /> Passkeys</h2></div>
     <p>Your passkeys sign you in on this device and any that shares them.</p>
     @if (_state is null && _error is null)
     {
@@ -23,7 +25,7 @@
             @foreach (var passkey in _state.Passkeys)
             {
                 <li>
-                    <span>Passkey · added @passkey.EnrolledAt.ToLocalTime().ToString("d MMM yyyy")</span>
+                    <span><Icon Name="key" /> Passkey · added @passkey.EnrolledAt.ToLocalTime().ToString("d MMM yyyy")</span>
                     @if (passkey.TenantLabel is not null)
                     {
                         <small>from @passkey.TenantLabel</small>
@@ -34,15 +36,7 @@
         @if (_state.CanAddPasskey)
         {
             <div class="actions">
-                <button type="button" class="secondary" @onclick="Add" disabled="@(_working != Working.None)">@(_working == Working.Add ? "Waiting for your passkey…" : "Add a passkey")</button>
-            </div>
-        }
-        <h3>Recovery codes</h3>
-        <p>@(_state.RecoveryCodesRemaining is { } remaining ? $"{remaining} of 10 left." : "No codes yet. They arrive with your first passkey.")</p>
-        @if (_state.CanMakeNewCodes)
-        {
-            <div class="actions">
-                <button type="button" class="secondary" @onclick="MakeNewCodes" disabled="@(_working != Working.None)">@(_working == Working.Codes ? "Making…" : "Make new codes")</button>
+                <button type="button" class="secondary" @onclick="Add" disabled="@(_working != Working.None)"><Icon Name="plus" /> @(_working == Working.Add ? "Waiting for your passkey…" : "Add a passkey")</button>
             </div>
         }
     }
@@ -50,6 +44,25 @@
     {
         <span class="field-error" role="alert">@_error</span>
     }
+</section>
+
+<section class="panel profile-panel recovery-panel" aria-labelledby="recovery-heading">
+    <div class="panel-head"><h2 id="recovery-heading"><Icon Name="life-buoy" /> Recovery codes</h2></div>
+    @if (_state is null && _error is null)
+    {
+        <p class="muted">Loading…</p>
+    }
+    else if (_state is not null)
+    {
+        <p>@(_state.RecoveryCodesRemaining is { } remaining ? $"{remaining} of 10 left. Each one signs you in once if you lose your password or passkey." : "No codes yet. They arrive with your first password or passkey.")</p>
+        @if (_state.CanMakeNewCodes)
+        {
+            <div class="actions">
+                <button type="button" class="secondary" @onclick="MakeNewCodes" disabled="@(_working != Working.None)"><Icon Name="refresh-cw" /> @(_working == Working.Codes ? "Making…" : "Make new codes")</button>
+            </div>
+        }
+    }
+</section>
 </div>
 
 @code {

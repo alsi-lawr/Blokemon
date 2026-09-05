@@ -110,15 +110,25 @@
   outline-offset: -3px;
 }
 
-.app-menu-item svg {
+.app-menu-item .icon {
   width: 19px;
   height: 19px;
-  flex: 0 0 auto;
-  fill: none;
-  stroke: var(--gold-soft);
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  color: var(--gold-soft);
+}
+
+/* The notices are for everyone, so they stand apart from the player's own items by a rule. */
+.app-menu-notice {
+  position: relative;
+  margin-top: 6px;
+}
+
+.app-menu-notice::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: 12px;
+  left: 12px;
+  border-top: 1px solid var(--line);
 }
 
 /* The sound settings, on the centred surface the table already uses for anything it wants read

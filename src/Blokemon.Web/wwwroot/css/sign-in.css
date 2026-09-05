@@ -13,8 +13,6 @@
 
 .sign-in .primary.button {
   min-height: 44px;
-  display: grid;
-  place-items: center;
 }
 
 .sign-in .actions {
@@ -39,8 +37,43 @@
 .sign-in .secondary.button,
 .sign-in button.primary.full {
   min-height: 44px;
-  display: grid;
-  place-items: center;
+}
+
+/* The two notices, named under the ways in for anyone who has not signed in yet. */
+.sign-in-legal {
+  margin: 20px 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.sign-in-legal a {
+  color: var(--gold-soft);
+}
+
+/* The consent every account-creating path asks for: the box, then the sentence with its two
+   links, as one label so the sentence is the box's target. */
+.terms-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 20px 0 4px;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.terms-consent input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin: 2px 0 0;
+  accent-color: var(--gold);
+}
+
+.terms-consent a {
+  color: var(--gold-soft);
 }
 
 .sign-in .field-error {
@@ -124,14 +157,10 @@
 }
 
 /* The profile's passkeys panel: rows are 44px touch targets; the panel keeps its shape. */
-.passkeys h3 {
-  margin: 26px 0 6px;
-}
-
 .passkey-list {
   display: grid;
   gap: 6px;
-  margin: 14px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -145,6 +174,16 @@
   border-radius: 10px;
 }
 
+.passkey-list li > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.passkey-list .icon {
+  color: var(--gold-soft);
+}
+
 .passkey-list small {
   color: var(--muted);
 }
@@ -156,15 +195,13 @@
 
 .approval-prompt .primary.button.full {
   min-height: 44px;
-  display: grid;
-  place-items: center;
 }
 
 /* The channels waiting for approval: label left, one action right; stacked on a phone. */
 .approval-list {
   display: grid;
   gap: 6px;
-  margin: 14px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -193,7 +230,7 @@
   min-height: 44px;
 }
 
-/* The passkey offer: one sentence and one action, full width on a phone. */
+/* The passkey offer: one sentence and its two ways to answer, full width on a phone. */
 .passkey-offer {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -207,10 +244,25 @@
 }
 
 .passkey-offer p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
 }
 
-.passkey-offer button {
+.passkey-offer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  /* On a phone each way to answer is a full-width row under the sentence. */
+  @media (max-width: 720px) {
+    display: grid;
+  }
+}
+
+.passkey-offer button,
+.passkey-offer .button {
   min-height: 44px;
 }
 

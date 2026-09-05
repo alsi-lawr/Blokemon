@@ -15,6 +15,7 @@ type PasskeyRecoveryTests() =
                 SignInCompletion.complete
                     (services documents)
                     identity
+                    Terms.Version
                     tenant
                     now
                     Unchecked.defaultof<_>

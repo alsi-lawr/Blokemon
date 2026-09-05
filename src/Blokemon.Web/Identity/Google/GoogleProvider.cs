@@ -14,7 +14,8 @@ namespace Blokemon.Web.Identity.Google;
 /// and its issuer, audience, expiry and nonce checked. Its signature is not verified: the token
 /// came straight from Google's token endpoint over TLS, which is the case Google's own guidance
 /// exempts, and verifying it would mean fetching and caching Google's keys. The subject is
-/// Google's stable account id and the name its display-name hint; every session carries
+/// Google's stable account id and nothing else in the token is read: the person chooses their
+/// own player name, and nothing Google knows about them reaches the site. Every session carries
 /// <c>FirstParty</c> provenance, since the person proved themselves to their own account.
 /// </summary>
 internal sealed class GoogleProvider(
@@ -102,12 +103,7 @@ internal sealed class GoogleProvider(
         }
 
         return DomainResult<VerifiedIdentity, SignInFailure>.NewSucceeded(
-            new VerifiedIdentity(
-                Name,
-                subject.Value,
-                Text(claims, "name"),
-                SessionProvenance.FirstParty
-            )
+            new VerifiedIdentity(Name, subject.Value, null, SessionProvenance.FirstParty)
         );
     }
 

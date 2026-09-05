@@ -42,6 +42,13 @@ public static class FirstPartyEndpoints
             return Envelope.Fail<PasskeyOptionsView>(PasskeyFailures.Unavailable);
         }
 
+        // The terms are checked before the ceremony starts, so a browser is never asked to
+        // make a credential for an account that will be refused.
+        if (!Terms.accepted(request.AcceptedTerms))
+        {
+            return Envelope.Fail<PasskeyOptionsView>(Terms.required);
+        }
+
         // The account is minted now so the credential's user handle names it; it is created
         // only once the browser's response verifies.
         var account = AccountId.Mint();
@@ -51,7 +58,7 @@ public static class FirstPartyEndpoints
                 account,
                 displayName,
                 [],
-                new CeremonyBinding.NewAccount(account, displayName)
+                new CeremonyBinding.NewAccount(account, displayName, request.AcceptedTerms)
             )
         );
     }
@@ -119,6 +126,7 @@ public static class FirstPartyEndpoints
                 SessionProvenance.FirstParty
             ),
             binding.Account,
+            binding.AcceptedTerms,
             TenantResolution.IdOf(tenant),
             now,
             cancellationToken
@@ -211,6 +219,7 @@ public static class FirstPartyEndpoints
             services,
             identity.Value,
             AccountOf(identity.Value.Subject),
+            null,
             TenantResolution.IdOf(tenant),
             time.GetUtcNow(),
             cancellationToken

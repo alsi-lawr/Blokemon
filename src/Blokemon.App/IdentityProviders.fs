@@ -30,6 +30,8 @@ type SignInFailure =
     | Conflict
     /// The first profile could not be created; the typed profile error says why.
     | ProfileRefused of ApiError
+    /// The sign-in would create an account and the person has not accepted the current terms.
+    | TermsRequired
 
 module SignInFailures =
 
@@ -45,6 +47,7 @@ module SignInFailures =
         | SignInFailure.Conflict ->
             ApiError("signin.conflict", "Sign-in changed underneath this request. Try again.")
         | SignInFailure.ProfileRefused error -> error
+        | SignInFailure.TermsRequired -> Terms.required
 
 /// One way of establishing who a person is. The host registers the implementations it ships;
 /// the deployment enables them by name. This tier names none of them.

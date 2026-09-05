@@ -89,6 +89,36 @@ public sealed class SessionHolder(IJSRuntime js, SessionTokenStore tokens, TimeP
         }
     }
 
+    /// <summary>
+    /// The player name the held session now acts for: a session issued before the profile
+    /// existed carries none, and the name the person chooses replaces it here and in storage.
+    /// </summary>
+    public async Task Rename(string displayName, CancellationToken cancellationToken = default)
+    {
+        if (Current is not { } held)
+        {
+            return;
+        }
+
+        Apply(held with { DisplayName = displayName });
+        try
+        {
+            var module = await Module(cancellationToken);
+            await module.InvokeVoidAsync(
+                "write",
+                cancellationToken,
+                held.Token,
+                held.ExpiresAt,
+                displayName,
+                held.Recovery
+            );
+        }
+        catch (JSException)
+        {
+            // Without sessionStorage the name lives in memory with the session.
+        }
+    }
+
     public async Task Discard(CancellationToken cancellationToken = default)
     {
         _loaded = true;

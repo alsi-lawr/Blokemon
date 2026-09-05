@@ -17,6 +17,7 @@ type AccountLifecycleTests() =
         SignInCompletion.complete
             (services documents)
             (identity provider subject "Player" SessionProvenance.FirstParty)
+            Terms.Version
             tenant
             now
             Unchecked.defaultof<_>
@@ -137,6 +138,7 @@ type AccountLifecycleTests() =
                     (services documents)
                     (identity provider "person-again" "Player" SessionProvenance.FirstParty)
                     account
+                    Terms.Version
                     tenant
                     now
                     Unchecked.defaultof<_>

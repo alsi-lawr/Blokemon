@@ -48,11 +48,12 @@ public sealed class PasskeyApiClient(HttpClient http)
 
     public Task<ApiResponse<PasskeyOptionsView>> RegisterOptions(
         string displayName,
+        string? acceptedTerms,
         CancellationToken cancellationToken = default
     ) =>
         Post<PasskeyRegisterOptionsRequest, PasskeyOptionsView>(
             $"{Prefix}/register/options",
-            new(displayName),
+            new(displayName, acceptedTerms),
             cancellationToken
         );
 

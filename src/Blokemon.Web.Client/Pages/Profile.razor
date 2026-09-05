@@ -9,79 +9,33 @@
 
 <PageTitle>Profile · Blokemon</PageTitle>
 
+@*
+    The player's own page: who they are here, where the game is saved, the ways they sign in,
+    the channels asking for them, and the two deletions. Everything about the account is shown
+    whenever there is a session for it, with or without a player, so a person who has just
+    purged their game can still erase their account.
+*@
 @if (_view is null && _error is null)
 {
     <LoadingPanel />
 }
-else if (_error is not null)
-{
-    <FailurePanel Message="@_error" />
-    <div class="panel setup-card">
-        <h2>Choose another game.</h2>
-        <p>Changing games does not move or replace either player.</p>
-        <div class="actions">
-            @if (_mode?.ServerBackedAvailable is true)
-            {
-                <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">@(Session.Current is null ? "Sign in to use this server" : "Use this server")</button>
-            }
-            <button class="secondary" @onclick="() => ChangeMode(PlayMode.BrowserLocal)" disabled="@(_saving || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)">Use this browser</button>
-        </div>
-        @if (_validation is not null)
-        {
-            <span class="field-error" role="alert">@_validation</span>
-        }
-    </div>
-    @PurgePanel
-}
-else if (_view!.Profile is not null)
-{
-    <header class="topline">
-        <div><span class="eyebrow">Player</span><h1>@_view.Profile.DisplayName</h1></div>
-        @if (_view.Profile.RemainingPacks is { } remainingPacks)
-        {
-            <span class="dev-badge">@remainingPacks packs left · @(_view.Profile.StarterClaimUsed is true ? "Starter Deck opened" : "Starter Deck available")</span>
-        }
-    </header>
-    <div class="panel setup-card">
-        <h2>@(_mode?.StorageLocation ?? "Save location unavailable")</h2>
-        <p>Changing games does not move or replace either player.</p>
-        <div class="actions">
-            @if (_mode?.ServerBackedAvailable is true)
-            {
-                <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">@(Session.Current is null ? "Sign in to use this server" : "Use this server")</button>
-            }
-            <button class="secondary" @onclick="() => ChangeMode(PlayMode.BrowserLocal)" disabled="@(_saving || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)">Use this browser</button>
-        </div>
-        @if (_validation is not null)
-        {
-            <span class="field-error" role="alert">@_validation</span>
-        }
-    </div>
-    @if (_mode?.Selected == PlayMode.ServerBacked && Session.Current is { Recovery: false })
-    {
-        <LoginPanel />
-        <PasskeyPanel />
-        <PendingApprovals />
-    }
-    @PurgePanel
-    @if (_mode?.Selected == PlayMode.ServerBacked && Session.Current is { Recovery: false })
-    {
-        @ErasePanel
-    }
-}
-else
+else if (_view?.Profile is null && !Account)
 {
     <div class="profile-setup">
         <div class="panel setup-card">
             <span class="eyebrow">First game</span>
             <h1>Create a player.</h1>
-            <p>@StorageDescription()</p>
+            <p class="lead">@StorageDescription()</p>
+            @if (_error is not null)
+            {
+                <FailurePanel Message="@_error" />
+            }
             <div class="actions" aria-label="Save location">
                 @if (_mode?.ServerBackedAvailable is true)
                 {
-                    <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)">@(Session.Current is null ? "Sign in to use this server" : "Use this server")</button>
+                    <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)"><Icon Name="server" /> @(Session.Current is null ? "Sign in to use this server" : "Use this server")</button>
                 }
-                <button class="secondary" @onclick="() => ChangeMode(PlayMode.BrowserLocal)" disabled="@(_saving || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)">Use this browser</button>
+                <button class="secondary" @onclick="() => ChangeMode(PlayMode.BrowserLocal)" disabled="@(_saving || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)"><Icon Name="monitor-smartphone" /> Use this browser</button>
             </div>
             @if (_mode?.BrowserStorageError is not null)
             {
@@ -93,74 +47,115 @@ else
             {
                 <span class="field-error" role="alert">@_validation</span>
             }
-            <button class="primary full" @onclick="Create" disabled="@_saving">@(_saving ? "Creating…" : "Create player")</button>
+            <button class="primary full" @onclick="Create" disabled="@_saving"><Icon Name="user-round-plus" /> @(_saving ? "Creating…" : "Create player")</button>
         </div>
+    </div>
+}
+else
+{
+    <header class="topline">
+        <div>
+            <span class="eyebrow">@(Account ? "Your account" : "Player")</span>
+            <h1>@(_view?.Profile?.DisplayName ?? "New player")</h1>
+        </div>
+        @if (_view?.Profile?.RemainingPacks is { } remainingPacks)
+        {
+            <span class="dev-badge"><Icon Name="package" /> @remainingPacks packs left · @(_view.Profile.StarterClaimUsed is true ? "Starter Deck opened" : "Starter Deck available")</span>
+        }
+    </header>
+    @if (_error is not null)
+    {
+        <FailurePanel Message="@_error" />
+    }
+    @if (_view?.Profile is null)
+    {
+        @* A server account with no player yet: the name is the person's to choose, and other
+           players see nothing else about them. *@
+        <section class="panel profile-panel profile-name-prompt" aria-labelledby="name-heading">
+            <div class="panel-head"><h2 id="name-heading"><Icon Name="user-round-plus" /> Choose your player name</h2></div>
+            <p>Other players see this name. It can be changed later from here.</p>
+            <label for="display-name">Player name</label>
+            <input id="display-name" maxlength="32" autocomplete="nickname" @bind="_displayName" disabled="@_saving" />
+            @if (_validation is not null)
+            {
+                <span class="field-error" role="alert">@_validation</span>
+            }
+            <div class="actions"><button class="primary" @onclick="Create" disabled="@_saving"><Icon Name="check" /> @(_saving ? "Saving…" : "Continue to your game")</button></div>
+        </section>
+    }
+    <div class="profile-grid">
+        <section class="panel profile-panel" aria-labelledby="save-heading">
+            <div class="panel-head"><h2 id="save-heading"><Icon Name="@(_mode?.Selected == PlayMode.ServerBacked ? "server" : "monitor-smartphone")" /> @(_mode?.StorageLocation ?? "Save location unavailable")</h2></div>
+            <p>Changing games does not move or replace either player.</p>
+            <div class="actions">
+                @if (_mode?.ServerBackedAvailable is true)
+                {
+                    <button class="secondary" @onclick="() => ChangeMode(PlayMode.ServerBacked)" disabled="@(_saving || _mode.Selected == PlayMode.ServerBacked)"><Icon Name="server" /> @(Session.Current is null ? "Sign in to use this server" : "Use this server")</button>
+                }
+                <button class="secondary" @onclick="() => ChangeMode(PlayMode.BrowserLocal)" disabled="@(_saving || _mode?.Selected == PlayMode.BrowserLocal || _mode?.BrowserStorageError is not null)"><Icon Name="monitor-smartphone" /> Use this browser</button>
+            </div>
+            @if (_modeValidation is not null)
+            {
+                <span class="field-error" role="alert">@_modeValidation</span>
+            }
+        </section>
+        @if (Account)
+        {
+            <LoginPanel />
+            <PasskeyPanel />
+            <PendingApprovals />
+        }
+        <section class="panel profile-panel danger-panel" aria-labelledby="danger-heading">
+            <div class="panel-head"><h2 id="danger-heading"><Icon Name="triangle-alert" /> Delete</h2></div>
+            <div class="danger-actions">
+                <div>
+                    <h3><Icon Name="trash" /> Purge saved data</h3>
+                    <p>Deletes the player, cards, decks, and battles saved in the current game. This cannot be undone.</p>
+                    <div class="actions">
+                        <ConfirmedAction Verb="Purge data" WorkingLabel="Purging…" Working="@_saving" Disabled="@_saving" OnConfirm="Purge" />
+                    </div>
+                    @if (_purgeError is not null)
+                    {
+                        <span class="field-error" role="alert">@_purgeError</span>
+                    }
+                </div>
+                @if (Account)
+                {
+                    @* Erasure is the account's end, not the game's: the server says which sessions
+                       may erase, and a channel session's refusal is shown where the button was. *@
+                    <div class="erase-account">
+                        <h3><Icon Name="user-x" /> Erase your account</h3>
+                        <p>Removes your account from this server: your player, cards, decks, battles, passkeys, recovery codes and every channel's link to you. This cannot be undone.</p>
+                        <div class="actions">
+                            <ConfirmedAction Verb="Erase account" WorkingLabel="Erasing…" Working="@_saving" Disabled="@_saving" OnConfirm="Erase" />
+                        </div>
+                        @if (_eraseError is not null)
+                        {
+                            <span class="field-error" role="alert">@_eraseError</span>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
     </div>
 }
 
 @code {
-    private RenderFragment PurgePanel =>
-        @<div class="panel setup-card">
-            <h2>Purge saved data.</h2>
-            <p>Deletes the player, cards, decks, and battles saved in the current game. This cannot be undone.</p>
-            @if (!_confirmingPurge)
-            {
-                <div class="actions">
-                    <button class="secondary" @onclick="() => _confirmingPurge = true" disabled="@_saving">Purge data</button>
-                </div>
-            }
-            else
-            {
-                <p><strong>Really delete everything in this game?</strong></p>
-                <div class="actions">
-                    <button class="secondary" @onclick="() => _confirmingPurge = false" disabled="@_saving">Keep my data</button>
-                    <button class="primary" @onclick="Purge" disabled="@_saving">@(_saving ? "Purging…" : "Delete everything")</button>
-                </div>
-            }
-            @if (_purgeError is not null)
-            {
-                <span class="field-error" role="alert">@_purgeError</span>
-            }
-        </div>;
-
-    // Erasure is the account's end, not the game's: a separate action beside the purge with
-    // the same two-step shape. The server says which sessions may erase; a channel session's
-    // refusal is shown where the buttons were.
-    private RenderFragment ErasePanel =>
-        @<div class="panel setup-card erase-account">
-            <h2>Erase your account.</h2>
-            <p>Removes your account from this server: your player, cards, decks, battles, passkeys, recovery codes and every channel's link to you. This cannot be undone.</p>
-            @if (!_confirmingErase)
-            {
-                <div class="actions">
-                    <button class="secondary" @onclick="() => _confirmingErase = true" disabled="@_saving">Erase account</button>
-                </div>
-            }
-            else
-            {
-                <p><strong>Really erase your account?</strong></p>
-                <div class="actions">
-                    <button class="secondary" @onclick="() => _confirmingErase = false" disabled="@_saving">Keep my account</button>
-                    <button class="primary" @onclick="Erase" disabled="@_saving">@(_saving ? "Erasing…" : "Erase everything")</button>
-                </div>
-            }
-            @if (_eraseError is not null)
-            {
-                <span class="field-error" role="alert">@_eraseError</span>
-            }
-        </div>;
-
     private ApplicationView? _view;
     private PlayModeState? _mode;
     private string? _error;
     private string? _validation;
+    private string? _modeValidation;
     private string? _purgeError;
     private string? _eraseError;
     private string _displayName = string.Empty;
     private bool _saving;
-    private bool _confirmingPurge;
-    private bool _confirmingErase;
     private Guid? _commandId;
+
+    // A signed-in server game with a session that can act: the account panels exist for it
+    // whether or not a player does.
+    private bool Account =>
+        _mode?.Selected == PlayMode.ServerBacked && Session.Current is { Recovery: false };
 
     private async Task Erase()
     {
@@ -168,7 +163,6 @@ else
         _eraseError = null;
         var response = await SessionApi.Erase();
         _saving = false;
-        _confirmingErase = false;
         if (!response.Succeeded)
         {
             _eraseError = response.Error?.Message;
@@ -188,7 +182,6 @@ else
         _purgeError = null;
         var response = await ProfileOperations.PurgeData();
         _saving = false;
-        _confirmingPurge = false;
         if (!response.Succeeded)
         {
             _purgeError = response.Error?.Message;
@@ -234,12 +227,12 @@ else
         }
 
         _saving = true;
-        _validation = null;
+        _modeValidation = null;
         var response = await Modes.SelectMode(mode);
         _saving = false;
         if (!response.Succeeded)
         {
-            _validation = response.Error?.Message;
+            _modeValidation = response.Error?.Message;
             return;
         }
 
@@ -259,7 +252,7 @@ else
         var displayName = _displayName.Trim();
         if (displayName.Length is < 1 or > 32)
         {
-            _validation = "Enter a display name from 1 to 32 characters.";
+            _validation = "Enter a player name from 1 to 32 characters.";
             return;
         }
 
@@ -276,6 +269,12 @@ else
 
         _commandId = null;
         _view = response.Value;
+        // The session was issued before the player existed, so the name it shows is this one.
+        if (Account)
+        {
+            await Session.Rename(displayName);
+        }
+
         Navigation.NavigateTo("/");
     }
 }

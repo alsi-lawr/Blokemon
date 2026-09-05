@@ -37,10 +37,11 @@ public sealed class PasskeyFlow(
 
     public async Task<ApiResponse<AccountRegistrationView>> CreateAccount(
         string displayName,
+        string acceptedTerms,
         CancellationToken cancellationToken = default
     )
     {
-        var options = await api.RegisterOptions(displayName, cancellationToken);
+        var options = await api.RegisterOptions(displayName, acceptedTerms, cancellationToken);
         if (!options.Succeeded || options.Value is null)
         {
             return Fail<AccountRegistrationView>(options.Error);
@@ -68,11 +69,12 @@ public sealed class PasskeyFlow(
     public async Task<ApiResponse<AccountRegistrationView>> CreateAccountWithPassword(
         string name,
         string password,
+        string acceptedTerms,
         CancellationToken cancellationToken = default
     )
     {
         var registered = await api.RegisterWithPassword(
-            new(name, password, Slug()),
+            new(name, password, Slug(), acceptedTerms),
             cancellationToken
         );
         if (registered.Succeeded && registered.Value is { } view)

@@ -79,11 +79,12 @@ public sealed class HeadlessGoogleTests
         }
         process.ExitCode.ShouldBe(0, report);
         report.ShouldContain("HEADLESS GOOGLE EVIDENCE COMPLETE");
-        // One account for the one Google subject, two rounds through the stub, and a session
-        // for the sign-in the browser still holds.
+        // One account for the one Google subject and three rounds through the stub: the first
+        // refused for want of the terms and storing nothing, the second creating the account,
+        // the third returning to it.
         (await host.WithStore(store => store.List("account/"))).Count.ShouldBe(1);
         (await host.WithStore(store => store.List("link/google/"))).Count.ShouldBe(1);
-        stub.TokenRequests.Count.ShouldBe(2);
+        stub.TokenRequests.Count.ShouldBe(3);
     }
 
     private static string RepositoryRoot() =>

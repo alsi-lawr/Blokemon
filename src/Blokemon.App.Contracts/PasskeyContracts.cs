@@ -2,8 +2,14 @@ using System.Text.Json;
 
 namespace Blokemon.App.Contracts;
 
-/// <summary>The display name the new account's profile takes.</summary>
-public sealed record PasskeyRegisterOptionsRequest(string DisplayName);
+/// <summary>
+/// The display name the new account's profile takes, and the terms version the person accepted
+/// before the account is created.
+/// </summary>
+public sealed record PasskeyRegisterOptionsRequest(
+    string DisplayName,
+    string? AcceptedTerms = null
+);
 
 /// <summary>
 /// A ceremony's options as the browser's credential API takes them, and the challenge that
@@ -28,7 +34,12 @@ public sealed record AccountRegistrationView(IssuedSessionView Session, string[]
 /// A new account with a simple login: the player name (also the first display name) and the
 /// password. The slug is the tenant the page runs as, null at the root.
 /// </summary>
-public sealed record PasswordRegistrationRequest(string Name, string Password, string? Slug = null);
+public sealed record PasswordRegistrationRequest(
+    string Name,
+    string Password,
+    string? Slug = null,
+    string? AcceptedTerms = null
+);
 
 /// <summary>A simple sign-in: the player name and password of an existing login.</summary>
 public sealed record PasswordSignInRequest(string Name, string Password, string? Slug = null);
@@ -59,7 +70,10 @@ public sealed record PasskeyView(
 /// <summary>
 /// The account's credentials as the profile shows them: its login name when it has one, its
 /// passkeys and recovery codes, with the actions this session may take stated by the server so
-/// the client draws no rule of its own.
+/// the client draws no rule of its own. ChannelOnly is the server's word that this session came
+/// through a channel and the account has no way in of its own (no password, no passkey): the
+/// one case the client offers a credential for. A session from the person's own sign-in, by
+/// password, passkey or an external account such as Google, is never channel-only.
 /// </summary>
 public sealed record PasskeyStateView(
     PasskeyView[] Passkeys,
@@ -67,7 +81,8 @@ public sealed record PasskeyStateView(
     bool CanAddPasskey,
     bool CanMakeNewCodes,
     string? LoginName = null,
-    bool CanSetPassword = false
+    bool CanSetPassword = false,
+    bool ChannelOnly = false
 );
 
 /// <summary>A passkey just enrolled and, when this enrolment produced one, the new code set.</summary>

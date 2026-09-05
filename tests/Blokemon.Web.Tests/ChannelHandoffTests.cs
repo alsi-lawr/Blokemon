@@ -66,6 +66,37 @@ public sealed class ChannelHandoffTests
     }
 
     [Test]
+    public async Task AHandoffForANewSubject_NeedsTheTerms_AndSpendsNothingUntilTheyAreGiven()
+    {
+        await using var host = ChannelHosting.Create();
+        var operatorToken = await host.OperatorToken();
+        var (channel, _) = await host.AdmitChannel(operatorToken, "the-regular", "The Regular");
+        var code = await channel.HandoffCode("4321", "Viewer Four");
+        var before = await host.WithStore(store => store.List(""));
+
+        // Without the terms nothing is made and the code is not spent: the page shows the
+        // terms and exchanges the same code again once they are agreed to.
+        (await host.Exchange(code, "the-regular", terms: null)).Error!.Code.ShouldBe(
+            "terms.required"
+        );
+        (await host.Exchange(code, "the-regular", terms: "2020-01-01")).Error!.Code.ShouldBe(
+            "terms.required"
+        );
+        (await host.WithStore(store => store.List(""))).ShouldBe(before);
+
+        var signedIn = await host.Exchange(code, "the-regular");
+        signedIn.Succeeded.ShouldBeTrue(signedIn.Error?.Message);
+        var session = await host.SessionOf(signedIn.Value!.Token);
+        (
+            await host.WithStore(store => store.Read($"account/{session.Account}"))
+        )!.Json.ShouldContain($"\"termsVersion\":\"{Terms.Version}\"");
+        // A returning subject's hand-off asks for nothing.
+        (
+            await host.Exchange(await channel.HandoffCode("4321"), "the-regular", terms: null)
+        ).Succeeded.ShouldBeTrue();
+    }
+
+    [Test]
     public async Task ChannelCalls_RefuseEveryBadTokenAndBadHandoffAndMutateNothing()
     {
         await using var host = ChannelHosting.Create(builder =>

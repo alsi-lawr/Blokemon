@@ -245,7 +245,10 @@ public static class PasskeyEnrolmentEndpoints
                 mayAddCredential,
                 PasskeyEnrolment.mayRegenerate(session.Provenance),
                 loginName,
-                mayAddCredential
+                mayAddCredential,
+                ChannelOnly: session.Provenance == SessionProvenance.Issuer
+                    && passkeys.Count == 0
+                    && loginName is null
             )
         );
     }

@@ -7,12 +7,6 @@
     display: none;
   }
 
-  .mainnav a::before {
-    content: attr(data-icon);
-    grid-row: 1;
-    font-size: 18px;
-  }
-
   .topline h1 {
     font-size: 40px;
   }

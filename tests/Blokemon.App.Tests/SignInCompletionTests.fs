@@ -43,7 +43,13 @@ type private LinkRacingStore(inner: MemoryDocumentStore, winner: AccountId) =
 type SignInCompletionTests() =
 
     let complete documents identity tenant =
-        SignInCompletion.complete (services documents) identity tenant now Unchecked.defaultof<_>
+        SignInCompletion.complete
+            (services documents)
+            identity
+            Terms.Version
+            tenant
+            now
+            Unchecked.defaultof<_>
 
     let profileOf (documents: MemoryDocumentStore) (session: Session) =
         task {
@@ -99,6 +105,7 @@ type SignInCompletionTests() =
                 SignInCompletion.complete
                     (services racing)
                     identity
+                    Terms.Version
                     tenant
                     now
                     CancellationToken.None
@@ -170,6 +177,7 @@ type SignInCompletionTests() =
                     (services documents)
                     identity
                     account
+                    Terms.Version
                     tenant
                     now
                     CancellationToken.None
@@ -179,6 +187,7 @@ type SignInCompletionTests() =
                     (services documents)
                     identity
                     (AccountId.Mint())
+                    Terms.Version
                     tenant
                     now
                     CancellationToken.None
@@ -188,6 +197,105 @@ type SignInCompletionTests() =
             keysUnder documents "account/" |> should equal [ $"account/{account}" ]
             keysUnder documents "link/" |> should equal [ $"link/own/{account}" ]
             keysUnder documents "a/" |> should equal [ $"a/{account}/profile" ]
+        }
+
+    [<Test>]
+    member _.``a first sign-in should need the current terms and record them on the account``() =
+        task {
+            let documents = MemoryDocumentStore()
+            let tenant = TenantId.Mint()
+            let identity = identity "example" "555" "Alex" SessionProvenance.FirstParty
+
+            let complete terms =
+                SignInCompletion.complete
+                    (services documents)
+                    identity
+                    terms
+                    tenant
+                    now
+                    Unchecked.defaultof<_>
+
+            let! withoutTerms = complete null
+            let! outdatedTerms = complete "2020-01-01"
+
+            failed withoutTerms |> should equal SignInFailure.TermsRequired
+            failed outdatedTerms |> should equal SignInFailure.TermsRequired
+            keysUnder documents "" |> should be Empty
+
+            let! accepted = complete Terms.Version
+            let session = (succeeded accepted).Session
+            let! record = Accounts.load documents session.Account Unchecked.defaultof<_>
+
+            match record with
+            | AccountRecord.Live(_, document) ->
+                document.TermsVersion |> should equal Terms.Version
+                document.TermsAcceptedAt |> should equal (Nullable now)
+            | other -> failwith $"{other}"
+
+            // The account exists, so a later sign-in needs no terms.
+            let! again = complete null
+            (succeeded again).Session.Account |> should equal session.Account
+        }
+
+    [<Test>]
+    member _.``adding a way in to an account that exists should need no terms``() =
+        task {
+            let documents = MemoryDocumentStore()
+            let tenant = TenantId.Mint()
+
+            let! created =
+                SignInCompletion.complete
+                    (services documents)
+                    (identity "example" "555" "Alex" SessionProvenance.Issuer)
+                    Terms.Version
+                    tenant
+                    now
+                    CancellationToken.None
+
+            let account = (succeeded created).Session.Account
+
+            // A passkey or a password enrolled from the channel's session signs in as the
+            // account itself: the link is new, the account is not, so nothing is asked.
+            let! linked =
+                SignInCompletion.completeAs
+                    (services documents)
+                    (identity "own" account.Value null SessionProvenance.FirstParty)
+                    account
+                    null
+                    tenant
+                    now
+                    CancellationToken.None
+
+            (succeeded linked).Session.Account |> should equal account
+
+            keysUnder documents "link/"
+            |> should equal [ "link/example/555"; $"link/own/{account}" ]
+
+            keysUnder documents "account/" |> should equal [ $"account/{account}" ]
+        }
+
+    [<Test>]
+    member _.``a provider with no display name hint should create the account without a profile``
+        ()
+        =
+        task {
+            let documents = MemoryDocumentStore()
+            let tenant = TenantId.Mint()
+            let identity = identity "google" "1234567890" null SessionProvenance.FirstParty
+
+            let! outcome =
+                SignInCompletion.complete
+                    (services documents)
+                    identity
+                    Terms.Version
+                    tenant
+                    now
+                    Unchecked.defaultof<_>
+
+            let session = (succeeded outcome).Session
+            keysUnder documents "account/" |> should equal [ $"account/{session.Account}" ]
+            keysUnder documents "link/" |> should equal [ "link/google/1234567890" ]
+            keysUnder documents "a/" |> should be Empty
         }
 
     [<Test>]
@@ -241,6 +349,7 @@ type SignInCompletionTests() =
                      | DomainResult.Succeeded name -> name
                      | DomainResult.Failed failure -> failwith $"{failure}")
                     proof
+                    Terms.Version
                     tenant
                     now
                     Unchecked.defaultof<_>

@@ -32,7 +32,7 @@ from urllib.request import Request, urlopen
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from headless_card_viewer import Chrome, DevTools, EvidenceFailure, require  # noqa: E402
-from headless_channel_evidence import Frame, offer_moment, signed_in_frame  # noqa: E402
+from headless_channel_evidence import Frame, agree_if_asked, offer_moment, signed_in_frame  # noqa: E402
 from headless_passkey_evidence import add_authenticator, recovery_codes_screen  # noqa: E402
 from headless_session_evidence import activate, close_menu, identity_text, open_menu, requests_to  # noqa: E402
 from static_host import static_server  # noqa: E402
@@ -112,7 +112,9 @@ def open_frame(devtools, parent_origin, app_origin, slug, allow, code, user_gest
     devtools.command("Page.navigate", {"url": f"{parent_origin}/parent.html?app={app_origin}&slug={slug}&allow={'1' if allow else '0'}"})
     devtools.wait_for("window.__ready === true", f"the {slug} frame signalled readiness", timeout=90)
     require(devtools.evaluate(f"window.__post({json.dumps(code)})"), "the parent posted the hand-off code")
-    return Frame(devtools, app_origin, user_gesture)
+    frame = Frame(devtools, app_origin, user_gesture)
+    agree_if_asked(frame, slug)
+    return frame
 
 
 def firstparty_signin(devtools, shots, app_origin, authenticator, viewport):
@@ -123,6 +125,8 @@ def firstparty_signin(devtools, shots, app_origin, authenticator, viewport):
     devtools.wait_for("location.pathname === '/signin/create' && document.querySelector('#player-name') !== null", "the create-account page", timeout=30)
     name = f"{PLAYER} {viewport}"
     devtools.set_value("#player-name", name)
+    require(devtools.evaluate("(() => { const b = document.querySelector('#accept-terms'); if (!b) return false; if (!b.checked) b.click(); return true; })()"), "the consent box")
+    devtools.wait_for("document.querySelector('#accept-terms').checked === true", "the box ticked")
     activate(devtools, "Create with a passkey")
     recovery_codes_screen(devtools, "Continue to your game", f"first-party create ({viewport})")
     activate(devtools, "Continue to your game")

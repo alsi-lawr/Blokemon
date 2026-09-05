@@ -88,6 +88,9 @@
 }
 
 .mainnav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   padding: 10px 11px;
   border-radius: 8px;
   color: var(--muted);
@@ -106,6 +109,17 @@
     gap: 2px;
     border-radius: 7px;
     font-size: 9px;
+  }
+}
+
+/* The icon is the whole link on a phone, with the word as its caption underneath. */
+.mainnav a .icon {
+  width: 17px;
+  height: 17px;
+
+  @media (max-width: 720px) {
+    width: 22px;
+    height: 22px;
   }
 }
 
@@ -140,7 +154,10 @@
   }
 }
 
+/* The small gold line over a heading stands a fixed step above it rather than touching it. */
 .eyebrow {
+  display: block;
+  margin-bottom: 8px;
   color: var(--gold);
   font: 700 11px "Jost", sans-serif;
   text-transform: uppercase;
@@ -162,7 +179,15 @@
   }
 }
 
+/* A player's name can be one long word; it breaks rather than leaving the screen. */
+.topline h1 {
+  overflow-wrap: anywhere;
+}
+
 .dev-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 12px;
   border: 1px solid #665c37;
   border-radius: 100px;

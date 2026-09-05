@@ -4,6 +4,7 @@
 @inject SoundBoard Sound
 @inject NavigationManager Navigation
 
+<IconSprite />
 <div class="app-shell">
     <header class="appbar">
         <a class="brand" href="/" aria-label="Blokemon home">
@@ -11,11 +12,11 @@
             <span><strong>Blokemon</strong><small>Local league</small></span>
         </a>
         <nav class="mainnav" aria-label="Primary">
-            <NavLink href="/" Match="NavLinkMatch.All" data-icon="⌂">Home</NavLink>
-            <NavLink href="packs" data-icon="▣">Packs</NavLink>
-            <NavLink href="collection" data-icon="▦">Collection</NavLink>
-            <NavLink href="decks" data-icon="▤">Decks</NavLink>
-            <NavLink href="match" data-icon="⚔">Battle</NavLink>
+            <NavLink href="/" Match="NavLinkMatch.All"><Icon Name="house" /><span>Home</span></NavLink>
+            <NavLink href="packs"><Icon Name="package" /><span>Packs</span></NavLink>
+            <NavLink href="collection"><Icon Name="layout-grid" /><span>Collection</span></NavLink>
+            <NavLink href="decks"><Icon Name="layers" /><span>Decks</span></NavLink>
+            <NavLink href="match"><Icon Name="swords" /><span>Battle</span></NavLink>
         </nav>
     </header>
     @*

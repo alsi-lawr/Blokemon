@@ -20,6 +20,9 @@ public static class GoogleEndpoints
 {
     public const string FailedRoute = "/signin?reason=external";
 
+    /// <summary>Where a first sign-in lands when the person has not accepted the terms: nothing was stored.</summary>
+    public const string TermsRoute = "/signin/create?reason=terms";
+
     public static IEndpointRouteBuilder MapGoogleSignIn(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet(GoogleSignIn.StartRoute, Start);
@@ -29,6 +32,7 @@ public static class GoogleEndpoints
 
     private static IResult Start(
         string? slug,
+        string? terms,
         HttpContext context,
         IdentityProviderRegistry registry,
         IdentityConfiguration identity,
@@ -59,7 +63,8 @@ public static class GoogleEndpoints
             nonce,
             verifier,
             string.IsNullOrWhiteSpace(slug) ? null : slug.Trim(),
-            redirectUri
+            redirectUri,
+            string.IsNullOrWhiteSpace(terms) ? null : terms.Trim()
         );
         var query = QueryString.Create(
             new Dictionary<string, string?>
@@ -67,7 +72,9 @@ public static class GoogleEndpoints
                 ["client_id"] = clientId,
                 ["redirect_uri"] = redirectUri,
                 ["response_type"] = "code",
-                ["scope"] = "openid profile",
+                // The subject is all that is asked for: nothing Google knows about the person
+                // is read, and the player chooses their own name afterwards.
+                ["scope"] = "openid",
                 ["state"] = state,
                 ["nonce"] = nonce,
                 ["code_challenge"] = challenge,
@@ -117,13 +124,22 @@ public static class GoogleEndpoints
             registry,
             GoogleSignIn.Name,
             GoogleProvider.Proof(code, pending),
+            pending.AcceptedTerms,
             TenantResolution.IdOf(tenant),
             now,
             cancellationToken
         );
         if (outcome is not DomainResult<IssuedSession, SignInFailure>.Succeeded issued)
         {
-            return Results.Redirect(FailedRoute);
+            return Results.Redirect(
+                outcome
+                    is DomainResult<IssuedSession, SignInFailure>.Failed
+                    {
+                        Error: { IsTermsRequired: true },
+                    }
+                    ? TermsRoute
+                    : FailedRoute
+            );
         }
 
         // The browser holds the session the continuation exchange issues, never this one,

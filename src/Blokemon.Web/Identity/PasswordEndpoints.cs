@@ -56,6 +56,12 @@ public static class PasswordEndpoints
             return Envelope.Fail<AccountRegistrationView>(TenantResolution.NotFound);
         }
 
+        // The terms are checked before the name is reserved, so a refusal writes nothing.
+        if (!Terms.accepted(request.AcceptedTerms))
+        {
+            return Envelope.Fail<AccountRegistrationView>(Terms.required);
+        }
+
         // The name is reserved and the login written before the account exists, so a taken name
         // refuses with nothing else written; a completion interrupted after this converges on
         // the next sign-in with the name, as every first sign-in does.
@@ -78,6 +84,7 @@ public static class PasswordEndpoints
             services,
             Identity(account, name.Value.Value),
             account,
+            request.AcceptedTerms,
             TenantResolution.IdOf(tenant),
             now,
             cancellationToken
@@ -170,6 +177,7 @@ public static class PasswordEndpoints
             services,
             Identity(account, document.Name),
             account,
+            null,
             TenantResolution.IdOf(tenant),
             now,
             cancellationToken

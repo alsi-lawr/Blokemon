@@ -173,6 +173,39 @@ module HandoffCodes =
             | _ -> return raise (InvalidOperationException "A freshly minted code id collided.")
         }
 
+    /// Reads what the code is bound to without spending it, under the checks `consume` applies,
+    /// so a caller can learn what the code would sign in before deciding to exchange it.
+    let peek
+        (documents: IStateDocumentStore)
+        (code: string | null)
+        (expected: HandoffKind)
+        (tenant: TenantId)
+        (now: DateTimeOffset)
+        (cancellationToken: CancellationToken)
+        : Task<DomainResult<HandoffDocument, HandoffFailure>> =
+        task {
+            match parse code with
+            | None -> return DomainResult.Failed HandoffFailure.Refused
+            | Some(id, secret) ->
+                let! found = read documents id cancellationToken
+
+                match found with
+                | None -> return DomainResult.Failed HandoffFailure.Refused
+                | Some(_, document) ->
+                    if not (secretsMatch document.SecretHash secret) then
+                        return DomainResult.Failed HandoffFailure.Refused
+                    elif document.Kind <> expected then
+                        return DomainResult.Failed HandoffFailure.WrongKind
+                    elif
+                        not (String.Equals(document.Tenant, tenant.Value, StringComparison.Ordinal))
+                    then
+                        return DomainResult.Failed HandoffFailure.OtherTenant
+                    elif document.ExpiresAt <= now then
+                        return DomainResult.Failed HandoffFailure.Expired
+                    else
+                        return DomainResult.Succeeded document
+        }
+
     /// Consumes the code if it is of the expected kind, bound to the expected tenant and still
     /// live. The record is deleted against the revision it was read at, so two presentations
     /// succeed at most once; a refused presentation writes nothing.

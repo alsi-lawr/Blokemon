@@ -14,16 +14,17 @@
 
 .setup-card {
   width: min(620px, 100%);
-  padding: clamp(30px, 6vw, 64px);
+  padding: clamp(24px, 5vw, 44px);
 }
 
 .setup-card h1 {
-  font-size: clamp(44px, 8vw, 76px);
+  margin-bottom: 12px;
+  font-size: clamp(40px, 7vw, 64px);
 }
 
 .setup-card label {
   display: block;
-  margin: 28px 0 8px;
+  margin: 22px 0 8px;
   font-weight: 700;
 }
 
@@ -46,3 +47,192 @@
   margin: 0;
 }
 
+/*
+  The profile: a page of panels on one grid, each a heading with its icon, a sentence, then its
+  facts and actions, so the save location, the ways in, the channels waiting and the two
+  deletions all read as parts of one page rather than a column of cards.
+*/
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.profile-panel {
+  min-width: 0;
+}
+
+/* Two small panels that belong together take one place on the grid, one above the other. */
+.profile-stack {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.profile-panel .panel-head {
+  margin-bottom: 10px;
+}
+
+.profile-panel .panel-head h2 {
+  font-size: 22px;
+}
+
+.profile-panel > p {
+  margin-bottom: 14px;
+}
+
+.profile-panel label {
+  display: block;
+  margin: 14px 0 8px;
+  font-weight: 700;
+}
+
+.profile-panel input:not([type="checkbox"]) {
+  width: 100%;
+  color: var(--ink);
+  border: 1px solid #454638;
+  border-radius: 9px;
+  background: #10120e;
+  padding: 11px 13px;
+}
+
+.profile-panel .actions {
+  margin-top: 16px;
+}
+
+.profile-panel .field-error {
+  display: block;
+  margin-top: 10px;
+}
+
+.profile-panel .facts {
+  margin: 0;
+}
+
+.profile-panel .facts > div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.profile-panel .sign-in-login label:first-child {
+  margin-top: 4px;
+}
+
+.login-saved {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 0;
+}
+
+/* A server account with no player yet: the name is asked for before anything else on the page. */
+.profile-name-prompt {
+  margin-bottom: 20px;
+}
+
+/* The two deletions side by side, in the danger colour, each with its own question and pair of
+   buttons; on a phone they stack. */
+.danger-panel {
+  grid-column: 1 / -1;
+  border-color: #5b322b;
+}
+
+.danger-panel .panel-head h2 .icon {
+  color: var(--danger);
+}
+
+.danger-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
+}
+
+.danger-actions > div {
+  padding: 18px;
+  border: 1px solid #4a2b25;
+  border-radius: 12px;
+  background: rgb(124 43 30 / 8%);
+}
+
+.danger-actions h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.danger-actions h3 .icon {
+  width: 18px;
+  height: 18px;
+  color: var(--danger);
+}
+
+.danger-actions p {
+  margin-bottom: 0;
+}
+
+.danger-actions .actions {
+  align-items: center;
+  margin-top: 14px;
+}
+
+.danger-actions .actions button {
+  min-height: 44px;
+}
+
+/*
+  The notices: one column of reading, the lead in the ink, each section under a heading with
+  its icon, lists with room between their points, and links in the gold so they are seen.
+*/
+.document {
+  max-width: 760px;
+}
+
+.document-lead {
+  margin: 0 0 28px;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.document-body h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 34px 0 10px;
+  font-size: 22px;
+}
+
+.document-body h2 .icon {
+  width: 22px;
+  height: 22px;
+  color: var(--gold);
+}
+
+.document-body section:first-child h2 {
+  margin-top: 0;
+}
+
+.document-body p,
+.document-body li {
+  line-height: 1.55;
+}
+
+.document-body li {
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.document-body ul {
+  margin: 0 0 14px;
+  padding-left: 22px;
+}
+
+.document-body strong {
+  color: var(--ink);
+}
+
+.document a {
+  color: var(--gold-soft);
+}

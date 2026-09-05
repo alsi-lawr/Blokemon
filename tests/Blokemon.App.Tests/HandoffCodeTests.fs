@@ -106,6 +106,36 @@ type HandoffCodeTests() =
         }
 
     [<Test>]
+    member _.``peeking at a code should read its binding under the same checks and spend nothing``
+        ()
+        =
+        task {
+            let documents = MemoryDocumentStore()
+            let! issued = HandoffCodes.mint documents channel now Unchecked.defaultof<_>
+
+            let peek code kind at =
+                HandoffCodes.peek documents code kind tenant at Unchecked.defaultof<_>
+
+            let! seen = peek issued.Code HandoffKind.Channel (now.AddSeconds 59.0)
+            let! again = peek issued.Code HandoffKind.Channel (now.AddSeconds 59.0)
+            let! wrongKind = peek issued.Code HandoffKind.Continuation now
+            let! expired = peek issued.Code HandoffKind.Channel (now.AddSeconds 60.0)
+            let! malformed = peek "not-a-code" HandoffKind.Channel now
+
+            (succeeded seen).Subject |> should equal subject.Value
+            (succeeded again).Subject |> should equal subject.Value
+            failed wrongKind |> should equal HandoffFailure.WrongKind
+            failed expired |> should equal HandoffFailure.Expired
+            failed malformed |> should equal HandoffFailure.Refused
+            (keysUnder documents "handoff/").Length |> should equal 1
+
+            let! consumed = consume documents issued.Code HandoffKind.Channel (now.AddSeconds 59.0)
+            succeeded consumed |> ignore
+            let! gone = peek issued.Code HandoffKind.Channel now
+            failed gone |> should equal HandoffFailure.Refused
+        }
+
+    [<Test>]
     member _.``a continuation should carry the session's account tenant and provenance``() =
         task {
             let documents = MemoryDocumentStore()

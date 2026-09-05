@@ -24,7 +24,7 @@ from headless_passkey_evidence import add_authenticator, recovery_codes_screen, 
 from headless_session_evidence import activate, close_menu, identity_text, open_menu  # noqa: E402
 from static_host import static_server  # noqa: E402
 
-PROMPT_BODY = "Confirm from a channel you already play in, or sign in with your passkey."
+PROMPT_BODY = "Confirm from a channel you already play in, or sign in with your own password, passkey or Google account."
 
 PARENT_PAGE = """<!doctype html>
 <meta charset="utf-8">
@@ -138,12 +138,27 @@ class Frame:
         require(self.evaluate(f"(() => {{ const e = [...document.querySelectorAll({json.dumps(selector)})].find(e => e.textContent.trim() === {wanted}); if (!e) return false; e.click(); return true; }})()"), f"activated {text!r} in the frame")
 
 
+def agree_if_asked(frame, label):
+    """A viewer's first hand-off stops at the terms: no account exists, and none is made, until
+    they are agreed to in the frame. A returning viewer's hand-off, or one that needs approval,
+    goes straight past this."""
+    frame.wait_for("document.querySelector('#accept-terms') !== null || (location.pathname === '/' && document.querySelector('.app-shell') !== null) || document.querySelector('.approval-prompt') !== null || document.querySelector('.sign-in-status .failure') !== null", f"{label}: the terms, the game, the prompt or a refusal", timeout=90)
+    if not frame.evaluate("document.querySelector('#accept-terms') !== null"):
+        return
+    require(frame.evaluate("[...document.querySelectorAll('.terms-consent a')].map(a => a.getAttribute('href')).sort().join('|')") == "privacy|terms", f"{label}: the consent links to the terms and the privacy notice")
+    require(frame.evaluate("[...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'Agree and continue' && b.disabled)"), f"{label}: the way on is closed until the box is ticked")
+    frame.evaluate("document.querySelector('#accept-terms').click(); true")
+    frame.click("Agree and continue")
+
+
 def open_hosted(devtools, parent_origin, app_origin, slug, allow, code, user_gesture=True):
     devtools.events.clear()
     devtools.command("Page.navigate", {"url": f"{parent_origin}/parent.html?app={app_origin}&slug={slug}&allow={'1' if allow else '0'}"})
     devtools.wait_for("window.__ready === true", f"the {slug} frame signalled readiness", timeout=90)
     require(devtools.evaluate(f"window.__post({json.dumps(code)})"), "the parent posted the hand-off code")
-    return Frame(devtools, app_origin, user_gesture)
+    frame = Frame(devtools, app_origin, user_gesture)
+    agree_if_asked(frame, slug)
+    return frame
 
 
 def signed_in_frame(frame, label):

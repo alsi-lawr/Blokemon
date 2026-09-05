@@ -242,6 +242,14 @@ class Chrome:
             self.process.kill()
             self.process.wait(timeout=5)
         self.stderr.close()
+        # Chrome's helper processes can outlive the browser by a moment and still write to the
+        # profile; it is removed here once they are done, so a caller's cleanup of the temporary
+        # root never races them.
+        for _ in range(40):
+            shutil.rmtree(self.profile, ignore_errors=True)
+            if not self.profile.exists():
+                break
+            time.sleep(0.25)
 
     @staticmethod
     def _find_browser():

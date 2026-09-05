@@ -116,6 +116,23 @@ module IssuerAdmission =
                     | _ -> None)
         }
 
+    /// Whether admitting this subject would create an account, and so needs the person's
+    /// acceptance of the terms first. A host asks before spending a single-use code.
+    let wouldCreateAccount
+        (documents: IStateDocumentStore)
+        (provider: IdentityProviderName)
+        (subject: ExternalSubject)
+        (cancellationToken: CancellationToken)
+        : Task<bool> =
+        task {
+            let! resolution = IdentityLinks.resolve documents provider subject cancellationToken
+
+            return
+                match resolution with
+                | LinkResolution.Unlinked -> true
+                | _ -> false
+        }
+
     /// Admits the identity a channel handed off: a subject with no account gets one and the
     /// channel is approved for it; an account the channel is approved for signs in; the core
     /// sign-in adopts an account with no passkey and no live route; any other existing account
@@ -125,6 +142,7 @@ module IssuerAdmission =
         (listing: IDocumentListing)
         (identity: VerifiedIdentity)
         (tenant: TenantDocument)
+        (terms: string | null)
         (now: DateTimeOffset)
         (cancellationToken: CancellationToken)
         : Task<DomainResult<HandoffOutcome, SignInFailure>> =
@@ -135,7 +153,13 @@ module IssuerAdmission =
             let signIn () =
                 task {
                     let! completed =
-                        SignInCompletion.complete services identity tenantId now cancellationToken
+                        SignInCompletion.complete
+                            services
+                            identity
+                            terms
+                            tenantId
+                            now
+                            cancellationToken
 
                     match completed with
                     | DomainResult.Succeeded issued ->
