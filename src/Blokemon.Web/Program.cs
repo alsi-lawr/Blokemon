@@ -64,6 +64,7 @@ else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
+
 // Inside the error handler because the framing look-up reads the store: a store failure on a
 // tenant route is then answered through the application's error path rather than escaping as a
 // bare 500. The headers still win: OnStarting callbacks run last-registered first, this
