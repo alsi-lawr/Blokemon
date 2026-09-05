@@ -56,7 +56,6 @@ builder.Services.AddAntiforgery(static options => options.SuppressXFrameOptionsH
 var app = builder.Build();
 
 app.UseForwardedClients(hosting);
-app.UseHostingHeaders();
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
@@ -65,6 +64,13 @@ else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
+// Inside the error handler because the framing look-up reads the store: a store failure on a
+// tenant route is then answered through the application's error path rather than escaping as a
+// bare 500. The headers still win: OnStarting callbacks run last-registered first, this
+// middleware registers its callback before anything downstream, and on the error path the
+// handler re-executes the pipeline through this middleware again, so the error response's
+// framing is decided here too (the handler's own callback touches only the cache headers).
+app.UseHostingHeaders();
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseAntiforgery();
 app.MapStaticAssets();

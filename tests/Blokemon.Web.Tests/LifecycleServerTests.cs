@@ -407,9 +407,9 @@ public sealed class LifecycleServerTests
                 ignoreOrder: true
             );
         var onlyBetaAccount = (await host.SessionOf(onlyBeta.Value!.Token)).Account.Value;
-        listed.Value.ShouldNotContain(a => a.AccountId == onlyBetaAccount);
+        listed.Value!.ShouldNotContain(a => a.AccountId == onlyBetaAccount);
         listed
-            .Value.Single(a => a.AccountId == playerSession.Account.Value)
+            .Value!.Single(a => a.AccountId == playerSession.Account.Value)
             .ShouldSatisfyAllConditions(
                 static a => a.Status.ShouldBe("Approved"),
                 static a => a.ExcludedAt.ShouldNotBeNull(),

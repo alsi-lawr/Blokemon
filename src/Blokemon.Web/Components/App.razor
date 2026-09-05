@@ -1,4 +1,6 @@
 @using Blokemon.App.Catalogue
+@using Blokemon.Web.Components.Pages
+@using Microsoft.AspNetCore.Diagnostics
 @inject BlokemonCatalogue Catalogue
 
 <!DOCTYPE html>
@@ -57,10 +59,30 @@
 </head>
 
 <body>
-    <Blokemon.Web.Client.App @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
-    <!-- Loaded by the page so a hosting parent's early message is retained before the application starts. -->
-    <script type="module">import "./signIn.js";</script>
-    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    @if (HandlingError)
+    {
+        @*
+            The error handler re-executes the request at /Error, and while an error is being
+            handled every component is rendered statically on the server, so the client's
+            interactive tree cannot stand in for the page here: its layout and pages need the
+            browser's services. The server's own error page is rendered instead.
+        *@
+        <Error />
+    }
+    else
+    {
+        <Blokemon.Web.Client.App @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
+        <!-- Loaded by the page so a hosting parent's early message is retained before the application starts. -->
+        <script type="module">import "./signIn.js";</script>
+        <script src="@Assets["_framework/blazor.web.js"]"></script>
+    }
 </body>
 
 </html>
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private bool HandlingError => HttpContext?.Features.Get<IExceptionHandlerFeature>() is not null;
+}

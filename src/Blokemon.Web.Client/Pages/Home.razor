@@ -40,7 +40,7 @@ else if (_mode!.Selected is null)
                     <h2>Play on this server.</h2>
                     <p>Your player, cards, decks, and battles are saved by this server.</p>
                     <div class="actions">
-                        <button class="primary" @onclick="() => ChooseMode(PlayMode.ServerBacked)" disabled="@_choosingMode">@(Session.Current is null ? "Sign in to use this server" : "Use this server")</button>
+                        <button class="primary" data-choice="@(Session.Current is null ? "sign-in" : "server")" @onclick="() => ChooseMode(PlayMode.ServerBacked)" disabled="@_choosingMode">@(Session.Current is null ? "Sign in to use this server" : "Use this server")</button>
                     </div>
                 </div>
             </div>
@@ -55,7 +55,7 @@ else if (_mode!.Selected is null)
                     <p class="error-text">@_mode.BrowserStorageError</p>
                 }
                 <div class="actions">
-                    <button class="primary" @onclick="() => ChooseMode(PlayMode.BrowserLocal)" disabled="@(_choosingMode || _mode.BrowserStorageError is not null)">Use this browser</button>
+                    <button class="primary" data-choice="browser" @onclick="() => ChooseMode(PlayMode.BrowserLocal)" disabled="@(_choosingMode || _mode.BrowserStorageError is not null)">Use this browser</button>
                 </div>
             </div>
         </div>

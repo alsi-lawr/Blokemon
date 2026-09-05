@@ -3,9 +3,12 @@ using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using Blokemon.App.Contracts;
 using Blokemon.Web.Hosting;
+using Blokemon.Web.Persistence;
 using Blokemon.Web.Tests.Identity;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
@@ -157,6 +160,39 @@ public sealed partial class HostingHeaderTests
     }
 
     [Test]
+    public async Task AStoreFailureOnATenantRoute_IsAnsweredThroughTheErrorPath_AndIsNotFramable()
+    {
+        var contexts = new FailingContextFactory();
+        await using var host = ChannelHosting.Create(builder =>
+            builder.ConfigureServices(contexts.Wrap)
+        );
+        var operatorToken = await host.OperatorToken();
+        var (alpha, _) = await host.AdmitChannel(operatorToken, "alpha", "Alpha", "1001", Parent);
+        using var client = host.Client();
+        (await Headers(client, "/t/alpha")).ContentSecurityPolicy.ShouldBe(
+            $"frame-ancestors {Parent}"
+        );
+
+        // The store fails while the hosted page's tenant is resolved: the application's own
+        // error handling answers, with the framing and baseline headers on that answer.
+        contexts.Fail = true;
+        using var failed = await client.GetAsync("/t/alpha");
+        failed.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        failed.Content.Headers.ContentType!.MediaType.ShouldBe("text/html");
+        (await failed.Content.ReadAsStringAsync()).ShouldNotBeEmpty();
+        failed.Headers.GetValues("Content-Security-Policy").ShouldBe([HostingHeaders.NoneFraming]);
+        failed.Headers.Contains("X-Frame-Options").ShouldBeFalse();
+        failed.Headers.GetValues("X-Content-Type-Options").ShouldBe(["nosniff"]);
+
+        // A recovered store frames the hosted page for its parent again.
+        contexts.Fail = false;
+        (await Headers(client, "/t/alpha")).ContentSecurityPolicy.ShouldBe(
+            $"frame-ancestors {Parent}"
+        );
+        alpha.Dispose();
+    }
+
+    [Test]
     public async Task Baseline_HeadersTravelWithEveryResponse_AndNoApiRouteCarriesAntiforgery()
     {
         await using var host = SessionHost.Create();
@@ -220,6 +256,50 @@ public sealed partial class HostingHeaderTests
             Of("X-Content-Type-Options"),
             Of("Referrer-Policy")
         );
+    }
+
+    /// <summary>
+    /// The host's own context factory until told to fail, then a store whose every use throws,
+    /// as a database that has gone away would.
+    /// </summary>
+    private sealed class FailingContextFactory : IDbContextFactory<BlokemonDbContext>
+    {
+        private IDbContextFactory<BlokemonDbContext>? _inner;
+
+        public volatile bool Fail;
+
+        public void Wrap(IServiceCollection services)
+        {
+            var registered = services.Single(static descriptor =>
+                descriptor.ServiceType == typeof(IDbContextFactory<BlokemonDbContext>)
+            );
+            services.Remove(registered);
+            services.AddSingleton<IDbContextFactory<BlokemonDbContext>>(provider =>
+            {
+                _inner =
+                    (IDbContextFactory<BlokemonDbContext>)(
+                        registered.ImplementationInstance
+                        ?? registered.ImplementationFactory?.Invoke(provider)
+                        ?? ActivatorUtilities.CreateInstance(
+                            provider,
+                            registered.ImplementationType!
+                        )
+                    );
+                return this;
+            });
+        }
+
+        public BlokemonDbContext CreateDbContext() =>
+            Fail
+                ? throw new IOException("The database is unreachable.")
+                : _inner!.CreateDbContext();
+
+        public Task<BlokemonDbContext> CreateDbContextAsync(
+            CancellationToken cancellationToken = default
+        ) =>
+            Fail
+                ? throw new IOException("The database is unreachable.")
+                : _inner!.CreateDbContextAsync(cancellationToken);
     }
 
     private sealed record ResponseHeaders(

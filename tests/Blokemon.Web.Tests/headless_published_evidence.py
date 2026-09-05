@@ -10,6 +10,7 @@ compressed WebAssembly payload. Chrome runs headless only.
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
 import tempfile
@@ -43,8 +44,13 @@ def requested_urls(devtools):
     return [event["params"]["request"]["url"] for event in devtools.events if event.get("method") == "Network.requestWillBeSent"]
 
 
-def chooser_buttons(devtools):
-    return devtools.evaluate("[...document.querySelectorAll('.hero .primary')].map(b => b.textContent.trim())")
+def chooser_choices(devtools):
+    """The chooser's controls by the choice each names (its data-choice hook), not its words."""
+    return devtools.evaluate("[...document.querySelectorAll('.hero .primary')].map(b => b.dataset.choice)")
+
+
+def choose(devtools, choice):
+    require(devtools.evaluate(f"(() => {{ const b = document.querySelector('.hero .primary[data-choice={json.dumps(choice)}]'); if (!b || b.disabled) return false; b.click(); return true; }})()"), f"chose {choice!r}")
 
 
 def wait_chooser(devtools, what):
@@ -54,14 +60,14 @@ def wait_chooser(devtools, what):
 def signed_out_server_choice(devtools, origin):
     devtools.navigate(origin, "/")
     wait_chooser(devtools, "the two-mode chooser")
-    require(chooser_buttons(devtools) == ["Sign in to use this server", "Use this browser"], f"a signed-out visitor is offered both modes ({chooser_buttons(devtools)})")
-    activate(devtools, "Sign in to use this server")
+    require(chooser_choices(devtools) == ["sign-in", "browser"], f"a signed-out visitor is offered sign-in for the server and the browser game ({chooser_choices(devtools)})")
+    choose(devtools, "sign-in")
     devtools.wait_for("location.pathname === '/signin' && document.querySelector('.sign-in') !== null", "the sign-in page", timeout=30)
     require(devtools.evaluate("document.querySelector('.sign-in-situation') === null"), "the sign-in page carries no situation line for a deliberate choice")
     require(devtools.evaluate(f"sessionStorage.getItem({SESSION_KEY!r}) === null"), "no session is held")
     activate(devtools, "Keep playing in this browser")
     wait_chooser(devtools, "the chooser again, nothing chosen")
-    require(chooser_buttons(devtools) == ["Sign in to use this server", "Use this browser"], "returning shows the chooser with no mode saved")
+    require(chooser_choices(devtools) == ["sign-in", "browser"], "returning shows the chooser with no mode saved")
     # A reload agrees: nothing was saved.
     devtools.command("Page.reload", {"ignoreCache": True})
     devtools.wait_for("document.readyState === 'complete'", "reload")
@@ -69,7 +75,7 @@ def signed_out_server_choice(devtools, origin):
 
 
 def browser_local_journey(devtools, origin):
-    activate(devtools, "Use this browser")
+    choose(devtools, "browser")
     devtools.wait_for("document.querySelector('a[href=\"profile\"]') !== null", "the create-player link", timeout=30)
     activate(devtools, "Create player")
     devtools.wait_for("document.querySelector('#display-name') !== null", "the profile form", timeout=30)

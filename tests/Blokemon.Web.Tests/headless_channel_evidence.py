@@ -24,7 +24,6 @@ from headless_passkey_evidence import add_authenticator, recovery_codes_screen, 
 from headless_session_evidence import activate, close_menu, identity_text, open_menu  # noqa: E402
 from static_host import static_server  # noqa: E402
 
-OFFER = "Add a passkey so you can play anywhere and confirm new channels."
 PROMPT_BODY = "Confirm from a channel you already play in, or sign in with your passkey."
 
 PARENT_PAGE = """<!doctype html>
@@ -158,13 +157,13 @@ def in_frame_passkey(devtools, parent_origin, app_origin, alpha_token):
     code = mint_handoff(app_origin, alpha_token, "111", "Viewer One")
     frame = open_hosted(devtools, parent_origin, app_origin, "alpha", True, code)
     signed_in_frame(frame, "in-frame")
-    frame.wait_for(f"document.body.textContent.includes({json.dumps(OFFER)})", "the passkey offer in the frame")
+    frame.wait_for(offer_moment("offer"), "the passkey offer in the frame")
     frame.click("Add a passkey")
     frame.wait_for("location.pathname === '/passkeys/codes' && document.querySelectorAll('.recovery-codes li code').length === 10", "the codes screen inside the frame", timeout=90)
     require(warning_shown(frame), "the warning is shown in the frame")
     frame.click("Continue to your game")
     frame.wait_for("location.pathname === '/'", "the game again after the codes")
-    frame.wait_for(f"!document.body.textContent.includes({json.dumps(OFFER)})", "the offer left once the account had a passkey")
+    frame.wait_for("document.querySelector('.passkey-offer') === null", "the offer left once the account had a passkey")
 
 
 def app_windows(chrome, app_origin):
@@ -174,6 +173,12 @@ def app_windows(chrome, app_origin):
     with urlopen(f"http://127.0.0.1:{port}/json/list", timeout=5) as response:
         targets = json.load(response)
     return [t for t in targets if t.get("type") == "page" and t.get("url", "").startswith(app_origin)]
+
+
+def offer_moment(moment):
+    """The offer band at the named moment, by the data-moment hook the band exposes, with a
+    sentence that says something; the words themselves are the composition's to change."""
+    return f"(() => {{ const n = document.querySelector('.passkey-offer'); return n !== null && n.dataset.moment === {json.dumps(moment)} && n.querySelector('p').textContent.trim().length > 0; }})()"
 
 
 def offer_band(frame):
@@ -221,9 +226,9 @@ def continuation_passkey(chrome, devtools, parent_origin, app_origin, alpha_toke
     code = mint_handoff(app_origin, alpha_token, "222", "Viewer Two")
     frame = open_hosted(devtools, parent_origin, app_origin, "alpha", False, code)
     signed_in_frame(frame, "continuation")
-    frame.wait_for(f"document.body.textContent.includes({json.dumps(OFFER)})", "the passkey offer in the undelegated frame")
+    frame.wait_for(offer_moment("offer"), "the passkey offer in the undelegated frame")
     frame.click("Add a passkey")
-    frame.wait_for("document.body.textContent.includes('Continue in the window that opened.')", "the frame points at the window it opened", timeout=60)
+    frame.wait_for(offer_moment("opened"), "the frame points at the window it opened", timeout=60)
 
     port = int((chrome.profile / "DevToolsActivePort").read_text().splitlines()[0])
     deadline = time.monotonic() + 30
@@ -242,7 +247,7 @@ def continuation_passkey(chrome, devtools, parent_origin, app_origin, alpha_toke
         require(window.evaluate("location.hash") == "", "the continuation window cleared its fragment")
         window.command("WebAuthn.enable", {"enableUI": False})
         add_authenticator(window)
-        window.wait_for(f"document.body.textContent.includes({json.dumps(OFFER)})", "the offer in the continuation window", timeout=60)
+        window.wait_for(offer_moment("offer"), "the offer in the continuation window", timeout=60)
         activate(window, "Add a passkey")
         window.wait_for("location.pathname === '/passkeys/codes'", "the codes screen in the continuation window", timeout=90)
         recovery_codes_screen(window, "Continue to your game", "continuation window")
