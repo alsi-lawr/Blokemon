@@ -284,6 +284,7 @@ type BlokemonKit =
       Owned: bool
       Pulled: bool
       Traded: bool
+      ProductBucket: BlokemonProductBucket
       StackCopyLimit: int
       StayingPower: int }
 
@@ -311,23 +312,39 @@ type BlokemonSingleProduct =
       Selection: string
       NamedIdentityOdds: BlokemonOdds }
 
+/// One rarity slot of the eleven-card product: how many cards of the bucket a pack holds, and
+/// the two pools (Blokemon and Trainers) a card of that bucket is drawn from.
 type BlokemonProductSlot =
     { Bucket: BlokemonProductBucket
       Count: int
-      PoolSize: int }
+      BlokemonPoolSize: int
+      TrainerPoolSize: int }
+
+/// How Trainers enter the eleven-card product: a guaranteed number of Trainer positions placed
+/// uniformly among the eleven, and the odds each remaining position is a Trainer.
+type BlokemonTrainerSlotRules =
+    { GuaranteedPerPack: int
+      RemainingSlotOdds: BlokemonOdds
+      ExpectedPerPack: int }
 
 type BlokemonBucketOdds =
     { Rare: BlokemonOdds
       Uncommon: BlokemonOdds
       Common: BlokemonOdds }
 
+/// The chance one named identity of each bucket appears in a pack, by kind.
+type BlokemonNamedIdentityInclusionOdds =
+    { Blokemon: BlokemonBucketOdds
+      Trainers: BlokemonBucketOdds }
+
 type BlokemonElevenProduct =
     { Count: int
       Slots: BlokemonProductSlot array
+      Trainers: BlokemonTrainerSlotRules
       WithoutReplacementWithinPack: bool
       Pity: bool
       DuplicatesAcrossPacks: bool
-      NamedIdentityInclusionOdds: BlokemonBucketOdds }
+      NamedIdentityInclusionOdds: BlokemonNamedIdentityInclusionOdds }
 
 type BlokemonProducts =
     { Single: BlokemonSingleProduct

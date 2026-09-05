@@ -188,6 +188,65 @@ type LocalProfileTests() =
         retryRandom.ConsumptionIndex |> should equal 0
 
     [<Test>]
+    member _.``opening a pack should pull its Trainers into ownership alongside its Blokemon``() =
+        let profile = createProfile ()
+        let kitIds = authority.Value.Kits |> Seq.map (fun kit -> kit.Id) |> Set.ofSeq
+
+        let opened =
+            success (
+                profile.OpenPack(
+                    value (CommandId.Create "trainer-command"),
+                    value (PackReceiptId.Create "trainer-receipt"),
+                    authority.Value,
+                    BlokemonSeededRandom 7UL
+                )
+            )
+
+        let pulledTrainers =
+            opened.Receipt.SampledCollectibleIds
+            |> Seq.filter (fun cardId -> kitIds.Contains cardId.Value)
+            |> List.ofSeq
+
+        pulledTrainers.Length |> should be (greaterThanOrEqualTo 2)
+
+        for cardId in pulledTrainers do
+            opened.Profile.OwnedCollectibleQuantity cardId |> should equal 1
+
+        let restored =
+            success (LocalProfile.Restore(opened.Profile.ToSnapshot(), authority.Value))
+
+        for cardId in pulledTrainers do
+            restored.OwnedCollectibleQuantity cardId |> should equal 1
+
+    [<Test>]
+    member _.``a pack whose Trainer pool cannot fill a slot should be unavailable and change nothing``
+        ()
+        =
+        let profile = createProfile ()
+        let random = CountingRandomSource()
+
+        let withoutRareTrainers =
+            { authority.Value with
+                Kits =
+                    authority.Value.Kits
+                    |> Array.filter (fun kit -> kit.ProductBucket <> BlokemonProductBucket.Rare) }
+
+        let refused =
+            failure (
+                profile.OpenPack(
+                    value (CommandId.Create "unavailable-command"),
+                    value (PackReceiptId.Create "unavailable-receipt"),
+                    withoutRareTrainers,
+                    random
+                )
+            )
+
+        refused |> should equal PackOpenFailure.ElevenCardPackUnavailable
+        random.ConsumptionIndex |> should equal 0
+        profile.PackReceipts.Count |> should equal 0
+        profile.CollectibleOwnership.Count |> should equal 1
+
+    [<Test>]
     member _.``opening packs beyond the former ten pack limit should keep granting samples in sequence``
         ()
         =

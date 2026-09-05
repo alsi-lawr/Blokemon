@@ -12,17 +12,26 @@ type internal PackOpenStep =
 /// Opening product: the eleven-card pack a profile may draw, and the receipt it writes.
 module internal ProfilePacks =
 
+    // Any position of a bucket may be a Blokemon or a Trainer, so both of the bucket's pools have
+    // to be able to fill every position of that bucket; a pool that cannot leaves the pack
+    // unavailable rather than substituting from elsewhere.
     let private canSampleEleven (authority: BlokemonRuntimeManifest) =
         let eleven = authority.Products.Eleven
+        let trainers = eleven.Trainers
 
         eleven.Count = 11
         && (eleven.Slots |> Array.sumBy (fun slot -> int64 slot.Count)) = 11L
+        && trainers.GuaranteedPerPack >= 0
+        && trainers.GuaranteedPerPack <= eleven.Count
+        && trainers.RemainingSlotOdds.Denominator > 0
         && eleven.Slots
            |> Array.forall (fun slot ->
                slot.Count >= 0
-               && (authority.Collectibles
-                   |> Array.filter (fun card -> card.ProductBucket = slot.Bucket)
-                   |> Array.length)
+               && (BlokemonPackSampler.Pool authority slot.Bucket BlokemonPackCardKind.Blokemon)
+                   .Length
+                  >= slot.Count
+               && (BlokemonPackSampler.Pool authority slot.Bucket BlokemonPackCardKind.Trainer)
+                   .Length
                   >= slot.Count)
 
     /// Opens an eleven-card pack, replaying a saved receipt when the command repeats.

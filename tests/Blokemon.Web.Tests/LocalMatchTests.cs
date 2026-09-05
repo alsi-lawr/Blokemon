@@ -1539,15 +1539,25 @@ public sealed class LocalMatchTests
                 catalogue.Mechanics
             )
         );
-        for (var index = 1; index <= 4; index++)
+        // The deck below needs four Pidgey, so packs are opened, each under its own seed, until
+        // the profile holds them: the fixture owes nothing to what any one seed happens to deal.
+        var pidgey = ProductValue(CardId.Create("BLK-016"));
+        for (var index = 1; profile.OwnedCollectibleQuantity(pidgey) < 4; index++)
         {
+            if (index > 1000)
+            {
+                throw new InvalidOperationException(
+                    "A thousand packs dealt fewer than four Pidgey."
+                );
+            }
+
             var identity = $"70000000-0000-0000-0000-{index:D12}";
             profile = ProductValue(
                 profile.OpenPack(
                     ProductValue(CommandId.Create(identity)),
                     ProductValue(PackReceiptId.Create(identity)),
                     catalogue.Mechanics,
-                    new BlokemonSeededRandom(22)
+                    new BlokemonSeededRandom((ulong)index)
                 )
             ).Profile;
         }
@@ -1555,10 +1565,7 @@ public sealed class LocalMatchTests
             profile.CreateDeck(
                 ProductValue(DeckId.Create(_firstDeckCommand.ToString("D"))),
                 ProductValue(DeckName.Create("Choice deck")),
-                [
-                    new(ProductValue(CardId.Create("BLK-016")), 4),
-                    new(ProductValue(CardId.Create("VIM-BLAZED")), 56),
-                ],
+                [new(pidgey, 4), new(ProductValue(CardId.Create("VIM-BLAZED")), 56)],
                 catalogue.Mechanics
             )
         ).Profile;

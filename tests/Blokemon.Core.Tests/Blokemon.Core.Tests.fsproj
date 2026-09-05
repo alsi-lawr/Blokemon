@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AuthorityTests.fs" />
+    <Compile Include="ElevenCardPackTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Blokemon.Core/Blokemon.Core.fsproj" />

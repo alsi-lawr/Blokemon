@@ -25,6 +25,15 @@ module internal ProfileRestoration =
         for card in currentAuthority.Collectibles do
             authorityCollectibles.Add(card.Id, card)
 
+        // What a pack can put into a profile: every collectible and every pulled Trainer.
+        let authorityPulledIds = HashSet<string>(StringComparer.Ordinal)
+
+        for card in currentAuthority.Collectibles do
+            authorityPulledIds.Add card.Id |> ignore
+
+        for card in currentAuthority.Kits |> Array.filter (fun card -> card.Pulled) do
+            authorityPulledIds.Add card.Id |> ignore
+
         result {
             let! manifestVersion =
                 match snapshot.AuthorityManifestVersion with
@@ -84,8 +93,8 @@ module internal ProfileRestoration =
                     StringComparison.Ordinal
                 )
 
-            let currentCollectibles: Dictionary<string, BlokemonCollectible> | null =
-                if isCurrentAuthority then authorityCollectibles else null
+            let currentPulledIds: HashSet<string> | null =
+                if isCurrentAuthority then authorityPulledIds else null
 
             do!
                 if not isCurrentAuthority then
@@ -116,13 +125,13 @@ module internal ProfileRestoration =
 
             let! ownership =
                 foldIndexed
-                    (restoreOwnershipEntry currentCollectibles)
+                    (restoreOwnershipEntry currentPulledIds)
                     Map.empty
                     (orEmpty snapshot.CollectibleOwnership)
 
             let! receipts =
                 foldIndexed
-                    (restoreReceipt currentCollectibles)
+                    (restoreReceipt currentPulledIds)
                     (openingHistory starterId)
                     (orEmpty snapshot.PackReceipts)
 

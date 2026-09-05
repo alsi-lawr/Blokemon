@@ -1,5 +1,5 @@
 {
-  "manifestVersion": "base-jungle-fossil-1999-card-semantics-candidate.1",
+  "manifestVersion": "base-jungle-fossil-1999-card-semantics-candidate.2",
   "presentationStatus": "Accepted",
   "approvedMechanicalDisplayMap": [
     {
@@ -16546,8 +16546,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Rare",
       "stackCopyLimit": 4,
       "stayingPower": 10
     },
@@ -16582,8 +16583,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Common",
       "stackCopyLimit": 4,
       "stayingPower": 10
     },
@@ -16652,8 +16654,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Rare",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -16688,8 +16691,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Common",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -16780,8 +16784,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Rare",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -16852,8 +16857,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -16888,8 +16894,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Common",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -16943,8 +16950,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Common",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -16994,8 +17002,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17030,8 +17039,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Common",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17157,8 +17167,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Rare",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17193,8 +17204,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Common",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17229,8 +17241,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17265,8 +17278,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17341,8 +17355,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Rare",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17377,8 +17392,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Rare",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17449,8 +17465,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Rare",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17486,8 +17503,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Rare",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17522,8 +17540,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Rare",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17574,8 +17593,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Rare",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17644,8 +17664,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17680,8 +17701,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17716,8 +17738,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17752,8 +17775,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17804,8 +17828,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17851,8 +17876,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17887,8 +17913,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -17923,8 +17950,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Common",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -18000,8 +18028,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Common",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -18056,8 +18085,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Uncommon",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -18118,8 +18148,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Common",
       "stackCopyLimit": 4,
       "stayingPower": 0
     },
@@ -18222,8 +18253,9 @@
       ],
       "freelyAvailable": true,
       "owned": false,
-      "pulled": false,
+      "pulled": true,
       "traded": false,
+      "productBucket": "Common",
       "stackCopyLimit": 4,
       "stayingPower": 0
     }
@@ -18344,37 +18376,67 @@
         {
           "bucket": "Rare",
           "count": 1,
-          "poolSize": 49
+          "blokemonPoolSize": 49,
+          "trainerPoolSize": 10
         },
         {
           "bucket": "Uncommon",
-          "count": 3,
-          "poolSize": 49
+          "count": 4,
+          "blokemonPoolSize": 49,
+          "trainerPoolSize": 12
         },
         {
           "bucket": "Common",
-          "count": 7,
-          "poolSize": 53
+          "count": 6,
+          "blokemonPoolSize": 53,
+          "trainerPoolSize": 10
         }
       ],
+      "trainers": {
+        "guaranteedPerPack": 2,
+        "remainingSlotOdds": {
+          "numerator": 1,
+          "denominator": 9
+        },
+        "expectedPerPack": 3
+      },
       "withoutReplacementWithinPack": true,
       "pity": false,
       "duplicatesAcrossPacks": true,
       "namedIdentityInclusionOdds": {
-        "rare": {
-          "numerator": 1,
-          "denominator": 49,
-          "probability": 0.02040816326530612
+        "blokemon": {
+          "rare": {
+            "numerator": 8,
+            "denominator": 539,
+            "probability": 0.014842300556586271
+          },
+          "uncommon": {
+            "numerator": 32,
+            "denominator": 539,
+            "probability": 0.059369202226345084
+          },
+          "common": {
+            "numerator": 48,
+            "denominator": 583,
+            "probability": 0.0823327615780446
+          }
         },
-        "uncommon": {
-          "numerator": 3,
-          "denominator": 49,
-          "probability": 0.061224489795918366
-        },
-        "common": {
-          "numerator": 7,
-          "denominator": 53,
-          "probability": 0.1320754716981132
+        "trainers": {
+          "rare": {
+            "numerator": 3,
+            "denominator": 110,
+            "probability": 0.02727272727272727
+          },
+          "uncommon": {
+            "numerator": 1,
+            "denominator": 11,
+            "probability": 0.09090909090909091
+          },
+          "common": {
+            "numerator": 9,
+            "denominator": 55,
+            "probability": 0.16363636363636364
+          }
         }
       }
     }

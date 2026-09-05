@@ -116,10 +116,10 @@ module internal BlokemonSetContentValidator =
                  card.PresentationStatus = BlokemonPresentationStatus.Accepted
                  && card.FreelyAvailable
                  && not card.Owned
-                 && not card.Pulled
+                 && card.Pulled
                  && not card.Traded))
             "runtime.kit-boundary"
-            "Kits must be free, non-owned, non-pulled, non-traded and accepted for presentation."
+            "Kits must be free, non-owned, pulled, non-traded and accepted for presentation."
             issues
 
         let inPlayTrainers =
@@ -171,57 +171,6 @@ module internal BlokemonSetContentValidator =
             "Side Hustle must be Special Energy that provides two Colorless Energy and obeys the four-card limit."
             issues
 
-    let private validateProducts
-        (manifest: BlokemonRuntimeManifest)
-        (issues: ResizeArray<BlokemonValidationIssue>)
-        =
-        let products = manifest.Products
-
-        check
-            (products.Single.Count = 1
-             && products.Single.NamedIdentityOdds.Numerator = 1
-             && products.Single.NamedIdentityOdds.Denominator = 151)
-            "runtime.single-product"
-            "The one-card product must be uniform across all 151 identities."
-            issues
-
-        check
-            (products.Eleven.Count = 11
-             && products.Eleven.WithoutReplacementWithinPack
-             && not products.Eleven.Pity
-             && products.Eleven.DuplicatesAcrossPacks)
-            "runtime.eleven-product"
-            "The eleven-card product must be no-pity and without replacement within one pack."
-            issues
-
-        let expected =
-            [| { Bucket = BlokemonProductBucket.Rare
-                 Count = 1
-                 PoolSize = 49 }
-               { Bucket = BlokemonProductBucket.Uncommon
-                 Count = 3
-                 PoolSize = 49 }
-               { Bucket = BlokemonProductBucket.Common
-                 Count = 7
-                 PoolSize = 53 } |]
-
-        check
-            (products.Eleven.Slots = expected)
-            "runtime.product-slots"
-            "The eleven-card product must use one Rare, three Uncommon and seven Common slots."
-            issues
-
-        for slot in expected do
-            check
-                (manifest.Collectibles
-                 |> Array.filter (fun card -> card.ProductBucket = slot.Bucket)
-                 |> Array.length = slot.PoolSize)
-                "runtime.product-pool"
-                $"The {slot.Bucket} product pool must contain {slot.PoolSize} identities."
-                issues
-
-
     let validate manifest issues =
         validateCollectibles manifest issues
         validateSupport manifest issues
-        validateProducts manifest issues

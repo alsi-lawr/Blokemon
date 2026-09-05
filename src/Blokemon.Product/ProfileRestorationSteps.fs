@@ -29,13 +29,10 @@ module internal ProfileRestorationSteps =
         | DomainResult.Failed failure ->
             DomainResult.Failed(LocalProfileRestorationFailure.InvalidId(path, failure))
 
-    let isUnknownCard
-        (currentCollectibles: Dictionary<string, BlokemonCollectible> | null)
-        (cardId: CardId)
-        =
-        match currentCollectibles with
+    let isUnknownCard (currentPulledIds: HashSet<string> | null) (cardId: CardId) =
+        match currentPulledIds with
         | null -> false
-        | collectibles -> not (collectibles.ContainsKey cardId.Value)
+        | pulledIds -> not (pulledIds.Contains cardId.Value)
 
     let private restoreGrant
         (authorityCollectibles: Dictionary<string, BlokemonCollectible>)
@@ -122,7 +119,7 @@ module internal ProfileRestorationSteps =
         }
 
     let restoreOwnershipEntry
-        (currentCollectibles: Dictionary<string, BlokemonCollectible> | null)
+        (currentPulledIds: HashSet<string> | null)
         (ownership: Map<CardId, int>)
         (index: int)
         (item: CollectibleOwnershipSnapshot)
@@ -152,7 +149,7 @@ module internal ProfileRestorationSteps =
 
             do!
                 failWhen
-                    (isUnknownCard currentCollectibles cardId)
+                    (isUnknownCard currentPulledIds cardId)
                     (LocalProfileRestorationFailure.UnknownCard($"{path}.CardId", cardId))
 
             return ownership.Add(cardId, item.Quantity)

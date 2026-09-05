@@ -125,25 +125,3 @@ type AuthorityTests() =
 
         (fun () -> Authorities.deserialize document |> ignore)
         |> should throw typeof<JsonException>
-
-    [<Test>]
-    member _.``eleven card sampling should remain deterministic and preserve pack composition``() =
-        let manifest = Authorities.mechanics.Value
-        let first = BlokemonSeededRandom(0xB10CE188UL)
-        let replay = BlokemonSeededRandom(0xB10CE188UL)
-        let cards = manifest.Collectibles |> Array.map (fun card -> card.Id, card) |> dict
-
-        for _ in 1..32 do
-            let pack = BlokemonPackSampler.SampleEleven manifest first
-            let repeated = BlokemonPackSampler.SampleEleven manifest replay
-            pack.SequenceEqual(repeated) |> should be True
-            pack.Distinct(StringComparer.Ordinal).Count() |> should equal 11
-
-            let bucketCount bucket =
-                pack |> Seq.filter (fun id -> cards[id].ProductBucket = bucket) |> Seq.length
-
-            bucketCount BlokemonProductBucket.Rare |> should equal 1
-            bucketCount BlokemonProductBucket.Uncommon |> should equal 3
-            bucketCount BlokemonProductBucket.Common |> should equal 7
-
-        first.ConsumptionIndex |> should equal replay.ConsumptionIndex
