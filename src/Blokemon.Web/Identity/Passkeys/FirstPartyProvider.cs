@@ -11,10 +11,13 @@ namespace Blokemon.Web.Identity.Passkeys;
 /// The <c>firstparty</c> provider: its proof is a passkey assertion for a pending sign-in, and
 /// its subject is the account id the assertion's user handle names. The assertion is verified
 /// against the account's stored credential and the sign count recorded, then the ordinary
-/// completion path issues a <c>FirstParty</c> session.
+/// completion path issues a <c>FirstParty</c> session. The simple login is the same provider's
+/// other credential; its routes complete the sign-in themselves (<see cref="PasswordEndpoints"/>),
+/// so a host with no relying party configured still ships this provider, and its proof is then
+/// refused as unavailable.
 /// </summary>
 internal sealed class FirstPartyProvider(
-    PasskeyCeremonies ceremonies,
+    PasskeyCeremonies? ceremonies,
     PasskeyChallenges challenges,
     IDbContextFactory<BlokemonDbContext> contexts
 ) : IIdentityProvider
@@ -30,6 +33,11 @@ internal sealed class FirstPartyProvider(
         CancellationToken cancellationToken
     )
     {
+        if (ceremonies is null)
+        {
+            return Refused(PasskeyFailures.Unavailable);
+        }
+
         PasskeyCeremonyRequest? request;
         try
         {

@@ -511,7 +511,7 @@ public sealed class PasskeyServerTests
 
     // ---- helpers ------------------------------------------------------------------------------
 
-    private static async Task<PasskeyRegistrationView> Register(
+    internal static async Task<AccountRegistrationView> Register(
         SessionHost host,
         SoftwareAuthenticator authenticator,
         string displayName
@@ -529,7 +529,7 @@ public sealed class PasskeyServerTests
             .GetProperty("residentKey")
             .GetString()
             .ShouldBe("required");
-        var registered = await Post<PasskeyRegistrationView>(
+        var registered = await Post<AccountRegistrationView>(
             client,
             $"{Prefix}/register",
             new PasskeyCeremonyRequest(options.Challenge, authenticator.Register(options.Options))
@@ -538,7 +538,7 @@ public sealed class PasskeyServerTests
         return registered.Value!;
     }
 
-    private static async Task<ApiResponse<IssuedSessionView>> Authenticate(
+    internal static async Task<ApiResponse<IssuedSessionView>> Authenticate(
         SessionHost host,
         SoftwareAuthenticator authenticator,
         string? slug = null,
@@ -560,7 +560,7 @@ public sealed class PasskeyServerTests
         );
     }
 
-    private static async Task<ApiResponse<PasskeyEnrolmentView>> Enrol(
+    internal static async Task<ApiResponse<PasskeyEnrolmentView>> Enrol(
         SessionHost host,
         string token,
         SoftwareAuthenticator authenticator
@@ -583,7 +583,7 @@ public sealed class PasskeyServerTests
         );
     }
 
-    private static async Task<AccountId> AccountOf(SessionHost host, string token)
+    internal static async Task<AccountId> AccountOf(SessionHost host, string token)
     {
         var validation = await host.WithStore(store =>
             Sessions.validate(store, token, DateTimeOffset.UtcNow, default)
@@ -594,7 +594,7 @@ public sealed class PasskeyServerTests
     private static byte[] PasskeyUserHandle(AccountId account) =>
         System.Text.Encoding.UTF8.GetBytes(account.Value);
 
-    private static async Task<ApiResponse<T>> Post<T>(HttpClient client, string path, object body)
+    internal static async Task<ApiResponse<T>> Post<T>(HttpClient client, string path, object body)
     {
         using var content = JsonContent.Create(body, body.GetType());
         using var response = await client.PostAsync(path, content);

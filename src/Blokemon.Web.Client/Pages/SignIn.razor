@@ -38,10 +38,25 @@ else
                     }
                     @if (FirstParty)
                     {
-                        <button type="button" class="primary full sign-in-passkey" @onclick="SignInWithPasskey" disabled="@_working">@(_working ? "Waiting for your passkey…" : "Sign in with a passkey")</button>
-                        @if (_declined is not null)
+                        <form class="sign-in-login" @onsubmit="SignInWithPassword" @onsubmit:preventDefault>
+                            <label for="login-name">Player name</label>
+                            <input id="login-name" maxlength="32" autocomplete="username" autocapitalize="off" spellcheck="false" @bind="_name" disabled="@(_working != Working.None)" />
+                            <label for="login-password">Password</label>
+                            <input id="login-password" type="password" maxlength="128" autocomplete="current-password" @bind="_password" disabled="@(_working != Working.None)" />
+                            @if (_validation is not null)
+                            {
+                                <span class="field-error" role="alert">@_validation</span>
+                            }
+                            <button type="submit" class="primary full sign-in-password" disabled="@(_working != Working.None)">@(_working == Working.Password ? "Signing in…" : "Sign in")</button>
+                        </form>
+                        @if (_descriptor.Passkeys)
                         {
-                            <span class="field-error" role="alert">@_declined</span>
+                            <p class="sign-in-or">or</p>
+                            <button type="button" class="secondary button full sign-in-passkey" @onclick="SignInWithPasskey" disabled="@(_working != Working.None)">@(_working == Working.Passkey ? "Waiting for your passkey…" : "Sign in with a passkey")</button>
+                            @if (_declined is not null)
+                            {
+                                <span class="field-error" role="alert">@_declined</span>
+                            }
                         }
                         <a class="secondary button full" href="signin/create">Create an account</a>
                     }
@@ -53,7 +68,7 @@ else
             </div>
             @if (FirstParty)
             {
-                <p class="sign-in-recover">Lost your passkey? <a href="recover">Use a recovery code</a></p>
+                <p class="sign-in-recover">Lost your password or passkey? <a href="recover">Use a recovery code</a></p>
             }
             <div class="actions"><a class="quiet button" href="/">Keep playing in this browser</a></div>
         </div>
@@ -61,6 +76,8 @@ else
 }
 
 @code {
+    private enum Working { None, Password, Passkey }
+
     [SupplyParameterFromQuery]
     public string? Reason { get; set; }
 
@@ -68,7 +85,10 @@ else
     private string? _error;
     private string? _refused;
     private string? _declined;
-    private bool _working;
+    private string? _validation;
+    private string _name = string.Empty;
+    private string _password = string.Empty;
+    private Working _working;
 
     private bool FirstParty =>
         _descriptor?.EnabledProviders.Contains(IdentityConfigurationModule.FirstPartyProvider.Value) is true;
@@ -96,15 +116,40 @@ else
         }
     }
 
+    // An empty field is a note under the form; a refusal from the server is a failure above
+    // the card. Signed in, the game opens.
+    private async Task SignInWithPassword()
+    {
+        if (_name.Trim().Length == 0 || _password.Length == 0)
+        {
+            _validation = "Enter your player name and password.";
+            return;
+        }
+
+        _validation = null;
+        _refused = null;
+        _working = Working.Password;
+        var response = await Passkeys.SignInWithPassword(_name.Trim(), _password);
+        _working = Working.None;
+        if (response.Succeeded)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        _password = string.Empty;
+        _refused = response.Error?.Message;
+    }
+
     // A declined or unsupported ceremony is a note under the button; a refusal from the server
     // is a failure above the card. Signed in, the game opens.
     private async Task SignInWithPasskey()
     {
         _refused = null;
         _declined = null;
-        _working = true;
+        _working = Working.Passkey;
         var response = await Passkeys.SignIn();
-        _working = false;
+        _working = Working.None;
         if (response.Succeeded)
         {
             Navigation.NavigateTo("/");

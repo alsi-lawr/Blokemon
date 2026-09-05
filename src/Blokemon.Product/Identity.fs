@@ -176,6 +176,60 @@ type ExternalSubject =
                 || character = '_')
             (fun valid -> { value = valid })
 
+/// Why a login name was rejected.
+type LoginNameFailure =
+    | Required = 0
+    | TooShort = 1
+    | TooLong = 2
+    | Malformed = 3
+
+/// The name a player signs in with beside a password: letters, digits, dot, hyphen and
+/// underscore, three to 32 characters, unique across accounts without regard to case. It is a
+/// lookup key and a first display name, never an account's identity.
+type LoginName =
+    private
+        { value: string }
+
+    static member MinimumLength = 3
+
+    static member MaximumLength = 32
+
+    /// The name as the player typed it.
+    member this.Value = this.value
+
+    /// The form uniqueness is judged on: the name lower-cased invariantly.
+    member this.Normalized = this.value.ToLowerInvariant()
+
+    override this.ToString() = this.value
+
+    static member op_Equality(left: LoginName, right: LoginName) = left.Equals(right)
+
+    static member op_Inequality(left: LoginName, right: LoginName) = not (left.Equals(right))
+
+    static member Create(value: string | null) : DomainResult<LoginName, LoginNameFailure> =
+        let trimmed =
+            match value with
+            | null -> null
+            | text -> text.Trim()
+
+        match trimmed with
+        | null -> DomainResult.Failed LoginNameFailure.Required
+        | "" -> DomainResult.Failed LoginNameFailure.Required
+        | text when text.Length < LoginName.MinimumLength ->
+            DomainResult.Failed LoginNameFailure.TooShort
+        | text when text.Length > LoginName.MaximumLength ->
+            DomainResult.Failed LoginNameFailure.TooLong
+        | text when
+            text
+            |> Seq.forall (fun character ->
+                BoundedAsciiText.alphanumeric character
+                || character = '.'
+                || character = '-'
+                || character = '_')
+            ->
+            DomainResult.Succeeded { value = text }
+        | _ -> DomainResult.Failed LoginNameFailure.Malformed
+
 /// One external identity and the one account it signs in to. The pair is unique; the account is
 /// the canonical identity.
 type ExternalIdentityLink =

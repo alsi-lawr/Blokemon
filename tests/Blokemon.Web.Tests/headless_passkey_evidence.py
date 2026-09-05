@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Headless passkey checks for BLOKEMON-150 against a running Blokemon.Web.
+"""Headless first-party sign-in checks (BLOKEMON-150 passkeys, BLOKEMON-163 simple login)
+against a running Blokemon.Web.
 
 Driven by HeadlessPasskeyTests, which hosts Blokemon.Web on Kestrel at a known origin with the
 first-party provider enabled, and hands this script that origin through the environment. Chrome
 runs headless only, with a virtual authenticator from the DevTools WebAuthn domain standing in
-for the platform authenticator. Recovery codes are read from the page for the flow that uses
-one and never printed.
+for the platform authenticator; a second Chrome with its own profile stands in for another
+device. Recovery codes are read from the page for the flow that uses one and never printed, and
+neither is a password.
 """
 from __future__ import annotations
 
@@ -21,6 +23,10 @@ from headless_session_evidence import activate, close_menu, identity_text, open_
 
 SESSION_KEY = "blokemon.session"
 PLAYER = "Headless Passkey"
+LOGIN_PLAYER = "Headless_Login"
+PASSWORD = "correct horse battery"
+CHANGED_PASSWORD = "battery staple horse"
+PASSKEY_LOGIN = "Headless_Passkey"
 
 
 def env(name):
@@ -102,23 +108,24 @@ def sign_in_page(devtools, origin, label):
         return { text: e.textContent.trim(), height: r.height, left: r.left, right: r.right };
     })""")
     texts = [c["text"] for c in controls]
-    require(texts[:2] == ["Sign in with a passkey", "Create an account"], f"{label}: the first-party controls come first ({texts})")
+    require(texts[:3] == ["Sign in", "Sign in with a passkey", "Create an account"], f"{label}: the simple login comes first, then the passkey, then create ({texts})")
+    require(devtools.evaluate("document.querySelector('.sign-in-login #login-name') !== null && document.querySelector('.sign-in-login #login-password') !== null"), f"{label}: the name and password fields are shown")
     viewport = devtools.evaluate("innerWidth")
     require(all(c["height"] >= 44 for c in controls), f"{label}: every sign-in control is at least 44px ({[round(c['height']) for c in controls]})")
     require(all(c["left"] >= 0 and c["right"] <= viewport for c in controls), f"{label}: the controls fit the viewport")
-    require("Lost your passkey?" in text(devtools), f"{label}: the recovery line is shown")
+    require("Lost your password or passkey?" in text(devtools), f"{label}: the recovery line is shown")
     require(devtools.evaluate("[...document.querySelectorAll('.sign-in-recover a')].some(a => a.getAttribute('href') === 'recover')"), f"{label}: the recovery line links to /recover")
 
 
 def create_account(devtools, origin):
     sign_in_page(devtools, origin, "desktop")
     activate(devtools, "Create an account", selector="a")
-    devtools.wait_for("location.pathname === '/signin/create' && document.querySelector('#display-name') !== null", "the create-account page", timeout=30)
+    devtools.wait_for("location.pathname === '/signin/create' && document.querySelector('#player-name') !== null", "the create-account page", timeout=30)
     require("Create your account." in text(devtools), "the create-account heading")
     # Validation first: an empty name is refused without a ceremony.
     activate(devtools, "Create with a passkey")
-    wait_text(devtools, "Enter a display name from 1 to 32 characters.", "the display-name validation")
-    devtools.set_value("#display-name", PLAYER)
+    wait_text(devtools, "Enter a player name from 1 to 32 characters.", "the player-name validation")
+    devtools.set_value("#player-name", PLAYER)
     activate(devtools, "Create with a passkey")
     codes = recovery_codes_screen(devtools, "Continue to your game", "after creation")
     held = held_session(devtools)
@@ -201,7 +208,8 @@ def recovery(devtools, origin, codes):
     devtools.wait_for("location.pathname === '/recover/passkey'", "the replacement page after a good code", timeout=30)
     held = held_session(devtools)
     require(held is not None and held.get("recovery") is True, "the browser holds a recovery session")
-    require("Add a new passkey." in text(devtools), "the replacement heading")
+    require("Get back in." in text(devtools), "the replacement heading")
+    require(devtools.evaluate("document.querySelector('#recover-password') !== null"), "the replacement offers a new password")
     # A recovery session can do one thing; home sends it back here.
     devtools.command("Page.navigate", {"url": f"{origin}/"})
     devtools.wait_for("location.pathname === '/recover/passkey'", "home redirects a recovery session to the replacement page", timeout=60)
@@ -225,7 +233,7 @@ def recovery(devtools, origin, codes):
 def touch_checks(devtools, origin):
     devtools.set_viewport(412, 915, touch=True)
     sign_in_page(devtools, origin, "touch")
-    devtools.navigate(origin, "/signin/create", ready_selector="#display-name")
+    devtools.navigate(origin, "/signin/create", ready_selector="#player-name")
     card = devtools.evaluate("(() => { const r = document.querySelector('.create-account').getBoundingClientRect(); return { left: r.left, right: r.right }; })()")
     require(card["left"] >= 0 and card["right"] <= 412, "touch: the create-account card fits the viewport")
     devtools.navigate(origin, "/recover", ready_selector=".recover")
@@ -246,6 +254,108 @@ def touch_checks(devtools, origin):
     require(geometry["left"] >= 0 and geometry["right"] <= 412 and geometry["scrollWidth"] <= 412, f"touch: the codes card fits the viewport ({geometry})")
     activate(devtools, "Back to your profile")
     devtools.wait_for("location.pathname === '/profile'", "touch: back on the profile", timeout=30)
+
+
+def login_panel(devtools, origin):
+    devtools.navigate(origin, "/profile", ready_selector=".login-panel")
+    devtools.wait_for("document.querySelector('.login-panel .login-name') !== null", "the login panel", timeout=30)
+    return devtools.evaluate("document.querySelector('.login-panel .login-name').textContent.trim()")
+
+
+def sign_in_with_password(devtools, origin, name, password, label, shown_as=None):
+    """Signs in with the name and password; the menu then names the account's display name,
+    which is the login name for an account made with a password and the passkey account's
+    own name otherwise."""
+    devtools.navigate(origin, "/signin", ready_selector=".sign-in-login")
+    devtools.set_value("#login-name", name)
+    devtools.set_value("#login-password", password)
+    activate(devtools, "Sign in")
+    devtools.wait_for("location.pathname === '/'", f"{label}: home after the password sign-in", timeout=60)
+    devtools.wait_for("document.querySelector('.app-shell') !== null", f"{label}: the shell", timeout=30)
+    open_menu(devtools)
+    require(identity_text(devtools) == (shown_as or name), f"{label}: signed in as {shown_as or name} with the password")
+    close_menu(devtools)
+
+
+def password_account(devtools, origin):
+    """A new account with a player name and password, on this browser: created, the codes
+    shown once, the password changed on the profile, a wrong password refused."""
+    devtools.navigate(origin, "/signin", ready_selector=".sign-in")
+    activate(devtools, "Create an account", selector="a")
+    devtools.wait_for("location.pathname === '/signin/create' && document.querySelector('#player-name') !== null", "the create-account page for a password", timeout=30)
+    # Validation first: a name with a space cannot sign in, and a short password is refused.
+    devtools.set_value("#player-name", "no spaces")
+    devtools.set_value("#player-password", "short")
+    activate(devtools, "Create account")
+    wait_text(devtools, "letters, digits, dots, hyphens and underscores only", "the login-name validation")
+    wait_text(devtools, "Enter a password of at least 8 characters.", "the password validation")
+    require(held_session(devtools) is None, "validation holds no session")
+    devtools.set_value("#player-name", LOGIN_PLAYER)
+    devtools.set_value("#player-password", PASSWORD)
+    activate(devtools, "Create account")
+    codes = recovery_codes_screen(devtools, "Continue to your game", "after a password creation")
+    held = held_session(devtools)
+    require(held is not None and held.get("recovery") is False, "the browser holds a first-party session from the password")
+    require(PASSWORD not in json.dumps(held), "no password is in the held session")
+    activate(devtools, "Continue to your game")
+    devtools.wait_for("location.pathname === '/'", "home after the codes were acknowledged", timeout=30)
+    wait_text(devtools, "Choose your first deck.", "the password player's game on the server", timeout=60)
+    open_menu(devtools)
+    require(identity_text(devtools) == LOGIN_PLAYER, f"the menu shows 'Signed in as {LOGIN_PLAYER}'")
+    close_menu(devtools)
+    # The profile names the login and changes its password without a codes screen.
+    require(login_panel(devtools, origin) == LOGIN_PLAYER, "the profile shows the player name")
+    devtools.set_value("#login-panel-password", CHANGED_PASSWORD)
+    activate(devtools, "Change password")
+    wait_text(devtools, "Password saved.", "the changed password is acknowledged")
+    require(devtools.evaluate("location.pathname") == "/profile", "changing a password shows no codes screen")
+    sign_out(devtools, origin)
+    # The old password is refused, on the sign-in page, with no session.
+    devtools.navigate(origin, "/signin", ready_selector=".sign-in-login")
+    devtools.set_value("#login-name", LOGIN_PLAYER)
+    devtools.set_value("#login-password", PASSWORD)
+    activate(devtools, "Sign in")
+    wait_text(devtools, "That player name and password do not match.", "the old password is refused")
+    require(devtools.evaluate("location.pathname") == "/signin", "a refused password stays on the sign-in page")
+    require(held_session(devtools) is None, "a refused password holds no session")
+    return codes
+
+
+def passkey_account_sets_password(devtools, origin):
+    """The passkey account, signed in on this browser, chooses a player name and password on
+    the profile; it has a credential already, so no codes come with it."""
+    require(login_panel(devtools, origin) == "None yet", "the passkey account has no player name yet")
+    devtools.set_value("#login-panel-name", PASSKEY_LOGIN)
+    devtools.set_value("#login-panel-password", PASSWORD)
+    activate(devtools, "Set a password")
+    wait_text(devtools, "Password saved.", "the passkey account's password is acknowledged")
+    require(devtools.evaluate("location.pathname") == "/profile", "a first password on a passkey account shows no codes screen")
+    require(login_panel(devtools, origin) == PASSKEY_LOGIN, "the profile now shows the chosen player name")
+
+
+def other_device(origin, temporary):
+    """A second browser with nothing of the first: both accounts reach it with only a name and
+    a password, which is the D-046 requirement."""
+    root = Path(temporary) / "other"
+    root.mkdir()
+    chrome = Chrome(root)
+    try:
+        devtools = chrome.devtools
+        devtools.command("Runtime.enable")
+        devtools.command("Log.enable")
+        devtools.command("Network.enable")
+        devtools.set_viewport(412, 915, touch=True)
+        sign_in_with_password(devtools, origin, LOGIN_PLAYER, CHANGED_PASSWORD, "other device")
+        require(login_panel(devtools, origin) == LOGIN_PLAYER, "other device: the profile shows the player name")
+        # A passkey can be added here (the server allows it); its ceremony is the desktop's check.
+        devtools.wait_for("[...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'Add a passkey')", "other device: the passkey offer on the profile", timeout=30)
+        sign_out(devtools, origin)
+        sign_in_with_password(devtools, origin, PASSKEY_LOGIN.lower(), PASSWORD, "other device, passkey account", shown_as=PLAYER)
+        sign_out(devtools, origin)
+    except EvidenceFailure as failure:
+        raise EvidenceFailure(f"{failure}{diagnostics(chrome.devtools)}") from failure
+    finally:
+        chrome.close()
 
 
 def diagnostics(devtools):
@@ -294,10 +404,14 @@ def main():
             authenticator = declined_sign_in(devtools, origin, authenticator)
             recovery(devtools, origin, codes)
             touch_checks(devtools, origin)
+            passkey_account_sets_password(devtools, origin)
+            sign_out(devtools, origin)
+            password_account(devtools, origin)
         except EvidenceFailure as failure:
             raise EvidenceFailure(f"{failure}{diagnostics(chrome.devtools)}") from failure
         finally:
             chrome.close()
+        other_device(origin, temporary)
     print("HEADLESS PASSKEY EVIDENCE COMPLETE")
 
 

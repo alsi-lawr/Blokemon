@@ -21,7 +21,7 @@ public sealed class SignInDiagnosticsFilter(SignInDiagnostics diagnostics) : IEn
             case ApiResponse<IssuedSessionView> issued:
                 diagnostics.Observe(issued);
                 break;
-            case ApiResponse<PasskeyRegistrationView> registered:
+            case ApiResponse<AccountRegistrationView> registered:
                 diagnostics.Observe(registered);
                 break;
         }

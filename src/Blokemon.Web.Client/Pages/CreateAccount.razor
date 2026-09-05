@@ -1,4 +1,5 @@
 @page "/signin/create"
+@inject TenantContext Tenants
 @inject PasskeyFlow Passkeys
 @inject PasskeyCeremony Ceremony
 @inject NavigationManager Navigation
@@ -9,18 +10,31 @@
     <div class="panel setup-card sign-in create-account">
         <span class="eyebrow">New account</span>
         <h1>Create your account.</h1>
-        <p>Your passkey is your sign-in: this device's fingerprint, face or PIN. No password.</p>
-        @if (_unsupported)
+        <p>Your player name is how other players see you. With a password it is also how you sign in, on any device; a passkey signs you in on this one.</p>
+        <form class="sign-in-login" @onsubmit="CreateWithPassword" @onsubmit:preventDefault>
+            <label for="player-name">Player name</label>
+            <input id="player-name" maxlength="32" autocomplete="username" autocapitalize="off" spellcheck="false" @bind="_name" disabled="@(_working != Working.None)" />
+            @if (_nameValidation is not null)
+            {
+                <span class="field-error" role="alert">@_nameValidation</span>
+            }
+            <label for="player-password">Password</label>
+            <input id="player-password" type="password" maxlength="128" autocomplete="new-password" @bind="_password" disabled="@(_working != Working.None)" />
+            @if (_passwordValidation is not null)
+            {
+                <span class="field-error" role="alert">@_passwordValidation</span>
+            }
+            <button type="submit" class="primary full" disabled="@(_working != Working.None)">@(_working == Working.Password ? "Creating…" : "Create account")</button>
+        </form>
+        @if (_passkeys)
         {
-            <p class="notice sign-in-situation">This browser cannot make passkeys.</p>
+            <p class="sign-in-or">or</p>
+            @if (_unsupported)
+            {
+                <p class="notice sign-in-situation">This browser cannot make passkeys.</p>
+            }
+            <button type="button" class="secondary button full" @onclick="CreateWithPasskey" disabled="@(_working != Working.None || _unsupported)">@(_working == Working.Passkey ? "Waiting for your passkey…" : "Create with a passkey")</button>
         }
-        <label for="display-name">Display name</label>
-        <input id="display-name" maxlength="32" autocomplete="nickname" @bind="_displayName" disabled="@_working" />
-        @if (_validation is not null)
-        {
-            <span class="field-error" role="alert">@_validation</span>
-        }
-        <button type="button" class="primary full" @onclick="Create" disabled="@(_working || _unsupported)">@(_working ? "Creating…" : "Create with a passkey")</button>
         @if (_failure is not null)
         {
             <span class="field-error" role="alert">@_failure</span>
@@ -30,28 +44,87 @@
 </div>
 
 @code {
-    private string _displayName = string.Empty;
-    private string? _validation;
+    private enum Working { None, Password, Passkey }
+
+    private string _name = string.Empty;
+    private string _password = string.Empty;
+    private string? _nameValidation;
+    private string? _passwordValidation;
     private string? _failure;
-    private bool _working;
+    private Working _working;
     private bool _unsupported;
+    private bool _passkeys;
 
-    protected override async Task OnInitializedAsync() => _unsupported = !await Ceremony.Available();
-
-    private async Task Create()
+    protected override async Task OnInitializedAsync()
     {
-        var displayName = _displayName.Trim();
-        if (displayName.Length is < 1 or > 32)
+        var descriptor = await Tenants.Resolve(null);
+        _passkeys = descriptor.Succeeded && descriptor.Value is { Passkeys: true };
+        _unsupported = !await Ceremony.Available();
+    }
+
+    // The bounds the server holds the name and password to, checked here first so an empty
+    // or short field is named under it rather than round-tripped. A name that only names the
+    // player (the passkey path) is a display name; one that signs in is a login name.
+    private bool ValidLoginName()
+    {
+        var name = _name.Trim();
+        _nameValidation = name.Length is < 3 or > 32
+            ? "Enter a player name from 3 to 32 characters."
+            : name.All(static c => char.IsAsciiLetterOrDigit(c) || c is '.' or '-' or '_')
+                ? null
+                : "A player name is letters, digits, dots, hyphens and underscores only.";
+        return _nameValidation is null;
+    }
+
+    private bool ValidDisplayName()
+    {
+        _nameValidation = _name.Trim().Length is < 1 or > 32
+            ? "Enter a player name from 1 to 32 characters."
+            : null;
+        return _nameValidation is null;
+    }
+
+    private bool ValidPassword()
+    {
+        _passwordValidation = _password.Length < 8 ? "Enter a password of at least 8 characters." : null;
+        return _passwordValidation is null;
+    }
+
+    private async Task CreateWithPassword()
+    {
+        var validName = ValidLoginName();
+        if (!ValidPassword() || !validName)
         {
-            _validation = "Enter a display name from 1 to 32 characters.";
             return;
         }
 
-        _validation = null;
         _failure = null;
-        _working = true;
-        var response = await Passkeys.CreateAccount(displayName);
-        _working = false;
+        _working = Working.Password;
+        var response = await Passkeys.CreateAccountWithPassword(_name.Trim(), _password);
+        _working = Working.None;
+        if (!response.Succeeded)
+        {
+            Failed(response.Error);
+            return;
+        }
+
+        Navigation.NavigateTo("passkeys/codes");
+    }
+
+    // The passkey account takes the player name as its display name and no password; a login
+    // name and password can be set from the profile later.
+    private async Task CreateWithPasskey()
+    {
+        _passwordValidation = null;
+        if (!ValidDisplayName())
+        {
+            return;
+        }
+
+        _failure = null;
+        _working = Working.Passkey;
+        var response = await Passkeys.CreateAccount(_name.Trim());
+        _working = Working.None;
         if (!response.Succeeded)
         {
             _failure = response.Error?.Message;
@@ -59,5 +132,22 @@
         }
 
         Navigation.NavigateTo("passkeys/codes");
+    }
+
+    // A refusal about one field is named under that field; anything else under the buttons.
+    private void Failed(ApiError? error)
+    {
+        switch (error?.Code)
+        {
+            case "login.name" or "login.taken":
+                _nameValidation = error.Message;
+                break;
+            case "login.password":
+                _passwordValidation = error.Message;
+                break;
+            default:
+                _failure = error?.Message;
+                break;
+        }
     }
 }

@@ -42,6 +42,7 @@
     -->
     <Compile Include="Credentials.fs" />
     <Compile Include="RecoveryCodes.fs" />
+    <Compile Include="Logins.fs" />
     <Compile Include="PasskeyEnrolment.fs" />
     <Compile Include="PasskeyRecovery.fs" />
     <!--

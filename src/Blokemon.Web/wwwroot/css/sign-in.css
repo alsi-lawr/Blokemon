@@ -48,6 +48,27 @@
   margin-top: 8px;
 }
 
+/* The simple login: its two fields sit on the card's own label and input furniture, and the
+   passkey follows under a spoken "or" rather than a second heading. */
+.sign-in-login label:first-child {
+  margin-top: 0;
+}
+
+.sign-in-login button.primary.full {
+  margin-top: 16px;
+}
+
+.sign-in-or {
+  margin: 4px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.login-panel .facts {
+  margin-top: 8px;
+}
+
 .sign-in-recover {
   margin: 16px 0 0;
   text-align: center;

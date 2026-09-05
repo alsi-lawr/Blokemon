@@ -9,7 +9,8 @@ public sealed record CoreSignInView(string Label, string Url);
 /// <summary>
 /// What an unauthenticated client may learn about a tenant: its identity, label, the providers
 /// the server enables, the exact origin of the page that may embed it, the core sign-in when
-/// one is configured, and the route at which a hand-off code for this tenant is exchanged. The
+/// one is configured, the route at which a hand-off code for this tenant is exchanged, and
+/// whether the first-party provider offers passkey ceremonies beside the simple login. The
 /// server names that route so the client names no provider. Nothing else about the tenant
 /// leaves the server this way.
 /// </summary>
@@ -20,7 +21,8 @@ public sealed record TenantDescriptorView(
     string[] EnabledProviders,
     string? RegisteredParentOrigin,
     CoreSignInView? CoreSignIn,
-    string HandoffExchangePath
+    string HandoffExchangePath,
+    bool Passkeys = false
 );
 
 /// <summary>

@@ -10,17 +10,17 @@ using TUnit.Core.Exceptions;
 namespace Blokemon.Web.Tests;
 
 /// <summary>
-/// The headless passkey checks: Blokemon.Web on Kestrel with the first-party provider enabled
-/// for the relying party <c>localhost</c>, and headless Chrome with a virtual authenticator
-/// (the DevTools WebAuthn domain) driven by headless_passkey_evidence.py through the client's
-/// own pages. Skipped where Chrome or Python is not installed. Run alone with
+/// The headless first-party sign-in checks: Blokemon.Web on Kestrel with the first-party
+/// provider enabled for the relying party <c>localhost</c>, and headless Chrome with a virtual
+/// authenticator (the DevTools WebAuthn domain) driven by headless_passkey_evidence.py through
+/// the client's own pages, with a second Chrome as the other device the simple login reaches. Skipped where Chrome or Python is not installed. Run alone with
 /// <c>dotnet test --no-build --project tests/Blokemon.Web.Tests -- --treenode-filter "/*/*/HeadlessPasskeyTests/*"</c>.
 /// </summary>
 public sealed class HeadlessPasskeyTests
 {
     [Test]
     [Timeout(600_000)]
-    public async Task Client_CreatesSignsInAddsRegeneratesAndRecoversWithPasskeys(
+    public async Task Client_CreatesSignsInAddsRegeneratesRecoversWithPasskeysAndSignsInElsewhereWithAPassword(
         CancellationToken cancellationToken
     )
     {
@@ -81,11 +81,14 @@ public sealed class HeadlessPasskeyTests
         }
         process.ExitCode.ShouldBe(0, report);
         report.ShouldContain("HEADLESS PASSKEY EVIDENCE COMPLETE");
-        // One account, three passkeys (the first, the added one, the recovery replacement) and
-        // one live code set are what the browser left behind.
-        (await host.WithStore(store => store.List("account/"))).Count.ShouldBe(1);
+        // Two accounts (the passkey one, the password one), three passkeys on the first (the
+        // first, the added one, the recovery replacement), a login on each and one live code set
+        // each are what the browsers left behind.
+        (await host.WithStore(store => store.List("account/"))).Count.ShouldBe(2);
         (await host.WithStore(store => store.List("credential/"))).Count.ShouldBe(3);
-        (await host.WithStore(store => store.List("recovery/"))).Count.ShouldBe(1);
+        (await host.WithStore(store => store.List("login/"))).Count.ShouldBe(2);
+        (await host.WithStore(store => store.List("loginname/"))).Count.ShouldBe(2);
+        (await host.WithStore(store => store.List("recovery/"))).Count.ShouldBe(2);
     }
 
     private static string RepositoryRoot() =>

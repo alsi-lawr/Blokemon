@@ -24,6 +24,9 @@ public static class ApiSessionPolicy
         ("POST", "/api/session/firstparty/authenticate/options"),
         ("POST", "/api/session/firstparty/authenticate"),
         ("POST", "/api/session/firstparty/recover"),
+        // The first-party simple login (BLOKEMON-163): create an account, sign in.
+        ("POST", "/api/session/firstparty/password/register"),
+        ("POST", "/api/session/firstparty/password"),
         // The hand-off and continuation exchanges.
         ("POST", HandoffExchange.Route),
         ("POST", "/api/session/resume"),
@@ -35,13 +38,15 @@ public static class ApiSessionPolicy
     ];
 
     /// <summary>
-    /// The one operation a <c>Recovery</c> session may perform: enrolling the replacement
-    /// passkey, which answers with the new code set. Every other route refuses it.
+    /// The one operation a <c>Recovery</c> session may perform: replacing its credential, as a
+    /// passkey or as a password, which answers with the new code set. Every other route refuses
+    /// it.
     /// </summary>
     public static readonly IReadOnlyList<(string Method, string Template)> RecoveryPermitted =
     [
         ("POST", "/api/session/firstparty/enrol/options"),
         ("POST", "/api/session/firstparty/enrol"),
+        ("POST", "/api/session/firstparty/password/set"),
     ];
 
     private static readonly (string Method, TemplateMatcher Matcher)[] AnonymousMatchers = Matchers(

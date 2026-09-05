@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace Blokemon.Web.Identity.Passkeys;
 
 /// <summary>
-/// The first-party routes a session uses: enrolling a further passkey (the one operation a
-/// <c>Recovery</c> session may perform), listing the account's passkeys and recovery-code
-/// count with what this session may do about them, and making a new code set. The enrolment
-/// rules are <see cref="PasskeyEnrolment"/>'s; the routes apply them and nothing more.
+/// The first-party routes a session uses: enrolling a further passkey (one of the two
+/// operations a <c>Recovery</c> session may perform), listing the account's login name,
+/// passkeys and recovery-code count with what this session may do about them, and making a new
+/// code set. The enrolment rules are <see cref="PasskeyEnrolment"/>'s; the routes apply them
+/// and nothing more. A simple login counts as a credential the account holds.
 /// </summary>
 public static class PasskeyEnrolmentEndpoints
 {
@@ -45,7 +46,7 @@ public static class PasskeyEnrolmentEndpoints
         );
         var authorized = PasskeyEnrolment.authorize(
             session.Provenance,
-            existing.Any(),
+            existing.Any() || await Logins.anyFor(documents, session.Account, cancellationToken),
             await RecoveryCodes.hasLive(documents, session.Account, cancellationToken)
         );
         if (authorized.IsFailed)
@@ -96,12 +97,9 @@ public static class PasskeyEnrolmentEndpoints
             return Envelope.Fail<PasskeyEnrolmentView>(PasskeyFailures.Challenge);
         }
 
-        var hasCredential = await App.Credentials.anyFor(
-            documents,
-            documents,
-            session.Account,
-            cancellationToken
-        );
+        var hasCredential =
+            await App.Credentials.anyFor(documents, documents, session.Account, cancellationToken)
+            || await Logins.anyFor(documents, session.Account, cancellationToken);
         var authorized = PasskeyEnrolment.authorize(
             session.Provenance,
             hasCredential,
@@ -223,14 +221,31 @@ public static class PasskeyEnrolmentEndpoints
             >.Succeeded { Value: { } set }
             ? RecoveryCodes.liveCount(set.Value.Document)
             : (int?)null;
+        var login = await Logins.forAccount(documents, session.Account, cancellationToken);
+        var loginName = login
+            is DomainResult<Microsoft.FSharp.Core.FSharpOption<LoadedLogin>, LoginFailure>.Succeeded
+            {
+                Value: { } named
+            }
+            ? named.Value.Document.Name
+            : null;
+        // Adding a passkey and setting a password are the same authority: the person's own
+        // credential, or a first credential on an account that has none.
+        var mayAddCredential = PasskeyEnrolment
+            .authorize(
+                session.Provenance,
+                passkeys.Count > 0 || loginName is not null,
+                remaining > 0
+            )
+            .IsSucceeded;
         return Envelope.Ok(
             new PasskeyStateView(
                 passkeys.ToArray(),
                 remaining,
-                PasskeyEnrolment
-                    .authorize(session.Provenance, passkeys.Count > 0, remaining > 0)
-                    .IsSucceeded,
-                PasskeyEnrolment.mayRegenerate(session.Provenance)
+                mayAddCredential,
+                PasskeyEnrolment.mayRegenerate(session.Provenance),
+                loginName,
+                mayAddCredential
             )
         );
     }

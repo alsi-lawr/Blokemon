@@ -1,0 +1,131 @@
+@*
+    The profile's login panel: the account's player name, and the password set or changed with
+    it. An account that came in by passkey has no name yet and chooses one here; setting the
+    first password on an account with no other credential brings recovery codes, as the first
+    passkey does. The panel keeps one shape: loading, error and empty states fill it.
+*@
+@inject PasskeyFlow Passkeys
+@inject NavigationManager Navigation
+
+<div class="panel setup-card login-panel" aria-labelledby="login-heading">
+    <h2 id="login-heading">Player name and password</h2>
+    <p>Sign in on any device with your player name and password.</p>
+    @if (_state is null && _error is null)
+    {
+        <p class="muted">Loading…</p>
+    }
+    else if (_state is not null)
+    {
+        <dl class="facts">
+            <div>
+                <dt>Player name</dt>
+                <dd class="login-name">@(_state.LoginName ?? "None yet")</dd>
+            </div>
+        </dl>
+        @if (_state.CanSetPassword)
+        {
+            <form class="sign-in-login" @onsubmit="Set" @onsubmit:preventDefault>
+                @if (_state.LoginName is null)
+                {
+                    <label for="login-panel-name">Choose a player name</label>
+                    <input id="login-panel-name" maxlength="32" autocomplete="username" autocapitalize="off" spellcheck="false" @bind="_name" disabled="@_working" />
+                    @if (_nameValidation is not null)
+                    {
+                        <span class="field-error" role="alert">@_nameValidation</span>
+                    }
+                }
+                <label for="login-panel-password">@(_state.LoginName is null ? "Password" : "New password")</label>
+                <input id="login-panel-password" type="password" maxlength="128" autocomplete="new-password" @bind="_password" disabled="@_working" />
+                @if (_passwordValidation is not null)
+                {
+                    <span class="field-error" role="alert">@_passwordValidation</span>
+                }
+                <div class="actions">
+                    <button type="submit" class="secondary" disabled="@_working">@(_working ? "Saving…" : _state.LoginName is null ? "Set a password" : "Change password")</button>
+                </div>
+            </form>
+            @if (_saved)
+            {
+                <p class="muted login-saved" role="status">Password saved.</p>
+            }
+        }
+    }
+    @if (_error is not null)
+    {
+        <span class="field-error" role="alert">@_error</span>
+    }
+</div>
+
+@code {
+    private PasskeyStateView? _state;
+    private string? _error;
+    private string _name = string.Empty;
+    private string _password = string.Empty;
+    private string? _nameValidation;
+    private string? _passwordValidation;
+    private bool _working;
+    private bool _saved;
+
+    protected override Task OnInitializedAsync() => Load();
+
+    private async Task Load()
+    {
+        var response = await Passkeys.State();
+        if (response.Succeeded)
+        {
+            _state = response.Value;
+            _error = null;
+        }
+        else
+        {
+            _error = response.Error?.Message;
+        }
+    }
+
+    private async Task Set()
+    {
+        var needsName = _state?.LoginName is null;
+        var name = _name.Trim();
+        _nameValidation = needsName && name.Length is < 3 or > 32
+            ? "Enter a player name from 3 to 32 characters."
+            : null;
+        _passwordValidation = _password.Length < 8 ? "Enter a password of at least 8 characters." : null;
+        if (_nameValidation is not null || _passwordValidation is not null)
+        {
+            return;
+        }
+
+        _error = null;
+        _saved = false;
+        _working = true;
+        var response = await Passkeys.SetPassword(needsName ? name : null, _password, "Back to your profile", "profile");
+        _working = false;
+        if (!response.Succeeded)
+        {
+            switch (response.Error?.Code)
+            {
+                case "login.name" or "login.taken":
+                    _nameValidation = response.Error.Message;
+                    break;
+                case "login.password":
+                    _passwordValidation = response.Error.Message;
+                    break;
+                default:
+                    _error = response.Error?.Message;
+                    break;
+            }
+
+            return;
+        }
+
+        _password = string.Empty;
+        if (response.Value?.RecoveryCodes is not null)
+        {
+            Navigation.NavigateTo("passkeys/codes");
+            return;
+        }
+
+        _saved = true;
+        await Load();
+    }
+}

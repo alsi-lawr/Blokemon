@@ -92,17 +92,27 @@ type IdentityConfigurationTests() =
             [ IdentityConfiguration.HandoffRateLimitPerMinuteKey, "sixty" ]
 
     [<Test>]
-    member _.``enabling the first party provider should require the passkey relying party and origins``
+    member _.``enabling the first party provider without a relying party should resolve with no passkeys``
         ()
         =
-        failsNaming
-            IdentityConfiguration.PasskeysRelyingPartyIdKey
-            [ IdentityConfiguration.providerEnabledKey "firstparty", "true" ]
+        let resolved =
+            identityConfiguration [ IdentityConfiguration.providerEnabledKey "firstparty", "true" ]
 
+        resolved.EnabledProviders
+        |> should equal [| IdentityConfiguration.FirstPartyProvider |]
+
+        resolved.Passkeys |> should equal None
+
+    [<Test>]
+    member _.``a passkey relying party should need its origins and origins their relying party``() =
         failsNaming
             IdentityConfiguration.PasskeysOriginsKey
             [ IdentityConfiguration.providerEnabledKey "firstparty", "true"
               IdentityConfiguration.PasskeysRelyingPartyIdKey, "blokemon.monster" ]
+
+        failsNaming
+            IdentityConfiguration.PasskeysRelyingPartyIdKey
+            [ $"{IdentityConfiguration.PasskeysOriginsKey}:0", "https://blokemon.monster/" ]
 
         let resolved =
             identityConfiguration

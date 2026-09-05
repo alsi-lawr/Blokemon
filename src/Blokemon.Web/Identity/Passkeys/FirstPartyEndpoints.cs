@@ -8,11 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace Blokemon.Web.Identity.Passkeys;
 
 /// <summary>
-/// The first-party routes a signed-out browser uses: the registration, sign-in and recovery
-/// ceremonies. Each ceremony is two calls, options then response, because that is what WebAuthn
-/// is; the session policy names these routes exactly. The session-required routes are
-/// <see cref="PasskeyEnrolmentEndpoints"/>. Absent the provider every ceremony route answers
-/// the typed unavailable.
+/// The first-party routes a signed-out browser uses: the passkey registration, sign-in and
+/// recovery ceremonies here, and the simple login's routes in <see cref="PasswordEndpoints"/>.
+/// Each ceremony is two calls, options then response, because that is what WebAuthn is; the
+/// session policy names these routes exactly. The session-required passkey routes are
+/// <see cref="PasskeyEnrolmentEndpoints"/>. Without a relying party configured every ceremony
+/// route answers the typed unavailable while the login routes stand.
 /// </summary>
 public static class FirstPartyEndpoints
 {
@@ -26,6 +27,7 @@ public static class FirstPartyEndpoints
         group.MapPost("/authenticate/options", AuthenticateOptions);
         group.MapPost("/authenticate", Authenticate).AddEndpointFilter<SignInDiagnosticsFilter>();
         group.MapPost("/recover", Recover).AddEndpointFilter<SignInDiagnosticsFilter>();
+        PasswordEndpoints.Map(group);
         PasskeyEnrolmentEndpoints.Map(group);
         return endpoints;
     }
@@ -54,7 +56,7 @@ public static class FirstPartyEndpoints
         );
     }
 
-    private static async Task<ApiResponse<PasskeyRegistrationView>> Register(
+    private static async Task<ApiResponse<AccountRegistrationView>> Register(
         PasskeyCeremonyRequest request,
         [FromServices] PasskeyCeremonies? ceremonies,
         PasskeyChallenges challenges,
@@ -67,7 +69,7 @@ public static class FirstPartyEndpoints
     {
         if (ceremonies is null)
         {
-            return Envelope.Fail<PasskeyRegistrationView>(PasskeyFailures.Unavailable);
+            return Envelope.Fail<AccountRegistrationView>(PasskeyFailures.Unavailable);
         }
 
         if (
@@ -75,13 +77,13 @@ public static class FirstPartyEndpoints
             is not { Binding: CeremonyBinding.NewAccount binding } pending
         )
         {
-            return Envelope.Fail<PasskeyRegistrationView>(PasskeyFailures.Challenge);
+            return Envelope.Fail<AccountRegistrationView>(PasskeyFailures.Challenge);
         }
 
         var tenant = await TenantResolution.Resolve(documents, request.Slug, cancellationToken);
         if (tenant is null)
         {
-            return Envelope.Fail<PasskeyRegistrationView>(TenantResolution.NotFound);
+            return Envelope.Fail<AccountRegistrationView>(TenantResolution.NotFound);
         }
 
         var registered = await ceremonies.FinishRegistration(
@@ -97,7 +99,7 @@ public static class FirstPartyEndpoints
             >.Failed refused
         )
         {
-            return Envelope.Fail<PasskeyRegistrationView>(refused.Error);
+            return Envelope.Fail<AccountRegistrationView>(refused.Error);
         }
 
         var credential = (
@@ -123,7 +125,7 @@ public static class FirstPartyEndpoints
         );
         if (completed is DomainResult<IssuedSession, SignInFailure>.Failed failed)
         {
-            return Envelope.Fail<PasskeyRegistrationView>(SignInFailures.toError(failed.Error));
+            return Envelope.Fail<AccountRegistrationView>(SignInFailures.toError(failed.Error));
         }
 
         var issued = ((DomainResult<IssuedSession, SignInFailure>.Succeeded)completed).Value;
@@ -141,13 +143,13 @@ public static class FirstPartyEndpoints
         );
         if (enrolled.IsFailed)
         {
-            return Envelope.Fail<PasskeyRegistrationView>(PasskeyFailures.Conflict);
+            return Envelope.Fail<AccountRegistrationView>(PasskeyFailures.Conflict);
         }
 
         var codes = await RecoveryCodes.issue(documents, binding.Account, now, cancellationToken);
         if (codes is not DomainResult<string[], RecoveryFailure>.Succeeded generated)
         {
-            return Envelope.Fail<PasskeyRegistrationView>(
+            return Envelope.Fail<AccountRegistrationView>(
                 PasskeyRecovery.toError(
                     ((DomainResult<string[], RecoveryFailure>.Failed)codes).Error
                 )
@@ -155,7 +157,7 @@ public static class FirstPartyEndpoints
         }
 
         return Envelope.Ok(
-            new PasskeyRegistrationView(
+            new AccountRegistrationView(
                 await SessionViews.Describe(issued, applications, cancellationToken),
                 generated.Value
             )
@@ -171,6 +173,7 @@ public static class FirstPartyEndpoints
 
     private static async Task<ApiResponse<IssuedSessionView>> Authenticate(
         PasskeyCeremonyRequest request,
+        [FromServices] PasskeyCeremonies? ceremonies,
         StateDocumentStore documents,
         SignInServices services,
         IdentityProviderRegistry registry,
@@ -186,7 +189,7 @@ public static class FirstPartyEndpoints
         }
 
         var provider = registry.Find(IdentityConfigurationModule.FirstPartyProvider);
-        if (provider is null)
+        if (provider is null || ceremonies is null)
         {
             return Envelope.Fail<IssuedSessionView>(PasskeyFailures.Unavailable);
         }

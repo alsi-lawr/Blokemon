@@ -18,6 +18,7 @@
     <Compile Include="ReauthenticationTests.fs" />
     <Compile Include="CredentialTests.fs" />
     <Compile Include="RecoveryCodeTests.fs" />
+    <Compile Include="LoginTests.fs" />
     <Compile Include="PasskeyEnrolmentTests.fs" />
     <Compile Include="PasskeyRecoveryTests.fs" />
     <Compile Include="IntegrationTokenTests.fs" />

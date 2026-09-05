@@ -8,10 +8,11 @@ namespace Blokemon.Web.Client.Application;
 public sealed record RecoveryCodesToShow(string[] Codes, string ContinueLabel, string ContinueTo);
 
 /// <summary>
-/// The first-party flows: create an account, sign in, add a passkey, make new codes, recover.
-/// Each one is the server's options, the browser's ceremony, the server's verdict; on a sign-in
-/// the session is held and server-backed play selected, as the hand-off flow does. The codes a
-/// flow produces are kept here for the one screen that shows them.
+/// The first-party flows: create an account, sign in, add a passkey, set a password, make new
+/// codes, recover. A passkey flow is the server's options, the browser's ceremony, the server's
+/// verdict; a password flow is one call. On a sign-in the session is held and server-backed
+/// play selected, as the hand-off flow does. The codes a flow produces are kept here for the
+/// one screen that shows them.
 /// </summary>
 public sealed class PasskeyFlow(
     PasskeyApiClient api,
@@ -34,7 +35,7 @@ public sealed class PasskeyFlow(
 
     public void ShownCodes() => PendingCodes = null;
 
-    public async Task<ApiResponse<PasskeyRegistrationView>> CreateAccount(
+    public async Task<ApiResponse<AccountRegistrationView>> CreateAccount(
         string displayName,
         CancellationToken cancellationToken = default
     )
@@ -42,13 +43,13 @@ public sealed class PasskeyFlow(
         var options = await api.RegisterOptions(displayName, cancellationToken);
         if (!options.Succeeded || options.Value is null)
         {
-            return Fail<PasskeyRegistrationView>(options.Error);
+            return Fail<AccountRegistrationView>(options.Error);
         }
 
         var credential = await ceremony.Create(options.Value.Options, cancellationToken);
         if (credential is null)
         {
-            return Fail<PasskeyRegistrationView>(Declined);
+            return Fail<AccountRegistrationView>(Declined);
         }
 
         var registered = await api.Register(
@@ -62,6 +63,70 @@ public sealed class PasskeyFlow(
         }
 
         return registered;
+    }
+
+    public async Task<ApiResponse<AccountRegistrationView>> CreateAccountWithPassword(
+        string name,
+        string password,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var registered = await api.RegisterWithPassword(
+            new(name, password, Slug()),
+            cancellationToken
+        );
+        if (registered.Succeeded && registered.Value is { } view)
+        {
+            await Hold(view.Session, cancellationToken);
+            PendingCodes = new(view.RecoveryCodes, "Continue to your game", "/");
+        }
+
+        return registered;
+    }
+
+    public async Task<ApiResponse<IssuedSessionView>> SignInWithPassword(
+        string name,
+        string password,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var signedIn = await api.SignInWithPassword(new(name, password, Slug()), cancellationToken);
+        if (signedIn.Succeeded && signedIn.Value is { } session)
+        {
+            await Hold(session, cancellationToken);
+        }
+
+        return signedIn;
+    }
+
+    /// <summary>
+    /// Sets the held session's account's password, with a player name when it has none yet.
+    /// From a recovery session this is the replacement: the server ends that session and the
+    /// person signs in with the password.
+    /// </summary>
+    public async Task<ApiResponse<PasswordSetView>> SetPassword(
+        string? name,
+        string password,
+        string continueLabel,
+        string continueTo,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var set = await api.SetPassword(new(name, password), cancellationToken);
+        if (set.Succeeded && set.Value is { } view)
+        {
+            if (holder.Current?.Recovery is true)
+            {
+                await holder.Discard(cancellationToken);
+            }
+
+            if (view.RecoveryCodes is { } codes)
+            {
+                PendingCodes = new(codes, continueLabel, continueTo);
+            }
+        }
+
+        return set;
     }
 
     public async Task<ApiResponse<IssuedSessionView>> SignIn(
@@ -182,5 +247,5 @@ public sealed class PasskeyFlow(
             : null;
 
     private static ApiResponse<T> Fail<T>(ApiError? error) =>
-        new(false, default, error ?? new("unavailable", "Passkeys are not available right now."));
+        new(false, default, error ?? new("unavailable", "Sign-in is not available right now."));
 }

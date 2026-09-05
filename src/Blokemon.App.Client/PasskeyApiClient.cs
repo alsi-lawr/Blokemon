@@ -3,9 +3,9 @@ using Blokemon.App.Contracts;
 namespace Blokemon.App.Client;
 
 /// <summary>
-/// The first-party routes: the two ceremonies, recovery, and the passkeys and recovery codes
-/// of the account a session names. A route that is not on this server answers with the typed
-/// <c>unavailable</c> outcome.
+/// The first-party routes: the two passkey ceremonies, the simple login, recovery, and the
+/// credentials and recovery codes of the account a session names. A route that is not on this
+/// server answers with the typed <c>unavailable</c> outcome.
 /// </summary>
 public sealed class PasskeyApiClient(HttpClient http)
 {
@@ -13,8 +13,38 @@ public sealed class PasskeyApiClient(HttpClient http)
 
     private static readonly ApiError UnavailableError = new(
         "unavailable",
-        "Passkeys are not available on this server."
+        "Sign-in is not available on this server."
     );
+
+    public Task<ApiResponse<AccountRegistrationView>> RegisterWithPassword(
+        PasswordRegistrationRequest request,
+        CancellationToken cancellationToken = default
+    ) =>
+        Post<PasswordRegistrationRequest, AccountRegistrationView>(
+            $"{Prefix}/password/register",
+            request,
+            cancellationToken
+        );
+
+    public Task<ApiResponse<IssuedSessionView>> SignInWithPassword(
+        PasswordSignInRequest request,
+        CancellationToken cancellationToken = default
+    ) =>
+        Post<PasswordSignInRequest, IssuedSessionView>(
+            $"{Prefix}/password",
+            request,
+            cancellationToken
+        );
+
+    public Task<ApiResponse<PasswordSetView>> SetPassword(
+        PasswordSetRequest request,
+        CancellationToken cancellationToken = default
+    ) =>
+        Post<PasswordSetRequest, PasswordSetView>(
+            $"{Prefix}/password/set",
+            request,
+            cancellationToken
+        );
 
     public Task<ApiResponse<PasskeyOptionsView>> RegisterOptions(
         string displayName,
@@ -26,11 +56,11 @@ public sealed class PasskeyApiClient(HttpClient http)
             cancellationToken
         );
 
-    public Task<ApiResponse<PasskeyRegistrationView>> Register(
+    public Task<ApiResponse<AccountRegistrationView>> Register(
         PasskeyCeremonyRequest request,
         CancellationToken cancellationToken = default
     ) =>
-        Post<PasskeyCeremonyRequest, PasskeyRegistrationView>(
+        Post<PasskeyCeremonyRequest, AccountRegistrationView>(
             $"{Prefix}/register",
             request,
             cancellationToken

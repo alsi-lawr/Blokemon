@@ -1,23 +1,38 @@
 @page "/recover/passkey"
 @implements IDisposable
+@inject TenantContext Tenants
 @inject PasskeyFlow Passkeys
 @inject SessionHolder Session
 @inject NavigationManager Navigation
 
-<PageTitle>Add a new passkey · Blokemon</PageTitle>
+<PageTitle>Get back in · Blokemon</PageTitle>
 
 @*
-    The one thing a recovery session can do. Without one the card says where recovery starts
-    rather than offering a ceremony that would be refused.
+    The one thing a recovery session can do: replace the credential it lost, with a new
+    password or a new passkey. Without one the card says where recovery starts rather than
+    offering a replacement that would be refused.
 *@
 <div class="profile-setup">
     <div class="panel setup-card sign-in recover-passkey">
         <span class="eyebrow">Recovery</span>
         @if (Session.Current is { Recovery: true })
         {
-            <h1>Add a new passkey.</h1>
-            <p>Your other sign-ins have ended. Add a passkey to this device to keep your account; your recovery codes will be replaced.</p>
-            <button type="button" class="primary full" @onclick="Add" disabled="@_working">@(_working ? "Waiting for your passkey…" : "Add a passkey")</button>
+            <h1>Get back in.</h1>
+            <p>Your other sign-ins have ended. Set a new password, or add a passkey to this device, to keep your account; your recovery codes will be replaced.</p>
+            <form class="sign-in-login" @onsubmit="SetPassword" @onsubmit:preventDefault>
+                <label for="recover-password">New password</label>
+                <input id="recover-password" type="password" maxlength="128" autocomplete="new-password" @bind="_password" disabled="@(_working != Working.None)" />
+                @if (_validation is not null)
+                {
+                    <span class="field-error" role="alert">@_validation</span>
+                }
+                <button type="submit" class="primary full" disabled="@(_working != Working.None)">@(_working == Working.Password ? "Setting…" : "Set a new password")</button>
+            </form>
+            @if (_passkeys)
+            {
+                <p class="sign-in-or">or</p>
+                <button type="button" class="secondary button full" @onclick="Add" disabled="@(_working != Working.None)">@(_working == Working.Passkey ? "Waiting for your passkey…" : "Add a passkey")</button>
+            }
             @if (_failure is not null)
             {
                 <span class="field-error" role="alert">@_failure</span>
@@ -32,21 +47,51 @@
 </div>
 
 @code {
+    private enum Working { None, Password, Passkey }
+
+    private string _password = string.Empty;
+    private string? _validation;
     private string? _failure;
-    private bool _working;
+    private Working _working;
+    private bool _passkeys;
 
     protected override async Task OnInitializedAsync()
     {
         Session.Changed += SessionChanged;
         await Session.Load();
+        var descriptor = await Tenants.Resolve(null);
+        _passkeys = descriptor.Succeeded && descriptor.Value is { Passkeys: true };
+    }
+
+    // A recovered account keeps its player name: the new password goes with it, and an account
+    // that had only a passkey is asked for its name on the profile once it is back in.
+    private async Task SetPassword()
+    {
+        _validation = _password.Length < 8 ? "Enter a password of at least 8 characters." : null;
+        if (_validation is not null)
+        {
+            return;
+        }
+
+        _failure = null;
+        _working = Working.Password;
+        var response = await Passkeys.SetPassword(null, _password, "Sign in with your new password", "signin");
+        _working = Working.None;
+        if (!response.Succeeded)
+        {
+            _failure = response.Error?.Message;
+            return;
+        }
+
+        Navigation.NavigateTo("passkeys/codes");
     }
 
     private async Task Add()
     {
         _failure = null;
-        _working = true;
+        _working = Working.Passkey;
         var response = await Passkeys.AddPasskey("Sign in with your new passkey", "signin");
-        _working = false;
+        _working = Working.None;
         if (!response.Succeeded)
         {
             _failure = response.Error?.Message;

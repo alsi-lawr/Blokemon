@@ -122,3 +122,27 @@ type IdentityTests() =
     member _.``a well formed slug should be accepted as written``() =
         (succeeded (TenantSlug.Create "the-regular-7")).Value
         |> should equal "the-regular-7"
+
+    [<Test>]
+    member _.``a login name should be three to thirty two characters of the subject alphabet, trimmed``
+        ()
+        =
+        (succeeded (LoginName.Create "  Alex_1.2-3  ")).Value
+        |> should equal "Alex_1.2-3"
+
+        (succeeded (LoginName.Create "Alex")).Normalized |> should equal "alex"
+
+        succeeded (LoginName.Create "abc")
+        |> should equal (succeeded (LoginName.Create "abc"))
+
+        failed (LoginName.Create null) |> should equal LoginNameFailure.Required
+        failed (LoginName.Create "   ") |> should equal LoginNameFailure.Required
+        failed (LoginName.Create "ab") |> should equal LoginNameFailure.TooShort
+
+        failed (LoginName.Create(String('a', 33)))
+        |> should equal LoginNameFailure.TooLong
+
+        failed (LoginName.Create "alex smith")
+        |> should equal LoginNameFailure.Malformed
+
+        failed (LoginName.Create "álex") |> should equal LoginNameFailure.Malformed

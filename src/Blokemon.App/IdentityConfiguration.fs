@@ -16,7 +16,8 @@ type ProviderSettings =
         CoreSignInUrl: Uri | null
     }
 
-/// The passkey relying party, required once the first-party provider is enabled.
+/// The passkey relying party. The first-party provider offers passkey ceremonies only when it is
+/// configured; without it the provider offers the simple login alone.
 type PasskeySettings =
     { RelyingPartyId: string
       Origins: string array }
@@ -73,8 +74,8 @@ module IdentityConfiguration =
     [<Literal>]
     let HandoffRateLimitPerMinuteKey = "Blokemon:Identity:Handoff:RateLimitPerMinute"
 
-    /// The provider whose sessions carry FirstParty provenance and whose enabling requires the
-    /// passkey relying party.
+    /// The provider whose sessions carry FirstParty provenance: the simple login always, and the
+    /// passkey ceremonies when the relying party is configured.
     let FirstPartyProvider =
         match IdentityProviderName.Create "firstparty" with
         | DomainResult.Succeeded name -> name
@@ -140,7 +141,8 @@ module IdentityConfiguration =
           Enabled = enabled
           CoreSignInUrl = coreSignInUrl }
 
-    let private passkeys (configuration: IConfiguration) (firstPartyEnabled: bool) =
+    /// The relying party when the deployment states it: both keys, or neither.
+    let private passkeys (configuration: IConfiguration) =
         let relyingPartyId = configuration[PasskeysRelyingPartyIdKey]
 
         let origins =
@@ -155,14 +157,14 @@ module IdentityConfiguration =
         let configured =
             not (String.IsNullOrWhiteSpace relyingPartyId) || origins.Length > 0
 
-        if firstPartyEnabled || configured then
+        if configured then
             if String.IsNullOrWhiteSpace relyingPartyId then
                 invalid
-                    $"{PasskeysRelyingPartyIdKey} is required when the first-party provider is enabled."
+                    $"{PasskeysRelyingPartyIdKey} is required when passkey origins are configured."
 
             if origins.Length = 0 then
                 invalid
-                    $"{PasskeysOriginsKey} needs at least one origin when the first-party provider is enabled."
+                    $"{PasskeysOriginsKey} needs at least one origin when a passkey relying party is configured."
 
             Some
                 { RelyingPartyId = (Unchecked.nonNull relyingPartyId).Trim()
@@ -195,10 +197,6 @@ module IdentityConfiguration =
         let sweepInterval =
             timeSpan configuration SessionSweepIntervalKey DefaultSweepInterval
 
-        let firstPartyEnabled =
-            providers
-            |> Array.exists (fun provider -> provider.Enabled && provider.Name = FirstPartyProvider)
-
         let bootstrapCode: string | null =
             match configuration[OperatorBootstrapCodeKey] with
             | null -> null
@@ -221,6 +219,6 @@ module IdentityConfiguration =
         { Providers = providers
           SessionLifetime = lifetime
           SessionSweepInterval = sweepInterval
-          Passkeys = passkeys configuration firstPartyEnabled
+          Passkeys = passkeys configuration
           OperatorBootstrapCode = bootstrapCode
           HandoffRateLimitPerMinute = rateLimit }

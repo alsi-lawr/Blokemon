@@ -120,9 +120,9 @@ def firstparty_signin(devtools, shots, app_origin, authenticator, viewport):
     fresh = fresh_authenticator(devtools, authenticator)
     devtools.navigate(app_origin, "/signin", ready_selector=".sign-in")
     activate(devtools, "Create an account", selector="a")
-    devtools.wait_for("location.pathname === '/signin/create' && document.querySelector('#display-name') !== null", "the create-account page", timeout=30)
+    devtools.wait_for("location.pathname === '/signin/create' && document.querySelector('#player-name') !== null", "the create-account page", timeout=30)
     name = f"{PLAYER} {viewport}"
-    devtools.set_value("#display-name", name)
+    devtools.set_value("#player-name", name)
     activate(devtools, "Create with a passkey")
     recovery_codes_screen(devtools, "Continue to your game", f"first-party create ({viewport})")
     activate(devtools, "Continue to your game")
