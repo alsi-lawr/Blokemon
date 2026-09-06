@@ -24,6 +24,10 @@
       Include="../../src/Blokemon.Web.Client/Components/MatchAttachedCards.cs"
       Link="Components/MatchAttachedCards.cs"
     />
+    <Compile
+      Include="../../src/Blokemon.Web.Client/Components/MatchDropPlaces.cs"
+      Link="Components/MatchDropPlaces.cs"
+    />
     <RazorComponent
       Include="../../src/Blokemon.Web.Client/Components/BlokemonChip.razor"
       Link="Components/BlokemonChip.razor"

@@ -139,6 +139,22 @@ def trace(devtools, label):
     print(f"TRACE {label}: {json.dumps(state)}")
 
 
+def skip_animation(devtools):
+    """The presentation's skip is pressed if it is still up: it goes on its own when the
+    presentation ends, and a press that reached for it a moment late is nothing."""
+    return devtools.evaluate(
+        """
+        (() => {
+          const skip = [...document.querySelectorAll('.skip-animation, button')]
+            .find(button => button.textContent.trim() === 'Skip animation');
+          if (!skip) return false;
+          skip.click();
+          return true;
+        })()
+        """
+    )
+
+
 def acknowledge(devtools):
     """A reveal stays up until it is acknowledged, whatever else is skipped."""
     if devtools.evaluate("document.querySelector('.reveal-continue') !== null"):
@@ -155,8 +171,8 @@ def settle_flow(devtools):
         trace(devtools, "settling")
         if acknowledge(devtools):
             pass
-        elif devtools.evaluate("document.querySelector('.skip-animation') !== null"):
-            devtools.click_text("Skip animation", "button")
+        elif skip_animation(devtools):
+            pass
         elif devtools.evaluate("document.querySelector('.action-sheet') !== null"):
             if press_through(devtools, ["Start battle", "Continue", "Play", "Attach", "Done", "Choose"]):
                 # The press is given time to land before the sheet is looked at again, so one
@@ -174,11 +190,12 @@ def battle_over(devtools):
     return devtools.evaluate("document.querySelector('.battle-screen') === null && document.body.textContent.includes('Battle over')")
 
 
-def my_turn(devtools, or_over=False):
+def my_turn(devtools, or_over=False, drag=None):
     """Waits for the player's own turn with a card that can be carried. A draw the Deck offers is
-    taken on the way, and the computer's turn is left to play out. Answers whether the turn came:
-    a battle that ended first is a failure unless the caller can take it."""
-    deadline = time.monotonic() + 180
+    taken on the way, the computer's turn is left to play out, and a turn of the player's own
+    with nothing in hand to carry is spent. Answers whether the turn came: a battle that ended
+    first is a failure unless the caller can take it."""
+    deadline = time.monotonic() + 240
     while time.monotonic() < deadline:
         trace(devtools, "waiting for my turn")
         if battle_over(devtools):
@@ -187,8 +204,8 @@ def my_turn(devtools, or_over=False):
             raise EvidenceFailure("the battle ended before the player's turn came")
         if acknowledge(devtools):
             pass
-        elif devtools.evaluate("document.querySelector('.skip-animation') !== null"):
-            devtools.click_text("Skip animation", "button")
+        elif skip_animation(devtools):
+            pass
         elif devtools.evaluate("document.querySelector('button.deck-stack.is-aura') !== null"):
             devtools.evaluate("document.querySelector('button.deck-stack.is-aura').click()")
         elif devtools.evaluate("document.querySelector('.action-sheet') !== null"):
@@ -199,12 +216,14 @@ def my_turn(devtools, or_over=False):
         elif devtools.evaluate(
             """
             document.querySelector('.player-zone.has-turn') !== null
-              && document.querySelector('.hand-card[data-drag]') !== null
               && document.querySelector('.turn-ribbon.is-thinking') === null
               && document.querySelector('.battle-screen.is-focused') === null
             """
         ):
-            return True
+            if devtools.evaluate("document.querySelector('.hand-card[data-drag]') !== null"):
+                return True
+            if devtools.evaluate("document.querySelector('button.hud-end-turn:not([disabled])') !== null"):
+                spend_the_turn(devtools, drag or mouse_drag)
         time.sleep(0.3)
     raise EvidenceFailure("the player's turn with a card to carry did not come")
 
@@ -380,7 +399,7 @@ def attach_by_touch(devtools):
     while card_id is None and turns < 4:
         spend_the_turn(devtools, touch_drag)
         turns += 1
-        require(my_turn(devtools, or_over=True), "the battle going on until the hand holds a card that goes onto a Blokemon")
+        require(my_turn(devtools, or_over=True, drag=touch_drag), "the battle going on until the hand holds a card that goes onto a Blokemon")
         card_id = carried_card(devtools, "cards")
     require(card_id is not None, "the hand holds a card that goes onto one of the player's Blokemon")
     hand_before = devtools.evaluate("document.querySelectorAll('.hand-card').length")
@@ -556,7 +575,7 @@ def main():
             devtools.command("Runtime.enable")
             reach_table(devtools, origin)
             opening_by_touch(devtools)
-            my_turn(devtools)
+            my_turn(devtools, drag=touch_drag)
             corona_evidence(devtools, reduced=True)
             attach_by_touch(devtools)
 
