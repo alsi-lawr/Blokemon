@@ -710,8 +710,10 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
-    public async Task BrowserJourney_RejectsAMismatchedDuplicateHistoryEntryWithoutReplacingTheMatch()
+    public async Task BrowserJourney_LeavesAnArchivedBattleWithTheSameIdAsItIsAndStartsTheNext()
     {
+        // The history is data that exists. A battle already archived under the finished battle's
+        // id is not compared with it, replayed or replaced: the next battle simply starts.
         var catalogue = Catalogue();
         var documents = new MemoryDocumentStore();
         var server = new ServerHandler(null);
@@ -744,15 +746,80 @@ public sealed class BrowserLocalApplicationTests
             ["matches"] = new JsonArray(archived),
         };
         await documents.Create("match-history", history.ToJsonString());
+        var historyBefore = (await documents.Read("match-history"))!;
 
-        var replacement = await application.StartMatch(
-            new(Guid.Parse("98444444-4444-4444-4444-444444444444"), claimed.Decks.Single().Id)
+        var replacement = Value(
+            await application.StartMatch(
+                new(Guid.Parse("98444444-4444-4444-4444-444444444444"), claimed.Decks.Single().Id)
+            )
+        ).Application;
+        var historyAfter = await documents.Read("match-history");
+
+        replacement.Match!.Frame.IsComplete.ShouldBeFalse();
+        replacement.Match.Frame.Id.ShouldNotBe(started.Match!.Frame.Id);
+        historyAfter.ShouldBe(historyBefore);
+        server.Requests.ShouldBeEmpty();
+    }
+
+    [Test]
+    public async Task BrowserJourney_StartsTheNextBattleWithoutReplayingTheArchivedOnes()
+    {
+        // Starting a battle appends the finished one to the history as it stands and reads nothing
+        // into what is already there. An archived battle cut short in storage, which no replay
+        // would accept, is carried along untouched and holds nothing up.
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var server = new ServerHandler(null);
+        var application = Application(catalogue, documents, server);
+        Value(await application.SelectMode(PlayMode.BrowserLocal));
+        Value(
+            await application.CreateProfile(
+                new(Guid.Parse("99111111-1111-1111-1111-111111111111"), "Browser Player")
+            )
         );
-        var activeAfter = await documents.Read("match");
+        var claimed = Value(
+            await application.ClaimStarterDeck(
+                new(Guid.Parse("99222222-2222-2222-2222-222222222222"), "growroom")
+            )
+        );
+        var deckId = claimed.Decks.Single().Id;
+        var first = Value(
+            await application.StartMatch(
+                new(Guid.Parse("99333333-3333-3333-3333-333333333333"), deckId)
+            )
+        ).Application;
+        await CompleteMatch(application, first);
+        var second = Value(
+            await application.StartMatch(
+                new(Guid.Parse("99444444-4444-4444-4444-444444444444"), deckId)
+            )
+        ).Application;
+        await CompleteMatch(application, second);
+        var stored = (await documents.Read("match-history"))!;
+        var damaged = JsonNode.Parse(stored.Json)!.AsObject();
+        var entry = damaged["matches"]!.AsArray()[0]!.AsObject();
+        var commands = entry["commands"]!.AsArray();
+        commands.Count.ShouldBeGreaterThan(1);
+        entry["commands"] = new JsonArray(commands[0]!.DeepClone());
+        entry["clientCommands"] = new JsonArray();
+        var cutShort = entry.DeepClone();
+        await documents.Update("match-history", stored.Revision, damaged.ToJsonString());
 
-        replacement.Succeeded.ShouldBeFalse();
-        replacement.Error!.Code.ShouldBe("match.history_corrupt");
-        activeAfter.ShouldBe(activeBefore);
+        var third = Value(
+            await application.StartMatch(
+                new(Guid.Parse("99555555-5555-5555-5555-555555555555"), deckId)
+            )
+        ).Application;
+        var archived = JsonNode.Parse((await documents.Read("match-history"))!.Json)![
+            "matches"
+        ]!.AsArray();
+
+        third.Match!.Frame.IsComplete.ShouldBeFalse();
+        archived.Count.ShouldBe(2);
+        JsonNode.DeepEquals(archived[0], cutShort).ShouldBeTrue();
+        archived[1]!["start"]!["matchId"]!["value"]!
+            .GetValue<string>()
+            .ShouldBe("99444444-4444-4444-4444-444444444444");
         server.Requests.ShouldBeEmpty();
     }
 

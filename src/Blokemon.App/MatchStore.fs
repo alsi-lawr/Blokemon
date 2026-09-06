@@ -2,7 +2,6 @@ namespace Blokemon.App
 
 open System
 open System.Collections.Immutable
-open System.Linq
 open System.Text.Json
 open System.Threading
 open System.Threading.Tasks
@@ -16,7 +15,7 @@ open Blokemon.Product
 open Blokemon.Game
 
 /// Reads the saved battle back through the verified replay, and archives a finished one into the
-/// match history. Both damaged-document gates live here.
+/// match history as it stands.
 module internal MatchStore =
 
     let load
@@ -100,6 +99,11 @@ module internal MatchStore =
                 | MatchMigrationOutcome.Failed error -> return Error error
         }
 
+    /// Appends a finished battle to the history as it stands. The history is data that exists:
+    /// nothing here reads, replays or checks what is already archived, and the battle being
+    /// archived was verified while it was the saved battle. A battle already archived under its
+    /// id is left as it is, so a start retried after the history was written, but before the new
+    /// battle was, does not archive it twice.
     let archiveCompletedMatch
         (context: MatchContext)
         (profile: LocalProfile)
@@ -108,7 +112,6 @@ module internal MatchStore =
         : Task<MatchArchiveOutcome> =
         let catalogue = context.Catalogue
         let documents = context.Documents
-        let replayDocument = replayDocument context
 
         task {
             let! stored = documents.Read(context.Keys.MatchHistory, cancellationToken)
@@ -139,78 +142,40 @@ module internal MatchStore =
             match history with
             | Error failure -> return failure
             | Ok(resolvedStored, document) ->
-                let archiveFailure =
+                let matchId = completed.Document.Start.MatchId
+
+                let archivedAlready =
                     document.Matches
-                    |> Seq.tryPick (fun archived ->
-                        if
-                            isMissing archived
-                            || isMissing archived.StartCommand
-                            || isMissing archived.Start
-                        then
-                            Some(historyCorrupt ())
-                        elif archived.SchemaVersion <> matchSchemaVersion then
-                            Some(historyVersion ())
-                        else
-                            let replay = replayDocument profile 0L archived
+                    |> Seq.exists (fun archived ->
+                        not (isMissing archived)
+                        && not (isMissing archived.Start)
+                        && archived.Start.MatchId = matchId)
 
-                            match replay.Error with
-                            | NonNull error when error.Code = "match.authority_changed" ->
-                                Some(historyAuthorityChanged ())
-                            | NonNull _ -> Some(historyCorrupt ())
-                            | Null ->
-                                match replay.Match with
-                                | Null -> Some(historyCorrupt ())
-                                | NonNull loaded when loaded.State.Phase <> MatchPhase.Complete ->
-                                    Some(historyCorrupt ())
-                                | NonNull _ -> None)
+                if archivedAlready then
+                    return MatchArchiveOutcome.Ready
+                else
+                    let changed =
+                        { document with
+                            Matches =
+                                ImmutableArray.CreateRange(
+                                    Seq.append document.Matches [ completed.Document ]
+                                ) }
 
-                match archiveFailure with
-                | Some failure -> return MatchArchiveOutcome.Failed failure
-                | None ->
-                    if
-                        document.Matches
-                        |> Seq.countBy _.Start.MatchId
-                        |> Seq.exists (fun (_, count) -> count > 1)
-                    then
-                        return MatchArchiveOutcome.Failed(historyCorrupt ())
-                    else
-                        match
-                            document.Matches.SingleOrDefault(fun archived ->
-                                archived.Start.MatchId = completed.Document.Start.MatchId)
-                        with
-                        | NonNull duplicate ->
-                            return
-                                (if documentsMatch duplicate completed.Document then
-                                     MatchArchiveOutcome.Ready
-                                 else
-                                     MatchArchiveOutcome.Failed(historyCorrupt ()))
-                        | Null ->
-                            let changed =
-                                { document with
-                                    Matches =
-                                        ImmutableArray.CreateRange(
-                                            Seq.append document.Matches [ completed.Document ]
-                                        ) }
+                    let json = JsonSerializer.Serialize(changed, MatchJson.Options)
 
-                            let json = JsonSerializer.Serialize(changed, MatchJson.Options)
+                    let! write =
+                        match resolvedStored with
+                        | None ->
+                            documents.Create(context.Keys.MatchHistory, json, cancellationToken)
+                        | Some existing ->
+                            documents.Update(
+                                context.Keys.MatchHistory,
+                                existing.Revision,
+                                json,
+                                cancellationToken
+                            )
 
-                            let! write =
-                                match resolvedStored with
-                                | None ->
-                                    documents.Create(
-                                        context.Keys.MatchHistory,
-                                        json,
-                                        cancellationToken
-                                    )
-                                | Some existing ->
-                                    documents.Update(
-                                        context.Keys.MatchHistory,
-                                        existing.Revision,
-                                        json,
-                                        cancellationToken
-                                    )
-
-                            match write with
-                            | :? DocumentWriteResult.Written -> return MatchArchiveOutcome.Ready
-                            | _ -> return MatchArchiveOutcome.Failed(historyConflictError ())
+                    match write with
+                    | :? DocumentWriteResult.Written -> return MatchArchiveOutcome.Ready
+                    | _ -> return MatchArchiveOutcome.Failed(historyConflictError ())
         }

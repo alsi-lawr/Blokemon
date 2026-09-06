@@ -30,10 +30,3 @@ module internal MatchPayloads =
         with
         | :? JsonException -> null
         | :? NotSupportedException -> null
-
-    let documentsMatch (left: MatchDocument) (right: MatchDocument) =
-        String.Equals(
-            JsonSerializer.Serialize(left, MatchJson.Options),
-            JsonSerializer.Serialize(right, MatchJson.Options),
-            StringComparison.Ordinal
-        )

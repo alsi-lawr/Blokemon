@@ -219,40 +219,27 @@ module internal MatchMigration =
         let replayed = replayDocument context profile revision document
         isNull (box replayed.Error) && not (isNull (box replayed.Match))
 
-    let private validateHistory
-        (context: MatchContext)
-        (profile: LocalProfile)
-        (document: MatchHistoryDocument)
-        (cancellationToken: CancellationToken)
-        =
-        if
-            document.SchemaVersion <> matchHistorySchemaVersion
-            || not (
-                String.Equals(
-                    document.AuthorityVersion,
-                    context.Catalogue.Mechanics.ManifestVersion,
-                    StringComparison.Ordinal
-                )
-            )
-            || document.Matches
-               |> Seq.exists (fun archived ->
-                   isNull (box archived)
-                   || isNull (box archived.Start)
-                   || isNull (box archived.StartCommand))
-            || document.Matches
-               |> Seq.countBy _.Start.MatchId
-               |> Seq.exists (fun (_, count) -> count > 1)
-        then
-            false
-        else
+    // A migrated history is checked for its shape alone. The battles archived in it are data that
+    // exists: each was verified while it was the saved battle, and none is replayed again.
+    let private validateHistory (context: MatchContext) (document: MatchHistoryDocument) =
+        document.SchemaVersion = matchHistorySchemaVersion
+        && String.Equals(
+            document.AuthorityVersion,
+            context.Catalogue.Mechanics.ManifestVersion,
+            StringComparison.Ordinal
+        )
+        && not (
             document.Matches
-            |> Seq.forall (fun archived ->
-                cancellationToken.ThrowIfCancellationRequested()
-                let replayed = replayDocument context profile 0L archived
-
-                match replayed.Match, replayed.Error with
-                | NonNull loaded, Null -> loaded.State.Phase = MatchPhase.Complete
-                | _ -> false)
+            |> Seq.exists (fun archived ->
+                isNull (box archived)
+                || isNull (box archived.Start)
+                || isNull (box archived.StartCommand))
+        )
+        && not (
+            document.Matches
+            |> Seq.countBy _.Start.MatchId
+            |> Seq.exists (fun (_, count) -> count > 1)
+        )
 
     let resolveMatch
         (context: MatchContext)
@@ -316,7 +303,7 @@ module internal MatchMigration =
             | MatchMigrationPreparation.Candidate candidate ->
                 cancellationToken.ThrowIfCancellationRequested()
 
-                if not (validateHistory context profile candidate.Document cancellationToken) then
+                if not (validateHistory context candidate.Document) then
                     return
                         recovery
                             MatchRecoveryDocument.MatchHistory

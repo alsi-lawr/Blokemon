@@ -168,6 +168,5 @@ type internal MatchContext =
       Documents: IStateDocumentStore
       Keys: PlayerDocumentKeys
       Engine: MatchEngine
-      Cpu: DeterministicCpu
       Decider: IComputerDecider
       mutable Cached: LoadedMatch | null }

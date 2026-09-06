@@ -32,7 +32,6 @@ type LocalMatchService
           Documents = documents
           Keys = keys
           Engine = engine
-          Cpu = cpu
           Decider =
             match decider with
             | null -> ComputerDecisions.inProcess engine cpu

@@ -14,11 +14,12 @@ open Blokemon.App.MatchIdentity
 open Blokemon.App.MatchPayloads
 open Blokemon.Product
 open Blokemon.Game
-open Blokemon.Cpu
 
 /// The verified replay that turns a stored document back into a state. A document is trusted
-/// only after every command in it replays to the same command: the computer's by running the
-/// policy again, the player's by rebuilding them from the receipts.
+/// only after every command in it replays: the player's are rebuilt from the receipts and have
+/// to come out the same, and every command has to be one the state allows. The computer's are
+/// not searched for again - that would be the computer thinking on the thread that draws, once
+/// for every move it has ever made in the battle.
 module internal MatchReplay =
 
     let validateDocument
@@ -161,12 +162,14 @@ module internal MatchReplay =
                         let mutable receipt: MatchClientCommandReceipt | null = null
 
                         if command.Actor = cpuPlayer then
-                            match MatchCpuPolicy.choose context state cpuPlayer policy with
-                            | CpuDecision.Selected action when action.Command = command ->
-                                match MatchCpuPolicy.tryAdvance policy with
-                                | Some advancedPolicy -> policy <- advancedPolicy
-                                | None -> rejected <- true
-                            | _ -> rejected <- true
+                            // The computer's command is applied as it was written, not searched
+                            // for again: the search is the computer thinking, and that never
+                            // runs on the thread that draws. The engine still refuses a command
+                            // the state does not allow, and the policy's count of decisions
+                            // still has to come out at the document's.
+                            match MatchCpuPolicy.tryAdvance policy with
+                            | Some advancedPolicy -> policy <- advancedPolicy
+                            | None -> rejected <- true
                         elif command.Actor = human then
                             if
                                 match pendingReceipt with

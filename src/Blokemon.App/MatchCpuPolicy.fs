@@ -56,11 +56,3 @@ module internal MatchCpuPolicy =
             Some
                 { policy with
                     DecisionIndex = policy.DecisionIndex + 1UL }
-
-    let choose
-        (context: MatchContext)
-        (state: MatchState)
-        (actor: PlayerId)
-        (policy: CpuPolicyDocument)
-        =
-        context.Cpu.Choose(context.Engine, state, actor, input policy).Decision
