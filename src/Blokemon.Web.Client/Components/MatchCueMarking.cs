@@ -78,6 +78,10 @@ public static class MatchCueMarking
         {
             classes.Add("is-aura");
         }
+        else if (auras.IsTarget(cardInstanceId))
+        {
+            classes.Add("is-target");
+        }
 
         if (Classes(MatchCueState.HeldCard(cue, overlay, cardInstanceId)) is { } marks)
         {

@@ -117,9 +117,18 @@ public sealed class HeadlessComputerTests
                 return (stored.Json, expected);
             }
 
-            var action = match.LegalActions.First(static action =>
-                action.Kind != MatchActionKindView.Resign
-            );
+            // The turn is given up as soon as it can be, and until then a move is made that
+            // asks nothing: the deal decides which moves are offered, and one that needs a
+            // choice answered would be refused with the empty answer given here.
+            var action =
+                match.LegalActions.FirstOrDefault(static action =>
+                    action.Kind == MatchActionKindView.EndTurn && action.DisabledReason is null
+                )
+                ?? match.LegalActions.First(static action =>
+                    action.Kind != MatchActionKindView.Resign
+                    && action.DisabledReason is null
+                    && action.ChoiceRequirements.All(static requirement => requirement.Minimum == 0)
+                );
             match = Value(
                 await application.ApplyMatchAction(
                     match.Frame.Id,

@@ -51,6 +51,38 @@
     background: rgb(255 255 255 / 78%) !important;
   }
 
+  /* The places a picked-up card can go hold one steady, even rim of gold. */
+  .is-target .battle-card-shell::after,
+  .is-target .hand-card-visual::after,
+  button.bench-slot.is-target::after,
+  button.empty-slot.is-target::after,
+  button.local-slot-empty.is-target::after,
+  .empties-tray.is-target .tray-top::after {
+    background: rgb(244 189 63 / 58%) !important;
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
+  .is-target:hover .battle-card-shell::after,
+  .is-target[data-drop-over] .battle-card-shell::after,
+  .is-target:hover .hand-card-visual::after,
+  .is-target[data-drop-over] .hand-card-visual::after,
+  button.bench-slot.is-target:hover::after,
+  button.bench-slot.is-target[data-drop-over]::after,
+  button.empty-slot.is-target:hover::after,
+  button.empty-slot.is-target[data-drop-over]::after,
+  button.local-slot-empty.is-target:hover::after,
+  .local-slot.is-target[data-drop-over] button.local-slot-empty::after,
+  .empties-tray.is-target:hover .tray-top::after,
+  .empties-tray.is-target[data-drop-over] .tray-top::after {
+    background: rgb(246 221 160 / 84%) !important;
+  }
+
+  /* A card let go over nothing is back where it stands at once. */
+  .card-press-surface[data-springing] {
+    transition: none !important;
+  }
+
   /*
     The four surfaces the table speaks through. Each arrives, holds and leaves inside one run, so
     the shortening above collapses that to an instant and the fill mode leaves them at the end -

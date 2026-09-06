@@ -132,6 +132,36 @@ internal sealed class ComponentHarness : Renderer
         return match.ReferenceId;
     }
 
+    // Presses one key on the one rendered element a player reaches by this accessible name, the
+    // way a keyboard does: through the keydown handler Blazor gave the browser for it.
+    public async Task PressKey(string accessibleName, string key)
+    {
+        var matches = new List<ulong>();
+        await Dispatcher.InvokeAsync(() =>
+        {
+            foreach (var component in _cast.Instances)
+            {
+                ArrayRange<RenderTreeFrame> frames;
+                try
+                {
+                    frames = GetCurrentRenderTreeFrames(GetComponentState(component).ComponentId);
+                }
+                catch (ArgumentException)
+                {
+                    continue;
+                }
+
+                FindKeyHandlers(frames, accessibleName, matches);
+            }
+        });
+
+        var handler = matches.ShouldHaveSingleItem(accessibleName);
+        await Dispatcher.InvokeAsync(() =>
+            DispatchEventAsync(handler, default, new KeyboardEventArgs { Key = key })
+        );
+        Rethrow();
+    }
+
     public async Task ChangeSelect(string elementId, string value)
     {
         var matches = new List<ulong>();
@@ -230,6 +260,49 @@ internal sealed class ComponentHarness : Renderer
             if (label == accessibleName && handlerId != 0)
             {
                 matches.Add((handlerId, referenceId ?? string.Empty));
+            }
+        }
+    }
+
+    private static void FindKeyHandlers(
+        ArrayRange<RenderTreeFrame> frames,
+        string accessibleName,
+        List<ulong> matches
+    )
+    {
+        for (var index = 0; index < frames.Count; index++)
+        {
+            var frame = frames.Array[index];
+            if (frame.FrameType != RenderTreeFrameType.Element)
+            {
+                continue;
+            }
+
+            var end = index + frame.ElementSubtreeLength;
+            ulong handlerId = 0;
+            string? label = null;
+            for (var child = index + 1; child < end; child++)
+            {
+                var candidate = frames.Array[child];
+                if (candidate.FrameType != RenderTreeFrameType.Attribute)
+                {
+                    // The element's own attributes come before anything inside it.
+                    break;
+                }
+
+                if (candidate.AttributeName == "aria-label")
+                {
+                    label = candidate.AttributeValue as string;
+                }
+                else if (candidate.AttributeName == "onkeydown")
+                {
+                    handlerId = candidate.AttributeEventHandlerId;
+                }
+            }
+
+            if (label == accessibleName && handlerId != 0)
+            {
+                matches.Add(handlerId);
             }
         }
     }

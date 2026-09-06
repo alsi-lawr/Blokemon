@@ -138,20 +138,50 @@
   transform-origin: left center;
 }
 
-/* The aura IS the instruction: actionable cards breathe, the chosen one holds and lifts.
-   Nothing flashes or steps. */
-.battlefield.is-choosing .field-card-button:not(.is-aura) {
+/* The aura IS the instruction: actionable cards breathe, the chosen one holds and lifts, and
+   the places it can go glow for it. Nothing flashes or steps. */
+.battlefield.is-choosing .field-card-button:not(.is-aura, .is-target) {
   opacity: 0.42;
   filter: saturate(0.55);
 }
 
-.is-aura {
+.is-aura,
+.is-target {
   z-index: 20;
   cursor: pointer;
 }
 
 .field-card-button.is-aura-selected .battle-card-shell {
   transform: translateY(-6px) scale(1.05);
+}
+
+/* The target the pointer is on comes up to meet the card, the way the chosen card comes up. */
+.field-card-button.is-target:hover .battle-card-shell,
+.field-card-button.is-target[data-drop-over] .battle-card-shell {
+  transform: translateY(-6px) scale(1.05);
+}
+
+/*
+  A card being carried. It is moved by a translate the browser writes, on top of whatever the fan
+  or the table already turned it by, and nothing here may ease that: a card that eased after the
+  pointer would trail it. It rises over everything in its own zone, and is not itself a place
+  anything can land on - the pointer is always over it.
+*/
+.card-press:has(> .card-press-surface[data-dragging]),
+.card-press:has(> .card-press-surface[data-springing]) {
+  z-index: 95;
+}
+
+.card-press-surface[data-dragging] {
+  cursor: grabbing;
+  transition: none;
+}
+
+/* A card that can be carried is not a card to scroll with: the table fits the screen it has, so
+   there is nothing for a finger on one to scroll. */
+.card-press[data-drag],
+.card-press[data-drag] > .card-press-surface {
+  touch-action: none;
 }
 
 .aura-counter {
@@ -222,13 +252,28 @@ button.bench-slot {
   cursor: pointer;
 }
 
-/* An empty position glows the same way a card does: the same rim, the same revolving corona. */
-button.bench-slot.is-aura {
+/* An empty position glows the way a target card does: the same rim, the same revolving corona,
+   in the table's gold, and it brightens under the card being carried to it. */
+button.bench-slot.is-target,
+button.empty-slot.is-target,
+button.local-slot-empty.is-target {
   position: relative;
-  border: 2px solid rgb(255 255 255 / 88%);
+  border: 2px solid rgb(246 221 160 / 90%);
   box-shadow:
-    0 0 4px rgb(255 255 255 / 55%),
-    0 0 10px rgb(248 252 255 / 28%) inset;
+    0 0 4px rgb(244 189 63 / 55%),
+    0 0 10px rgb(244 189 63 / 28%) inset;
+}
+
+button.bench-slot.is-target[data-drop-over],
+button.bench-slot.is-target:hover,
+button.empty-slot.is-target[data-drop-over],
+button.empty-slot.is-target:hover,
+.local-slot.is-target[data-drop-over] button.local-slot-empty,
+button.local-slot-empty.is-target:hover {
+  border-color: rgb(255 244 214 / 100%);
+  box-shadow:
+    0 0 6px rgb(244 189 63 / 85%),
+    0 0 14px rgb(244 189 63 / 45%) inset;
 }
 
 button.bench-slot span {

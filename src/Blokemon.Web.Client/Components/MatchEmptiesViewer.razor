@@ -16,6 +16,7 @@
      tabindex="-1"
      @ref="_panel"
      @onkeydown="Key"
+     @onkeydown:stopPropagation="true"
      @onclick="Closed">
     <div class="empties-viewer-panel" @onclick:stopPropagation="true">
         <header>

@@ -20,7 +20,8 @@
      style="@Style"
      tabindex="-1"
      @ref="_viewer"
-     @onkeydown="Key">
+     @onkeydown="Key"
+     @onkeydown:stopPropagation="true">
     <CardFace Card="Card"
               Size="CardFaceSize.Showcase"
               Class="card-viewer-card"

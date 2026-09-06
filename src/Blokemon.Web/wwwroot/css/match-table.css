@@ -284,7 +284,9 @@ button.deck-stack {
   }
 }
 
-/* An empty place reads the way an empty Bench position does: an outline, and nothing else. */
+/* An empty place reads the way an empty Bench position does: an outline, and nothing else. The
+   phone table has no room to draw it empty, and draws it only while it is the place a Kit is
+   going, at the tray's own size. */
 .local-slot-empty {
   width: 98px;
   height: 137px;
@@ -293,6 +295,19 @@ button.deck-stack {
 
   @media (max-width: 720px) {
     display: none;
+  }
+}
+
+button.local-slot-empty {
+  display: block;
+  padding: 0;
+  background: rgb(255 255 255 / 12%);
+  cursor: pointer;
+
+  @media (max-width: 720px) {
+    display: block;
+    width: 42px;
+    height: 59px;
   }
 }
 
@@ -413,4 +428,30 @@ button.deck-stack {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: 11px;
+}
+
+/* The empty Active position as the place the chosen Blokemon goes: the box a card standing
+   there would fill, drawn the way an empty Bench position is drawn while it is a place. */
+button.empty-slot {
+  display: grid;
+  place-items: center;
+  width: calc(750px * 0.215);
+  height: calc(1050px * 0.215);
+  padding: 0;
+  border-radius: 10px;
+  color: white;
+  background: rgb(255 255 255 / 12%);
+  cursor: pointer;
+  font: 700 11px "Jost", sans-serif;
+  letter-spacing: 0.14em;
+
+  @media (max-width: 720px) {
+    width: calc(750px * 0.128);
+    height: calc(1050px * 0.128);
+  }
+}
+
+/* The tray as the place a Fossil is chucked into: the box itself is the control. */
+button.empties-tray {
+  cursor: pointer;
 }

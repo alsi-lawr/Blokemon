@@ -58,7 +58,7 @@ public partial class Match
             Stage.Destination => new(
                 MatchSheetMode.Destination,
                 DestinationHeading(frame),
-                null,
+                DestinationEyebrow(),
                 null,
                 null,
                 "Cancel",
@@ -127,7 +127,7 @@ public partial class Match
         MatchSheetView? sheet
     ) =>
         sheet is not null
-        && frame.Player.Hand.Any(card => auras.Cards.Contains(card.Id, StringComparer.Ordinal))
+        && frame.Player.Hand.Any(card => auras.IsAura(card.Id) || auras.IsTarget(card.Id))
             ? "has-sheet hand-forward"
         : sheet is not null ? "has-sheet"
         : null;
@@ -146,18 +146,32 @@ public partial class Match
             _ => PosedHeading(forced[0]),
         };
 
-    // The question is about the destination, so it is the action that has one that names it: a
-    // board card can offer a retreat alongside attacks that need no destination at all.
+    // The question is about the destination, so it is the action that has one that names it. A
+    // Blokemon on the table whose moves go to places the table shows - the opponent's Active for
+    // an attack, its own Active for a retreat - alongside one used where it stands is named for
+    // its moves, which the sheet lists while the table shows where the rest of them go.
     private string DestinationHeading(MatchFrameView frame) =>
-        OriginActions()
-            .FirstOrDefault(static action => action.TargetCardInstanceId is not null)
-            ?.Kind switch
+        OriginActions().FirstOrDefault(action => TargetsOf(action).Any())?.Kind switch
         {
-            MatchActionKindView.AttachEnergy or MatchActionKindView.PlayTrainer =>
+            MatchActionKindView.AttachEnergy => $"Attach {OriginName(frame)} to which Blokemon?",
+            MatchActionKindView.PlayTrainer
+                when OriginActions()
+                    .Any(static action => action.TargetCardInstanceId is not null) =>
                 $"Attach {OriginName(frame)} to which Blokemon?",
             MatchActionKindView.Evolve => $"Evolve which Blokemon into {OriginName(frame)}?",
+            MatchActionKindView.Attack
+            or MatchActionKindView.Retreat
+            or MatchActionKindView.UsePokemonPower => OriginName(frame),
             _ => $"Where does {OriginName(frame)} go?",
         };
+
+    private string? DestinationEyebrow() =>
+        OriginActions().FirstOrDefault(action => TargetsOf(action).Any())?.Kind
+            is MatchActionKindView.Attack
+                or MatchActionKindView.Retreat
+                or MatchActionKindView.UsePokemonPower
+            ? "Available moves"
+            : null;
 
     private string OriginName(MatchFrameView frame) =>
         _originCardInstanceId is { } origin ? VisibleCardName(frame, origin) : "this card";

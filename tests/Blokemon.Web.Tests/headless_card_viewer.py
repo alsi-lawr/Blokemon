@@ -220,7 +220,9 @@ class Chrome:
             stderr=self.stderr,
         )
         port_file = self.profile / "DevToolsActivePort"
-        deadline = time.monotonic() + 15
+        # A shared runner starting several browsers at once can take far longer than a desktop
+        # to bring one up; the wait is generous, and a browser that dies is reported at once.
+        deadline = time.monotonic() + 60
         while time.monotonic() < deadline and not port_file.is_file():
             if self.process.poll() is not None:
                 self._raise_start_failure()
@@ -843,8 +845,8 @@ class ViewerEvidence:
           const image = document.querySelector('.card-viewer img[srcset]:not(.previous-art)');
           const shown = image.getBoundingClientRect().width * devicePixelRatio;
           const file = image.currentSrc.split('/').pop();
-          const candidate = /-(\d+)\.webp$/.exec(file);
-          const widths = [...image.srcset.matchAll(/ (\d+)w/g)].map(m => Number(m[1]));
+          const candidate = /-(\\d+)\\.webp$/.exec(file);
+          const widths = [...image.srcset.matchAll(/ (\\d+)w/g)].map(m => Number(m[1]));
           return { file, shown, width: candidate ? Number(candidate[1]) : Math.max(...widths), widest: Math.max(...widths) };
         })()
         """)

@@ -228,6 +228,9 @@ public sealed class MatchReducedMotionTests
                     WasAskedAboutMotion = true;
                     return (TValue)(object)true;
                 case "armPresses":
+                case "armDrags":
+                case "disarmDrags":
+                case "settleDrag":
                     return default!;
                 default:
                     throw new NotSupportedException(

@@ -407,6 +407,9 @@ public sealed class MatchCardReadingTests
                 case "viewerScale":
                     return (TValue)(object)0.5d;
                 case "armPresses":
+                case "armDrags":
+                case "disarmDrags":
+                case "settleDrag":
                 case "warmViewerArt":
                     return default!;
                 case "guardViewer":

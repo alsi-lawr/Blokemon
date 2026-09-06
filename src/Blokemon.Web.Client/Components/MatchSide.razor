@@ -43,13 +43,29 @@
     @* The Empties Tray, which is a public pile: what has been chucked is there to be read by
        either player, and it decides real things - what is left in the Deck, and whether a card
        that fetches out of the tray has anything to fetch. It is face up, because a tray of
-       empties is what it looks like, and it keeps its place whether or not anything is in it. *@
+       empties is what it looks like, and it keeps its place whether or not anything is in it.
+       While a Fossil is being chucked it is the place the Fossil goes, and glows for it. *@
     @if (Side.EmptiesTray.Length == 0)
     {
-        <div class="empties-tray is-empty" aria-label="@TrayLabel()">
-            <div class="tray-top is-nothing" aria-hidden="true"></div>
-            <b>Chucked 0</b>
-        </div>
+        @if (EmptiesTarget)
+        {
+            <button type="button"
+                    class="empties-tray is-empty is-target"
+                    data-drop="@MatchDropPlaces.Empties"
+                    aria-label="Chuck into your Empties Tray"
+                    @onclick:stopPropagation="true"
+                    @onclick="EmptiesTapped">
+                <span class="tray-top is-nothing" aria-hidden="true"></span>
+                <b>Chucked 0</b>
+            </button>
+        }
+        else
+        {
+            <div class="empties-tray is-empty" aria-label="@TrayLabel()">
+                <div class="tray-top is-nothing" aria-hidden="true"></div>
+                <b>Chucked 0</b>
+            </div>
+        }
     }
     else
     {
@@ -58,9 +74,10 @@
         var chucked = Chucked()!;
         <CardPress Card="chucked.Card"
                    CardInstanceId="@chucked.Id"
-                   Class="empties-tray"
-                   AriaLabel="@TrayLabel()"
-                   Tapped="@(_ => EmptiesOpened.InvokeAsync(Opponent))">
+                   Class="@(EmptiesTarget ? "empties-tray is-target" : "empties-tray")"
+                   AriaLabel="@(EmptiesTarget ? "Chuck into your Empties Tray" : TrayLabel())"
+                   DropTarget="@(EmptiesTarget ? MatchDropPlaces.Empties : null)"
+                   Tapped="@(_ => EmptiesTarget ? EmptiesTapped.InvokeAsync() : EmptiesOpened.InvokeAsync(Opponent))">
             <span class="tray-top">
                 <CardFace Card="chucked.Card" Size="CardFaceSize.Bench" ShowTitle="false" />
             </span>
@@ -69,8 +86,10 @@
     }
 
     @* The place a Kit in play stands in is part of the table, so it is kept whether or not a
-       card is standing in it: nothing else moves when one is played or leaves. *@
-    <div class="local-slot @Landing(MatchLandingKind.InPlay)">
+       card is standing in it: nothing else moves when one is played or leaves. A Kit that names
+       no card is played to it, and it glows for the Kit while one is picked up. *@
+    <div class="local-slot @(InPlayTarget ? "is-target" : null) @Landing(MatchLandingKind.InPlay)"
+         data-drop="@(InPlayTarget ? MatchDropPlaces.InPlay : null)">
         @foreach (var card in Side.InPlayKits)
         {
             <CardPress Card="card.Card"
@@ -78,7 +97,9 @@
                        Attached="@MatchAttachedCards.All(card)"
                        Class="@CardClass(card.Id)"
                        AriaLabel="@CardLabel(card, "in play on the table")"
-                       AriaPressed="@CardPressed(card.Id)"
+                       AriaPressed="@Auras.Pressed(card.Id)"
+                       Draggable="@Auras.IsDraggable(card.Id)"
+                       DropTarget="@DropTarget(card.Id)"
                        Tapped="CardTapped">
                 <BattleCard Instance="card"
                             Damage="@Overlay.Damage(card)"
@@ -86,14 +107,22 @@
                             ShowVitals="false"
                             Selected="@(card.Id == SelectedCardInstanceId)"
                             Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)" />
-                @if (Counter(card.Id) is { } localCounter)
+                @if (Auras.Counter(card.Id) is { } localCounter)
                 {
                     <span class="aura-counter">@localCounter</span>
                 }
             </CardPress>
             <span class="local-slot-label">In play</span>
         }
-        @if (Side.InPlayKits.Length == 0)
+        @if (InPlayTarget)
+        {
+            <button type="button"
+                    class="local-slot-empty is-target"
+                    aria-label="Play to the In-play place"
+                    @onclick:stopPropagation="true"
+                    @onclick="InPlayTapped"></button>
+        }
+        else if (Side.InPlayKits.Length == 0)
         {
             <span class="local-slot-empty" aria-hidden="true"></span>
         }
@@ -103,7 +132,21 @@
         <div class="active-slot @Landing(MatchLandingKind.Active)">
             @if (Side.Active is null)
             {
-                <span class="empty-slot">Active</span>
+                @* The empty Active position is where the chosen Blokemon goes, and is a control
+                   only while one is picked up to go there. *@
+                @if (ActiveTarget)
+                {
+                    <button type="button"
+                            class="empty-slot is-target"
+                            data-drop="@MatchDropPlaces.Active"
+                            aria-label="Play to the Active position"
+                            @onclick:stopPropagation="true"
+                            @onclick="ActiveSlotTapped">Active</button>
+                }
+                else
+                {
+                    <span class="empty-slot">Active</span>
+                }
             }
             else
             {
@@ -112,13 +155,15 @@
                            Attached="@MatchAttachedCards.All(Side.Active)"
                            Class="@CardClass(Side.Active.Id)"
                            AriaLabel="@CardLabel(Side.Active, "Active Blokemon")"
-                           AriaPressed="@CardPressed(Side.Active.Id)"
+                           AriaPressed="@Auras.Pressed(Side.Active.Id)"
+                           Draggable="@Auras.IsDraggable(Side.Active.Id)"
+                           DropTarget="@DropTarget(Side.Active.Id)"
                            Tapped="CardTapped">
                     <BattleCard Instance="Side.Active"
                                 Damage="@Overlay.Damage(Side.Active)"
                                 Selected="@(Side.Active.Id == SelectedCardInstanceId)"
                                 Role="@MatchCueState.FieldCard(Cue, Overlay, Side.Active.Id)" />
-                    @if (Counter(Side.Active.Id) is { } activeCounter)
+                    @if (Auras.Counter(Side.Active.Id) is { } activeCounter)
                     {
                         <span class="aura-counter">@activeCounter</span>
                     }
@@ -134,14 +179,16 @@
                            Attached="@MatchAttachedCards.All(card)"
                            Class="@($"{CardClass(card.Id)} {Landing(MatchLandingKind.Bench, benchIndex)}")"
                            AriaLabel="@CardLabel(card, "Benched Blokemon")"
-                           AriaPressed="@CardPressed(card.Id)"
+                           AriaPressed="@Auras.Pressed(card.Id)"
+                           Draggable="@Auras.IsDraggable(card.Id)"
+                           DropTarget="@DropTarget(card.Id)"
                            Tapped="CardTapped">
                     <BattleCard Instance="card"
                                 Damage="@Overlay.Damage(card)"
                                 Compact="true"
                                 Selected="@(card.Id == SelectedCardInstanceId)"
                                 Role="@MatchCueState.FieldCard(Cue, Overlay, card.Id)" />
-                    @if (Counter(card.Id) is { } benchCounter)
+                    @if (Auras.Counter(card.Id) is { } benchCounter)
                     {
                         <span class="aura-counter">@benchCounter</span>
                     }
@@ -149,10 +196,11 @@
             }
             @for (var index = Side.Bench.Length; index < 5; index++)
             {
-                @if (BenchDestination)
+                @if (BenchTarget)
                 {
                     <button type="button"
-                            class="bench-slot is-bench-destination is-aura @Landing(MatchLandingKind.Bench, index)"
+                            class="bench-slot is-bench-destination is-target @Landing(MatchLandingKind.Bench, index)"
+                            data-drop="@MatchDropPlaces.Bench"
                             aria-label="Play to this empty Bench position"
                             @onclick:stopPropagation="true"
                             @onclick="BenchTapped">
@@ -216,20 +264,11 @@
     [Parameter]
     public bool Drawing { get; set; }
 
-    [Parameter]
-    public string[] AuraCardInstanceIds { get; set; } = [];
-
-    [Parameter]
-    public string[] AuraSelectedCardInstanceIds { get; set; } = [];
-
-    [Parameter]
-    public IReadOnlyDictionary<string, int>? AuraCounters { get; set; }
-
-    [Parameter]
-    public bool BenchDestination { get; set; }
-
-    [Parameter]
-    public bool DeckDraw { get; set; }
+    // What glows, what is chosen, where the chosen card can go and what can be carried. The
+    // places are the player's own: the opponent's half has cards that can be targets, and
+    // nothing else that can.
+    [Parameter, EditorRequired]
+    public required MatchAuraView Auras { get; set; }
 
     [Parameter]
     public EventCallback<string> CardTapped { get; set; }
@@ -241,7 +280,26 @@
     public EventCallback BenchTapped { get; set; }
 
     [Parameter]
+    public EventCallback ActiveSlotTapped { get; set; }
+
+    [Parameter]
+    public EventCallback InPlayTapped { get; set; }
+
+    [Parameter]
+    public EventCallback EmptiesTapped { get; set; }
+
+    [Parameter]
     public EventCallback DeckTapped { get; set; }
+
+    private bool BenchTarget => !Opponent && Auras.Bench;
+
+    private bool ActiveTarget => !Opponent && Auras.Active;
+
+    private bool InPlayTarget => !Opponent && Auras.InPlay;
+
+    private bool EmptiesTarget => !Opponent && Auras.Empties;
+
+    private bool DeckDraw => !Opponent && Auras.Deck;
 
     // The place a card being played is heading for, marked while it is on its way so the motion
     // has something to aim at and the place itself can take the landing.
@@ -253,30 +311,26 @@
     private MatchCueRole Arriving(int index, int shown) =>
         Drawing ? MatchCueState.ArrivingBack(Cue, index, shown) : MatchCueRole.None;
 
-    private bool IsAura(string cardInstanceId) =>
-        AuraCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal);
-
-    private bool IsAuraSelected(string cardInstanceId) =>
-        AuraSelectedCardInstanceIds.Contains(cardInstanceId, StringComparer.Ordinal);
-
-    private int? Counter(string cardInstanceId) =>
-        AuraCounters?.TryGetValue(cardInstanceId, out var counter) == true && counter > 0
-            ? counter
-            : null;
-
     private string CardClass(string cardInstanceId)
     {
         var classes = new List<string>(3) { "field-card-button" };
-        if (IsAuraSelected(cardInstanceId))
+        if (Auras.IsSelected(cardInstanceId))
         {
             classes.Add("is-aura is-aura-selected");
         }
-        else if (IsAura(cardInstanceId))
+        else if (Auras.IsAura(cardInstanceId))
         {
             classes.Add("is-aura");
         }
+        else if (Auras.IsTarget(cardInstanceId))
+        {
+            classes.Add("is-target");
+        }
         return string.Join(' ', classes);
     }
+
+    private string? DropTarget(string cardInstanceId) =>
+        Auras.IsTarget(cardInstanceId) ? MatchDropPlaces.Card : null;
 
     // The card lying face up on the tray, which is the one chucked most recently: a pile is read
     // from the top, and the top of this one is the last thing put on it.
@@ -297,7 +351,7 @@
     // here: the card carries a control for that, and a name that recites a gesture tells a player
     // using a keyboard to do something they cannot do.
     private string CardLabel(MatchCardInstanceView card, string position) =>
-        IsAura(card.Id) || IsAuraSelected(card.Id)
+        Auras.IsAura(card.Id) || Auras.IsSelected(card.Id) || Auras.IsTarget(card.Id)
             ? $"Choose {card.Card.Name}, {position}{Carrying(card)}"
             : $"{card.Card.Name}, {position}{Carrying(card)}";
 
@@ -315,9 +369,4 @@
         carried.AddRange(card.AttachedTools.Select(static tool => tool.Name));
         return carried.Count == 0 ? string.Empty : $", carrying {string.Join(", ", carried)}";
     }
-
-    private string? CardPressed(string cardInstanceId) =>
-        IsAuraSelected(cardInstanceId) ? "true"
-        : IsAura(cardInstanceId) ? "false"
-        : null;
 }

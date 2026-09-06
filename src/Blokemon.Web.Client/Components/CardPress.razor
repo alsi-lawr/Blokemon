@@ -15,7 +15,7 @@
 *@
 @implements IDisposable
 
-<span class="@Class card-press" style="@Style">
+<span class="@Class card-press" style="@Style" data-drag="@(Draggable ? CardInstanceId ?? Card.Id : null)" data-drop="@DropTarget" data-card="@(DropTarget == MatchDropPlaces.Card ? CardInstanceId ?? Card.Id : null)">
     <button type="button"
             class="card-press-surface @(_hold.Pressing ? "is-holding" : null)"
             aria-label="@AriaLabel"
@@ -82,6 +82,17 @@
 
     [Parameter]
     public bool Readable { get; set; } = true;
+
+    // Whether a press that travels picks the card up and carries it. The drag itself is the
+    // browser's (matchDrag.js), which finds the card by this mark; the press here only has to
+    // give the card up to it, out of the viewer if the hold had already opened one.
+    [Parameter]
+    public bool Draggable { get; set; }
+
+    // What this card is as a place a carried card can be put down: the place's name for the
+    // browser's hit test, or nothing when it is not one.
+    [Parameter]
+    public string? DropTarget { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -172,12 +183,18 @@
         );
     }
 
-    private void PressMove(PointerEventArgs eventArgs)
+    private async Task PressMove(PointerEventArgs eventArgs)
     {
-        if (_hold.Travelled(eventArgs))
+        var viewing = _hold.Viewing;
+        if (_hold.Travelled(eventArgs, Draggable))
         {
-            // The press became a scroll or a drag: no view, and no tap on release either.
+            // The press became a scroll or a drag: no view, and no tap on release either. A card
+            // dragged out of its viewer takes the viewer down with it.
             _suppressTap = true;
+            if (viewing)
+            {
+                await Host().Close();
+            }
         }
     }
 

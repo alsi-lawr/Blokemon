@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Components.Web;
 namespace Blokemon.Web.Client.Components;
 
 // The press that reads a card, wherever the card is drawn. A press held past the threshold is a
-// view and lasts until the pointer is released; a press that travels far enough first is a scroll
-// or a drag and is neither a view nor a tap.
+// view and lasts until the pointer is released; a press that travels far enough is a scroll or a
+// drag and is neither a view nor a tap, and a card that can be dragged is taken out of its view
+// by that travel.
 //
 // It is one object rather than one copy per surface because it is one gesture: a card on the table,
 // a card in hand and a card attached to another card are all read by the same hold, and a threshold
@@ -48,11 +49,12 @@ internal sealed class CardHold : IDisposable
     }
 
     // Whether the press has become a scroll or a drag. A press that has already opened the viewer
-    // is not reconsidered - the pointer is holding a card up, and moving while it does so is not a
-    // scroll.
-    public bool Travelled(PointerEventArgs eventArgs)
+    // is not reconsidered unless the card can be dragged: the pointer is holding a card up, and
+    // moving while it does so is not a scroll. A card that can be dragged is taken out of the
+    // viewer by the same travel, so the drag that begins is the only thing the press is doing.
+    public bool Travelled(PointerEventArgs eventArgs, bool draggable = false)
     {
-        if (_hold is null || Viewing)
+        if (_hold is null || (Viewing && !draggable))
         {
             return false;
         }
@@ -67,6 +69,7 @@ internal sealed class CardHold : IDisposable
 
         Stop();
         Pressing = false;
+        Viewing = false;
         return true;
     }
 

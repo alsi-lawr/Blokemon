@@ -1,12 +1,17 @@
 using Blokemon.App.Contracts;
+using Blokemon.Web.Client.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Blokemon.Web.Client.Pages;
 
 // ---- Tap routing ----------------------------------------------------------------------
 //
-// Where a tap goes is decided here and nowhere else. The presenters report that a card, the
-// Bench, the Deck or the table itself was pressed; the stage says what that means. A tap that
+// Where a tap goes is decided here and nowhere else. The presenters report that a card, a place
+// on the table or the table itself was pressed; the stage says what that means. A tap that
 // leaves nothing further to ask is the move itself, so it is played rather than confirmed.
+//
+// A card is picked up by tapping it, and put down on a target by tapping the target: the same
+// two steps a drag makes in one movement, so the two are routed through the same places here.
 public partial class Match
 {
     // The only moves that still stop to be confirmed: they end something, and neither of them
@@ -34,39 +39,34 @@ public partial class Match
                 TapChoiceCard(requirement, cardInstanceId);
                 return Task.CompletedTask;
 
+            // A decision the match posed is answered by its cards: tapping a candidate picks it
+            // up, and the place it goes glows for it.
             case Stage.Idle when forced.Length > 0:
                 return
                     ForcedByAura(forced)
-                    && forced.FirstOrDefault(option =>
-                        option.SourceCardInstanceId == cardInstanceId
-                    )
-                        is { } candidate
-                    ? StartAction(candidate)
+                    && forced.Any(option => option.SourceCardInstanceId == cardInstanceId)
+                    ? SelectOrigin(cardInstanceId)
                     : Task.CompletedTask;
 
-            case Stage.Destination
-                when DestinationCardIds().Contains(cardInstanceId, StringComparer.Ordinal):
-                _destinationCardInstanceId = cardInstanceId;
-                _benchDestination = false;
-                return OpenMenu([
-                    .. OriginActions()
-                        .Where(action => action.TargetCardInstanceId == cardInstanceId),
-                ]);
+            case Stage.Destination when IsTarget(cardInstanceId):
+                return DropOn(MatchTarget.Card(cardInstanceId));
 
-            // The armed card is played by tapping it again: the first tap picked it up, and this
-            // is the one that puts it down.
+            // The picked-up card is put down by tapping it again: where it stands, when its one
+            // move has no place on the table, or on the one place it can go.
             case Stage.Armed when cardInstanceId == _originCardInstanceId:
                 return StartAction(_menu[0]);
 
-            case Stage.Idle
-                when PlayableCardIds(match).Contains(cardInstanceId, StringComparer.Ordinal):
+            case Stage.Destination when cardInstanceId == _originCardInstanceId:
+                return OnlyTarget() is { } only ? DropOn(only) : Task.CompletedTask;
+
+            case Stage.Idle when Pickable(match).Contains(cardInstanceId, StringComparer.Ordinal):
                 return SelectOrigin(cardInstanceId);
 
             case Stage.Armed
             or Stage.Destination
-                when PlayableCardIds(match).Contains(cardInstanceId, StringComparer.Ordinal):
-                // Tapping another playable card puts the first one back down and picks that one
-                // up instead, whichever kind of move was being set up.
+                when Pickable(match).Contains(cardInstanceId, StringComparer.Ordinal):
+                // Tapping another card that can be picked up puts the first one back down and
+                // picks that one up instead, whichever kind of move was being set up.
                 CancelFlow();
                 return SelectOrigin(cardInstanceId);
 
@@ -75,21 +75,65 @@ public partial class Match
         }
     }
 
-    private Task TapBench()
+    private bool IsTarget(string cardInstanceId) =>
+        TargetCardIds().Contains(cardInstanceId, StringComparer.Ordinal);
+
+    // The one place the picked-up card can go, when there is exactly one and nothing it does is
+    // used where it stands: a tap on the card itself is then as good as a tap on the place.
+    private MatchTarget? OnlyTarget()
+    {
+        if (InPlaceActions().Length > 0)
+        {
+            return null;
+        }
+
+        var targets = OriginActions().SelectMany(TargetsOf).Distinct().ToArray();
+        return targets.Length == 1 ? targets[0] : null;
+    }
+
+    private Task TapBench() => DropOn(MatchTarget.At(MatchTargetPlaces.Bench));
+
+    private Task TapActiveSlot() => DropOn(MatchTarget.At(MatchTargetPlaces.Active));
+
+    private Task TapInPlay() => DropOn(MatchTarget.At(MatchTargetPlaces.InPlay));
+
+    private Task TapEmpties() => DropOn(MatchTarget.At(MatchTargetPlaces.Empties));
+
+    // The picked-up card put down on a place the table shows: a target card, an empty Bench
+    // position, the empty Active position, the In-play place or the Empties Tray, reached by a
+    // tap or by a drop. The moves that go there are what happens: one plays, and several are a
+    // real choice between effects that the sheet asks. A Power aimed at a card the table shows
+    // is used, and the card it landed on is its answer.
+    private async Task DropOn(MatchTarget target)
     {
         if (_stage != Stage.Destination || _originCardInstanceId is null || Busy())
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        _destinationCardInstanceId = null;
-        return OpenMenu([
-            .. OriginActions()
-                .Where(static action =>
-                    action.Kind == MatchActionKindView.PlayBlokemon
-                    && action.TargetCardInstanceId is null
-                ),
-        ]);
+        _operationError = null;
+        _destinationCardInstanceId = target.CardInstanceId;
+        var actions = OriginActions().Where(action => TargetsOf(action).Contains(target)).ToArray();
+        if (
+            actions is [{ Kind: MatchActionKindView.UsePokemonPower } power]
+            && target.CardInstanceId is { } answer
+            && TableQuestion(power) is { } question
+        )
+        {
+            await StartAction(power);
+            if (_stage == Stage.Choice && CurrentRequirement()?.Id == question.Id)
+            {
+                TapChoiceCard(question, answer);
+                if (StepComplete())
+                {
+                    await AdvanceChoice();
+                }
+            }
+
+            return;
+        }
+
+        await OpenMenu(actions);
     }
 
     // The Deck is a place on the table like any other. While a draw is outstanding it glows, and
@@ -108,10 +152,11 @@ public partial class Match
             : Task.CompletedTask;
     }
 
+    // A tap on the empty table, or Escape, puts a picked-up card down. A question that opened
+    // itself has nothing to go back to, so the table cannot dismiss it: the match is waiting on
+    // the answer.
     private void TapBackground()
     {
-        // A question that opened itself has nothing to go back to, so the table cannot dismiss
-        // it: the match is waiting on the answer.
         if (_stage == Stage.Idle || _autoStarted)
         {
             return;
@@ -120,15 +165,24 @@ public partial class Match
         CancelFlow();
     }
 
+    // The keyboard's way of putting a card down. In full screen the browser takes Escape for
+    // itself before the page hears it, so the tap on the table is the way out there.
+    private void Key(KeyboardEventArgs eventArgs)
+    {
+        if (eventArgs.Key == "Escape")
+        {
+            TapBackground();
+        }
+    }
+
+    // Picks a card up. Where it can go glows for it and the rest of the table steps back; a card
+    // with one move and nowhere on the table to send it is held where it stands, and tapping it
+    // again is the move. Several moves with nowhere to go are a real choice, asked by the sheet.
     private Task SelectOrigin(string cardInstanceId)
     {
         _originCardInstanceId = cardInstanceId;
         _destinationCardInstanceId = null;
         var actions = OriginActions();
-        var destinations = actions.Any(static action => action.TargetCardInstanceId is not null);
-        _benchDestination =
-            actions.Any(static action => action.Kind == MatchActionKindView.PlayBlokemon)
-            && DisplayFrame().Player.Bench.Length < 5;
         _directActions =
         [
             .. actions.Where(static action =>
@@ -136,7 +190,7 @@ public partial class Match
                 && action.Kind != MatchActionKindView.PlayBlokemon
             ),
         ];
-        if (destinations || _benchDestination)
+        if (actions.Any(action => TargetsOf(action).Any()))
         {
             _hadDestinationStep = true;
             _stage = Stage.Destination;
@@ -144,10 +198,6 @@ public partial class Match
         }
 
         _hadDestinationStep = false;
-
-        // A card with one move and no place on the table to send it to is picked up rather than
-        // played outright: it holds the chosen glow, everything else that could be played still
-        // glows behind it, and tapping it again is the move. Anywhere else puts it back down.
         if (_directActions.Length == 1)
         {
             _menu = _directActions;
@@ -159,8 +209,8 @@ public partial class Match
         return OpenMenu(_directActions);
     }
 
-    // A tap on a place the table shows - a destination card, an empty Bench position - has said
-    // everything a move needs, so the move it settles on happens.
+    // A tap on a place the table shows has said everything a move needs, so the move it settles
+    // on happens.
     private Task OpenMenu(MatchActionView[] actions)
     {
         _menu = actions;
@@ -246,7 +296,7 @@ public partial class Match
         _drafts.Clear();
         _choiceValidation = null;
         _attachmentCardInstanceId = null;
-        if (forced)
+        if (forced && !_hadDestinationStep)
         {
             _stage = Stage.Idle;
             return;
@@ -278,7 +328,6 @@ public partial class Match
         _originCardInstanceId = null;
         _destinationCardInstanceId = null;
         _attachmentCardInstanceId = null;
-        _benchDestination = false;
         _hadDestinationStep = false;
         _choiceValidation = null;
         _autoStarted = false;

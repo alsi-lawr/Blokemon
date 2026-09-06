@@ -7,8 +7,14 @@ namespace Blokemon.Web.Client.Pages;
 //
 // Every card that can be acted on glows. Which cards those are depends only on the stage:
 // the playable cards while idle, the forced decision's own candidates while a decision is
-// outstanding, the destinations once an origin is picked, and the eligible cards while a
-// choice step is open. It is derived here, every render, and handed to the presenters.
+// outstanding, the picked-up card and its targets once one is picked up, and the eligible
+// cards while a choice step is open. It is derived here, every render, and handed to the
+// presenters.
+//
+// Picking a card up focuses the table on what it can do: the card holds the chosen glow, the
+// places it can go glow as targets, and nothing else is lit. Every move has a target. Where the
+// engine names one it is that card; where it names none the table supplies the place the
+// physical game would use, and a move with no such place is used where the card stands.
 public partial class Match
 {
     private static readonly MatchActionKindView[] _forcedKinds =
@@ -39,55 +45,63 @@ public partial class Match
         int
     >(StringComparer.Ordinal);
 
+    // Where a move goes: a card the table shows, or a fixed place on it.
+    private readonly record struct MatchTarget(string? CardInstanceId, MatchTargetPlaces Place)
+    {
+        public static MatchTarget Card(string cardInstanceId) => new(cardInstanceId, default);
+
+        public static MatchTarget At(MatchTargetPlaces place) => new(null, place);
+    }
+
     private MatchAuraView Auras(MatchActionView[] forced)
     {
         if (_view?.Match is not { } match || Busy())
         {
-            return new([], [], false, false, _noCounters);
+            return MatchAuraView.Rest(_noCounters);
         }
 
+        var pickable = Pickable(match);
         switch (_stage)
         {
             // A draw is asked for by the Deck itself: it glows, and tapping it takes the cards.
             case Stage.Idle when forced.Length > 0 && ForcedByDeck(forced):
-                return new([], [], false, true, _noCounters);
+                return MatchAuraView.Rest(_noCounters) with { Deck = true };
 
             case Stage.Idle when forced.Length > 0:
                 return ForcedByAura(forced)
-                    ? new(
-                        [.. forced.Select(static option => option.SourceCardInstanceId!)],
-                        [],
-                        false,
-                        false,
-                        _noCounters
-                    )
-                    : new([], [], false, false, _noCounters);
+                    ? MatchAuraView.Rest(_noCounters) with
+                    {
+                        Cards = pickable,
+                        Draggable = pickable,
+                    }
+                    : MatchAuraView.Rest(_noCounters);
 
-            // A card that has been picked up holds the chosen glow while everything else that
-            // could be played still offers itself: putting this one down is a tap away either
-            // way, on the card itself to play it or on another to swap to that one.
+            // A card that has been picked up holds the chosen glow and nothing else offers
+            // itself: the table is focused on what this card can do. With no place on the table
+            // for its one move, putting it down is a tap away on the card itself.
             case Stage.Armed:
-                return new(
-                    PlayableCardIds(match),
-                    [_originCardInstanceId!],
-                    false,
-                    false,
-                    _noCounters
-                );
+                return MatchAuraView.Rest(_noCounters) with
+                {
+                    Selected = [_originCardInstanceId!],
+                    Draggable = pickable,
+                    Focused = true,
+                };
 
             case Stage.Destination:
-                return new(
-                    DestinationCardIds(),
-                    [_originCardInstanceId!],
-                    _benchDestination,
-                    false,
-                    _noCounters
-                );
+                return MatchAuraView.Rest(_noCounters) with
+                {
+                    Selected = [_originCardInstanceId!],
+                    Targets = TargetCardIds(),
+                    Draggable = pickable,
+                    Places = TargetPlaces(),
+                    Focused = true,
+                };
 
             case Stage.Actions:
             case Stage.Confirm:
-                return new(
-                    [],
+                return MatchAuraView.Rest(_noCounters) with
+                {
+                    Selected =
                     [
                         .. new[]
                         {
@@ -95,19 +109,21 @@ public partial class Match
                             _destinationCardInstanceId,
                         }.OfType<string>(),
                     ],
-                    false,
-                    false,
-                    _noCounters
-                );
+                    Focused = _originCardInstanceId is not null,
+                };
 
             case Stage.Choice when CurrentRequirement() is { } requirement:
                 return ChoiceAuras(requirement);
 
             case Stage.Idle:
-                return new(PlayableCardIds(match), [], false, false, _noCounters);
+                return MatchAuraView.Rest(_noCounters) with
+                {
+                    Cards = pickable,
+                    Draggable = pickable,
+                };
 
             default:
-                return new([], [], false, false, _noCounters);
+                return MatchAuraView.Rest(_noCounters);
         }
     }
 
@@ -115,46 +131,78 @@ public partial class Match
     {
         var draft = Draft(requirement);
         var origin = _originCardInstanceId is null ? [] : new[] { _originCardInstanceId };
+        var focused = _originCardInstanceId is not null;
         return requirement.Kind switch
         {
-            MatchChoiceKindView.Cards => new(
-                [.. requirement.EligibleCards.Select(static card => card.Id)],
-                [.. draft.Cards],
-                false,
-                false,
-                _noCounters
-            ),
-            MatchChoiceKindView.Distribution => new(
-                [.. requirement.EligibleCards.Select(static card => card.Id)],
+            MatchChoiceKindView.Cards => MatchAuraView.Rest(_noCounters) with
+            {
+                Cards = [.. requirement.EligibleCards.Select(static card => card.Id)],
+                Selected = [.. draft.Cards],
+                Focused = focused,
+            },
+            MatchChoiceKindView.Distribution => MatchAuraView.Rest(draft.Distribution) with
+            {
+                Cards = [.. requirement.EligibleCards.Select(static card => card.Id)],
+                Selected =
                 [
                     .. draft
                         .Distribution.Where(static item => item.Value > 0)
                         .Select(static item => item.Key),
                 ],
-                false,
-                false,
-                draft.Distribution
-            ),
-            MatchChoiceKindView.Attachments when _attachmentCardInstanceId is { } energy => new(
-                [.. requirement.EligibleTargets.Select(static card => card.Id)],
-                [energy],
-                false,
-                false,
-                _noCounters
-            ),
-            MatchChoiceKindView.Attachments => new(
+                Focused = focused,
+            },
+            MatchChoiceKindView.Attachments when _attachmentCardInstanceId is { } energy =>
+                MatchAuraView.Rest(_noCounters) with
+                {
+                    Cards = [.. requirement.EligibleTargets.Select(static card => card.Id)],
+                    Selected = [energy],
+                    Focused = focused,
+                },
+            MatchChoiceKindView.Attachments => MatchAuraView.Rest(_noCounters) with
+            {
+                Cards =
                 [
                     .. requirement
                         .EligibleCards.Select(static card => card.Id)
                         .Where(card => !draft.Attachments.ContainsKey(card)),
                 ],
-                [.. draft.Attachments.Keys],
-                false,
-                false,
-                _noCounters
-            ),
-            _ => new([], origin, false, false, _noCounters),
+                Selected = [.. draft.Attachments.Keys],
+                Focused = focused,
+            },
+            _ => MatchAuraView.Rest(_noCounters) with { Selected = origin, Focused = focused },
         };
+    }
+
+    // The cards a tap or a drag picks up: the candidates of a decision the match posed while one
+    // is outstanding, and every card with a move of its own otherwise. The same set whatever the
+    // stage, because picking up another card while one is held puts the first one down.
+    private string[] Pickable(MatchView match)
+    {
+        var posed = PosedByAura(match);
+        return posed.Length > 0
+            ? [.. posed.Select(static option => option.SourceCardInstanceId!).Distinct()]
+            : PlayableCardIds(match);
+    }
+
+    // The candidates of a decision the match posed that the table can answer by its cards, found
+    // whatever the stage: a candidate picked up and put down again is still a candidate.
+    private MatchActionView[] PosedByAura(MatchView match)
+    {
+        if (_animating || _working)
+        {
+            return [];
+        }
+
+        foreach (var kind in _forcedKinds)
+        {
+            var options = match.LegalActions.Where(action => action.Kind == kind).ToArray();
+            if (options.Length > 0)
+            {
+                return ForcedByAura(options) ? options : [];
+            }
+        }
+
+        return [];
     }
 
     private string[] PlayableCardIds(MatchView match) =>
@@ -167,47 +215,130 @@ public partial class Match
                 .Distinct(StringComparer.Ordinal),
         ];
 
-    private string[] DestinationCardIds() =>
+    private string[] TargetCardIds() =>
         [
             .. OriginActions()
-                .Select(static action => action.TargetCardInstanceId)
+                .SelectMany(TargetsOf)
+                .Select(static target => target.CardInstanceId)
                 .OfType<string>()
                 .Distinct(StringComparer.Ordinal),
         ];
 
+    private MatchTargetPlaces TargetPlaces() =>
+        OriginActions()
+            .SelectMany(TargetsOf)
+            .Aggregate(MatchTargetPlaces.None, static (places, target) => places | target.Place);
+
+    // Every move the picked-up card offers: its own moves, or, while the match is waiting on a
+    // decision, its candidacy for that decision.
     private MatchActionView[] OriginActions() =>
         _view?.Match is { } match && _originCardInstanceId is { } origin
             ?
             [
                 .. match.LegalActions.Where(action =>
-                    IsCardAction(action) && action.SourceCardInstanceId == origin
+                    action.SourceCardInstanceId == origin
+                    && action.DisabledReason is null
+                    && (IsCardAction(action) || _forcedKinds.Contains(action.Kind))
                 ),
             ]
             : [];
 
-    // A destination step disambiguates itself when everything the chosen card can do is the same
-    // one kind of move onto a place the table shows: the places glow, and tapping one says
-    // everything a sheet could have asked. A second kind of move, or a move with no place on the
-    // table to stand for it, is a real choice between effects and keeps its sheet.
-    private bool DestinationIsUnambiguous()
+    // Where a move goes. The engine names the card where the move has one; where it names none,
+    // the table supplies the place the physical game would use: a Blokemon comes down on an empty
+    // Bench position, a Kit stands in the In-play place, a Fossil is chucked into the Empties
+    // Tray, an attack is thrown at the opponent's Active, a retreat brings the Bench Blokemon to
+    // the Active, and the chosen Active goes into the empty Active position. A Power whose first
+    // question is a card on the table is aimed at that card. A move with none of those is used
+    // where the card stands, and answers to a tap there.
+    private IEnumerable<MatchTarget> TargetsOf(MatchActionView action)
     {
-        if (_directActions.Length > 0)
+        if (action.TargetCardInstanceId is { } named)
         {
-            return false;
+            if (IsVisible(named))
+            {
+                yield return MatchTarget.Card(named);
+            }
+
+            yield break;
         }
 
-        var actions = OriginActions();
-        return actions.Length > 0
-            && actions.DistinctBy(static action => action.Kind).Count() == 1
-            && actions.All(IsBoardPosition);
+        var frame = DisplayFrame();
+        switch (action.Kind)
+        {
+            case MatchActionKindView.PlayBlokemon:
+            case MatchActionKindView.ChooseBonusPlacement:
+                if (frame.Player.Bench.Length < 5)
+                {
+                    yield return MatchTarget.At(MatchTargetPlaces.Bench);
+                }
+                break;
+
+            case MatchActionKindView.PlayTrainer:
+                yield return MatchTarget.At(MatchTargetPlaces.InPlay);
+                break;
+
+            case MatchActionKindView.DiscardFossil:
+                yield return MatchTarget.At(MatchTargetPlaces.Empties);
+                break;
+
+            case MatchActionKindView.Attack:
+                if (frame.Opponent.Active is { } defender)
+                {
+                    yield return MatchTarget.Card(defender.Id);
+                }
+                break;
+
+            case MatchActionKindView.Retreat:
+                if (frame.Player.Active is { } active)
+                {
+                    yield return MatchTarget.Card(active.Id);
+                }
+                break;
+
+            case MatchActionKindView.ChooseOpening:
+            case MatchActionKindView.ChooseReplacement:
+                if (frame.Player.Active is null)
+                {
+                    yield return MatchTarget.At(MatchTargetPlaces.Active);
+                }
+                break;
+
+            case MatchActionKindView.UsePokemonPower:
+                if (TableQuestion(action) is { } question)
+                {
+                    foreach (var card in question.EligibleCards)
+                    {
+                        if (IsVisible(card.Id))
+                        {
+                            yield return MatchTarget.Card(card.Id);
+                        }
+                    }
+                }
+                break;
+
+            default:
+                break;
+        }
     }
 
-    // A place on the table is either a card that is on it or, for a Blokemon coming down, an
-    // empty Bench position - and the Bench is only a place while one is free.
-    private bool IsBoardPosition(MatchActionView action) =>
-        action.TargetCardInstanceId is { } target
-            ? IsVisible(target)
-            : action.Kind == MatchActionKindView.PlayBlokemon && _benchDestination;
+    // The first thing a move asks, when it is a card the table shows: the answer can be given by
+    // putting the move's card on it.
+    private MatchChoiceRequirementView? TableQuestion(MatchActionView action) =>
+        LocalRequirements(action).FirstOrDefault() is { Kind: MatchChoiceKindView.Cards } first
+        && first.EligibleCards.Any(card => IsVisible(card.Id))
+            ? first
+            : null;
+
+    // The moves of the picked-up card that have nowhere on the table to go: they are used where
+    // the card stands, and a sheet has to list them.
+    private MatchActionView[] InPlaceActions() =>
+        [.. OriginActions().Where(action => !TargetsOf(action).Any())];
+
+    // A destination step disambiguates itself when every move the chosen card offers goes to a
+    // place the table shows: the places glow, and tapping one says everything a sheet could have
+    // asked. A move with no place on the table to stand for it keeps its sheet.
+    private bool DestinationIsUnambiguous() =>
+        OriginActions().Length > 0 && InPlaceActions().Length == 0;
 
     // A move the engine offers without the means to pay for it is shown rather than played: it
     // never glows, is never an origin, and is never what a tap settles on. The dock says what it

@@ -199,11 +199,7 @@ public sealed class MatchCueStateTests
         MatchCueMarking.Table(played.Cue).ShouldNotBe(MatchCueMarking.Table(null));
     }
 
-    private static readonly MatchAuraView NoAuras = new(
-        [],
-        [],
-        false,
-        false,
+    private static readonly MatchAuraView NoAuras = MatchAuraView.Rest(
         new Dictionary<string, int>()
     );
 

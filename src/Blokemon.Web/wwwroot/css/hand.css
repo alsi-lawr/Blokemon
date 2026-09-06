@@ -103,7 +103,9 @@
   height: max-content;
   display: block;
   transform-origin: 50% 130%;
-  transition: filter 0.2s;
+  transition:
+    filter 0.2s,
+    opacity 0.2s;
 }
 
 /* Forward while engaged, including while the keyboard is on one of its reading controls. */
@@ -127,10 +129,31 @@
   outline: none;
 }
 
-/* Hover keeps its own warm lift, but never paints over a white aura. */
-.hand-card:not(.is-aura):hover .hand-card-visual,
-.hand-card:not(.is-aura):has(:focus-visible) .hand-card-visual {
+/* Hover keeps its own warm lift, but never paints over an aura. */
+.hand-card:not(.is-aura, .is-target):hover .hand-card-visual,
+.hand-card:not(.is-aura, .is-target):has(:focus-visible) .hand-card-visual {
   filter: drop-shadow(0 0 12px rgb(244 189 63 / 55%));
+}
+
+/*
+  A card picked up focuses the table on what it can do: the card holds its glow, where it can go
+  glows for it, and every other held card steps back the way the field already does. The hand is
+  dimmed by its visuals rather than its press surfaces, so the carried card keeps its own.
+*/
+.battle-screen.is-focused .hand-card:not(.is-aura, .is-aura-selected, .is-target) .hand-card-visual {
+  opacity: 0.42;
+  filter: saturate(0.55);
+}
+
+/* The card being carried keeps the fan's own turn and comes up a little, and does not ease into
+   the lift the chosen card takes when tapped: the pointer already has it. */
+.hand-card:has(> .card-press-surface[data-dragging]) .card-press-surface {
+  transform: rotate(var(--fan-turn, 0deg)) translateY(var(--fan-lift, 0px)) scale(1.06);
+  transition: none;
+
+  @media (max-width: 720px) {
+    transform: scale(1.06);
+  }
 }
 
 .hand-card:has(.card-press-surface:focus-visible) .hand-card-visual {
@@ -196,5 +219,78 @@ button.deck-stack.is-aura::after {
     rgb(255 255 255 / 46%);
   opacity: 1;
   animation: aura-corona 9s linear infinite;
+}
+
+/*
+  Where the chosen card can go. The same rim and the same revolving lobes, in the table's gold
+  rather than white, so a place to put a card reads apart from a card that could be played. It
+  breathes like an offer; the one the pointer is on holds bright and still, the way the chosen
+  card does.
+*/
+.is-target .battle-card-shell::after,
+.is-target .hand-card-visual::after,
+button.bench-slot.is-target::after,
+button.empty-slot.is-target::after,
+button.local-slot-empty.is-target::after,
+.empties-tray.is-target .tray-top::after {
+  content: "";
+  position: absolute;
+  --corona-angle: 0deg;
+  z-index: -2;
+  inset: -8px;
+  border-radius: 14px;
+  background:
+    conic-gradient(
+      from var(--corona-angle),
+      rgb(244 189 63 / 0%) 0deg,
+      rgb(246 221 160 / 92%) 58deg,
+      rgb(244 189 63 / 0%) 132deg,
+      rgb(244 189 63 / 0%) 196deg,
+      rgb(246 221 160 / 72%) 254deg,
+      rgb(244 189 63 / 0%) 328deg
+    ),
+    rgb(244 189 63 / 30%);
+  filter: blur(4px);
+  pointer-events: none;
+  animation:
+    aura-corona 9s linear infinite,
+    aura-breathe 3.2s ease-in-out infinite;
+}
+
+.is-target:hover .battle-card-shell::after,
+.is-target[data-drop-over] .battle-card-shell::after,
+.is-target:hover .hand-card-visual::after,
+.is-target[data-drop-over] .hand-card-visual::after,
+button.bench-slot.is-target:hover::after,
+button.bench-slot.is-target[data-drop-over]::after,
+button.empty-slot.is-target:hover::after,
+button.empty-slot.is-target[data-drop-over]::after,
+button.local-slot-empty.is-target:hover::after,
+.local-slot.is-target[data-drop-over] button.local-slot-empty::after,
+.empties-tray.is-target:hover .tray-top::after,
+.empties-tray.is-target[data-drop-over] .tray-top::after {
+  background:
+    conic-gradient(
+      from var(--corona-angle),
+      rgb(244 189 63 / 0%) 0deg,
+      rgb(255 244 214 / 100%) 58deg,
+      rgb(244 189 63 / 0%) 132deg,
+      rgb(244 189 63 / 0%) 196deg,
+      rgb(255 244 214 / 90%) 254deg,
+      rgb(244 189 63 / 0%) 328deg
+    ),
+    rgb(244 189 63 / 52%);
+  opacity: 1;
+  animation: aura-corona 9s linear infinite;
+}
+
+/* The tray's top is the box the corona sits around, whether a card lies on it or nothing does. */
+.empties-tray.is-target .tray-top {
+  position: relative;
+}
+
+.empties-tray.is-target .tray-top::after {
+  inset: -6px;
+  border-radius: 10px;
 }
 

@@ -37,6 +37,12 @@ public partial class Match
             );
             _reducedMotion = await _presentationModule.InvokeAsync<bool>("prefersReducedMotion");
 
+            // The drag is the browser's, and it reports back to this page: what it picks up, and
+            // where it puts it down.
+            _dragModule = await Js.InvokeAsync<IJSObjectReference>("import", "./matchDrag.js");
+            _dragReference = DotNetObjectReference.Create(this);
+            await _dragModule.InvokeVoidAsync("armDrags", _dragReference);
+
             // The browser game's computer boots its own runtime now, in the background, so the
             // first decision of a battle is not also the first wait for it. The server game's
             // computer is the server's, and needs nothing here.
@@ -173,7 +179,11 @@ public partial class Match
         _selectedDeckId = ReadyDecks().FirstOrDefault()?.Id;
     }
 
-    private bool Busy() => _working || _animating;
+    // A move in flight, a presentation playing, or the computer deciding: the turn's own controls
+    // wait on all three. The computer decides off this thread, so the table is live while it
+    // does, and a move of the player's sent meanwhile - both sides choose their opening Blokemon
+    // at once - would arrive against a battle the computer's decision has already changed.
+    private bool Busy() => _working || _animating || _thinking;
 
     public async ValueTask DisposeAsync()
     {
@@ -182,16 +192,37 @@ public partial class Match
         _skipSignal = null;
         // The computer's runtime belongs to the battle on screen; leaving the table stops it.
         await Computer.Stop();
-        if (_presentationModule is not null)
+        await Release(_presentationModule);
+        if (_dragModule is not null)
         {
             try
             {
-                await _presentationModule.DisposeAsync();
+                await _dragModule.InvokeVoidAsync("disarmDrags");
             }
             catch (JSDisconnectedException)
             {
-                // A disconnected circuit has already released the browser-side module.
+                // A disconnected circuit has already let go of the page.
             }
+        }
+
+        await Release(_dragModule);
+        _dragReference?.Dispose();
+    }
+
+    private static async Task Release(IJSObjectReference? module)
+    {
+        if (module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await module.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // A disconnected circuit has already released the browser-side module.
         }
     }
 }

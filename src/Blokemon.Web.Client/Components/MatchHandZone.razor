@@ -14,12 +14,18 @@
     @for (var handIndex = 0; handIndex < Hand.Length; handIndex++)
     {
         var card = Hand[handIndex];
-        <CardPress Card="card.Card"
+        @* Keyed so a card keeps its own element while the hand changes around it: a card carried
+           out of the hand by a drag is held where it was dropped until the table takes it, and
+           the element holding it there must not be handed to the next card along. *@
+        <CardPress @key="card.Id"
+                   Card="card.Card"
                    CardInstanceId="@card.Id"
                    Class="@MatchCueMarking.HandCard(card.Id, Auras, Cue, Overlay)"
                    Style="@FanStyle(handIndex, Hand.Length)"
                    AriaLabel="@HandCardLabel(card, Auras)"
                    AriaPressed="@Auras.Pressed(card.Id)"
+                   Draggable="@Auras.IsDraggable(card.Id)"
+                   DropTarget="@(Auras.IsTarget(card.Id) ? MatchDropPlaces.Card : null)"
                    Tapped="CardTapped">
             <span class="hand-card-visual">
                 <CardFace Card="card.Card" Size="CardFaceSize.Hand" ShowTitle="false" />
@@ -80,7 +86,7 @@
         $"--hand-count: {Math.Max(1, count).ToString(CultureInfo.InvariantCulture)}";
 
     private static string HandCardLabel(MatchCardInstanceView card, MatchAuraView auras) =>
-        auras.IsAura(card.Id) || auras.IsSelected(card.Id)
+        auras.IsAura(card.Id) || auras.IsSelected(card.Id) || auras.IsTarget(card.Id)
             ? $"Choose {card.Card.Name} in your hand"
             : $"{card.Card.Name} in your hand";
 }

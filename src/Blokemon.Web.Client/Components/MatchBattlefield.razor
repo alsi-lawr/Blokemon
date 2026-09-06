@@ -2,7 +2,7 @@
     Both halves keep a place for a Kit in play at all times, so nothing on the table moves
     when one is played or leaves.
 *@
-<div class="battlefield @(Auras.Cards.Length > 0 || Auras.Bench || Auras.Deck ? "is-choosing" : null)" @onclick="BackgroundTapped">
+<div class="battlefield @(Auras.Any ? "is-choosing" : null)" @onclick="BackgroundTapped">
     <MatchSide Side="Frame.Opponent"
                Opponent="true"
                SelectedCardInstanceId="@SelectedCardInstanceId"
@@ -10,9 +10,7 @@
                Overlay="Overlay"
                Riffling="@MatchCueState.ActingOn(Cue, MatchAnimationKindView.Shuffle, opponent: true)"
                Drawing="@MatchCueState.ActingOn(Cue, MatchAnimationKindView.Draw, opponent: true)"
-               AuraCardInstanceIds="Auras.Cards"
-               AuraSelectedCardInstanceIds="Auras.Selected"
-               AuraCounters="Auras.Counters"
+               Auras="Auras"
                CardTapped="CardTapped"
                EmptiesOpened="EmptiesOpened" />
     @{
@@ -42,14 +40,13 @@
                Cue="Cue"
                Overlay="Overlay"
                Riffling="@MatchCueState.ActingOn(Cue, MatchAnimationKindView.Shuffle, opponent: false)"
-               AuraCardInstanceIds="Auras.Cards"
-               AuraSelectedCardInstanceIds="Auras.Selected"
-               AuraCounters="Auras.Counters"
-               BenchDestination="Auras.Bench"
-               DeckDraw="Auras.Deck"
+               Auras="Auras"
                CardTapped="CardTapped"
                EmptiesOpened="EmptiesOpened"
                BenchTapped="BenchTapped"
+               ActiveSlotTapped="ActiveSlotTapped"
+               InPlayTapped="InPlayTapped"
+               EmptiesTapped="EmptiesTapped"
                DeckTapped="DeckTapped" />
 </div>
 
@@ -84,6 +81,17 @@
 
     [Parameter]
     public EventCallback BenchTapped { get; set; }
+
+    // The other places a picked-up card can be put down: the empty Active position, the In-play
+    // place and the player's own Empties Tray.
+    [Parameter]
+    public EventCallback ActiveSlotTapped { get; set; }
+
+    [Parameter]
+    public EventCallback InPlayTapped { get; set; }
+
+    [Parameter]
+    public EventCallback EmptiesTapped { get; set; }
 
     [Parameter]
     public EventCallback DeckTapped { get; set; }
