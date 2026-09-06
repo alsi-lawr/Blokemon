@@ -212,8 +212,8 @@ public sealed class MatchCardReadingTests
                 "Oche",
                 0,
                 60,
-                carrying ? [Beer, Beer] : [],
-                carrying ? [Spanner] : [],
+                carrying ? [new($"{standing}-beer-0", Beer), new($"{standing}-beer-1", Beer)] : [],
+                carrying ? [new($"{standing}-tool", Spanner)] : [],
                 [],
                 []
             ),

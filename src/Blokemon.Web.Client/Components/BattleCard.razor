@@ -14,7 +14,7 @@
         <span class="attached-energy" style="--energy-fan-count: @_energy.Count">
             @foreach (var attached in _energy)
             {
-                <AttachedCard Attachment="attached" />
+                <AttachedCard Attachment="attached" Role="@MatchCueState.HeldCard(Cue, Overlay, attached.Id)" />
             }
         </span>
     }
@@ -23,7 +23,7 @@
         <span class="attached-tools">
             @foreach (var attached in _tools)
             {
-                <AttachedCard Attachment="attached" />
+                <AttachedCard Attachment="attached" Role="@MatchCueState.HeldCard(Cue, Overlay, attached.Id)" />
             }
         </span>
     }
@@ -75,6 +75,12 @@
     // than by the card, because every one of those facts outlives the cue that made it true.
     [Parameter]
     public MatchCueRole Role { get; set; }
+
+    [Parameter]
+    public MatchEventCueView? Cue { get; set; }
+
+    [Parameter]
+    public MatchPresentationOverlay Overlay { get; set; } = MatchPresentationOverlay.Empty;
 
     private int Shown => Damage ?? Instance.Damage;
 

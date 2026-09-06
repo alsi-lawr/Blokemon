@@ -5,7 +5,7 @@ namespace Blokemon.Web.Client.Components;
 // One attached card as the table draws it. Depth is how far back in its fan the face sits: the card
 // attached first is nearest its host and lies over the rest, and each card attached after it sits
 // one step further out and one step further behind.
-public sealed record MatchAttachedCardView(CardView Card, int Depth);
+public sealed record MatchAttachedCardView(string Id, CardView Card, int Depth);
 
 // The cards hanging off a card in play, arranged into the fans the table draws.
 public static class MatchAttachedCards
@@ -30,6 +30,6 @@ public static class MatchAttachedCards
     public static IReadOnlyList<MatchAttachedCardView> All(MatchCardInstanceView host) =>
         [.. Energy(host), .. Tools(host)];
 
-    private static MatchAttachedCardView[] Fan(CardView[] attached) =>
-        [.. attached.Select((card, depth) => new MatchAttachedCardView(card, depth))];
+    private static MatchAttachedCardView[] Fan(MatchAttachedCardInstanceView[] attached) =>
+        [.. attached.Select((card, depth) => new MatchAttachedCardView(card.Id, card.Card, depth))];
 }

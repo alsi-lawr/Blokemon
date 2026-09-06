@@ -94,8 +94,19 @@ public partial class Match
             ?? (_view?.Match is null ? null : Face(_view.Match.Frame, cardInstanceId));
     }
 
-    private static CardView? Face(MatchFrameView frame, string cardInstanceId) =>
-        AllVisibleCards(frame).FirstOrDefault(card => card.Id == cardInstanceId)?.Card;
+    private static CardView? Face(MatchFrameView frame, string cardInstanceId)
+    {
+        var cards = AllVisibleCards(frame).ToArray();
+        return cards.FirstOrDefault(card => card.Id == cardInstanceId)?.Card
+            ?? cards
+                .SelectMany(card => card.AttachedEnergy.Concat(card.AttachedTools))
+                .FirstOrDefault(card => card.Id == cardInstanceId)
+                ?.Card
+            ?? frame
+                .Player.EmptiesTray.Concat(frame.Opponent.EmptiesTray)
+                .FirstOrDefault(card => card.Id == cardInstanceId)
+                ?.Card;
+    }
 
     // A blow is thrown by the cue that declares it and lands on the cue that damages, and the
     // engine is free to put others between the two - tossing a beer mat to find out whether the
@@ -134,8 +145,7 @@ public partial class Match
 
     private string? AnimationClass() => MatchCueMarking.Table(_activeCue);
 
-    // A card only travels when there is somewhere on the table for it to travel to: one that
-    // does its work and is discarded keeps the presentation it has always had.
+    // A journey needs a visible destination, including the discard pile for a spent attachment.
     private bool CardTravels() => _presentationCard is not null && _overlay.Landing is not null;
 
     // How long the stylesheet takes to carry a card out of a hand, across the table and into the

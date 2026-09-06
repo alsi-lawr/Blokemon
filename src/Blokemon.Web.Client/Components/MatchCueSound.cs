@@ -50,6 +50,7 @@ public static class MatchCueSound
             MatchAnimationKindView.Victory => new("victory"),
             MatchAnimationKindView.Reveal => new("reveal"),
             MatchAnimationKindView.Other => null,
+            MatchAnimationKindView.Discard => new("play"),
         };
 #pragma warning restore CS8524
 }

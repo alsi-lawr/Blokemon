@@ -247,6 +247,19 @@ public sealed class MatchCueStateTests
     private static CueContract Contract(MatchAnimationKindView kind) =>
         kind switch
         {
+            MatchAnimationKindView.Discard => new(
+                "A discarded attachment leaves only its own host and travels to its owner's pile.",
+                new()
+                {
+                    ["you-active-energy"] =
+                        MatchCueRole.Source | MatchCueRole.Target | MatchCueRole.Gone,
+                },
+                new()
+                {
+                    ["cpu-active-energy"] =
+                        MatchCueRole.Source | MatchCueRole.Target | MatchCueRole.Gone,
+                }
+            ),
             MatchAnimationKindView.Setup => new(
                 "The Blokemon chosen to open the game is picked out of the hand and carried to the Oche, so it leaves the hand exactly as a card played does. Theirs comes out of a hand nothing on the table draws.",
                 new() { ["hand-a"] = MatchCueRole.Source | MatchCueRole.Gone },

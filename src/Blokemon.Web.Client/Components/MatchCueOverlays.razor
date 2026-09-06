@@ -28,7 +28,7 @@
                 </span>
             </CardPress>
         }
-        <strong>@PresentationCard!.Name</strong>
+        <strong>@(Cue?.Kind == MatchAnimationKindView.Discard ? PublicText(Cue.Label) : PresentationCard!.Name)</strong>
     </div>
 }
 else if (Cue?.Kind == MatchAnimationKindView.Turn)

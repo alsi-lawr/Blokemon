@@ -153,6 +153,7 @@
   rule stops applying at the next cue, which put the card back in the hand it had already left.
 */
 .battle-card-shell.is-cue-gone,
+.attached-card.is-cue-gone,
 .hand-card.is-cue-gone .hand-card-visual {
   opacity: 0;
   pointer-events: none;

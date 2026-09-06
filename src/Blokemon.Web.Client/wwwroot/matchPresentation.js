@@ -155,6 +155,7 @@ export function positionDrawCards(table) {
 // nobody can see - the strip that hand is drawn as.
 function playOrigin(table) {
   return (
+    table.querySelector(".attached-card.is-cue-source") ??
     table.querySelector(".hand-card.is-cue-source .hand-card-visual") ??
     table.querySelector(".battle-card-shell.is-cue-source") ??
     table.querySelector(
@@ -170,6 +171,11 @@ function playOrigin(table) {
 // taken from the edge the page marked; the size comes from a card already on the table, which is
 // the only honest measure of how big this one is about to be.
 function playLanding(table, landing) {
+  if (landing.classList.contains("empties-tray")) {
+    const pile = centre(landing.querySelector(".tray-top"));
+    return { x: pile.x, y: pile.y, width: pile.rect.width };
+  }
+
   const rect = landing.getBoundingClientRect();
   const compact = landing.classList.contains("is-landing-centre");
   const sample =

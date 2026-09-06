@@ -27,7 +27,7 @@
             <span>@Selected.AttachedEnergy.Length Energy</span>
             @foreach (var trainer in Selected.AttachedTools)
             {
-                <span>Trainer: @trainer.Name</span>
+                <span>Trainer: @trainer.Card.Name</span>
             }
             <span>@Shown damage</span>
             @foreach (var condition in Selected.Conditions)

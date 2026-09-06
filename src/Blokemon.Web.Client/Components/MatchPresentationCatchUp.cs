@@ -36,6 +36,7 @@ internal static class MatchPresentationCatchUp
     )
     {
         var table = standing ? settled : caught.Table(before, settled);
+        table = caught.Discards(table, before, settled);
         var held = Without(settled, undealt);
         return table with
         {

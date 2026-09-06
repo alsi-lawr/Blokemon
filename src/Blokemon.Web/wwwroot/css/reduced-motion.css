@@ -125,6 +125,7 @@
   }
 
   .battle-card-shell.is-cue-gone,
+  .attached-card.is-cue-gone,
   .hand-card.is-cue-gone .hand-card-visual {
     opacity: 0 !important;
   }

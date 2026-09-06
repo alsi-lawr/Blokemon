@@ -11,7 +11,7 @@
 *@
 @implements IDisposable
 
-<span class="attached-card @(_hold.Pressing ? "is-holding" : null)"
+<span class="attached-card @(_hold.Pressing ? "is-holding" : null) @MatchCueMarking.Classes(Role)"
       style="--fan-depth: @Attachment.Depth"
       @ref="_face"
       @onpointerdown="Down"
@@ -36,6 +36,9 @@
 
     [Parameter, EditorRequired]
     public required MatchAttachedCardView Attachment { get; set; }
+
+    [Parameter]
+    public MatchCueRole Role { get; set; }
 
     public override Task SetParametersAsync(ParameterView parameters)
     {

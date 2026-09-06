@@ -22,7 +22,9 @@ public sealed class MatchAttachedCardTests
 
         counted.ShouldBe(host.AttachedEnergy.Length);
         fan.Count.ShouldBe(counted);
-        fan.OrderBy(face => face.Depth).Select(face => face.Card).ShouldBe(host.AttachedEnergy);
+        fan.OrderBy(face => face.Depth)
+            .Select(face => new MatchAttachedCardInstanceView(face.Id, face.Card))
+            .ShouldBe(host.AttachedEnergy);
     }
 
     private static MatchCardInstanceView Bloke(string id, string[] energy, string[] tools) =>
@@ -33,8 +35,17 @@ public sealed class MatchAttachedCardTests
             "Field",
             0,
             60,
-            [.. energy.Select(Card)],
-            [.. tools.Select(Card)],
+            [
+                .. energy.Select(
+                    (card, index) =>
+                        new MatchAttachedCardInstanceView($"energy-{index}", Card(card))
+                ),
+            ],
+            [
+                .. tools.Select(
+                    (card, index) => new MatchAttachedCardInstanceView($"tool-{index}", Card(card))
+                ),
+            ],
             [],
             []
         );

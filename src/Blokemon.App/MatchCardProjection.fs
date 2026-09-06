@@ -66,12 +66,20 @@ module internal MatchCardProjection =
             card.Attachments
             |> Seq.map state.Card
             |> Seq.filter (fun attachment -> attachment.Kind = CardKind.Vim)
-            |> Seq.map (fun attachment -> catalogue.Card attachment.MechanicalId.Value)
+            |> Seq.map (fun attachment ->
+                MatchAttachedCardInstanceView(
+                    attachment.Id.Value,
+                    catalogue.Card attachment.MechanicalId.Value
+                ))
             |> Seq.toArray,
             card.Attachments
             |> Seq.map state.Card
             |> Seq.filter (fun attachment -> attachment.Kind = CardKind.Kit)
-            |> Seq.map (fun attachment -> catalogue.Card attachment.MechanicalId.Value)
+            |> Seq.map (fun attachment ->
+                MatchAttachedCardInstanceView(
+                    attachment.Id.Value,
+                    catalogue.Card attachment.MechanicalId.Value
+                ))
             |> Seq.toArray,
             card.UnderlyingCards
             |> Seq.map state.Card
@@ -191,6 +199,8 @@ module internal MatchCardProjection =
                 | _ -> $"{actor}: {actionLabel state command}."
             | ValueNone -> raise (UnreachableException())
         | MatchEventKind.CardsShuffled -> $"{actor} shuffled the Deck."
+        | MatchEventKind.AttachmentDiscarded ->
+            $"{cardName state matchEvent.SourceCard.Value} was discarded."
         | MatchEventKind.CardsDrawn ->
             $"""{actor} drew {matchEvent.Amount} {if matchEvent.Amount = 1 then "card" else "cards"}."""
         // The rules' own reveal rather than a card's, which today means exactly one thing: the

@@ -16,9 +16,16 @@ namespace Blokemon.Web.Client.Components;
 // never caught up: it goes on being drawn where it was until the cue that takes it away plays, and
 // the concealment that cue starts is what keeps it off the table from then on. Catching it up
 // would take it off the table before anything had been seen to happen to it.
-internal sealed class MatchPresentationCaught
+internal sealed class MatchPresentationCaught(IEnumerable<MatchEventCueView> cues)
 {
     private readonly HashSet<string> _cards = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _discarded = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _discarding = cues.Where(cue =>
+            cue.Kind == MatchAnimationKindView.Discard
+        )
+        .Select(cue => cue.SourceCardInstanceId)
+        .OfType<string>()
+        .ToHashSet(StringComparer.Ordinal);
 
     // Whose turn it is, and the phase, change hands at the cue that says so.
     public bool Turned { get; private set; }
@@ -31,6 +38,12 @@ internal sealed class MatchPresentationCaught
     {
         switch (cue.Kind)
         {
+            case MatchAnimationKindView.Discard:
+                if (cue.SourceCardInstanceId is { } discarded)
+                {
+                    _discarded.Add(discarded);
+                }
+                break;
             case MatchAnimationKindView.Attack:
                 Add(cue.SourceCardInstanceId);
                 break;
@@ -93,6 +106,71 @@ internal sealed class MatchPresentationCaught
             InPlayKits = kits,
         };
     }
+
+    public MatchFrameView Discards(
+        MatchFrameView shown,
+        MatchFrameView before,
+        MatchFrameView settled
+    ) =>
+        _discarding.Count == 0
+            ? shown
+            : shown with
+            {
+                Player = Discards(shown.Player, before.Player, settled.Player),
+                Opponent = Discards(shown.Opponent, before.Opponent, settled.Opponent),
+            };
+
+    private MatchSideView Discards(
+        MatchSideView shown,
+        MatchSideView before,
+        MatchSideView settled
+    ) =>
+        shown with
+        {
+            Active = shown.Active is null ? null : Attachments(shown.Active, before),
+            Bench = [.. shown.Bench.Select(card => Attachments(card, before))],
+            InPlayKits = [.. shown.InPlayKits.Select(card => Attachments(card, before))],
+            EmptiesTray =
+            [
+                .. shown.EmptiesTray.Where(card =>
+                    !_discarding.Contains(card.Id) || _discarded.Contains(card.Id)
+                ),
+                .. settled.EmptiesTray.Where(card =>
+                    _discarded.Contains(card.Id)
+                    && !shown.EmptiesTray.Any(existing => existing.Id == card.Id)
+                ),
+            ],
+        };
+
+    private MatchCardInstanceView Attachments(MatchCardInstanceView shown, MatchSideView before)
+    {
+        if (_discarding.Count == 0)
+        {
+            return shown;
+        }
+
+        var original = Found(before, shown.Id);
+        return shown with
+        {
+            AttachedEnergy = Attachments(shown.AttachedEnergy, original?.AttachedEnergy ?? []),
+            AttachedTools = Attachments(shown.AttachedTools, original?.AttachedTools ?? []),
+        };
+    }
+
+    private MatchAttachedCardInstanceView[] Attachments(
+        MatchAttachedCardInstanceView[] shown,
+        MatchAttachedCardInstanceView[] before
+    ) =>
+        [
+            // Catching up the attacker must not spend attachments whose discard cues have not played.
+            .. before
+                .Where(card =>
+                    _discarding.Contains(card.Id) || shown.Any(current => current.Id == card.Id)
+                )
+                .Concat(shown)
+                .DistinctBy(card => card.Id)
+                .Where(card => !_discarded.Contains(card.Id)),
+        ];
 
     private MatchCardInstanceView? Placed(
         MatchCardInstanceView? before,

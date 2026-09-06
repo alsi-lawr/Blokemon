@@ -144,7 +144,8 @@ public static class MatchCueState
         && cue.Kind
             is MatchAnimationKindView.Play
                 or MatchAnimationKindView.Evolve
-                or MatchAnimationKindView.Setup;
+                or MatchAnimationKindView.Setup
+                or MatchAnimationKindView.Discard;
 
     // What the whole table is doing, said as the thing happening and the half of it doing so.
     public static MatchTableCue? Table(MatchEventCueView? cue) =>
@@ -189,6 +190,7 @@ public static class MatchCueState
             MatchLandingKind.Active => MatchLandingPlacement.Top,
             MatchLandingKind.Bench => MatchLandingPlacement.Centre,
             MatchLandingKind.InPlay => MatchLandingPlacement.Centre,
+            MatchLandingKind.Discard => MatchLandingPlacement.Centre,
         };
 #pragma warning restore CS8524
     }

@@ -117,6 +117,7 @@ module internal MatchLabels =
         | MatchEventKind.CardsShuffled -> Nullable MatchAnimationKindView.Shuffle
         | MatchEventKind.CardsDrawn -> Nullable MatchAnimationKindView.Draw
         | MatchEventKind.CardsRevealed -> Nullable MatchAnimationKindView.Reveal
+        | MatchEventKind.AttachmentDiscarded -> Nullable MatchAnimationKindView.Discard
         | MatchEventKind.BeerMatTossed -> Nullable MatchAnimationKindView.Coin
         | MatchEventKind.CommandApplied ->
             match matchEvent.Command with

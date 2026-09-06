@@ -50,7 +50,7 @@
         @if (EmptiesTarget)
         {
             <button type="button"
-                    class="empties-tray is-empty is-target"
+                    class="empties-tray is-empty is-target @Landing(MatchLandingKind.Discard)"
                     data-drop="@MatchDropPlaces.Empties"
                     aria-label="Chuck into your Empties Tray"
                     @onclick:stopPropagation="true"
@@ -61,7 +61,7 @@
         }
         else
         {
-            <div class="empties-tray is-empty" aria-label="@TrayLabel()">
+            <div class="empties-tray is-empty @Landing(MatchLandingKind.Discard)" aria-label="@TrayLabel()">
                 <div class="tray-top is-nothing" aria-hidden="true"></div>
                 <b>Chucked 0</b>
             </div>
@@ -74,7 +74,7 @@
         var chucked = Chucked()!;
         <CardPress Card="chucked.Card"
                    CardInstanceId="@chucked.Id"
-                   Class="@(EmptiesTarget ? "empties-tray is-target" : "empties-tray")"
+                   Class="@($"empties-tray {(EmptiesTarget ? "is-target" : null)} {Landing(MatchLandingKind.Discard)}")"
                    AriaLabel="@(EmptiesTarget ? "Chuck into your Empties Tray" : TrayLabel())"
                    DropTarget="@(EmptiesTarget ? MatchDropPlaces.Empties : null)"
                    Tapped="@(_ => EmptiesTarget ? EmptiesTapped.InvokeAsync() : EmptiesOpened.InvokeAsync(Opponent))">
@@ -102,6 +102,8 @@
                        DropTarget="@DropTarget(card.Id)"
                        Tapped="CardTapped">
                 <BattleCard Instance="card"
+                            Cue="Cue"
+                            Overlay="Overlay"
                             Damage="@Overlay.Damage(card)"
                             Compact="true"
                             ShowVitals="false"
@@ -160,6 +162,8 @@
                            DropTarget="@DropTarget(Side.Active.Id)"
                            Tapped="CardTapped">
                     <BattleCard Instance="Side.Active"
+                                Cue="Cue"
+                                Overlay="Overlay"
                                 Damage="@Overlay.Damage(Side.Active)"
                                 Selected="@(Side.Active.Id == SelectedCardInstanceId)"
                                 Role="@MatchCueState.FieldCard(Cue, Overlay, Side.Active.Id)" />
@@ -184,6 +188,8 @@
                            DropTarget="@DropTarget(card.Id)"
                            Tapped="CardTapped">
                     <BattleCard Instance="card"
+                                Cue="Cue"
+                                Overlay="Overlay"
                                 Damage="@Overlay.Damage(card)"
                                 Compact="true"
                                 Selected="@(card.Id == SelectedCardInstanceId)"
@@ -366,7 +372,7 @@
             carried.Add($"{card.AttachedEnergy.Length} Energy");
         }
 
-        carried.AddRange(card.AttachedTools.Select(static tool => tool.Name));
+        carried.AddRange(card.AttachedTools.Select(static tool => tool.Card.Name));
         return carried.Count == 0 ? string.Empty : $", carrying {string.Join(", ", carried)}";
     }
 }

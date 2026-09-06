@@ -84,6 +84,9 @@ module internal ApplicationViewIsolation =
         | null -> null
         | current -> PackReceiptView(current.Id, current.Sequence, current.Cards |> Array.map card)
 
+    let private attachment (value: MatchAttachedCardInstanceView) =
+        MatchAttachedCardInstanceView(value.Id, card value.Card)
+
     let private matchCard (value: MatchCardInstanceView) =
         MatchCardInstanceView(
             value.Id,
@@ -92,8 +95,8 @@ module internal ApplicationViewIsolation =
             value.Zone,
             value.Damage,
             value.HitPoints,
-            value.AttachedEnergy |> Array.map card,
-            value.AttachedTools |> Array.map card,
+            value.AttachedEnergy |> Array.map attachment,
+            value.AttachedTools |> Array.map attachment,
             value.UnderlyingCards |> Array.map card,
             strings value.Conditions
         )

@@ -228,7 +228,10 @@ type internal MatchBuilder(state: MatchState, catalog: AuthorityCatalog) =
 
         events.Add(
             PendingMatchEvent.forCards
-                MatchEventKind.CardMoved
+                (if card.Zone = CardZone.Attached && zone = CardZone.EmptiesTray then
+                     MatchEventKind.AttachmentDiscarded
+                 else
+                     MatchEventKind.CardMoved)
                 card.Owner
                 id
                 (ImmutableArray.Create id)

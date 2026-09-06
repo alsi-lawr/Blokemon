@@ -93,6 +93,7 @@ type MatchEventKind =
     | MatchWon = 22
     | StateCommitted = 23
     | OcheSwapped = 24
+    | AttachmentDiscarded = 25
 
 type DeckIssueCode =
     | InvalidMatchId = 0

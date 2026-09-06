@@ -48,39 +48,70 @@ public sealed class MatchPresentationTimelineTests
     }
 
     [Test]
-    public void TheEnergyBurnedToPayForABlowIsGoneAsTheBlowLands()
+    [Arguments(true)]
+    [Arguments(false)]
+    public void BurnedEnergyTravelsOneCardAtATimeBeforeTheBlowLands(bool local)
     {
-        // An attack that discards an Energy as its cost has no cue for the discard: the command
-        // settles on a table where the Energy is gone, and the cues say only that the blow was
-        // thrown, that it landed, that the turn changed and that the opponent drew. The card that
-        // threw the blow is drawn as the settled table has it from the beat after its own cue, so
-        // the Energy is gone as the blow lands - not once the opponent's turn has begun.
+        var before = Fuelled(3);
+        var spent = before.AttachedEnergy.Take(2).Select(card => card.Id).ToArray();
+        var after = before with { AttachedEnergy = [before.AttachedEnergy[2]] };
+
+        MatchFrameView Viewed(MatchFrameView frame) =>
+            local ? frame : frame with { Player = frame.Opponent, Opponent = frame.Player };
+
         var beats = MatchPresentationTimeline.Beats(
             Presentation(
-                Frame(defenderDamage: 30, playerHasTurn: false) with
-                {
-                    Player = Side("You", false, active: Fuelled(1)),
-                },
+                Viewed(
+                    Frame(defenderDamage: 30, playerHasTurn: false) with
+                    {
+                        Player = Side("You", false, active: after) with
+                        {
+                            EmptiesTray = [.. spent.Select(id => Instance(id, 0))],
+                        },
+                    }
+                ),
                 Cue(1, MatchAnimationKindView.Attack, amount: 30, source: Attacker),
-                Cue(2, MatchAnimationKindView.Damage, amount: 30, source: Attacker),
-                Cue(3, MatchAnimationKindView.Turn, targets: []),
-                Cue(4, MatchAnimationKindView.Draw, targets: [])
+                Cue(2, MatchAnimationKindView.Discard, source: spent[0], targets: [spent[0]]) with
+                {
+                    ActorIsLocalPlayer = local,
+                },
+                Cue(3, MatchAnimationKindView.Discard, source: spent[1], targets: [spent[1]]) with
+                {
+                    ActorIsLocalPlayer = local,
+                },
+                Cue(4, MatchAnimationKindView.Damage, amount: 30, source: Attacker),
+                Cue(5, MatchAnimationKindView.Turn, targets: []),
+                Cue(6, MatchAnimationKindView.Draw, targets: [])
             ),
-            Frame(defenderDamage: 0, playerHasTurn: true) with
-            {
-                Player = Side("You", true, active: Fuelled(2)),
-            }
+            Viewed(
+                Frame(defenderDamage: 0, playerHasTurn: true) with
+                {
+                    Player = Side("You", true, active: before),
+                }
+            )
         );
 
+        var sides = beats.Select(beat => local ? beat.Frame.Player : beat.Frame.Opponent).ToArray();
+        sides.Select(side => side.Active!.AttachedEnergy.Length).ShouldBe([3, 3, 2, 1, 1, 1, 1]);
+        sides.Select(side => side.EmptiesTray.Length).ShouldBe([0, 0, 1, 2, 2, 2, 2]);
+
+        for (var index = 0; index < spent.Length; index++)
+        {
+            var departure = beats[index + 1];
+            departure.Overlay.CarriedCardInstanceId.ShouldBe(spent[index]);
+            departure.Overlay.Landing.ShouldBe(
+                new MatchLandingSlot(!local, MatchLandingKind.Discard, 0)
+            );
+            departure.Overlay.IsGone(spent[index]).ShouldBeTrue();
+            departure.Overlay.IsGone(before.AttachedEnergy[2].Id).ShouldBeFalse();
+        }
+        beats[1].Overlay.IsGone(spent[1]).ShouldBeFalse();
         beats
-            .Select(beat => beat.Frame.Player.Active!.AttachedEnergy.Length)
-            .ShouldBe([2, 1, 1, 1, 1]);
-        // The blow still lands on its own cue, and the turn still changes on its own.
-        beats.Select(beat => Shown(beat, Defender)).ShouldBe([0, 30, 30, 30, 30]);
-        beats.Select(beat => beat.Frame.Player.HasTurn).ShouldBe([true, true, true, false, false]);
-        beats
-            .Select(beat => beat.Frame.Opponent.HasTurn)
-            .ShouldBe([false, false, false, true, true]);
+            .Skip(3)
+            .Select(beat => beat.Overlay.CarriedCardInstanceId)
+            .ShouldAllBe(carried => carried == null);
+        beats.Select(beat => Shown(beat, Defender)).ShouldBe([0, 0, 0, 30, 30, 30, 30]);
+        sides.Select(side => side.HasTurn).ShouldBe([true, true, true, true, true, false, false]);
     }
 
     [Test]
@@ -113,7 +144,18 @@ public sealed class MatchPresentationTimelineTests
     private static MatchCardInstanceView Fuelled(int energy, string cardInstanceId = Attacker)
     {
         var instance = Instance(cardInstanceId, 0);
-        return instance with { AttachedEnergy = [.. Enumerable.Repeat(instance.Card, energy)] };
+        return instance with
+        {
+            AttachedEnergy =
+            [
+                .. Enumerable
+                    .Range(0, energy)
+                    .Select(index => new MatchAttachedCardInstanceView(
+                        $"{cardInstanceId}-energy-{index}",
+                        instance.Card
+                    )),
+            ],
+        };
     }
 
     [Test]

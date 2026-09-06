@@ -72,11 +72,33 @@ internal static class MatchPresentationJourneys
         }
     }
 
-    // Where the card the presentation has picked up is standing once the command has been applied.
-    // A card that ends up anywhere but the table - a Kit that does its work and is discarded - has
-    // no landing, and its cue keeps the presentation it has always had.
-    internal static MatchLandingSlot? Landing(string? carried, MatchFrameView frame) =>
-        carried is null ? null : Placed(frame, carried);
+    // A discarded attachment lands in its owner's public pile; a played card lands on the field.
+    internal static MatchLandingSlot? Landing(
+        MatchEventCueView cue,
+        string? carried,
+        MatchFrameView frame
+    )
+    {
+        if (carried is null)
+        {
+            return null;
+        }
+
+        if (cue.Kind == MatchAnimationKindView.Discard)
+        {
+            if (frame.Player.EmptiesTray.Any(card => card.Id == carried))
+            {
+                return new(false, MatchLandingKind.Discard, 0);
+            }
+
+            if (frame.Opponent.EmptiesTray.Any(card => card.Id == carried))
+            {
+                return new(true, MatchLandingKind.Discard, 0);
+            }
+        }
+
+        return Placed(frame, carried);
+    }
 
     // Where on the table a card is standing, if it is standing on it at all. A hand is not a place
     // on the table: a card being held is somewhere the table cannot point at, and the opponent's

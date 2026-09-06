@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="MatchScenario.fs" />
+    <Compile Include="DiscardPresentationTests.fs" />
     <Compile Include="VintageSharedRuleTests.fs" />
     <Compile Include="VintageCrossCuttingTests.fs" />
     <Compile Include="VintagePokemonPowerTests.fs" />

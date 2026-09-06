@@ -128,6 +128,8 @@ public enum MatchChoiceKindView
 
 public sealed record MatchChooserView(string Id, string Name, bool IsLocalPlayer);
 
+public sealed record MatchAttachedCardInstanceView(string Id, CardView Card);
+
 public sealed record MatchCardInstanceView(
     string Id,
     CardView Card,
@@ -135,8 +137,8 @@ public sealed record MatchCardInstanceView(
     string Zone,
     int Damage,
     int HitPoints,
-    CardView[] AttachedEnergy,
-    CardView[] AttachedTools,
+    MatchAttachedCardInstanceView[] AttachedEnergy,
+    MatchAttachedCardInstanceView[] AttachedTools,
     CardView[] UnderlyingCards,
     string[] Conditions
 );
@@ -267,6 +269,7 @@ public enum MatchAnimationKindView
     Victory,
     Reveal,
     Other,
+    Discard,
 }
 
 public sealed record MatchEventCueView(

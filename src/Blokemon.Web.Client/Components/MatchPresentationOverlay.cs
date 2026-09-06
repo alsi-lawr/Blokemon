@@ -10,6 +10,7 @@ public enum MatchLandingKind
     Active,
     Bench,
     InPlay,
+    Discard,
 }
 
 public sealed record MatchLandingSlot(bool Opponent, MatchLandingKind Kind, int BenchIndex);

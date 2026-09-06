@@ -69,7 +69,7 @@ public static class MatchPresentationTimeline
             // What the cues so far have made true, card by card: a card a cue has named is drawn
             // as the settled table has it from the beat after that cue, so the Energy burned to
             // pay for a blow is gone as the blow lands rather than once the turn has changed.
-            var caught = new MatchPresentationCaught();
+            var caught = new MatchPresentationCaught(step.Events);
             for (var index = 0; index < step.Events.Length; index++)
             {
                 var cue = step.Events[index];
@@ -168,7 +168,7 @@ public static class MatchPresentationTimeline
                         cue,
                         overlay.Carrying(
                             carried,
-                            MatchPresentationJourneys.Landing(carried, step.Frame)
+                            MatchPresentationJourneys.Landing(cue, carried, step.Frame)
                         ),
                         returned[index]
                     )

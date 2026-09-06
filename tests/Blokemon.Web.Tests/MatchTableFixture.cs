@@ -45,7 +45,20 @@ internal static class MatchTableFixture
     {
         var doing = local ? You : Them;
         var (after, events) = Step(kind, doing);
-        var beats = MatchPresentationTimeline.Beats(new([new(after, events)]), Standing);
+        var before = Standing;
+        if (kind == MatchAnimationKindView.Discard)
+        {
+            var side = local ? before.Player : before.Opponent;
+            side = side with
+            {
+                Active = side.Active! with
+                {
+                    AttachedEnergy = [new($"{doing.Active}-energy", Face)],
+                },
+            };
+            before = local ? before with { Player = side } : before with { Opponent = side };
+        }
+        var beats = MatchPresentationTimeline.Beats(new([new(after, events)]), before);
         return beats.Last(beat => beat.Cue?.Kind == kind);
     }
 
@@ -102,6 +115,14 @@ internal static class MatchTableFixture
 
             foreach (var standing in OnTheTable(side))
             {
+                foreach (var attached in standing.AttachedEnergy.Concat(standing.AttachedTools))
+                {
+                    Record(
+                        roles,
+                        attached.Id,
+                        MatchCueState.HeldCard(beat.Cue, beat.Overlay, attached.Id)
+                    );
+                }
                 Record(
                     roles,
                     standing.Id,
@@ -223,6 +244,24 @@ internal static class MatchTableFixture
             MatchAnimationKindView.Victory => (Standing, [Cue(kind)]),
             MatchAnimationKindView.Reveal => (Standing, [Cue(kind, revealed: [Face])]),
             MatchAnimationKindView.Other => (Standing, [Cue(kind)]),
+            MatchAnimationKindView.Discard => (
+                Standing with
+                {
+                    Player = doing.Local
+                        ? Standing.Player with
+                        {
+                            EmptiesTray = [Instance($"{doing.Active}-energy")],
+                        }
+                        : Standing.Player,
+                    Opponent = doing.Local
+                        ? Standing.Opponent
+                        : Standing.Opponent with
+                        {
+                            EmptiesTray = [Instance($"{doing.Active}-energy")],
+                        },
+                },
+                [Cue(kind, $"{doing.Active}-energy", [$"{doing.Active}-energy"])]
+            ),
         };
 #pragma warning restore CS8524
     }
