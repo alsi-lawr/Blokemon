@@ -22,22 +22,26 @@ public sealed class SessionHolder(IJSRuntime js, SessionTokenStore tokens, TimeP
     : IAsyncDisposable
 {
     private IJSObjectReference? _module;
-    private bool _loaded;
+    private Task? _read;
 
     public HeldSession? Current { get; private set; }
 
     /// <summary>Raised after the held session is established, discarded or loaded.</summary>
     public event Action? Changed;
 
-    /// <summary>Reads the sessionStorage copy once; a copy past its expiry is dropped unread.</summary>
+    /// <summary>
+    /// Reads the sessionStorage copy once; a copy past its expiry is dropped unread. The menu
+    /// and the page start together and both ask, so the second asker waits for the one read
+    /// rather than being told there is no session while it is still being read.
+    /// </summary>
     public async Task<HeldSession?> Load(CancellationToken cancellationToken = default)
     {
-        if (_loaded)
-        {
-            return Current;
-        }
+        await (_read ??= ReadStored(cancellationToken));
+        return Current;
+    }
 
-        _loaded = true;
+    private async Task ReadStored(CancellationToken cancellationToken)
+    {
         StoredSession? stored = null;
         try
         {
@@ -51,17 +55,16 @@ public sealed class SessionHolder(IJSRuntime js, SessionTokenStore tokens, TimeP
 
         if (stored is null)
         {
-            return Current;
+            return;
         }
 
         if (stored.ExpiresAt is { } expiry && expiry <= time.GetUtcNow())
         {
             await Discard(cancellationToken);
-            return Current;
+            return;
         }
 
         Apply(new(stored.Token, stored.ExpiresAt, stored.DisplayName, stored.Recovery));
-        return Current;
     }
 
     public async Task Establish(
@@ -69,7 +72,7 @@ public sealed class SessionHolder(IJSRuntime js, SessionTokenStore tokens, TimeP
         CancellationToken cancellationToken = default
     )
     {
-        _loaded = true;
+        _read = Task.CompletedTask;
         Apply(new(issued.Token, issued.ExpiresAt, issued.DisplayName, issued.Recovery));
         try
         {
@@ -121,7 +124,7 @@ public sealed class SessionHolder(IJSRuntime js, SessionTokenStore tokens, TimeP
 
     public async Task Discard(CancellationToken cancellationToken = default)
     {
-        _loaded = true;
+        _read = Task.CompletedTask;
         Apply(null);
         try
         {

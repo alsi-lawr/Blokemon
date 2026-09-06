@@ -1,5 +1,6 @@
 const databaseName = "blokemon-browser-local-v1";
 const storeName = "documents";
+const openLockName = "blokemon-browser-local-v1:open";
 const broadcastChannelName = "blokemon-browser-state-v1";
 const missingDocument = Symbol("missing-document");
 const documents = new Map();
@@ -102,11 +103,7 @@ function closeBroadcastChannel() {
     }
 }
 
-async function openDatabase(current) {
-    if (!globalThis.indexedDB) {
-        throw new Error("NotSupportedError: This browser does not provide IndexedDB.");
-    }
-
+function openRequest() {
     const request = indexedDB.open(databaseName, 1);
     request.onupgradeneeded = () => {
         const database = request.result;
@@ -114,7 +111,26 @@ async function openDatabase(current) {
             database.createObjectStore(storeName, { keyPath: "key" });
         }
     };
-    const database = await requestResult(request);
+    return requestResult(request);
+}
+
+// The open is held under a Web Lock for as long as it takes. A page that the browser puts into
+// its back/forward cache while its open is still creating the database keeps that creation
+// frozen with it, and every later open of the database on this origin - the next page in the
+// same tab first of all - waits behind it until the cached page is evicted. A page holding a
+// lock is not cached, so leaving it mid-open destroys the document, abandons the unfinished
+// creation, and lets the next page create the database itself.
+function openUnderLock() {
+    const locks = globalThis.navigator?.locks;
+    return locks ? locks.request(openLockName, openRequest) : openRequest();
+}
+
+async function openDatabase(current) {
+    if (!globalThis.indexedDB) {
+        throw new Error("NotSupportedError: This browser does not provide IndexedDB.");
+    }
+
+    const database = await openUnderLock();
     current.database = database;
     database.onversionchange = () => {
         clearDocuments();
