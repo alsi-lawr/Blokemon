@@ -143,6 +143,19 @@ type LocalApplicationService
             request
             cancellationToken
 
+    /// Makes and applies one decision of the computer's turn.
+    member _.AdvanceComputer
+        (
+            matchId: Guid,
+            request: AdvanceComputerRequest,
+            [<Optional>] cancellationToken: CancellationToken
+        ) =
+        ApplicationMatchOperations.advanceComputer
+            (context ApplicationProjectionOperation.AdvanceComputer)
+            matchId
+            request
+            cancellationToken
+
     member _.AbandonSavedMatch
         (request: AbandonSavedMatchRequest, [<Optional>] cancellationToken: CancellationToken)
         =
@@ -188,6 +201,9 @@ type LocalApplicationService
 
         member this.ApplyMatchAction(matchId, request, cancellationToken) =
             this.ApplyMatchAction(matchId, request, cancellationToken)
+
+        member this.AdvanceComputer(matchId, request, cancellationToken) =
+            this.AdvanceComputer(matchId, request, cancellationToken)
 
         member this.AbandonSavedMatch(request, cancellationToken) =
             this.AbandonSavedMatch(request, cancellationToken)

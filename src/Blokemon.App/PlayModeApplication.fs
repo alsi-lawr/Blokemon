@@ -290,7 +290,7 @@ type PlayModeApplication
                                 )
         }
 
-    // The eleven IBlokemonApplication members are duplicated as concrete members because both
+    // The twelve IBlokemonApplication members are duplicated as concrete members because both
     // hosts inject and call this type through its concrete form.
     member _.State([<Optional>] cancellationToken: CancellationToken) =
         invoke (fun application token -> application.State token) cancellationToken
@@ -335,6 +335,16 @@ type PlayModeApplication
             (fun application token -> application.ApplyMatchAction(matchId, request, token))
             cancellationToken
 
+    member _.AdvanceComputer
+        (
+            matchId: Guid,
+            request: AdvanceComputerRequest,
+            [<Optional>] cancellationToken: CancellationToken
+        ) =
+        invoke
+            (fun application token -> application.AdvanceComputer(matchId, request, token))
+            cancellationToken
+
     member _.AbandonSavedMatch
         (request: AbandonSavedMatchRequest, [<Optional>] cancellationToken: CancellationToken)
         =
@@ -375,6 +385,9 @@ type PlayModeApplication
 
         member this.ApplyMatchAction(matchId, request, cancellationToken) =
             this.ApplyMatchAction(matchId, request, cancellationToken)
+
+        member this.AdvanceComputer(matchId, request, cancellationToken) =
+            this.AdvanceComputer(matchId, request, cancellationToken)
 
         member this.AbandonSavedMatch(request, cancellationToken) =
             this.AbandonSavedMatch(request, cancellationToken)

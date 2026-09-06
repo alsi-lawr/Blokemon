@@ -54,6 +54,17 @@ public sealed class BlokemonApiClient(HttpClient http) : IBlokemonApplication
             cancellationToken
         );
 
+    public Task<ApiResponse<MatchMutationView>> AdvanceComputer(
+        Guid matchId,
+        AdvanceComputerRequest request,
+        CancellationToken cancellationToken = default
+    ) =>
+        Post<AdvanceComputerRequest, MatchMutationView>(
+            $"api/matches/{matchId:D}/computer",
+            request,
+            cancellationToken
+        );
+
     public Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
         AbandonSavedMatchRequest request,
         CancellationToken cancellationToken = default

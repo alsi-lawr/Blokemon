@@ -21,6 +21,12 @@
     animation: none !important;
   }
 
+  /* The computer's thinking holds three steady marks instead of lighting them in turn. */
+  .turn-ribbon.is-thinking .ribbon-thinking span {
+    opacity: 0.8 !important;
+    animation: none !important;
+  }
+
   /* The match WAITS on this one, so it may not depend on how a run ends: stated outright at
      full strength rather than left to the shortened duration above. */
   .card-reveal-overlay {

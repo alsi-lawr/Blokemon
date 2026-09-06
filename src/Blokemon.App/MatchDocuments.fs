@@ -3,6 +3,8 @@ namespace Blokemon.App
 open System
 open System.Collections.Immutable
 open System.Text.Json.Serialization
+open System.Threading
+open System.Threading.Tasks
 open Blokemon.App.Catalogue
 open Blokemon.App.Contracts
 open Blokemon.Core.SetDesign
@@ -133,11 +135,6 @@ type internal MatchLoad =
       Error: ApiError | null
       Recovery: MatchRecoveryRequirement option }
 
-type internal CpuAdvance =
-    { State: MatchState
-      Policy: CpuPolicyDocument
-      Error: ApiError | null }
-
 type internal PendingPresentation =
     { State: MatchState
       Events: ImmutableArray<MatchEvent> }
@@ -152,6 +149,16 @@ type internal CommandMaterialization =
       Error: ApiError | null }
 
 
+/// Where the computer thinks. The application asks for one decision at a time and applies the
+/// answer itself, so a host that has to keep its drawing thread free can answer from another
+/// runtime; the in-process decider runs the policy on the calling thread.
+type IComputerDecider =
+    /// The id of the candidate the policy selects for the state the document stands at, or null
+    /// when the computer has no legal move.
+    abstract Decide:
+        document: MatchDocument * state: MatchState * cancellationToken: CancellationToken ->
+            Task<string | null>
+
 // The dependencies one service instance holds. Cached is the verified reconstruction of the
 // stored document identified by DocumentRevision: it skips the O(history) deserialize-and-replay
 // on every action, and any revision mismatch (another writer, cold load) falls back to the full
@@ -162,4 +169,5 @@ type internal MatchContext =
       Keys: PlayerDocumentKeys
       Engine: MatchEngine
       Cpu: DeterministicCpu
+      Decider: IComputerDecider
       mutable Cached: LoadedMatch | null }

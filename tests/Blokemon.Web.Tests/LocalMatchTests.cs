@@ -431,9 +431,7 @@ public sealed class LocalMatchTests
     {
         await using var database = await TestDatabase.Create();
         var fixture = await ReadyFixture.Create(database);
-        var started = Value(
-            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
-        );
+        var started = await Started(fixture.Application, new(_matchCommand, _firstDeckCommand));
         var action = started.Match!.LegalActions[0];
         var commandId = Guid.Parse("40000000-0000-0000-0000-000000000001");
         var request = RequestFor(started.Match, action, commandId);
@@ -468,9 +466,7 @@ public sealed class LocalMatchTests
         await using var database = await TestDatabase.Create();
         var fixture = await ReadyFixture.Create(database);
         var other = fixture.Restart();
-        var started = Value(
-            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
-        );
+        var started = await Started(fixture.Application, new(_matchCommand, _firstDeckCommand));
         var before = await fixture.Store.Read("match");
         var action = started.Match!.LegalActions[0];
         var request = RequestFor(started.Match, action, Guid.NewGuid());
@@ -494,9 +490,7 @@ public sealed class LocalMatchTests
     {
         await using var database = await TestDatabase.Create();
         var fixture = await ReadyFixture.Create(database);
-        var started = Value(
-            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
-        );
+        var started = await Started(fixture.Application, new(_matchCommand, _firstDeckCommand));
         var action = started.Match!.LegalActions[0];
         var original = await fixture.Store.Read("match");
 
@@ -671,9 +665,16 @@ public sealed class LocalMatchTests
                 result.Error?.Message ?? "No presentation returned."
             );
         }
-        var resolved = Match(result);
-        var cue = result
+        // The defender's replacement is the computer's decision, made after the attack rather
+        // than inside it, and the blow is told where it lands: in the step that makes the choice,
+        // not at the declaration, where it has not yet done anything.
+        var (resolved, replies) = await ComputerPlaysPresenting(fixture, Match(result));
+        result
             .Presentation.Steps.SelectMany(static step => step.Events)
+            .ShouldNotContain(static eventCue => eventCue.Kind == MatchAnimationKindView.Attack);
+        var cue = replies
+            .SelectMany(static presentation => presentation.Steps)
+            .SelectMany(static step => step.Events)
             .Single(eventCue =>
                 eventCue.Kind == MatchAnimationKindView.Attack
                 && eventCue.ActorIsLocalPlayer == true
@@ -715,20 +716,25 @@ public sealed class LocalMatchTests
                 match.Frame.Id,
                 RequestFor(match, next, Guid.NewGuid())
             );
-            foreach (var frame in mutation.Presentation?.Steps ?? [])
-            {
-                AssertNoHiddenOpponentCardInstances(frame.Frame);
-                foreach (var cue in frame.Events)
-                {
-                    // A cue only ever turns a card face up for the local player's own hidden
-                    // cards - their Prize Cards and their deck. The two decks share no card, so
-                    // a face from the opponent's deck showing up here would be a leak.
-                    cue.RevealedCards.ShouldAllBe(card =>
-                        card.Id == "BLK-016" || card.Id == "VIM-BLAZED"
-                    );
-                }
-            }
+            AssertNoHiddenOpponentCardsInPresentation(mutation);
             match = Match(mutation);
+            // The computer's replies are presented one decision at a time, and each of them is
+            // held to the same rule.
+            for (
+                var reply = 0;
+                reply < 256 && !match.Frame.IsComplete && match.Frame.Opponent.HasTurn;
+                reply++
+            )
+            {
+                var advance = await fixture.Service.Advance(
+                    fixture.Profile,
+                    "Local Player",
+                    match.Frame.Id,
+                    new(match.Frame.Revision)
+                );
+                AssertNoHiddenOpponentCardsInPresentation(advance);
+                match = Match(advance);
+            }
         }
 
         inspected.ShouldBeGreaterThan(3);
@@ -748,15 +754,25 @@ public sealed class LocalMatchTests
         var fixture = await ReadyFixture.Create(database);
         var profile = await fixture.Store.Read("profile");
 
-        var started = Value(
-            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand, difficulty))
+        var started = await Started(
+            fixture.Application,
+            new(_matchCommand, _firstDeckCommand, difficulty)
+        );
+        // Whether the computer has anything to decide before the player's first move depends on
+        // the deal; after the player's opening it always has its own to make.
+        var played = await Played(
+            fixture.Application,
+            started.Match!,
+            started.Match!.LegalActions.First(static action =>
+                action.Kind != MatchActionKindView.Resign
+            )
         );
         var stored = (await fixture.Store.Read("match"))!;
         var document = StoredMatch(stored);
         var refreshed = Value(await fixture.Application.State());
         var restarted = Value(await fixture.Restart().State());
 
-        started.Match!.Difficulty.ShouldBe(difficulty);
+        played.Match!.Difficulty.ShouldBe(difficulty);
         document.StartCommand.CpuPolicy.Difficulty.ShouldBe(difficulty);
         document.CpuPolicy.Difficulty.ShouldBe(difficulty);
         document.StartCommand.CpuPolicy.Version.ShouldBe(CpuPolicyVersion.active);
@@ -770,8 +786,8 @@ public sealed class LocalMatchTests
         document.CpuPolicy.DecisionIndex.ShouldBeGreaterThan(0UL);
         MatchCpuPolicy.isValid(document.StartCommand.CpuPolicy).ShouldBeTrue();
         MatchCpuPolicy.isValid(document.CpuPolicy).ShouldBeTrue();
-        await AssertEquivalent(refreshed.Match!, started.Match);
-        await AssertEquivalent(restarted.Match!, started.Match);
+        await AssertEquivalent(refreshed.Match!, played.Match);
+        await AssertEquivalent(restarted.Match!, played.Match);
         (await fixture.Store.Read("match")).ShouldBe(stored);
         (await fixture.Store.Read("profile")).ShouldBe(profile);
     }
@@ -800,11 +816,10 @@ public sealed class LocalMatchTests
         await secondStore.Create("profile", profileDocument!.Json);
         var second = ReadyFixture.FromExisting(secondDatabase, first.Catalogue);
 
-        var firstStarted = Value(
-            await first.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
-        );
-        var secondStarted = Value(
-            await second.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
+        var firstStarted = await Started(first.Application, new(_matchCommand, _firstDeckCommand));
+        var secondStarted = await Started(
+            second.Application,
+            new(_matchCommand, _firstDeckCommand)
         );
         var firstMatchDocument = await first.Store.Read("match");
         var secondMatchDocument = await second.Store.Read("match");
@@ -891,9 +906,7 @@ public sealed class LocalMatchTests
     {
         await using var database = await TestDatabase.Create();
         var fixture = await ReadyFixture.Create(database);
-        var started = Value(
-            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
-        );
+        var started = await Started(fixture.Application, new(_matchCommand, _firstDeckCommand));
         var action = started.Match!.LegalActions[0];
         Value(
             await fixture.Application.ApplyMatchAction(
@@ -930,9 +943,7 @@ public sealed class LocalMatchTests
         // it changed in BLOKEMON-069, the promise did not.
         await using var database = await TestDatabase.Create();
         var fixture = await ReadyFixture.Create(database);
-        var started = Value(
-            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
-        );
+        var started = await Started(fixture.Application, new(_matchCommand, _firstDeckCommand));
         var applied = Value(
             await fixture.Application.ApplyMatchAction(
                 started.Match!.Frame.Id,
@@ -969,9 +980,7 @@ public sealed class LocalMatchTests
         // around the load, so the ingress guard rejects the saved battle as damaged instead.
         await using var database = await TestDatabase.Create();
         var fixture = await ReadyFixture.Create(database);
-        var started = Value(
-            await fixture.Application.StartMatch(new(_matchCommand, _firstDeckCommand))
-        );
+        var started = await Started(fixture.Application, new(_matchCommand, _firstDeckCommand));
         Value(
             await fixture.Application.ApplyMatchAction(
                 started.Match!.Frame.Id,
@@ -1113,7 +1122,7 @@ public sealed class LocalMatchTests
         ApplicationView initial
     )
     {
-        var current = initial;
+        var current = await ComputerPlays(application, initial);
         for (var step = 0; step < 24; step++)
         {
             var match = current.Match!;
@@ -1126,12 +1135,7 @@ public sealed class LocalMatchTests
                 return (current, choiceless);
             }
 
-            current = Value(
-                await application.ApplyMatchAction(
-                    match.Frame.Id,
-                    RequestFor(match, ForwardAction(match)!, Guid.NewGuid())
-                )
-            );
+            current = await Played(application, match, ForwardAction(match)!);
         }
 
         throw new InvalidOperationException("The match never offered a move with no choices.");
@@ -1153,18 +1157,21 @@ public sealed class LocalMatchTests
         var booth = boothRequirement.EligibleCards.First(card => card.Id != oche);
         var selection = SelectionFor(boothRequirement) with { CardInstanceIds = [booth.Id] };
 
-        var placed = Value(
-            await application.ApplyMatchAction(
-                opening.Frame.Id,
-                request with
-                {
-                    Choices =
-                    [
-                        .. request.Choices.Select(choice =>
-                            choice.Id == boothRequirement.Id ? selection : choice
-                        ),
-                    ],
-                }
+        var placed = await ComputerPlays(
+            application,
+            Value(
+                await application.ApplyMatchAction(
+                    opening.Frame.Id,
+                    request with
+                    {
+                        Choices =
+                        [
+                            .. request.Choices.Select(choice =>
+                                choice.Id == boothRequirement.Id ? selection : choice
+                            ),
+                        ],
+                    }
+                )
             )
         );
 
@@ -1175,9 +1182,10 @@ public sealed class LocalMatchTests
     // a Basic that came with the bonus may then go to the Bench.
     private static async Task<ApplicationView> AdvanceThroughSetup(
         LocalApplicationService application,
-        ApplicationView current
+        ApplicationView initial
     )
     {
+        var current = await ComputerPlays(application, initial);
         for (var count = 0; count < 8; count++)
         {
             var match = current.Match!;
@@ -1186,12 +1194,7 @@ public sealed class LocalMatchTests
                 return current;
             }
 
-            current = Value(
-                await application.ApplyMatchAction(
-                    match.Frame.Id,
-                    RequestFor(match, match.LegalActions[0], Guid.NewGuid())
-                )
-            );
+            current = await Played(application, match, match.LegalActions[0]);
         }
 
         return current;
@@ -1202,7 +1205,7 @@ public sealed class LocalMatchTests
         ApplicationView initial
     )
     {
-        var current = initial;
+        var current = await ComputerPlays(application, initial);
         for (var count = 0; count < 8; count++)
         {
             if (
@@ -1214,13 +1217,7 @@ public sealed class LocalMatchTests
                 return current;
             }
 
-            var action = current.Match.LegalActions[0];
-            current = Value(
-                await application.ApplyMatchAction(
-                    current.Match.Frame.Id,
-                    RequestFor(current.Match, action, Guid.NewGuid())
-                )
-            );
+            current = await Played(application, current.Match, current.Match.LegalActions[0]);
         }
 
         throw new InvalidOperationException("The opening choice was not reached.");
@@ -1231,7 +1228,7 @@ public sealed class LocalMatchTests
         ApplicationView initial
     )
     {
-        var current = initial;
+        var current = await ComputerPlays(application, initial);
         for (var count = 0; count < 256; count++)
         {
             if (current.Match!.Frame.IsComplete)
@@ -1254,12 +1251,7 @@ public sealed class LocalMatchTests
                     action.Kind == MatchActionKindView.EndTurn
                 )
                 ?? current.Match.LegalActions[0];
-            current = Value(
-                await application.ApplyMatchAction(
-                    current.Match.Frame.Id,
-                    RequestFor(current.Match, action, Guid.NewGuid())
-                )
-            );
+            current = await Played(application, current.Match, action);
         }
 
         throw new InvalidOperationException("The match did not complete inside the test bound.");
@@ -1304,6 +1296,23 @@ public sealed class LocalMatchTests
         }
     }
 
+    private static void AssertNoHiddenOpponentCardsInPresentation(MatchServiceResult mutation)
+    {
+        foreach (var frame in mutation.Presentation?.Steps ?? [])
+        {
+            AssertNoHiddenOpponentCardInstances(frame.Frame);
+            foreach (var cue in frame.Events)
+            {
+                // A cue only ever turns a card face up for the local player's own hidden cards -
+                // their Prize Cards and their deck. The two decks share no card, so a face from
+                // the opponent's deck showing up here would be a leak.
+                cue.RevealedCards.ShouldAllBe(card =>
+                    card.Id == "BLK-016" || card.Id == "VIM-BLAZED"
+                );
+            }
+        }
+    }
+
     private static void AssertNoHiddenOpponentCardInstances(MatchFrameView frame)
     {
         frame.Opponent.Hand.ShouldBeEmpty();
@@ -1324,11 +1333,14 @@ public sealed class LocalMatchTests
         ChoiceMatchFixture fixture
     )
     {
-        var started = Match(
-            await fixture.Service.Start(
-                fixture.Profile,
-                "Local Player",
-                new(_matchCommand, _firstDeckCommand)
+        var started = await ComputerPlays(
+            fixture,
+            Match(
+                await fixture.Service.Start(
+                    fixture.Profile,
+                    "Local Player",
+                    new(_matchCommand, _firstDeckCommand)
+                )
             )
         );
         for (var count = 0; count < 8; count++)
@@ -1341,15 +1353,7 @@ public sealed class LocalMatchTests
             {
                 break;
             }
-            var preliminary = started.LegalActions[0];
-            started = Match(
-                await fixture.Service.Apply(
-                    fixture.Profile,
-                    "Local Player",
-                    started.Frame.Id,
-                    RequestFor(started, preliminary, Guid.NewGuid())
-                )
-            );
+            started = await Played(fixture, started, started.LegalActions[0]);
         }
         var openingCards = started
             .LegalActions.SelectMany(static action => action.ChoiceRequirements)
@@ -1361,47 +1365,18 @@ public sealed class LocalMatchTests
             && openingCards[action.Id["opening:".Length..]].Card.Id == "BLK-016"
         );
         var ocheId = opening.Id["opening:".Length..];
-        var openingRequest = RequestFor(started, opening, Guid.NewGuid());
-        var opened = Match(
-            await fixture.Service.Apply(
-                fixture.Profile,
-                "Local Player",
-                started.Frame.Id,
-                openingRequest
-            )
-        );
+        var opened = await Played(fixture, started, opening);
         for (var count = 0; count < 8 && opened.Frame.Phase != MatchPhaseView.Playing; count++)
         {
-            opened = Match(
-                await fixture.Service.Apply(
-                    fixture.Profile,
-                    "Local Player",
-                    opened.Frame.Id,
-                    RequestFor(opened, opened.LegalActions[0], Guid.NewGuid())
-                )
-            );
+            opened = await Played(fixture, opened, opened.LegalActions[0]);
         }
         var attach = opened.LegalActions.First(action =>
             action.Id.StartsWith("attach:", StringComparison.Ordinal)
             && action.Id.EndsWith($":{ocheId}", StringComparison.Ordinal)
         );
-        var attached = Match(
-            await fixture.Service.Apply(
-                fixture.Profile,
-                "Local Player",
-                opened.Frame.Id,
-                RequestFor(opened, attach, Guid.NewGuid())
-            )
-        );
+        var attached = await Played(fixture, opened, attach);
         var endRound = attached.LegalActions.Single(action => action.Id == "end");
-        var nextRound = Match(
-            await fixture.Service.Apply(
-                fixture.Profile,
-                "Local Player",
-                attached.Frame.Id,
-                RequestFor(attached, endRound, Guid.NewGuid())
-            )
-        );
+        var nextRound = await Played(fixture, attached, endRound);
         var attack = nextRound.LegalActions.SingleOrDefault(action =>
             action.Id == $"attack:{ocheId}:BLK-016-B01"
         );
@@ -1413,14 +1388,7 @@ public sealed class LocalMatchTests
             );
             if (secondAttach is not null)
             {
-                nextRound = Match(
-                    await fixture.Service.Apply(
-                        fixture.Profile,
-                        "Local Player",
-                        nextRound.Frame.Id,
-                        RequestFor(nextRound, secondAttach, Guid.NewGuid())
-                    )
-                );
+                nextRound = await Played(fixture, nextRound, secondAttach);
                 attack = nextRound.LegalActions.SingleOrDefault(action =>
                     action.Id == $"attack:{ocheId}:BLK-016-B01"
                 );
@@ -1435,6 +1403,131 @@ public sealed class LocalMatchTests
         attack.ChoiceRequirements.Single().Kind.ShouldBe(MatchChoiceKindView.Cards);
         return (nextRound, attack);
     }
+
+    // The computer's turn is committed one decision at a time and only when asked for, as the page
+    // asks for it after every move of the player's, so the table a test reads is the one the
+    // player would be looking at: settled, with the computer's replies made.
+    private static async Task<ApplicationView> ComputerPlays(
+        LocalApplicationService application,
+        ApplicationView current
+    )
+    {
+        for (var count = 0; count < 256; count++)
+        {
+            if (
+                current.Match is not { } match
+                || match.Frame.IsComplete
+                || !match.Frame.Opponent.HasTurn
+            )
+            {
+                return current;
+            }
+
+            current = Value(
+                await application.AdvanceComputer(match.Frame.Id, new(match.Frame.Revision))
+            );
+        }
+
+        throw new InvalidOperationException(
+            "The computer's turn did not end inside the test bound."
+        );
+    }
+
+    private static async Task<ApplicationView> Started(
+        LocalApplicationService application,
+        StartMatchRequest request
+    ) => await ComputerPlays(application, Value(await application.StartMatch(request)));
+
+    private static async Task<ApplicationView> Played(
+        LocalApplicationService application,
+        MatchView match,
+        MatchActionView action
+    ) =>
+        await ComputerPlays(
+            application,
+            Value(
+                await application.ApplyMatchAction(
+                    match.Frame.Id,
+                    RequestFor(match, action, Guid.NewGuid())
+                )
+            )
+        );
+
+    // The same, on the match service itself.
+    private static async Task<(
+        MatchView Match,
+        List<MatchPresentationView> Presentations
+    )> ComputerPlaysPresenting(ChoiceMatchFixture fixture, MatchView current)
+    {
+        var presentations = new List<MatchPresentationView>();
+        for (var count = 0; count < 256; count++)
+        {
+            if (current.Frame.IsComplete || !current.Frame.Opponent.HasTurn)
+            {
+                return (current, presentations);
+            }
+
+            var advance = await fixture.Service.Advance(
+                fixture.Profile,
+                "Local Player",
+                current.Frame.Id,
+                new(current.Frame.Revision)
+            );
+            if (advance.Presentation is not null)
+            {
+                presentations.Add(advance.Presentation);
+            }
+            current = Match(advance);
+        }
+
+        throw new InvalidOperationException(
+            "The computer's turn did not end inside the test bound."
+        );
+    }
+
+    private static async Task<MatchView> ComputerPlays(
+        ChoiceMatchFixture fixture,
+        MatchView current
+    )
+    {
+        for (var count = 0; count < 256; count++)
+        {
+            if (current.Frame.IsComplete || !current.Frame.Opponent.HasTurn)
+            {
+                return current;
+            }
+
+            current = Match(
+                await fixture.Service.Advance(
+                    fixture.Profile,
+                    "Local Player",
+                    current.Frame.Id,
+                    new(current.Frame.Revision)
+                )
+            );
+        }
+
+        throw new InvalidOperationException(
+            "The computer's turn did not end inside the test bound."
+        );
+    }
+
+    private static async Task<MatchView> Played(
+        ChoiceMatchFixture fixture,
+        MatchView match,
+        MatchActionView action
+    ) =>
+        await ComputerPlays(
+            fixture,
+            Match(
+                await fixture.Service.Apply(
+                    fixture.Profile,
+                    "Local Player",
+                    match.Frame.Id,
+                    RequestFor(match, action, Guid.NewGuid())
+                )
+            )
+        );
 
     private static MatchActionView OpeningAction(MatchView match) =>
         match.LegalActions.First(action =>

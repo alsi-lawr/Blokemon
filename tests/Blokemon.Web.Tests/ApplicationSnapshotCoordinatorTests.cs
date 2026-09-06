@@ -723,6 +723,12 @@ public sealed class ApplicationSnapshotCoordinatorTests
             CancellationToken cancellationToken = default
         ) => Match(cancellationToken);
 
+        public Task<ApiResponse<MatchMutationView>> AdvanceComputer(
+            Guid matchId,
+            AdvanceComputerRequest request,
+            CancellationToken cancellationToken = default
+        ) => Match(cancellationToken);
+
         public Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
             AbandonSavedMatchRequest request,
             CancellationToken cancellationToken = default

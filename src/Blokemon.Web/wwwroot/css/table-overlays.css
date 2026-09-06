@@ -63,6 +63,55 @@
   color: #a49d7a;
 }
 
+/* The computer's thinking. The slot is always there at its full width, so the band's words sit in
+   the same place whether or not a decision is pending; only the marks come and go. */
+.ribbon-thinking {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+  width: 22px;
+  opacity: 0;
+  transition: opacity 160ms ease;
+
+  span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #fff4c9;
+    opacity: 0.3;
+  }
+}
+
+.turn-ribbon.is-thinking .ribbon-thinking {
+  opacity: 1;
+
+  span {
+    animation: ribbon-thinking 1.2s ease-in-out infinite;
+  }
+
+  span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+}
+
+@keyframes ribbon-thinking {
+  0%,
+  70%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  35% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
 .event-toast {
   position: absolute;
   z-index: 70;

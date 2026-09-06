@@ -26,7 +26,22 @@ public static class ClientComposition
         services.AddSingleton(playModes);
         services.AddSingleton(economy);
         services.AddScoped<IStateDocumentStore, IndexedDbStateDocumentStore>();
-        services.AddScoped<LocalMatchService>();
+        // The browser game's computer thinks in its own runtime, off the thread that draws.
+        services.AddScoped<ComputerThinking>();
+        services.AddScoped<IComputerDecider>(static provider =>
+            provider.GetRequiredService<ComputerThinking>()
+        );
+        services.AddScoped<IComputerRuntime>(static provider =>
+            provider.GetRequiredService<ComputerThinking>()
+        );
+        services.AddScoped<LocalMatchService>(static provider =>
+            new(
+                provider.GetRequiredService<BlokemonCatalogue>(),
+                provider.GetRequiredService<IStateDocumentStore>(),
+                PlayerDocumentKeysModule.browserLocal,
+                provider.GetRequiredService<IComputerDecider>()
+            )
+        );
         services.AddScoped<LocalApplicationService>(static provider =>
             new(
                 provider.GetRequiredService<BlokemonCatalogue>(),

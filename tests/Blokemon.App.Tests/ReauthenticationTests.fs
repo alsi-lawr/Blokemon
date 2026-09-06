@@ -30,6 +30,7 @@ type private ScriptedServer(response: ApiError | null) =
         member _.DeleteDeck(_, _) = answer response
         member _.StartMatch(_, _) = answer response
         member _.ApplyMatchAction(_, _, _) = answer response
+        member _.AdvanceComputer(_, _, _) = answer response
         member _.AbandonSavedMatch(_, _) = answer response
         member _.DiscardMatchHistory(_, _) = answer response
         member _.PurgeData _ = answer response

@@ -20,7 +20,7 @@
     }
     @* Three slots, always in this order, either of the outer two able to be empty: the band holds
        its place in every phase so that naming one never moves the table. *@
-    <div class="turn-ribbon @(Frame.Player.HasTurn ? null : "is-waiting")">
+    <div class="turn-ribbon @(Frame.Player.HasTurn ? null : "is-waiting") @(Thinking ? "is-thinking" : null)" aria-busy="@(Thinking ? "true" : "false")">
         @if (band.Turn is { } turn)
         {
             <span class="ribbon-turn">@turn</span>
@@ -33,6 +33,9 @@
         {
             <span class="ribbon-phase">@phase</span>
         }
+        @* The computer's thinking, in a slot the band keeps whether or not it is: three marks
+           that light in turn while a decision is pending, and nothing at all otherwise. *@
+        <span class="ribbon-thinking" aria-hidden="true"><span></span><span></span><span></span></span>
     </div>
     <MatchSide Side="Frame.Player"
                SelectedCardInstanceId="@SelectedCardInstanceId"
@@ -56,6 +59,9 @@
 
     [Parameter, EditorRequired]
     public required MatchAuraView Auras { get; set; }
+
+    [Parameter]
+    public bool Thinking { get; set; }
 
     [Parameter]
     public string? SelectedCardInstanceId { get; set; }

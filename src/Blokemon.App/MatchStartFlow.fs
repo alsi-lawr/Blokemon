@@ -35,7 +35,6 @@ module internal MatchStartFlow =
         let load = load context
         let toView = toView context
         let toPresentation = toPresentation context
-        let advanceCpu = advanceCpu context
         let archiveCompletedMatch = archiveCompletedMatch context
         let reconcileStartConflict = reconcileStartConflict context
         let matchSeed = matchSeedFor profile request.CommandId
@@ -179,155 +178,130 @@ module internal MatchStartFlow =
 
                                 match engine.Start start with
                                 | MatchStartOutcome.Started(startedState, startedEvents) ->
-                                    let commands = List<MatchCommand>()
-                                    let events = List<MatchEvent>(startedEvents)
-
                                     let presentation =
-                                        List<PendingPresentation>(
-                                            [ { State = startedState
-                                                Events = startedEvents } ]
-                                        )
+                                        [ { State = startedState
+                                            Events = startedEvents } ]
 
-                                    let advanced =
-                                        advanceCpu
-                                            startedState
-                                            initialPolicy
-                                            commands
-                                            events
-                                            presentation
+                                    let document =
+                                        { SchemaVersion = matchSchemaVersion
+                                          AuthorityVersion = catalogue.Mechanics.ManifestVersion
+                                          StartCommand =
+                                            { ClientCommandId = request.CommandId
+                                              DeckId = request.DeckId
+                                              Fingerprint = requestFingerprint
+                                              StartRequestFingerprint =
+                                                gameStartFingerprint start initialPolicy
+                                              CpuPolicy = initialPolicy }
+                                          Start = start
+                                          CpuPolicy = initialPolicy
+                                          Commands = ImmutableArray<MatchCommand>.Empty
+                                          ClientCommands =
+                                            ImmutableArray<MatchClientCommandReceipt>.Empty }
 
-                                    if not (isNull (box advanced.Error)) then
+                                    let! historyError =
+                                        task {
+                                            match loaded.Match with
+                                            | NonNull completed when
+                                                completed.State.Phase = MatchPhase.Complete
+                                                ->
+                                                return!
+                                                    archiveCompletedMatch
+                                                        profile
+                                                        completed
+                                                        cancellationToken
+                                            | Null ->
+                                                let! history =
+                                                    historyRecovery
+                                                        context
+                                                        profile
+                                                        cancellationToken
+
+                                                return
+                                                    match history with
+                                                    | Ok None -> MatchArchiveOutcome.Ready
+                                                    | Ok(Some requirement) ->
+                                                        MatchArchiveOutcome.RecoveryRequired
+                                                            requirement
+                                                    | Error error ->
+                                                        MatchArchiveOutcome.Failed error
+                                            | _ -> return MatchArchiveOutcome.Ready
+                                        }
+
+                                    match historyError with
+                                    | MatchArchiveOutcome.RecoveryRequired requirement ->
+                                        return
+                                            { View =
+                                                loaded.Match
+                                                |> Option.ofObj
+                                                |> Option.map (fun value ->
+                                                    toView value displayName)
+                                                |> Option.toObj
+                                              Error = MatchMigration.recoveryError requirement
+                                              Recovery = MatchMigration.recoveryView requirement
+                                              Presentation = null
+                                              DocumentIdentity =
+                                                match loaded.Match with
+                                                | null -> noDocumentProjection
+                                                | value -> documentProjection value }
+                                    | MatchArchiveOutcome.Failed error ->
                                         return
                                             { View = null
-                                              Error = advanced.Error
+                                              Error = error
                                               Recovery = null
                                               Presentation = null
                                               DocumentIdentity = noDocumentProjection }
-                                    else
+                                    | MatchArchiveOutcome.Ready ->
 
-                                        let document =
-                                            { SchemaVersion = matchSchemaVersion
-                                              AuthorityVersion = catalogue.Mechanics.ManifestVersion
-                                              StartCommand =
-                                                { ClientCommandId = request.CommandId
-                                                  DeckId = request.DeckId
-                                                  Fingerprint = requestFingerprint
-                                                  StartRequestFingerprint =
-                                                    gameStartFingerprint start initialPolicy
-                                                  CpuPolicy = initialPolicy }
-                                              Start = start
-                                              CpuPolicy = advanced.Policy
-                                              Commands = ImmutableArray.CreateRange commands
-                                              ClientCommands =
-                                                ImmutableArray<MatchClientCommandReceipt>.Empty }
+                                        let json =
+                                            JsonSerializer.Serialize(document, MatchJson.Options)
 
-                                        let! historyError =
-                                            task {
-                                                match loaded.Match with
-                                                | NonNull completed when
-                                                    completed.State.Phase = MatchPhase.Complete
-                                                    ->
-                                                    return!
-                                                        archiveCompletedMatch
-                                                            profile
-                                                            completed
-                                                            cancellationToken
-                                                | Null ->
-                                                    let! history =
-                                                        historyRecovery
-                                                            context
-                                                            profile
-                                                            cancellationToken
-
-                                                    return
-                                                        match history with
-                                                        | Ok None -> MatchArchiveOutcome.Ready
-                                                        | Ok(Some requirement) ->
-                                                            MatchArchiveOutcome.RecoveryRequired
-                                                                requirement
-                                                        | Error error ->
-                                                            MatchArchiveOutcome.Failed error
-                                                | _ -> return MatchArchiveOutcome.Ready
-                                            }
-
-                                        match historyError with
-                                        | MatchArchiveOutcome.RecoveryRequired requirement ->
-                                            return
-                                                { View =
-                                                    loaded.Match
-                                                    |> Option.ofObj
-                                                    |> Option.map (fun value ->
-                                                        toView value displayName)
-                                                    |> Option.toObj
-                                                  Error = MatchMigration.recoveryError requirement
-                                                  Recovery = MatchMigration.recoveryView requirement
-                                                  Presentation = null
-                                                  DocumentIdentity =
-                                                    match loaded.Match with
-                                                    | null -> noDocumentProjection
-                                                    | value -> documentProjection value }
-                                        | MatchArchiveOutcome.Failed error ->
-                                            return
-                                                { View = null
-                                                  Error = error
-                                                  Recovery = null
-                                                  Presentation = null
-                                                  DocumentIdentity = noDocumentProjection }
-                                        | MatchArchiveOutcome.Ready ->
-
-                                            let json =
-                                                JsonSerializer.Serialize(
-                                                    document,
-                                                    MatchJson.Options
+                                        let! write =
+                                            match loaded.Match with
+                                            | null ->
+                                                documents.Create(
+                                                    context.Keys.Match,
+                                                    json,
+                                                    cancellationToken
+                                                )
+                                            | existing ->
+                                                documents.Update(
+                                                    context.Keys.Match,
+                                                    existing.DocumentRevision,
+                                                    json,
+                                                    cancellationToken
                                                 )
 
-                                            let! write =
-                                                match loaded.Match with
-                                                | null ->
-                                                    documents.Create(
-                                                        context.Keys.Match,
-                                                        json,
-                                                        cancellationToken
-                                                    )
-                                                | existing ->
-                                                    documents.Update(
-                                                        context.Keys.Match,
-                                                        existing.DocumentRevision,
-                                                        json,
-                                                        cancellationToken
-                                                    )
+                                        match write with
+                                        | :? DocumentWriteResult.Written as written ->
+                                            let committed =
+                                                { DocumentRevision = written.Revision
+                                                  DocumentContentIdentity =
+                                                    DocumentIdentity.ofText json
+                                                  Document = document
+                                                  State = startedState
+                                                  Events = startedEvents }
 
-                                            match write with
-                                            | :? DocumentWriteResult.Written as written ->
-                                                let committed =
-                                                    { DocumentRevision = written.Revision
-                                                      DocumentContentIdentity =
-                                                        DocumentIdentity.ofText json
-                                                      Document = document
-                                                      State = advanced.State
-                                                      Events = ImmutableArray.CreateRange events }
+                                            context.Cached <- committed
 
-                                                context.Cached <- committed
-
-                                                return
-                                                    { View = toView committed displayName
-                                                      Error = null
-                                                      Recovery = null
-                                                      Presentation =
-                                                        toPresentation
-                                                            document
-                                                            displayName
-                                                            presentation
-                                                      DocumentIdentity =
-                                                        documentProjection committed }
-                                            | _ ->
-                                                return!
-                                                    reconcileStartConflict
-                                                        profile
+                                            return
+                                                { View = toView committed displayName
+                                                  Error = null
+                                                  Recovery = null
+                                                  Presentation =
+                                                    toPresentation
+                                                        document
                                                         displayName
-                                                        request.CommandId
-                                                        requestFingerprint
-                                                        cancellationToken
+                                                        ValueNone
+                                                        presentation
+                                                  DocumentIdentity = documentProjection committed }
+                                        | _ ->
+                                            return!
+                                                reconcileStartConflict
+                                                    profile
+                                                    displayName
+                                                    request.CommandId
+                                                    requestFingerprint
+                                                    cancellationToken
                                 | _ ->
                                     return
                                         failed

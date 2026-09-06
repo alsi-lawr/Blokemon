@@ -167,6 +167,8 @@ public sealed class ApplicationProjectionCacheTests
         AssertDelta(beforeStart, Snapshot(application), 0, 0, 0, 0, 0, 0, 1, 1);
         await ShouldEqualColdReference(started, catalogue, documents);
 
+        // The computer's replies are asked for one at a time, outside the windows measured here.
+        started = await ComputerPlays(application, started);
         var action = started.Match!.LegalActions.First();
         var beforeAction = Snapshot(application);
         var applied = Value(
@@ -178,6 +180,7 @@ public sealed class ApplicationProjectionCacheTests
         AssertDelta(beforeAction, Snapshot(application), 0, 0, 0, 0, 0, 0, 1, 1);
         await ShouldEqualColdReference(applied, catalogue, documents);
 
+        applied = await ComputerPlays(application, applied);
         var other = Local(catalogue, documents);
         var externalAction = applied.Match!.LegalActions.First();
         var externallyApplied = Value(
@@ -635,6 +638,34 @@ public sealed class ApplicationProjectionCacheTests
         ).Application;
     }
 
+    // The computer's turn is committed one decision at a time and only when asked for, as the page
+    // asks for it after every move of the player's.
+    private static async Task<ApplicationView> ComputerPlays(
+        LocalApplicationService application,
+        ApplicationView current
+    )
+    {
+        for (var count = 0; count < 256; count++)
+        {
+            if (
+                current.Match is not { } match
+                || match.Frame.IsComplete
+                || !match.Frame.Opponent.HasTurn
+            )
+            {
+                return current;
+            }
+
+            current = Value(
+                await application.AdvanceComputer(match.Frame.Id, new(match.Frame.Revision))
+            ).Application;
+        }
+
+        throw new InvalidOperationException(
+            "The computer's turn did not end inside the test bound."
+        );
+    }
+
     private static ApplyMatchActionRequest RequestFor(MatchView match, MatchActionView action) =>
         new(
             Guid.NewGuid(),
@@ -853,6 +884,8 @@ public sealed class ApplicationProjectionCacheTests
         MatchSource(ApplicationProjectionOperation.StartMatch)
             .ShouldBe(MatchProjectionSource.UseCommittedMatch);
         MatchSource(ApplicationProjectionOperation.ApplyMatchAction)
+            .ShouldBe(MatchProjectionSource.UseCommittedMatch);
+        MatchSource(ApplicationProjectionOperation.AdvanceComputer)
             .ShouldBe(MatchProjectionSource.UseCommittedMatch);
         MatchSource(ApplicationProjectionOperation.PurgeData)
             .ShouldBe(MatchProjectionSource.NoMatch);

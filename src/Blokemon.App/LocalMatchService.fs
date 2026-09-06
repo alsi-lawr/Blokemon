@@ -17,19 +17,35 @@ open Blokemon.Cpu
 
 [<Sealed>]
 type LocalMatchService
-    (catalogue: BlokemonCatalogue, documents: IStateDocumentStore, keys: PlayerDocumentKeys) =
+    (
+        catalogue: BlokemonCatalogue,
+        documents: IStateDocumentStore,
+        keys: PlayerDocumentKeys,
+        decider: IComputerDecider | null
+    ) =
+
+    let engine = MatchEngine(catalogue.Mechanics)
+    let cpu = DeterministicCpu()
 
     let context: MatchContext =
         { Catalogue = catalogue
           Documents = documents
           Keys = keys
-          Engine = MatchEngine(catalogue.Mechanics)
-          Cpu = DeterministicCpu()
+          Engine = engine
+          Cpu = cpu
+          Decider =
+            match decider with
+            | null -> ComputerDecisions.inProcess engine cpu
+            | value -> value
           Cached = null }
+
+    /// A service whose computer thinks on the calling thread.
+    new(catalogue: BlokemonCatalogue, documents: IStateDocumentStore, keys: PlayerDocumentKeys) =
+        LocalMatchService(catalogue, documents, keys, null)
 
     /// The browser-local host's service, on the literal keys it has always used.
     new(catalogue: BlokemonCatalogue, documents: IStateDocumentStore) =
-        LocalMatchService(catalogue, documents, PlayerDocumentKeys.browserLocal)
+        LocalMatchService(catalogue, documents, PlayerDocumentKeys.browserLocal, null)
 
     /// The keys this service reads and writes; the application service acting for the same
     /// player must hold the same.
@@ -135,7 +151,7 @@ type LocalMatchService
             return matchResult projection
         }
 
-    /// Applies one player move, then lets the computer answer.
+    /// Applies one player move.
     member internal _.ApplyProjection
         (
             profile: LocalProfile,
@@ -146,7 +162,7 @@ type LocalMatchService
         ) =
         MatchActionFlow.apply context profile displayName routeMatchId request cancellationToken
 
-    /// Applies one player move, then lets the computer answer.
+    /// Applies one player move.
     member this.Apply
         (
             profile: LocalProfile,
@@ -158,6 +174,39 @@ type LocalMatchService
         task {
             let! projection =
                 this.ApplyProjection(profile, displayName, routeMatchId, request, cancellationToken)
+
+            return matchResult projection
+        }
+
+    /// Makes and applies one decision of the computer's turn.
+    member internal _.AdvanceProjection
+        (
+            profile: LocalProfile,
+            displayName: string,
+            routeMatchId: Guid,
+            request: AdvanceComputerRequest,
+            cancellationToken: CancellationToken
+        ) =
+        MatchComputerFlow.advance context profile displayName routeMatchId request cancellationToken
+
+    /// Makes and applies one decision of the computer's turn.
+    member this.Advance
+        (
+            profile: LocalProfile,
+            displayName: string,
+            routeMatchId: Guid,
+            request: AdvanceComputerRequest,
+            [<Optional>] cancellationToken: CancellationToken
+        ) =
+        task {
+            let! projection =
+                this.AdvanceProjection(
+                    profile,
+                    displayName,
+                    routeMatchId,
+                    request,
+                    cancellationToken
+                )
 
             return matchResult projection
         }

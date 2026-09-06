@@ -122,6 +122,16 @@ internal sealed class ApplicationSnapshotCoordinator(
             cancellationToken
         );
 
+    public Task<ApiResponse<MatchMutationView>> AdvanceComputer(
+        Guid matchId,
+        AdvanceComputerRequest request,
+        CancellationToken cancellationToken = default
+    ) =>
+        MutateMatch(
+            token => application.AdvanceComputer(matchId, request, token),
+            cancellationToken
+        );
+
     public Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
         AbandonSavedMatchRequest request,
         CancellationToken cancellationToken = default

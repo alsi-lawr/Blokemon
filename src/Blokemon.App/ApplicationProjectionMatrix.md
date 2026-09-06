@@ -21,7 +21,7 @@ Operation names do not participate in cache invalidation. The second table recor
 source differences exercised by the counter/equality tests, including content-dependent differences
 that may stay unchanged. It is review evidence, not a second runtime authority. The only executable
 operation mapping is `MatchSource`, which decides whether view assembly loads the saved match, uses
-the committed match result, or projects no match; the focused test enumerates all nine rows.
+the committed match result, or projects no match; the focused test enumerates every row.
 
 | Application path | Expected observed source differences | Match source |
 | --- | --- | --- |
@@ -33,6 +33,7 @@ the committed match result, or projects no match; the focused test enumerates al
 | `DeleteDeck` | `ProfileSummary`, `SavedDecksAndOwnership`; also `CardUniverseAndOwnership` when a historical-only card id leaves the saved-deck universe | Load saved match |
 | `StartMatch` | `MatchDocument` | Use the committed match result |
 | `ApplyMatchAction` | `MatchDocument` | Use the committed match result |
+| `AdvanceComputer` | `MatchDocument` | Use the committed match result |
 | `AbandonSavedMatch` | `MatchDocument` | Load the saved match again after the exact active-match primary is deleted. |
 | `DiscardMatchHistory` | `MatchDocument` | Load the saved completed match again after its separate history gate is deleted. |
 | `PurgeData` | `ProfileSummary`, `CardUniverseAndOwnership`, `SavedDecksAndOwnership`, `StarterClaimsAndOwnership`, `PackHistoryAndOwnership`, `MatchProfile`, `MatchDocument` | No match |

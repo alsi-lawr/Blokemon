@@ -1,4 +1,6 @@
+using Blokemon.App;
 using Blokemon.App.Contracts;
+using Blokemon.Web.Client.Application;
 using Blokemon.Web.Client.Components;
 using Microsoft.JSInterop;
 
@@ -34,6 +36,23 @@ public partial class Match
                 "./matchPresentation.js"
             );
             _reducedMotion = await _presentationModule.InvokeAsync<bool>("prefersReducedMotion");
+
+            // The browser game's computer boots its own runtime now, in the background, so the
+            // first decision of a battle is not also the first wait for it. The server game's
+            // computer is the server's, and needs nothing here.
+            var mode = await Modes.Mode();
+            if (mode.Selected == PlayMode.BrowserLocal)
+            {
+                _ = Computer.Start();
+            }
+
+            // A battle resumed from this device can be part way through the computer's turn.
+            // Nothing after the first render redraws the page on its own, so what the computer
+            // did is drawn here; a page with nothing to play is left as it was drawn.
+            if (await PlayComputerTurn())
+            {
+                await InvokeAsync(StateHasChanged);
+            }
         }
 
         if (_presentationModule is null)
@@ -97,6 +116,7 @@ public partial class Match
         // before. So it is presented over an empty table rather than over whatever the last battle
         // left standing, and the opening hands are dealt onto it.
         await CompleteMutation(response, MatchOpening.EmptyTable(response.Value?.Presentation));
+        await PlayComputerTurn();
     }
 
     private static bool ActiveRecovery(MatchRecoveryView recovery) =>
@@ -160,6 +180,8 @@ public partial class Match
         _skipSignal?.TrySetResult();
         _revealSignal?.TrySetResult();
         _skipSignal = null;
+        // The computer's runtime belongs to the battle on screen; leaving the table stops it.
+        await Computer.Stop();
         if (_presentationModule is not null)
         {
             try

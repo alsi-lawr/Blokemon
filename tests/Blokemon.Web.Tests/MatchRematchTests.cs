@@ -17,6 +17,8 @@ public sealed class MatchRematchTests
             .AddSingleton<IApplicationStateReader>(application)
             .AddSingleton<IMatchOperations>(application)
             .AddSingleton<IMatchRecoveryOperations>(application)
+            .AddSingleton<IComputerRuntime>(StillComputer.Instance)
+            .AddSingleton<IPlayModeOperations>(StillComputer.Instance)
             .AddSingleton<IJSRuntime>(new Browser())
             .AddSingleton<SoundBoard>()
             .BuildServiceProvider();
@@ -86,6 +88,12 @@ public sealed class MatchRematchTests
         public Task<ApiResponse<MatchMutationView>> ApplyMatchAction(
             Guid matchId,
             ApplyMatchActionRequest request,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
+        public Task<ApiResponse<MatchMutationView>> AdvanceComputer(
+            Guid matchId,
+            AdvanceComputerRequest request,
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
 

@@ -89,6 +89,15 @@ public static class ApplicationEndpoints
             ) => applications.Current().ApplyMatchAction(matchId, request, cancellationToken)
         );
         api.MapPost(
+            "/matches/{matchId:guid}/computer",
+            static (
+                Guid matchId,
+                AdvanceComputerRequest request,
+                ServerApplications applications,
+                CancellationToken cancellationToken
+            ) => applications.Current().AdvanceComputer(matchId, request, cancellationToken)
+        );
+        api.MapPost(
             "/matches/abandon",
             static (
                 AbandonSavedMatchRequest request,

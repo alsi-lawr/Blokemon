@@ -10,7 +10,9 @@ module internal MatchFailures =
     // Schema 3 pins the policy that authored every CPU command.
     let matchSchemaVersion = 3
     let matchHistorySchemaVersion = 3
-    let maximumCpuCommandsPerRequest = 256
+    // The computer's turn is committed one decision at a time, so the bound is on the run of its
+    // commands since the player last moved rather than on any single request.
+    let maximumCpuCommandsPerTurn = 256
     let cpuPlayerId = "cpu:local"
     let cpuName = "The Regular"
 

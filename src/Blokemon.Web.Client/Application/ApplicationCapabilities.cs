@@ -46,6 +46,12 @@ public interface IMatchOperations
         ApplyMatchActionRequest request,
         CancellationToken cancellationToken = default
     );
+
+    Task<ApiResponse<MatchMutationView>> AdvanceComputer(
+        Guid matchId,
+        AdvanceComputerRequest request,
+        CancellationToken cancellationToken = default
+    );
 }
 
 public interface IMatchRecoveryOperations
@@ -77,6 +83,17 @@ public interface IProfileOperations
     );
 
     Task<ApiResponse<ApplicationView>> PurgeData(CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// The computer's own runtime, as the battle page owns it: started when the page opens so its
+/// boot is paid before the first decision, stopped when the page is left.
+/// </summary>
+public interface IComputerRuntime
+{
+    Task Start();
+
+    Task Stop();
 }
 
 public interface IPlayModeOperations

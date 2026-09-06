@@ -1942,12 +1942,40 @@ public sealed class BrowserLocalApplicationTests
                 .ToArray()
         );
 
+    // The computer's turn is committed one decision at a time and only when asked for, as the page
+    // asks for it after every move of the player's.
+    private static async Task<ApplicationView> ComputerPlays(
+        PlayModeApplication application,
+        ApplicationView current
+    )
+    {
+        for (var count = 0; count < 256; count++)
+        {
+            if (
+                current.Match is not { } match
+                || match.Frame.IsComplete
+                || !match.Frame.Opponent.HasTurn
+            )
+            {
+                return current;
+            }
+
+            current = Value(
+                await application.AdvanceComputer(match.Frame.Id, new(match.Frame.Revision))
+            ).Application;
+        }
+
+        throw new InvalidOperationException(
+            "The computer's turn did not end inside the test bound."
+        );
+    }
+
     private static async Task<ApplicationView> CompleteMatch(
         PlayModeApplication application,
         ApplicationView initial
     )
     {
-        var current = initial;
+        var current = await ComputerPlays(application, initial);
         for (var count = 0; count < 256; count++)
         {
             if (current.Match!.Frame.IsComplete)
@@ -1966,12 +1994,15 @@ public sealed class BrowserLocalApplicationTests
                     action.Kind == MatchActionKindView.EndTurn
                 )
                 ?? current.Match.LegalActions.First();
-            current = Value(
-                await application.ApplyMatchAction(
-                    current.Match.Frame.Id,
-                    RequestFor(current.Match, action)
-                )
-            ).Application;
+            current = await ComputerPlays(
+                application,
+                Value(
+                    await application.ApplyMatchAction(
+                        current.Match.Frame.Id,
+                        RequestFor(current.Match, action)
+                    )
+                ).Application
+            );
         }
 
         throw new InvalidOperationException("The match did not complete inside the test bound.");

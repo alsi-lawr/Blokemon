@@ -212,7 +212,7 @@ public static class ProjectionEvidenceComposition
         ApplicationView initial
     )
     {
-        var current = initial;
+        var current = await ComputerPlays(application, initial);
         for (var step = 0; step < 32; step++)
         {
             var match = current.Match!;
@@ -267,12 +267,38 @@ public static class ProjectionEvidenceComposition
             var mutation = Value(
                 await application.ApplyMatchAction(match.Frame.Id, RequestFor(match, action))
             );
-            current = mutation.Application;
+            current = await ComputerPlays(application, mutation.Application);
         }
 
         throw new InvalidOperationException(
             "The deterministic evidence match did not reach Facebook Dad's type choice."
         );
+    }
+
+    // The computer's turn is committed one decision at a time and only when asked for, as the
+    // page asks for it after every move of the player's.
+    private static async Task<ApplicationView> ComputerPlays(
+        LocalApplicationService application,
+        ApplicationView current
+    )
+    {
+        for (var count = 0; count < 256; count++)
+        {
+            if (
+                current.Match is not { } match
+                || match.Frame.IsComplete
+                || !match.Frame.Opponent.HasTurn
+            )
+            {
+                return current;
+            }
+
+            current = Value(
+                await application.AdvanceComputer(match.Frame.Id, new(match.Frame.Revision))
+            ).Application;
+        }
+
+        throw new InvalidOperationException("The computer's turn did not end inside the bound.");
     }
 
     private static ApplyMatchActionRequest RequestFor(MatchView match, MatchActionView action) =>
@@ -402,6 +428,12 @@ public static class ProjectionEvidenceComposition
             }
             return Decorate(await inner.ApplyMatchAction(matchId, request, cancellationToken));
         }
+
+        public async Task<ApiResponse<MatchMutationView>> AdvanceComputer(
+            Guid matchId,
+            AdvanceComputerRequest request,
+            CancellationToken cancellationToken = default
+        ) => Decorate(await inner.AdvanceComputer(matchId, request, cancellationToken));
 
         public async Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
             AbandonSavedMatchRequest request,

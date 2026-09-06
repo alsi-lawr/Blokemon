@@ -112,10 +112,24 @@ module internal MatchCueProjection =
                 revealed
             )
 
+    /// An attack declared and not yet landed: the engine holds it open for a choice the other
+    /// player has to make before its blow is placed. Its cue is told where the blow lands.
+    let attackInTheAir (state: MatchState) (events: MatchEvent seq) : MatchEvent voption =
+        match state.PendingEffect with
+        | ValueSome pending when pending.AttackStarted ->
+            events
+            |> Seq.tryFindBack (fun matchEvent ->
+                matchEvent.Kind = MatchEventKind.AttackDeclared
+                && matchEvent.SourceCard = ValueSome pending.Source)
+            |> Option.filter (fun attack -> resolvedAttackDamage attack events = 0)
+            |> ValueOption.ofOption
+        | _ -> ValueNone
+
     let toPresentation
         (context: MatchContext)
         (document: MatchDocument)
         (displayName: string)
+        (carried: MatchEvent voption)
         (pending: PendingPresentation seq)
         =
         let frame = frame context
@@ -124,21 +138,36 @@ module internal MatchCueProjection =
         let human = document.Start.FirstDeck.Owner
         let steps = pending |> Seq.toArray
 
-        // A choice made by the opponent can resolve an attack in the following presentation
-        // step. Keep every event from this mutation in view so the attack cue reports the damage
-        // that the declared attack actually dealt rather than stopping at the choice boundary.
+        // A step's events, with the attack still in the air from the mutation before carried into
+        // the first of them: the choice this mutation makes is what lets that attack land, so its
+        // cue is told here, with the damage it went on to do, rather than at the choice boundary.
+        let stepEvents index (step: PendingPresentation) : MatchEvent seq =
+            match carried with
+            | ValueSome attack when index = 0 -> Seq.append [ attack ] step.Events
+            | _ -> step.Events
+
+        // Every event this mutation presents, so an attack cue reports the damage the declared
+        // attack actually dealt whichever step of the mutation placed it.
         let presentationEvents = ResizeArray<MatchEvent>()
 
-        for step in steps do
-            for matchEvent in step.Events do
-                presentationEvents.Add matchEvent
+        steps
+        |> Seq.iteri (fun index step -> presentationEvents.AddRange(stepEvents index step))
 
         MatchPresentationView(
             steps
-            |> Seq.map (fun step ->
+            |> Seq.mapi (fun index step ->
+                let events = stepEvents index step
+
                 MatchPresentationStepView(
                     frame document step.State displayName,
-                    step.Events
+                    events
+                    // The declaration of an attack still in the air when its step ends is not
+                    // told yet: told now it would report no damage for a blow that has not
+                    // landed. The mutation that lets it land carries it in.
+                    |> Seq.filter (fun matchEvent ->
+                        match attackInTheAir step.State events with
+                        | ValueSome attack -> attack.Sequence <> matchEvent.Sequence
+                        | ValueNone -> true)
                     |> Seq.map (fun matchEvent ->
                         cue step.State human displayName matchEvent presentationEvents)
                     |> Seq.choose Option.ofObj

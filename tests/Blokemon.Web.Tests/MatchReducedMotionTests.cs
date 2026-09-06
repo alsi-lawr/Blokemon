@@ -30,6 +30,8 @@ public sealed class MatchReducedMotionTests
             .AddSingleton<IApplicationStateReader>(application)
             .AddSingleton<IMatchOperations>(application)
             .AddSingleton<IMatchRecoveryOperations>(application)
+            .AddSingleton<IComputerRuntime>(StillComputer.Instance)
+            .AddSingleton<IPlayModeOperations>(StillComputer.Instance)
             .AddSingleton<IJSRuntime>(browser)
             .AddSingleton<NavigationManager>(new BrowserNavigation())
             .AddSingleton<SoundBoard>()
@@ -261,6 +263,17 @@ public sealed class MatchReducedMotionTests
                     new(Playing(after, []), presentation),
                     null
                 )
+            );
+
+        // The computer has nothing to add to this battle: the table after the attack is the
+        // table, and the page's request for its turn changes nothing.
+        public Task<ApiResponse<MatchMutationView>> AdvanceComputer(
+            Guid matchId,
+            AdvanceComputerRequest request,
+            CancellationToken cancellationToken = default
+        ) =>
+            Task.FromResult(
+                new ApiResponse<MatchMutationView>(true, new(Playing(after, []), null), null)
             );
 
         private static ApplicationView Playing(MatchFrameView frame, MatchActionView[] legal) =>

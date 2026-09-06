@@ -16,72 +16,10 @@ open Blokemon.Product
 open Blokemon.Game
 open Blokemon.Cpu
 
-/// The computer's turn, and the verified replay that turns a stored document back into a state.
-/// A document is trusted only after every command in it replays to the same command.
+/// The verified replay that turns a stored document back into a state. A document is trusted
+/// only after every command in it replays to the same command: the computer's by running the
+/// policy again, the player's by rebuilding them from the receipts.
 module internal MatchReplay =
-
-    let advanceCpu
-        (context: MatchContext)
-        (initial: MatchState)
-        (initialPolicy: CpuPolicyDocument)
-        (commands: List<MatchCommand>)
-        (events: List<MatchEvent>)
-        (presentation: List<PendingPresentation>)
-        : CpuAdvance =
-        let engine = context.Engine
-
-        let mutable state = initial
-        let mutable policy = initialPolicy
-        let mutable settled: CpuAdvance | null = null
-        let mutable count = 0
-
-        while isNull (box settled) && count < maximumCpuCommandsPerRequest do
-            match MatchCpuPolicy.choose context state cpuPlayer policy with
-            | CpuDecision.Selected action ->
-                match engine.Apply(state, action.Command) with
-                | CommandOutcome.Applied(appliedState, appliedEvents) ->
-                    match MatchCpuPolicy.tryAdvance policy with
-                    | None ->
-                        settled <-
-                            { State = state
-                              Policy = policy
-                              Error = invalidReplayError () }
-                    | Some advancedPolicy ->
-                        commands.Add action.Command
-                        events.AddRange appliedEvents
-
-                        presentation.Add
-                            { State = appliedState
-                              Events = appliedEvents }
-
-                        state <- appliedState
-                        policy <- advancedPolicy
-                | _ ->
-                    settled <-
-                        { State = state
-                          Policy = policy
-                          Error =
-                            ApiError("match.cpu_rejected", "The computer made an invalid move.") }
-            | _ ->
-                settled <-
-                    { State = state
-                      Policy = policy
-                      Error = null }
-
-            count <- count + 1
-
-        match settled with
-        | null ->
-            match MatchCpuPolicy.choose context state cpuPlayer policy with
-            | CpuDecision.Selected _ ->
-                { State = state
-                  Policy = policy
-                  Error = ApiError("match.cpu_limit", "The computer could not complete its turn.") }
-            | _ ->
-                { State = state
-                  Policy = policy
-                  Error = null }
-        | finished -> finished
 
     let validateDocument
         (catalogue: BlokemonCatalogue)
@@ -208,6 +146,11 @@ module internal MatchReplay =
                     let mutable state = startedState
                     let mutable policy = document.StartCommand.CpuPolicy
                     let events = List<MatchEvent>(startedEvents)
+                    // A receipt names the revision the player's own move produced. Before the
+                    // computer's turn was split from the player's move (Blokemon v0.8.2 and
+                    // earlier), it named the revision the computer's replies reached instead, so a
+                    // receipt that does not settle on its own command is held and checked where
+                    // the next player command is played, or at the end of the log.
                     let mutable pendingReceipt: MatchClientCommandReceipt | null = null
                     let mutable rejected = false
                     let mutable index = 0
@@ -215,6 +158,7 @@ module internal MatchReplay =
 
                     while not rejected && index < commands.Length do
                         let command = commands[index]
+                        let mutable receipt: MatchClientCommandReceipt | null = null
 
                         if command.Actor = cpuPlayer then
                             match MatchCpuPolicy.choose context state cpuPlayer policy with
@@ -232,8 +176,8 @@ module internal MatchReplay =
                                 rejected <- true
                             else
                                 match receipts.TryGetValue command.Id with
-                                | true, receipt when isClientCommand command.Id ->
-                                    let payload = readActionPayload receipt.RequestPayload
+                                | true, found when isClientCommand command.Id ->
+                                    let payload = readActionPayload found.RequestPayload
 
                                     match payload with
                                     | null -> rejected <- true
@@ -261,7 +205,7 @@ module internal MatchReplay =
                                                     action
                                                     state
                                                     human
-                                                    receipt.ClientCommandId
+                                                    found.ClientCommandId
                                                     value.Choices
 
                                             if
@@ -270,7 +214,7 @@ module internal MatchReplay =
                                             then
                                                 rejected <- true
                                             else
-                                                pendingReceipt <- receipt
+                                                receipt <- found
                                 | _ -> rejected <- true
                         else
                             rejected <- true
@@ -280,51 +224,54 @@ module internal MatchReplay =
                             | CommandOutcome.Applied(appliedState, appliedEvents) ->
                                 state <- appliedState
                                 events.AddRange appliedEvents
+
+                                match receipt with
+                                | NonNull settled when
+                                    settled.ResultRevision = appliedState.Revision
+                                    ->
+                                    pendingReceipt <- null
+                                | NonNull earlier -> pendingReceipt <- earlier
+                                | Null -> ()
                             | _ -> rejected <- true
 
                         index <- index + 1
 
                     if rejected then
                         invalidReplay ()
+                    else if
+
+                        // The computer's turn is committed one decision at a time, so a log that
+                        // ends while the computer still has the turn is a battle paused there,
+                        // not a damaged one: the next load resumes the turn.
+                        policy <> document.CpuPolicy
+                        || (match pendingReceipt with
+                            | NonNull pending -> pending.ResultRevision <> state.Revision
+                            | Null -> false)
+                    then
+                        invalidReplay ()
+                    elif
+                        document.ClientCommands
+                        |> Seq.exists (fun receipt ->
+                            receipt.ResultRevision.Value > state.Revision.Value
+                            || not (
+                                document.Commands
+                                |> Seq.exists (fun command -> command.Id = receipt.AppliedCommand)
+                            ))
+                    then
+                        invalidReplay ()
                     else
+                        let documentContentIdentity =
+                            JsonSerializer.Serialize(document, MatchJson.Options)
+                            |> DocumentIdentity.ofText
 
-                        let cpuStillMoves =
-                            match MatchCpuPolicy.choose context state cpuPlayer policy with
-                            | CpuDecision.Selected _ -> true
-                            | _ -> false
-
-                        if
-                            policy <> document.CpuPolicy
-                            || cpuStillMoves
-                            || (match pendingReceipt with
-                                | NonNull pending -> pending.ResultRevision <> state.Revision
-                                | Null -> false)
-                        then
-                            invalidReplay ()
-                        elif
-                            document.ClientCommands
-                            |> Seq.exists (fun receipt ->
-                                receipt.ResultRevision.Value > state.Revision.Value
-                                || not (
-                                    document.Commands
-                                    |> Seq.exists (fun command ->
-                                        command.Id = receipt.AppliedCommand)
-                                ))
-                        then
-                            invalidReplay ()
-                        else
-                            let documentContentIdentity =
-                                JsonSerializer.Serialize(document, MatchJson.Options)
-                                |> DocumentIdentity.ofText
-
-                            { Match =
-                                { DocumentRevision = documentRevision
-                                  DocumentContentIdentity = documentContentIdentity
-                                  Document = document
-                                  State = state
-                                  Events = ImmutableArray.CreateRange events }
-                              Error = null
-                              Recovery = None }
+                        { Match =
+                            { DocumentRevision = documentRevision
+                              DocumentContentIdentity = documentContentIdentity
+                              Document = document
+                              State = state
+                              Events = ImmutableArray.CreateRange events }
+                          Error = null
+                          Recovery = None }
                 | _ -> invalidReplay ()
             | validationError ->
                 { Match = null

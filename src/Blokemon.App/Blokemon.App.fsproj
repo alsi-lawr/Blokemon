@@ -81,6 +81,7 @@
     <Compile Include="MatchIdentity.fs" />
     <Compile Include="MatchLabels.fs" />
     <Compile Include="MatchPayloads.fs" />
+    <Compile Include="ComputerDecisions.fs" />
     <Compile Include="MatchCommandTranslation.fs" />
     <Compile Include="MatchCardProjection.fs" />
     <Compile Include="MatchViewProjection.fs" />
@@ -94,6 +95,7 @@
     <Compile Include="MatchConflicts.fs" />
     <Compile Include="MatchStartFlow.fs" />
     <Compile Include="MatchActionFlow.fs" />
+    <Compile Include="MatchComputerFlow.fs" />
     <Compile Include="LocalMatchService.fs" />
     <!--
       The local profile, decomposed the same way: documents and failures, then the views, then

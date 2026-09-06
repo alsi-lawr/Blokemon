@@ -33,6 +33,8 @@ public sealed class MatchCardReadingTests
             .AddSingleton<IApplicationStateReader>(table)
             .AddSingleton<IMatchOperations>(table)
             .AddSingleton<IMatchRecoveryOperations>(table)
+            .AddSingleton<IComputerRuntime>(StillComputer.Instance)
+            .AddSingleton<IPlayModeOperations>(StillComputer.Instance)
             .AddSingleton<IJSRuntime>(browser)
             .AddSingleton<NavigationManager>(new BrowserNavigation())
             .AddSingleton<SoundBoard>()
@@ -90,6 +92,8 @@ public sealed class MatchCardReadingTests
             .AddSingleton<IApplicationStateReader>(table)
             .AddSingleton<IMatchOperations>(table)
             .AddSingleton<IMatchRecoveryOperations>(table)
+            .AddSingleton<IComputerRuntime>(StillComputer.Instance)
+            .AddSingleton<IPlayModeOperations>(StillComputer.Instance)
             .AddSingleton<IJSRuntime>(browser)
             .AddSingleton<NavigationManager>(new BrowserNavigation())
             .AddSingleton<SoundBoard>()
@@ -118,6 +122,8 @@ public sealed class MatchCardReadingTests
             .AddSingleton<IApplicationStateReader>(table)
             .AddSingleton<IMatchOperations>(table)
             .AddSingleton<IMatchRecoveryOperations>(table)
+            .AddSingleton<IComputerRuntime>(StillComputer.Instance)
+            .AddSingleton<IPlayModeOperations>(StillComputer.Instance)
             .AddSingleton<IJSRuntime>(browser)
             .AddSingleton<NavigationManager>(new BrowserNavigation())
             .AddSingleton<SoundBoard>()
@@ -264,6 +270,12 @@ public sealed class MatchCardReadingTests
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
 
+        public Task<ApiResponse<MatchMutationView>> AdvanceComputer(
+            Guid matchId,
+            AdvanceComputerRequest request,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
         public Task<ApiResponse<ApplicationView>> AbandonSavedMatch(
             AbandonSavedMatchRequest request,
             CancellationToken cancellationToken = default
@@ -335,6 +347,12 @@ public sealed class MatchCardReadingTests
         public Task<ApiResponse<MatchMutationView>> ApplyMatchAction(
             Guid matchId,
             ApplyMatchActionRequest request,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
+
+        public Task<ApiResponse<MatchMutationView>> AdvanceComputer(
+            Guid matchId,
+            AdvanceComputerRequest request,
             CancellationToken cancellationToken = default
         ) => throw new NotSupportedException();
 

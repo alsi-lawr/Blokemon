@@ -44,6 +44,7 @@ public sealed class ServerSessionTests
                 $"/api/matches/{MatchId:D}/actions",
                 new ApplyMatchActionRequest(Guid.NewGuid(), 1, "end-turn", [])
             ),
+            (HttpMethod.Post, $"/api/matches/{MatchId:D}/computer", new AdvanceComputerRequest(1)),
             (HttpMethod.Post, "/api/matches/abandon", new AbandonSavedMatchRequest(1, "identity")),
             (
                 HttpMethod.Post,

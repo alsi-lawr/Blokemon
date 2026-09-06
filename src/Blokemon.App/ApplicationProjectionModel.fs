@@ -39,6 +39,7 @@ type internal ApplicationProjectionOperation =
     | AbandonSavedMatch = 8
     | DiscardMatchHistory = 9
     | PurgeData = 10
+    | AdvanceComputer = 11
 
 type internal MatchProjectionSource =
     | LoadSavedMatch = 0
@@ -114,7 +115,9 @@ module internal ApplicationProjectionMatrix =
            { Operation = ApplicationProjectionOperation.DiscardMatchHistory
              MatchSource = MatchProjectionSource.LoadSavedMatch }
            { Operation = ApplicationProjectionOperation.PurgeData
-             MatchSource = MatchProjectionSource.NoMatch } |]
+             MatchSource = MatchProjectionSource.NoMatch }
+           { Operation = ApplicationProjectionOperation.AdvanceComputer
+             MatchSource = MatchProjectionSource.UseCommittedMatch } |]
 
     let dependencies (segment: ApplicationProjectionSegment) = fields[int segment].Dependencies
 

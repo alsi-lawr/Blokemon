@@ -359,6 +359,12 @@ public sealed record ApplyMatchActionRequest(
     MatchChoiceSelectionRequest[] Choices
 );
 
+/// <summary>
+/// One decision of the computer's turn, asked for against the revision the client is showing so
+/// a battle that moved elsewhere is not advanced twice.
+/// </summary>
+public sealed record AdvanceComputerRequest(long ExpectedRevision);
+
 public sealed record AbandonSavedMatchRequest(long ExpectedRevision, string ContentIdentity);
 
 public sealed record DiscardMatchHistoryRequest(long ExpectedRevision, string ContentIdentity);
@@ -416,6 +422,16 @@ public interface IBlokemonApplication
     Task<ApiResponse<MatchMutationView>> ApplyMatchAction(
         Guid matchId,
         ApplyMatchActionRequest request,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Makes and applies one decision of the computer's turn, or answers with the unchanged
+    /// battle when the computer has no move to make.
+    /// </summary>
+    Task<ApiResponse<MatchMutationView>> AdvanceComputer(
+        Guid matchId,
+        AdvanceComputerRequest request,
         CancellationToken cancellationToken = default
     );
 

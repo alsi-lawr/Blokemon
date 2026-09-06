@@ -3,6 +3,8 @@
 @inject IApplicationStateReader ApplicationState
 @inject IMatchOperations MatchOperations
 @inject IMatchRecoveryOperations MatchRecoveryOperations
+@inject IPlayModeOperations Modes
+@inject IComputerRuntime Computer
 @inject IJSRuntime Js
 @inject SoundBoard Sound
 @using static Blokemon.Web.Client.Components.MatchText
@@ -165,7 +167,7 @@ else
         <MatchHud Frame="frame"
                   Difficulty="match.Difficulty"
                   Animating="_animating"
-                  Busy="Busy()"
+                  Busy="@(Busy() || _thinking)"
                   EndTurn="@GlobalAction(match, MatchActionKindView.EndTurn)"
                   Resign="@GlobalAction(match, MatchActionKindView.Resign)"
                   SkipRequested="SkipPresentation"
@@ -189,6 +191,7 @@ else
                           SelectedCardInstanceId="@_selectedCardInstanceId"
                           Cue="_activeCue"
                           Overlay="_overlay"
+                          Thinking="_thinking"
                           BackgroundTapped="TapBackground"
                           CardTapped="TapCard"
                           BenchTapped="TapBench"
@@ -313,6 +316,9 @@ else
     private bool _hadDestinationStep;
     private bool _working;
     private bool _animating;
+    // The computer is deciding its next move. Not a move in flight: the table stays live, so a
+    // card can still be read while the computer thinks, and only the turn's own controls wait.
+    private bool _thinking;
     private bool _autoStarted;
     private bool _reducedMotion;
     private string? _sheetKey;

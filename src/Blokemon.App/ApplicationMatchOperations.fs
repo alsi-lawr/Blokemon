@@ -8,8 +8,8 @@ open Blokemon.App.Contracts
 open Blokemon.App.ProfileStore
 open Blokemon.Product
 
-/// The two battle operations the application tier owns: both load the profile, hand the request
-/// to the match service, and return the one view the client redraws from.
+/// The three battle operations the application tier owns: each loads the profile, hands the
+/// request to the match service, and returns the one view the client redraws from.
 module internal ApplicationMatchOperations =
 
     let startMatch
@@ -102,6 +102,57 @@ module internal ApplicationMatchOperations =
 
                     let! played =
                         matches.ApplyProjection(
+                            current.Profile,
+                            current.Profile.DisplayName.Value,
+                            matchId,
+                            request,
+                            cancellationToken
+                        )
+
+                    match played.Error with
+                    | NonNull error -> return failed<MatchMutationView> error
+                    | Null ->
+                        let! view = toView current cancellationToken played
+
+                        return
+                            succeeded (
+                                MatchMutationView(
+                                    view,
+                                    ApplicationViewIsolation.presentation played.Presentation
+                                )
+                            )
+        }
+
+    let advanceComputer
+        (context: ApplicationContext)
+        (matchId: Guid)
+        (request: AdvanceComputerRequest)
+        (cancellationToken: CancellationToken)
+        =
+        let matches = context.Matches
+        let loadProfile = loadProfile context
+        let toView = toView context
+
+        task {
+            let! loaded = loadProfile cancellationToken
+
+            match loaded.Error with
+            | NonNull error -> return failed<MatchMutationView> error
+            | Null ->
+
+                match loaded.Profile with
+                | null ->
+                    return
+                        failed<MatchMutationView> (
+                            ApiError(
+                                "profile.required",
+                                "Create a local profile before playing a match."
+                            )
+                        )
+                | current ->
+
+                    let! played =
+                        matches.AdvanceProjection(
                             current.Profile,
                             current.Profile.DisplayName.Value,
                             matchId,

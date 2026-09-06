@@ -21,7 +21,9 @@ open Blokemon.Product
 open Blokemon.Game
 
 /// Applying one player move: the request is settled against the saved receipts, the engine
-/// applies it, the computer answers, and the document is written once.
+/// applies it, and the document is written with that one command. The computer's answer is
+/// not part of it: the client asks for that separately, one decision at a time, so the
+/// player's move is shown the moment it is made.
 module internal MatchActionFlow =
 
     let apply
@@ -37,7 +39,6 @@ module internal MatchActionFlow =
         let load = load context
         let toView = toView context
         let toPresentation = toPresentation context
-        let advanceCpu = advanceCpu context
         let reconcileActionConflict = reconcileActionConflict context
 
         task {
@@ -210,101 +211,81 @@ module internal MatchActionFlow =
                                                         events.AddRange appliedEvents
 
                                                         let presentation =
-                                                            List<PendingPresentation>(
-                                                                [ { State = appliedState
-                                                                    Events = appliedEvents } ]
+                                                            [ { State = appliedState
+                                                                Events = appliedEvents } ]
+
+                                                        let clientCommands =
+                                                            List<MatchClientCommandReceipt>(
+                                                                current.Document.ClientCommands
                                                             )
 
-                                                        let advanced =
-                                                            advanceCpu
-                                                                appliedState
-                                                                current.Document.CpuPolicy
-                                                                commands
-                                                                events
-                                                                presentation
+                                                        clientCommands.Add
+                                                            { ClientCommandId = request.CommandId
+                                                              Fingerprint = payloadFingerprint
+                                                              RequestPayload = requestPayload
+                                                              AppliedCommand = command.Id
+                                                              ResultRevision = appliedState.Revision }
 
-                                                        if not (isNull (box advanced.Error)) then
+                                                        let document =
+                                                            { current.Document with
+                                                                Commands =
+                                                                    ImmutableArray.CreateRange
+                                                                        commands
+                                                                ClientCommands =
+                                                                    ImmutableArray.CreateRange
+                                                                        clientCommands }
+
+                                                        let documentJson =
+                                                            JsonSerializer.Serialize(
+                                                                document,
+                                                                MatchJson.Options
+                                                            )
+
+                                                        let! write =
+                                                            documents.Update(
+                                                                context.Keys.Match,
+                                                                current.DocumentRevision,
+                                                                documentJson,
+                                                                cancellationToken
+                                                            )
+
+                                                        match write with
+                                                        | :? DocumentWriteResult.Written as written ->
+                                                            let committed =
+                                                                { DocumentRevision =
+                                                                    written.Revision
+                                                                  DocumentContentIdentity =
+                                                                    DocumentIdentity.ofText
+                                                                        documentJson
+                                                                  Document = document
+                                                                  State = appliedState
+                                                                  Events =
+                                                                    ImmutableArray.CreateRange
+                                                                        events }
+
+                                                            context.Cached <- committed
+
                                                             return
-                                                                { View = null
-                                                                  Error = advanced.Error
+                                                                { View =
+                                                                    toView committed displayName
+                                                                  Error = null
                                                                   Recovery = null
-                                                                  Presentation = null
-                                                                  DocumentIdentity =
-                                                                    noDocumentProjection }
-                                                        else
-
-                                                            let clientCommands =
-                                                                List<MatchClientCommandReceipt>(
-                                                                    current.Document.ClientCommands
-                                                                )
-
-                                                            clientCommands.Add
-                                                                { ClientCommandId =
-                                                                    request.CommandId
-                                                                  Fingerprint = payloadFingerprint
-                                                                  RequestPayload = requestPayload
-                                                                  AppliedCommand = command.Id
-                                                                  ResultRevision =
-                                                                    advanced.State.Revision }
-
-                                                            let document =
-                                                                { current.Document with
-                                                                    CpuPolicy = advanced.Policy
-                                                                    Commands =
-                                                                        ImmutableArray.CreateRange
-                                                                            commands
-                                                                    ClientCommands =
-                                                                        ImmutableArray.CreateRange
-                                                                            clientCommands }
-
-                                                            let documentJson =
-                                                                JsonSerializer.Serialize(
-                                                                    document,
-                                                                    MatchJson.Options
-                                                                )
-
-                                                            let! write =
-                                                                documents.Update(
-                                                                    context.Keys.Match,
-                                                                    current.DocumentRevision,
-                                                                    documentJson,
-                                                                    cancellationToken
-                                                                )
-
-                                                            match write with
-                                                            | :? DocumentWriteResult.Written as written ->
-                                                                let committed =
-                                                                    { DocumentRevision =
-                                                                        written.Revision
-                                                                      DocumentContentIdentity =
-                                                                        DocumentIdentity.ofText
-                                                                            documentJson
-                                                                      Document = document
-                                                                      State = advanced.State
-                                                                      Events =
-                                                                        ImmutableArray.CreateRange
-                                                                            events }
-
-                                                                context.Cached <- committed
-
-                                                                return
-                                                                    { View =
-                                                                        toView committed displayName
-                                                                      Error = null
-                                                                      Recovery = null
-                                                                      Presentation =
-                                                                        toPresentation
-                                                                            document
-                                                                            displayName
-                                                                            presentation
-                                                                      DocumentIdentity =
-                                                                        documentProjection committed }
-                                                            | _ ->
-                                                                return!
-                                                                    reconcileActionConflict
-                                                                        profile
+                                                                  Presentation =
+                                                                    toPresentation
+                                                                        document
                                                                         displayName
-                                                                        request.CommandId
-                                                                        payloadFingerprint
-                                                                        cancellationToken
+                                                                        (attackInTheAir
+                                                                            current.State
+                                                                            current.Events)
+                                                                        presentation
+                                                                  DocumentIdentity =
+                                                                    documentProjection committed }
+                                                        | _ ->
+                                                            return!
+                                                                reconcileActionConflict
+                                                                    profile
+                                                                    displayName
+                                                                    request.CommandId
+                                                                    payloadFingerprint
+                                                                    cancellationToken
         }

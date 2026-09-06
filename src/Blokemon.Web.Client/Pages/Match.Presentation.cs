@@ -13,6 +13,10 @@ namespace Blokemon.Web.Client.Pages;
 // skip, and the reveal that refuses to be skipped.
 public partial class Match
 {
+    // The most decisions one turn of the computer's is asked for; the match itself refuses a
+    // turn that runs longer, so this only keeps the page from asking forever.
+    private const int MaximumComputerCommandsPerTurn = 256;
+
     private Task ChooseAttack(MatchAttackView attack)
     {
         if (attack.ActionId is null || _view?.Match is not { } match)
@@ -77,6 +81,49 @@ public partial class Match
             new(_commandId.Value, match.Frame.Revision, action.Id, choices)
         );
         await CompleteMutation(response, DisplayFrame());
+        await PlayComputerTurn();
+    }
+
+    // The computer's turn, one decision at a time. The player's own move has already been shown
+    // by the time this starts; each answer is played out before the next is asked for, so the
+    // computer's moves appear as it makes them, and the pause before each is the decision alone.
+    // The computer thinks off this thread, so nothing on the table waits on it. Answers whether
+    // the computer was asked for anything at all, which is whether there is anything to redraw.
+    private async Task<bool> PlayComputerTurn()
+    {
+        var asked = false;
+        for (var count = 0; count < MaximumComputerCommandsPerTurn; count++)
+        {
+            if (
+                _view?.Match is not { } match
+                || match.Frame.IsComplete
+                || !match.Frame.Opponent.HasTurn
+                || _operationError is not null
+            )
+            {
+                return asked;
+            }
+
+            // The ribbon shows the computer thinking for exactly as long as it is.
+            asked = true;
+            _thinking = true;
+            await InvokeAsync(StateHasChanged);
+            var response = await MatchOperations.AdvanceComputer(
+                match.Frame.Id,
+                new(match.Frame.Revision)
+            );
+            _thinking = false;
+            await CompleteMutation(response, DisplayFrame());
+            await InvokeAsync(StateHasChanged);
+
+            // An answer that moved nothing is the computer saying it has no move to make.
+            if (_view?.Match?.Frame.Revision == match.Frame.Revision)
+            {
+                return asked;
+            }
+        }
+
+        return asked;
     }
 
     private async Task CompleteMutation(
