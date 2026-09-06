@@ -219,6 +219,11 @@ module internal CpuObservations =
                         )
                       Affordability = action.Affordability }))
             |> interleave
+            // Still lazy, so a caller that stops at its candidate limit never materializes the
+            // choices beyond it, but computed once: the policy walks the candidates several
+            // times for every decision, and each walk of the bare pipeline would propose,
+            // materialize and validate every legal action again.
+            |> Seq.cache
           AuthoritativeState =
             match mode with
             | CpuObservationMode.Fair -> ValueNone
