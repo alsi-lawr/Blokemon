@@ -94,9 +94,10 @@ public sealed class SessionHolder(IJSRuntime js, SessionTokenStore tokens, TimeP
 
     /// <summary>
     /// The player name the held session now acts for: a session issued before the profile
-    /// existed carries none, and the name the person chooses replaces it here and in storage.
+    /// existed carries none, the name the person chooses replaces it here and in storage, and a
+    /// purge that removes the player takes the name with it.
     /// </summary>
-    public async Task Rename(string displayName, CancellationToken cancellationToken = default)
+    public async Task Rename(string? displayName, CancellationToken cancellationToken = default)
     {
         if (Current is not { } held)
         {

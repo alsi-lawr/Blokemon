@@ -192,6 +192,11 @@ else
         _validation = null;
         _displayName = string.Empty;
         _view = response.Value;
+        // The player is gone, so the session no longer has a name to be signed in as.
+        if (Account)
+        {
+            await Session.Rename(null);
+        }
     }
 
     protected override async Task OnInitializedAsync()
