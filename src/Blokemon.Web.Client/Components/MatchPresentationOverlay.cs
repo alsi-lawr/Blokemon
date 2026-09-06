@@ -74,25 +74,13 @@ public sealed record MatchPresentationOverlay(
             instance.Damage + (DamageDeltas.TryGetValue(instance.Id, out var delta) ? delta : 0)
         );
 
-    public MatchPresentationOverlay WithDamage(IEnumerable<string> cardInstanceIds, int amount)
-    {
-        if (amount == 0)
-        {
-            return this;
-        }
-
-        var deltas = new Dictionary<string, int>(DamageDeltas, StringComparer.Ordinal);
-        foreach (var cardInstanceId in cardInstanceIds)
-        {
-            deltas[cardInstanceId] =
-                (deltas.TryGetValue(cardInstanceId, out var delta) ? delta : 0) + amount;
-        }
-
-        return this with
+    // The counters this beat shows over the frame, worked out whole for the beat: which table
+    // each card is drawn from decides its share, so the deltas are not a running total.
+    public MatchPresentationOverlay WithDamage(IReadOnlyDictionary<string, int> deltas) =>
+        this with
         {
             DamageDeltas = deltas,
         };
-    }
 
     public MatchPresentationOverlay Blow(string? striking, IReadOnlyList<string>? struck) =>
         this with

@@ -301,14 +301,18 @@ def focus_state(devtools):
         (() => {
           const screen = document.querySelector('.battle-screen');
           const held = [...document.querySelectorAll('.hand-card')];
-          const dimmed = held.filter(card => !card.classList.contains('is-aura-selected') && !card.classList.contains('is-target'))
-            .map(card => Number.parseFloat(getComputedStyle(card.querySelector('.hand-card-visual')).opacity));
+          // A card that has stepped back is darkened, never seen through: its brightness is
+          // read from the filter, and its opacity must be whole.
+          const visuals = held.filter(card => !card.classList.contains('is-aura-selected') && !card.classList.contains('is-target'))
+            .map(card => getComputedStyle(card.querySelector('.hand-card-visual')));
+          const brightness = style => { const match = /brightness\\((\\d*\\.?\\d+)\\)/.exec(style.filter); return match ? Number(match[1]) : 1; };
           return {
             focused: screen.classList.contains('is-focused'),
             selected: document.querySelectorAll('.is-aura-selected').length,
             lit: document.querySelectorAll('.is-aura:not(.is-aura-selected)').length,
             targets: document.querySelectorAll('.is-target').length,
-            dimmed: dimmed.length > 0 && dimmed.every(opacity => opacity < 0.5),
+            dimmed: visuals.length > 0 && visuals.every(style => brightness(style) < 0.6),
+            solid: visuals.every(style => Number.parseFloat(style.opacity) === 1),
           };
         })()
         """
@@ -324,6 +328,18 @@ def carried(devtools, card_id, label):
     require(being_carried == card_id, f"{label}: the card being carried is {card_id} (it is {being_carried})")
 
 
+def stepped_back(devtools, label):
+    """The rest of the hand has stepped back - darkened, and still whole - once its transition
+    has run; the step back is waited for rather than read a frame after it began."""
+    deadline = time.monotonic() + 5
+    state = focus_state(devtools)
+    while time.monotonic() < deadline and not state["dimmed"]:
+        time.sleep(0.05)
+        state = focus_state(devtools)
+    require(state["dimmed"], f"{label}: the rest of the hand has stepped back ({state})")
+    require(state["solid"], f"{label}: a card that stepped back is still solid ({state})")
+
+
 def touch_drag(devtools, card_id, target_selector, label):
     """A finger carries the card to the target: past the threshold first, so the table lights
     the target, then onto it."""
@@ -333,11 +349,9 @@ def touch_drag(devtools, card_id, target_selector, label):
     devtools.touch("touchStart", start)
     devtools.touch("touchMove", {"x": start["x"], "y": start["y"] - PAST_THE_THRESHOLD})
     devtools.wait_for(f"document.querySelector({json.dumps(target_selector)}) !== null", f"{label}: the target lit by the drag")
-    # The step back is a transition, however short: it is read after the frame that runs it.
-    frame(devtools)
+    stepped_back(devtools, label)
     state = focus_state(devtools)
     require(state["focused"] and state["selected"] == 1 and state["lit"] == 0, f"{label}: only the carried card and its targets are lit ({state})")
-    require(state["dimmed"], f"{label}: the rest of the hand has stepped back ({state})")
     carried(devtools, card_id, label)
     end = centre(devtools, target_selector)
     devtools.touch("touchMove", {"x": (start["x"] + end["x"]) / 2, "y": (start["y"] + end["y"]) / 2})

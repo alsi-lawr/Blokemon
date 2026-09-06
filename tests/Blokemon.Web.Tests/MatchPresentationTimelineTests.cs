@@ -48,6 +48,75 @@ public sealed class MatchPresentationTimelineTests
     }
 
     [Test]
+    public void TheEnergyBurnedToPayForABlowIsGoneAsTheBlowLands()
+    {
+        // An attack that discards an Energy as its cost has no cue for the discard: the command
+        // settles on a table where the Energy is gone, and the cues say only that the blow was
+        // thrown, that it landed, that the turn changed and that the opponent drew. The card that
+        // threw the blow is drawn as the settled table has it from the beat after its own cue, so
+        // the Energy is gone as the blow lands - not once the opponent's turn has begun.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                Frame(defenderDamage: 30, playerHasTurn: false) with
+                {
+                    Player = Side("You", false, active: Fuelled(1)),
+                },
+                Cue(1, MatchAnimationKindView.Attack, amount: 30, source: Attacker),
+                Cue(2, MatchAnimationKindView.Damage, amount: 30, source: Attacker),
+                Cue(3, MatchAnimationKindView.Turn, targets: []),
+                Cue(4, MatchAnimationKindView.Draw, targets: [])
+            ),
+            Frame(defenderDamage: 0, playerHasTurn: true) with
+            {
+                Player = Side("You", true, active: Fuelled(2)),
+            }
+        );
+
+        beats
+            .Select(beat => beat.Frame.Player.Active!.AttachedEnergy.Length)
+            .ShouldBe([2, 1, 1, 1, 1]);
+        // The blow still lands on its own cue, and the turn still changes on its own.
+        beats.Select(beat => Shown(beat, Defender)).ShouldBe([0, 30, 30, 30, 30]);
+        beats.Select(beat => beat.Frame.Player.HasTurn).ShouldBe([true, true, true, false, false]);
+        beats
+            .Select(beat => beat.Frame.Opponent.HasTurn)
+            .ShouldBe([false, false, false, true, true]);
+    }
+
+    [Test]
+    public void ACardTheCuesHaveNotNamedKeepsTheTableAsItWas()
+    {
+        // The defender's own Energy is not the attack's business: nothing names it, so it is drawn
+        // as it was until the command settles, whatever the settled table says of it.
+        var beats = MatchPresentationTimeline.Beats(
+            Presentation(
+                Frame(defenderDamage: 0, playerHasTurn: false) with
+                {
+                    Player = Side("You", false, active: Fuelled(1)),
+                    Opponent = Side("Opponent", true, active: Fuelled(3, Defender)),
+                },
+                Cue(1, MatchAnimationKindView.Attack, amount: 0, source: Attacker, targets: []),
+                Cue(2, MatchAnimationKindView.Turn, targets: [])
+            ),
+            Frame(defenderDamage: 0, playerHasTurn: true) with
+            {
+                Player = Side("You", true, active: Fuelled(2)),
+                Opponent = Side("Opponent", false, active: Fuelled(0, Defender)),
+            }
+        );
+
+        beats.Select(beat => beat.Frame.Opponent.Active!.AttachedEnergy.Length).ShouldBe([0, 0, 3]);
+        beats.Select(beat => beat.Frame.Player.Active!.AttachedEnergy.Length).ShouldBe([2, 1, 1]);
+    }
+
+    // The attacker, or another card, carrying that many Energy.
+    private static MatchCardInstanceView Fuelled(int energy, string cardInstanceId = Attacker)
+    {
+        var instance = Instance(cardInstanceId, 0);
+        return instance with { AttachedEnergy = [.. Enumerable.Repeat(instance.Card, energy)] };
+    }
+
+    [Test]
     public void DamageIsShownAgainstTheFrameOnScreen_NotTheOneTheCommandEndsOn()
     {
         var beats = MatchPresentationTimeline.Beats(

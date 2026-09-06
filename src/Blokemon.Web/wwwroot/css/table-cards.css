@@ -52,6 +52,7 @@
   position: relative;
   z-index: 1;
   border-radius: 10px;
+  transition: filter 0.2s;
 }
 
 /* The press surface is one control and cannot be two, so each readable card - the host and every
@@ -139,10 +140,10 @@
 }
 
 /* The aura IS the instruction: actionable cards breathe, the chosen one holds and lifts, and
-   the places it can go glow for it. Nothing flashes or steps. */
+   the places it can go glow for it. Nothing flashes or steps. A card outside the aura is
+   darkened, never seen through: it stays a solid card, only not one in play right now. */
 .battlefield.is-choosing .field-card-button:not(.is-aura, .is-target) {
-  opacity: 0.42;
-  filter: saturate(0.55);
+  filter: brightness(0.46) saturate(0.6);
 }
 
 .is-aura,
@@ -167,8 +168,8 @@
   pointer would trail it. It rises over everything in its own zone, and is not itself a place
   anything can land on - the pointer is always over it.
 */
-.card-press:has(> .card-press-surface[data-dragging]),
-.card-press:has(> .card-press-surface[data-springing]) {
+.card-press[data-dragging],
+.card-press[data-springing] {
   z-index: 95;
 }
 

@@ -162,6 +162,7 @@ function lost(event) {
 function begin(drag) {
   drag.dragging = true;
   drag.zoom = zoomOf(drag.surface);
+  drag.root.dataset.dragging = "";
   drag.surface.dataset.dragging = "";
   drag.surface.style.transition = "none";
   place(drag);
@@ -260,7 +261,8 @@ function release(drag) {
 // The card goes back to where it stands: sprung, so it is seen to go, or at once when the page
 // itself is going.
 function putBack(drag, spring) {
-  const { surface } = drag;
+  const { root, surface } = drag;
+  delete root.dataset.dragging;
   delete surface.dataset.dragging;
   if (!spring || !surface.isConnected) {
     surface.style.transition = "";
@@ -268,11 +270,13 @@ function putBack(drag, spring) {
     return;
   }
 
+  root.dataset.springing = "";
   surface.dataset.springing = "";
   surface.style.transition = `translate ${springMilliseconds}ms cubic-bezier(0.2, 0.9, 0.3, 1.2)`;
   surface.style.translate = "";
   setTimeout(() => {
     surface.style.transition = "";
+    delete root.dataset.springing;
     delete surface.dataset.springing;
   }, springMilliseconds + 40);
 }

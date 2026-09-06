@@ -23,9 +23,13 @@ public sealed record MatchPresentationBeat(
 // (Blokemon.Game MatchCommit.commit puts CommittedState on the terminal event alone), so there is
 // no state between two events to build a frame from, and building one would cost a legal-action
 // sweep of both sides. So the frames stay per command, and what happens inside a command is
-// carried as deltas against the frame already on screen: damage lands while its own cue plays,
-// which is the point of the whole exercise, rather than at the frame change that follows the
-// last cue - by which time the turn has usually rotated and the blow reads as belonging to it.
+// carried against the frame already on screen: damage lands while its own cue plays, which is
+// the point of the whole exercise, rather than at the frame change that follows the last cue -
+// by which time the turn has usually rotated and the blow reads as belonging to it. And each
+// card a cue names is drawn as the settled table has it from the beat after that cue, so what a
+// cue says has happened - the Energy burned to pay for a blow, the card an Energy was attached
+// to holding it - is on the table as soon as it has been said, rather than once the whole
+// command has been told (MatchPresentationCaught).
 //
 // Timing lives in the page, not here: this says only what is on screen and in what order.
 //
@@ -62,6 +66,10 @@ public static class MatchPresentationTimeline
             var standing = false;
             var dealt = false;
             var stripped = false;
+            // What the cues so far have made true, card by card: a card a cue has named is drawn
+            // as the settled table has it from the beat after that cue, so the Energy burned to
+            // pay for a blow is gone as the blow lands rather than once the turn has changed.
+            var caught = new MatchPresentationCaught();
             for (var index = 0; index < step.Events.Length; index++)
             {
                 var cue = step.Events[index];
@@ -92,7 +100,7 @@ public static class MatchPresentationTimeline
                     if (dealing is not null)
                     {
                         standing = true;
-                        overlay = MatchPresentationDamage.Unplayed(step.Events, index);
+                        overlay = MatchPresentationOverlay.Empty;
                         gone.Clear();
                     }
                 }
@@ -108,16 +116,32 @@ public static class MatchPresentationTimeline
                     standing,
                     dealt,
                     stripped,
-                    MatchPresentationCatchUp.Undealt(step, index)
+                    MatchPresentationCatchUp.Undealt(step, index),
+                    caught
                 );
 
                 // Whatever this cue takes out of a place stays taken out. The cue that carries a
                 // card off is the only one that shows it going, but the frame behind it still has
                 // the card where it was for every cue after that too, so the concealment has to
                 // outlive the cue that started it or a second copy comes back.
+                // A concealment ends where the card it hides is drawn standing where it went: the
+                // table has caught up with that card, so there is no second copy left to hide.
+                // What this cue itself takes away is hidden from here on whatever the table says.
+                gone.RemoveAll(cardInstanceId => caught.Standing(cardInstanceId, step.Frame));
                 var carried = MatchPresentationJourneys.Carrying(cue, given, step.Frame);
                 MatchPresentationJourneys.Departs(cue, carried, gone);
-                overlay = MatchPresentationDamage.Applied(overlay, cue).Gone(gone.ToArray());
+                var settledFrame = step.Frame;
+                var stands = standing;
+                overlay = overlay
+                    .WithDamage(
+                        MatchPresentationDamage.Deltas(
+                            step.Events,
+                            index,
+                            cardInstanceId =>
+                                stands || caught.Standing(cardInstanceId, settledFrame)
+                        )
+                    )
+                    .Gone(gone.ToArray());
                 overlay = cue.Kind switch
                 {
                     // A declaration throws a blow, and what it is aimed at is whatever it is
@@ -164,9 +188,12 @@ public static class MatchPresentationTimeline
                 {
                     standing = true;
                     before = MatchPresentationCatchUp.Handed(before, cue);
-                    overlay = MatchPresentationDamage.Unplayed(step.Events, index);
+                    overlay = MatchPresentationOverlay.Empty;
                     gone.Clear();
                 }
+
+                // What this cue said has happened is true of the table from the next beat on.
+                caught.Played(cue);
             }
 
             // The table settles on what the command actually did, and the deltas that stood in

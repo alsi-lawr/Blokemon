@@ -10,52 +10,48 @@ namespace Blokemon.Web.Client.Components;
 // before any of it is played.
 internal static class MatchPresentationDamage
 {
-    internal static MatchPresentationOverlay Applied(
-        MatchPresentationOverlay overlay,
-        MatchEventCueView cue
-    ) =>
-        cue.Kind switch
-        {
-            MatchAnimationKindView.Damage => overlay.WithDamage(
-                cue.TargetCardInstanceIds,
-                cue.Amount
-            ),
-            MatchAnimationKindView.Heal => overlay.WithDamage(
-                cue.TargetCardInstanceIds,
-                -cue.Amount
-            ),
-            _ => overlay,
-        };
-
-    // The counters the settled table already carries that nothing has yet been seen to place.
+    // The counters the table shows over what the frame behind each card carries, for the beat at
+    // which the cue at `played` is on screen.
     //
-    // A delta only means anything against the frame it was measured from, so the deltas are spent
-    // when the table catches up. That is right for everything already announced and wrong for
-    // everything not: the frame a draw brings forward is the one the whole command ends on, so it
-    // carries the damage of cues that have not played, and their own cues then counted it a second
-    // time. What is still to come is held back here instead, and each cue gives its own share back
-    // as it plays - so a counter still lands with the cue announcing it, whichever side of the
-    // catch-up that cue falls.
-    internal static MatchPresentationOverlay Unplayed(MatchEventCueView[] cues, int played)
+    // A card is drawn either from the table before the command or from the one it settles on,
+    // and the two need opposite corrections. The table before the command has none of the
+    // command's counters, so a card drawn from it carries the damage of every cue that has played
+    // so far. The settled table has every counter the command places, including those whose cue
+    // is still to come, so a card drawn from it has those held back until each one plays. Either
+    // way a counter lands with the cue announcing it, whichever table the card is drawn from.
+    internal static IReadOnlyDictionary<string, int> Deltas(
+        MatchEventCueView[] cues,
+        int played,
+        Func<string, bool> settled
+    )
     {
-        var overlay = MatchPresentationOverlay.Empty;
-        for (var index = played + 1; index < cues.Length; index++)
+        var deltas = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (var index = 0; index < cues.Length; index++)
         {
-            overlay = cues[index].Kind switch
+            var amount = cues[index].Kind switch
             {
-                MatchAnimationKindView.Damage => overlay.WithDamage(
-                    cues[index].TargetCardInstanceIds,
-                    -cues[index].Amount
-                ),
-                MatchAnimationKindView.Heal => overlay.WithDamage(
-                    cues[index].TargetCardInstanceIds,
-                    cues[index].Amount
-                ),
-                _ => overlay,
+                MatchAnimationKindView.Damage => cues[index].Amount,
+                MatchAnimationKindView.Heal => -cues[index].Amount,
+                _ => 0,
             };
+            if (amount == 0)
+            {
+                continue;
+            }
+
+            foreach (var target in cues[index].TargetCardInstanceIds)
+            {
+                var share = settled(target)
+                    ? (index > played ? -amount : 0)
+                    : (index <= played ? amount : 0);
+                if (share != 0)
+                {
+                    deltas[target] = deltas.GetValueOrDefault(target) + share;
+                }
+            }
         }
 
-        return overlay;
+        return deltas;
     }
 
     // What a declared blow goes on to damage, which is what it should be aimed at: an attack that

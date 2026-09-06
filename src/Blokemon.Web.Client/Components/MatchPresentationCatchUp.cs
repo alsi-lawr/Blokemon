@@ -18,26 +18,34 @@ internal static class MatchPresentationCatchUp
     // The table one beat is drawn against, put together out of the table this command was given and
     // the one it settles on.
     //
-    // Three things on it catch up at three different moments, because three different cues account
-    // for them: what is standing on the table and what phase it is in, the hand this command deals
-    // to the player, and the strip the opponent's held cards are drawn as. Taking all three at once
-    // is what put a whole hand in front of the opponent on the beat the player was being dealt
-    // theirs - nothing had said it was coming, and their own deal then played over the top of it.
+    // Several things on it catch up at different moments, because different cues account for
+    // them: each card standing on the table, the phase and whose turn it is, the prizes, the hand
+    // this command deals to the player, and the strip the opponent's held cards are drawn as.
+    // Taking all of them at once is what put a whole hand in front of the opponent on the beat the
+    // player was being dealt theirs - nothing had said it was coming, and their own deal then
+    // played over the top of it - and what left an Energy burned to pay for an attack lying on the
+    // card until the opponent's turn had begun, three cues after the blow that burned it.
     internal static MatchFrameView Composed(
         MatchFrameView before,
         MatchFrameView settled,
         bool standing,
         bool dealt,
         bool stripped,
-        string[] undealt
+        string[] undealt,
+        MatchPresentationCaught caught
     )
     {
-        var table = standing ? settled : before;
+        var table = standing ? settled : caught.Table(before, settled);
         var held = Without(settled, undealt);
         return table with
         {
-            Player = Holding(table.Player, dealt ? held.Player : before.Player),
-            Opponent = Holding(table.Opponent, stripped ? held.Opponent : before.Opponent),
+            Player = Holding(table.Player, dealt ? held.Player : before.Player, caught, settled),
+            Opponent = Holding(
+                table.Opponent,
+                stripped ? held.Opponent : before.Opponent,
+                caught,
+                settled
+            ),
         };
     }
 
@@ -92,14 +100,31 @@ internal static class MatchPresentationCatchUp
     }
 
     // A side of the table holding what it has been dealt so far rather than what it ends up
-    // holding, out of the Deck it has that much left in.
-    private static MatchSideView Holding(MatchSideView side, MatchSideView held) =>
-        side with
+    // holding, out of the Deck it has that much left in - less any card a cue has since carried
+    // out of that hand onto the table, which is standing there now and cannot also still be held.
+    private static MatchSideView Holding(
+        MatchSideView side,
+        MatchSideView held,
+        MatchPresentationCaught caught,
+        MatchFrameView settled
+    )
+    {
+        var holding = side with
         {
             DeckCount = held.DeckCount,
             HandCount = held.HandCount,
             Hand = held.Hand,
         };
+        foreach (var card in held.Hand)
+        {
+            if (caught.Standing(card.Id, settled))
+            {
+                holding = Less(holding, card.Id);
+            }
+        }
+
+        return holding;
+    }
 
     // Whether this cue is the choice that opens a game, which is the one card journey the table
     // stands up early for. Every other card played lands when the command settles, one beat later.

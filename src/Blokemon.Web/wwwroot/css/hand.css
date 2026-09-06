@@ -137,17 +137,19 @@
 
 /*
   A card picked up focuses the table on what it can do: the card holds its glow, where it can go
-  glows for it, and every other held card steps back the way the field already does. The hand is
-  dimmed by its visuals rather than its press surfaces, so the carried card keeps its own.
+  glows for it, and every other held card steps back the way the field already does. Stepping
+  back is being darkened, never being seen through: a card at part opacity reads as a ghost with
+  the table showing through it, where a darkened card is still a card, just not one in play right
+  now. The hand is dimmed by its visuals rather than its press surfaces, so the carried card keeps
+  its own.
 */
 .battle-screen.is-focused .hand-card:not(.is-aura, .is-aura-selected, .is-target) .hand-card-visual {
-  opacity: 0.42;
-  filter: saturate(0.55);
+  filter: brightness(0.46) saturate(0.6);
 }
 
 /* The card being carried keeps the fan's own turn and comes up a little, and does not ease into
    the lift the chosen card takes when tapped: the pointer already has it. */
-.hand-card:has(> .card-press-surface[data-dragging]) .card-press-surface {
+.hand-card[data-dragging] .card-press-surface {
   transform: rotate(var(--fan-turn, 0deg)) translateY(var(--fan-lift, 0px)) scale(1.06);
   transition: none;
 

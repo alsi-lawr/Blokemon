@@ -117,9 +117,9 @@ public sealed class HeadlessComputerTests
                 return (stored.Json, expected);
             }
 
-            // The turn is given up as soon as it can be, and until then a move is made that
-            // asks nothing: the deal decides which moves are offered, and one that needs a
-            // choice answered would be refused with the empty answer given here.
+            // The turn is given up as soon as it can be, and until then a move is made whose
+            // requirements are met by choosing nothing: the deal decides which moves are
+            // offered, and one that needs a card chosen cannot be answered here.
             var action =
                 match.LegalActions.FirstOrDefault(static action =>
                     action.Kind == MatchActionKindView.EndTurn && action.DisabledReason is null
@@ -132,13 +132,30 @@ public sealed class HeadlessComputerTests
             match = Value(
                 await application.ApplyMatchAction(
                     match.Frame.Id,
-                    new(Guid.NewGuid(), match.Frame.Revision, action.Id, [])
+                    new(Guid.NewGuid(), match.Frame.Revision, action.Id, EmptyAnswers(action))
                 )
             ).Application.Match!;
         }
 
         throw new InvalidOperationException("The computer never had the turn.");
     }
+
+    // Every requirement of a move is answered, the way the page answers it: with nothing chosen
+    // where nothing has to be. A move sent with a requirement left unanswered is refused.
+    private static MatchChoiceSelectionRequest[] EmptyAnswers(MatchActionView action) =>
+        action
+            .ChoiceRequirements.Select(requirement => new MatchChoiceSelectionRequest(
+                requirement.Id,
+                requirement.Kind,
+                requirement.Kind == MatchChoiceKindView.Optional ? false : null,
+                requirement.Kind == MatchChoiceKindView.Amount ? requirement.Minimum : null,
+                [],
+                null,
+                null,
+                [],
+                []
+            ))
+            .ToArray();
 
     private static T Value<T>(ApiResponse<T> response)
         where T : class
