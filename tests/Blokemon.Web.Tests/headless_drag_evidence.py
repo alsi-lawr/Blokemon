@@ -465,6 +465,9 @@ def spend_the_turn(devtools, drag=mouse_drag):
         require(battle_over(devtools) or devtools.evaluate("document.querySelector('.battle-screen.is-focused') === null"), "the attack carried onto the opponent's Active thrown")
         print("PASS attack: the Active carried onto the opponent's Active attacks")
         return
+    # The HUD holds its buttons while the last move is still being told; the turn is ended once
+    # it is ready to be.
+    devtools.wait_for("document.querySelector('button.hud-end-turn:not([disabled])') !== null", "the End turn button ready", timeout=30)
     devtools.evaluate("document.querySelector('button.hud-end-turn:not([disabled])').click()")
     devtools.wait_for("document.querySelector('.action-sheet') !== null", "the end-of-turn sheet")
     devtools.click_text("End turn", ".action-sheet button")

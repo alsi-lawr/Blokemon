@@ -102,6 +102,9 @@ type MatchDocument =
       [<property: JsonRequired>]
       ClientCommands: ImmutableArray<MatchClientCommandReceipt> }
 
+/// The index of the archived battles: their ids, in the order they were archived. Each battle
+/// is its own document under the history's key, written as it stood when it finished and never
+/// read again by the game; the index is what a start appends to and what a discard walks.
 [<CLIMutable>]
 type MatchHistoryDocument =
     { [<property: JsonRequired>]
@@ -109,7 +112,7 @@ type MatchHistoryDocument =
       [<property: JsonRequired>]
       AuthorityVersion: string
       [<property: JsonRequired>]
-      Matches: ImmutableArray<MatchDocument> }
+      MatchIds: ImmutableArray<string> }
 
 [<CLIMutable>]
 type MatchActionPayload =

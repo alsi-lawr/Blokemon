@@ -28,13 +28,17 @@ module internal MatchMigrationRegistry =
         { Schema = matchSchemaVersion
           Authority = authority }
 
-    let supportedSources authority =
+    let currentHistory authority =
+        { Schema = matchHistorySchemaVersion
+          Authority = authority }
+
+    let supportedSources (current: string -> MatchMigrationVersion) =
         [ current "sv151-candidate.14"
           current "sv151-candidate.15"
           current "sv151-candidate.16"
           current "sv151-candidate.17" ]
 
-    let ordered authorityTransition authority =
+    let ordered (current: string -> MatchMigrationVersion) authorityTransition authority =
         [ authorityTransition authority (current "sv151-candidate.12")
           authorityTransition authority (current "sv151-candidate.14")
           authorityTransition authority (current "sv151-candidate.15")

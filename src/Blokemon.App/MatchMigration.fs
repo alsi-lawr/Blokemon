@@ -1,6 +1,7 @@
 namespace Blokemon.App
 
 open System
+open System.Collections.Immutable
 open System.Text.Json
 open System.Text.Json.Nodes
 open System.Threading
@@ -219,8 +220,8 @@ module internal MatchMigration =
         let replayed = replayDocument context profile revision document
         isNull (box replayed.Error) && not (isNull (box replayed.Match))
 
-    // A migrated history is checked for its shape alone. The battles archived in it are data that
-    // exists: each was verified while it was the saved battle, and none is replayed again.
+    // A migrated index is checked for its shape alone. The battles it names are data that
+    // exists: each was verified while it was the saved battle, and none is read again.
     let private validateHistory (context: MatchContext) (document: MatchHistoryDocument) =
         document.SchemaVersion = matchHistorySchemaVersion
         && String.Equals(
@@ -228,18 +229,63 @@ module internal MatchMigration =
             context.Catalogue.Mechanics.ManifestVersion,
             StringComparison.Ordinal
         )
-        && not (
-            document.Matches
-            |> Seq.exists (fun archived ->
-                isNull (box archived)
-                || isNull (box archived.Start)
-                || isNull (box archived.StartCommand))
-        )
-        && not (
-            document.Matches
-            |> Seq.countBy _.Start.MatchId
-            |> Seq.exists (fun (_, count) -> count > 1)
-        )
+        && not (document.MatchIds |> Seq.exists String.IsNullOrWhiteSpace)
+        && (document.MatchIds |> Seq.distinct |> Seq.length) = document.MatchIds.Length
+
+    /// A history written before the index held every archived battle inside one document. Each
+    /// battle becomes its own document, as it stands, and the index replaces the document once
+    /// the source is backed up exactly. A battle document already there is left as it is.
+    let private migrateHistoryLayout
+        (context: MatchContext)
+        (source: StoredDocument)
+        (cancellationToken: CancellationToken)
+        : Task<Result<StoredDocument, MatchMigrationOutcome<MatchHistoryDocument>>> =
+        let key = context.Keys.MatchHistory
+        let documents = context.Documents
+
+        task {
+            match MatchMigrationJson.legacyHistoryEntries source.Json with
+            | Error reason ->
+                return Error(recovery MatchRecoveryDocument.MatchHistory key reason source)
+            | Ok(authority, entries) ->
+                let identity = $"match-history-layout-3-to-{matchHistorySchemaVersion}"
+                let! backedUp = ensureBackup documents key source identity cancellationToken
+
+                if not backedUp then
+                    return Error(MatchMigrationOutcome.Failed(stateConflictError ()))
+                else
+                    for id, json in entries do
+                        cancellationToken.ThrowIfCancellationRequested()
+
+                        let! _ =
+                            documents.Create(
+                                PlayerDocumentKeys.archivedMatch context.Keys id,
+                                json,
+                                cancellationToken
+                            )
+
+                        ()
+
+                    let index =
+                        JsonSerializer.Serialize(
+                            { SchemaVersion = matchHistorySchemaVersion
+                              AuthorityVersion = authority
+                              MatchIds = ImmutableArray.CreateRange(entries |> List.map fst) },
+                            MatchJson.Options
+                        )
+
+                    let! stored = updatePrimary documents key source index cancellationToken
+
+                    match stored with
+                    | Some committed -> return Ok committed
+                    | None ->
+                        return
+                            Error(
+                                MatchMigrationOutcome.Failed(
+                                    stateConflictErrorFor MatchRecoveryDocument.MatchHistory
+                                )
+                            )
+        }
 
     let resolveMatch
         (context: MatchContext)
@@ -283,43 +329,52 @@ module internal MatchMigration =
 
     let resolveHistory
         (context: MatchContext)
-        (profile: LocalProfile)
+        (_profile: LocalProfile)
         (source: StoredDocument)
         (cancellationToken: CancellationToken)
         =
         task {
-            let authority = context.Catalogue.Mechanics.ManifestVersion
+            let! migrated =
+                if MatchMigrationJson.isLegacyHistoryLayout source.Json then
+                    migrateHistoryLayout context source cancellationToken
+                else
+                    Task.FromResult(Ok source)
 
-            match prepareHistory authority source.Json with
-            | MatchMigrationPreparation.Current document ->
-                return MatchMigrationOutcome.Ready { Stored = source; Document = document }
-            | MatchMigrationPreparation.RecoveryRequired reason ->
-                return
-                    recovery
-                        MatchRecoveryDocument.MatchHistory
-                        context.Keys.MatchHistory
-                        reason
-                        source
-            | MatchMigrationPreparation.Candidate candidate ->
-                cancellationToken.ThrowIfCancellationRequested()
+            match migrated with
+            | Error outcome -> return outcome
+            | Ok source ->
+                let authority = context.Catalogue.Mechanics.ManifestVersion
 
-                if not (validateHistory context candidate.Document) then
+                match prepareHistory authority source.Json with
+                | MatchMigrationPreparation.Current document ->
+                    return MatchMigrationOutcome.Ready { Stored = source; Document = document }
+                | MatchMigrationPreparation.RecoveryRequired reason ->
                     return
                         recovery
                             MatchRecoveryDocument.MatchHistory
                             context.Keys.MatchHistory
-                            (if candidate.ReboundAuthority then
-                                 MatchRecoveryReason.IncompatibleWithCurrentRules
-                             else
-                                 MatchRecoveryReason.Corrupt)
+                            reason
                             source
-                else
-                    return!
-                        persist
-                            MatchRecoveryDocument.MatchHistory
-                            context.Keys.MatchHistory
-                            context.Documents
-                            source
-                            candidate
-                            cancellationToken
+                | MatchMigrationPreparation.Candidate candidate ->
+                    cancellationToken.ThrowIfCancellationRequested()
+
+                    if not (validateHistory context candidate.Document) then
+                        return
+                            recovery
+                                MatchRecoveryDocument.MatchHistory
+                                context.Keys.MatchHistory
+                                (if candidate.ReboundAuthority then
+                                     MatchRecoveryReason.IncompatibleWithCurrentRules
+                                 else
+                                     MatchRecoveryReason.Corrupt)
+                                source
+                    else
+                        return!
+                            persist
+                                MatchRecoveryDocument.MatchHistory
+                                context.Keys.MatchHistory
+                                context.Documents
+                                source
+                                candidate
+                                cancellationToken
         }

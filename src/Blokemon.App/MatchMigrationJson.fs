@@ -75,17 +75,6 @@ module internal MatchMigrationJson =
         else
             None
 
-    let private historyPolicyPreflight (root: JsonObject) =
-        match root["matches"] with
-        | :? JsonArray as matches when
-            matches
-            |> Seq.exists (function
-                | :? JsonObject as document -> documentUsesUnsupportedPolicy document
-                | _ -> false)
-            ->
-            Some MatchRecoveryReason.UnsupportedCpuPolicy
-        | _ -> None
-
     let private matchAuthorityTransition authority source =
         let target = current authority
 
@@ -98,37 +87,19 @@ module internal MatchMigrationJson =
                 document["authorityVersion"] <- JsonValue.Create target.Authority
                 Ok() }
 
-    let private migrateHistoryAuthority source target (history: JsonObject) =
-        match arrayMember "matches" history with
-        | Error reason -> Error reason
-        | Ok matches ->
-            let mutable failure = None
-
-            for archived: JsonNode in matches do
-                if failure.IsNone then
-                    match archived with
-                    | :? JsonObject as document ->
-                        match version document with
-                        | Ok nested when sameVersion nested source ->
-                            document["authorityVersion"] <- JsonValue.Create target.Authority
-                        | Ok _ -> failure <- Some MatchRecoveryReason.Corrupt
-                        | Error reason -> failure <- Some reason
-                    | _ -> failure <- Some MatchRecoveryReason.Corrupt
-
-            match failure with
-            | Some reason -> Error reason
-            | None ->
-                history["authorityVersion"] <- JsonValue.Create target.Authority
-                Ok()
-
+    // The index is rebound alone. The archived battles are data that exists: each keeps the
+    // authority it was played under, and the game never reads one again.
     let private historyAuthorityTransition authority source =
-        let target = current authority
+        let target = currentHistory authority
 
         { Identity = identity "match-history" "authority" source target
           Source = source
           Target = target
           RebindsAuthority = true
-          Apply = migrateHistoryAuthority source target }
+          Apply =
+            fun history ->
+                history["authorityVersion"] <- JsonValue.Create target.Authority
+                Ok() }
 
     let private parseRoot (json: string) =
         try
@@ -140,6 +111,7 @@ module internal MatchMigrationJson =
 
     let private run
         (registry: MatchMigrationTransition list)
+        (supported: MatchMigrationVersion list)
         (target: MatchMigrationVersion)
         (root: JsonObject)
         =
@@ -165,8 +137,7 @@ module internal MatchMigrationJson =
         match version root with
         | Error reason -> Error reason
         | Ok current when sameVersion current target -> Ok []
-        | Ok current when supportedSources target.Authority |> List.exists (sameVersion current) ->
-            apply current []
+        | Ok current when supported |> List.exists (sameVersion current) -> apply current []
         | Ok _ -> Error MatchRecoveryReason.UnsupportedVersion
 
     let private deserialize<'Document> (normalise: 'Document -> 'Document) (root: JsonObject) =
@@ -180,6 +151,7 @@ module internal MatchMigrationJson =
         | :? InvalidOperationException -> corrupt
 
     let private prepare<'Document>
+        (current: string -> MatchMigrationVersion)
         (registry: MatchMigrationTransition list)
         (normalise: 'Document -> 'Document)
         (policyPreflight: JsonObject -> MatchRecoveryReason option)
@@ -194,7 +166,7 @@ module internal MatchMigrationJson =
             | None ->
                 let target = current authority
 
-                match run registry target root with
+                match run registry (supportedSources current) target root with
                 | Error reason -> MatchMigrationPreparation.RecoveryRequired reason
                 | Ok applied ->
                     match deserialize normalise root with
@@ -213,9 +185,10 @@ module internal MatchMigrationJson =
                                   ReboundAuthority = applied |> List.exists _.RebindsAuthority }
 
     let prepareMatch authority json =
-        let registry = ordered matchAuthorityTransition authority
+        let registry = ordered current matchAuthorityTransition authority
 
         prepare
+            current
             registry
             MatchDocumentNormalization.matchDocument
             matchPolicyPreflight
@@ -223,11 +196,87 @@ module internal MatchMigrationJson =
             json
 
     let prepareHistory authority json =
-        let registry = ordered historyAuthorityTransition authority
+        let registry = ordered currentHistory historyAuthorityTransition authority
 
-        prepare
-            registry
-            MatchDocumentNormalization.historyDocument
-            historyPolicyPreflight
-            authority
-            json
+        // The index has no nested collection member to restore, and nothing to preflight.
+        prepare currentHistory registry id (fun _ -> None) authority json
+
+    /// Whether a stored history is one written before the index, with every archived battle
+    /// inside it: schema 3, with a `matches` array.
+    let isLegacyHistoryLayout (json: string) =
+        match parseRoot json with
+        | Ok root ->
+            (match intMember "schemaVersion" root with
+             | Ok 3 -> true
+             | _ -> false)
+            && (match root["matches"] with
+                | :? JsonArray -> true
+                | _ -> false)
+        | Error _ -> false
+
+    /// The authority a legacy history was written under, and each archived battle in it as its
+    /// id and its own text, in the order they were archived.
+    let legacyHistoryEntries
+        (json: string)
+        : Result<string * (string * string) list, MatchRecoveryReason> =
+        match parseRoot json with
+        | Error reason -> Error reason
+        | Ok root ->
+            match stringMember "authorityVersion" root, arrayMember "matches" root with
+            | Error reason, _
+            | _, Error reason -> Error reason
+            | Ok authority, Ok matches ->
+                let entries =
+                    matches
+                    |> Seq.map (fun archived ->
+                        match archived with
+                        | :? JsonObject as document ->
+                            match document["start"] with
+                            | :? JsonObject as start ->
+                                match start["matchId"] with
+                                | :? JsonObject as matchId ->
+                                    match stringMember "value" matchId with
+                                    | Ok id -> Ok(id, document.ToJsonString(MatchJson.Options))
+                                    | Error reason -> Error reason
+                                | _ -> corrupt
+                            | _ -> corrupt
+                        | _ -> corrupt)
+                    |> Seq.toList
+
+                match
+                    entries
+                    |> List.tryPick (function
+                        | Error reason -> Some reason
+                        | Ok _ -> None)
+                with
+                | Some reason -> Error reason
+                | None ->
+                    Ok(
+                        authority,
+                        entries
+                        |> List.choose (function
+                            | Ok entry -> Some entry
+                            | Error _ -> None)
+                    )
+
+    /// The ids of the battles an index names, as far as it can be read. Only an index has
+    /// battles stored beside it; a history written before the index holds its battles inside,
+    /// and names none. An index that cannot be read names none.
+    let archivedMatchIds (json: string) =
+        match parseRoot json with
+        | Error _ -> []
+        | Ok root ->
+            match root["matchIds"] with
+            | :? JsonArray as ids ->
+                ids
+                |> Seq.choose (fun id ->
+                    match id with
+                    | null -> None
+                    | value ->
+                        try
+                            Some(value.GetValue<string>())
+                        with
+                        | :? InvalidOperationException -> None
+                        | :? FormatException -> None)
+                |> Seq.toList
+            | _ -> []

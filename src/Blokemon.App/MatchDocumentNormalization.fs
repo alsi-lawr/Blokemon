@@ -50,13 +50,10 @@ module internal MatchDocumentNormalization =
         { value with
             Choices = orEmpty value.Choices }
 
-    /// The saved battle, and each archived battle inside the saved history.
+    /// The saved battle. An archived battle is its own document that the game never reads
+    /// back, and the history index has no nested collection member.
     let matchDocument (document: MatchDocument) =
         { document with
             Start = present start document.Start
             Commands = document.Commands |> elements command
             ClientCommands = orEmpty document.ClientCommands }
-
-    let historyDocument (document: MatchHistoryDocument) =
-        { document with
-            Matches = document.Matches |> elements matchDocument }

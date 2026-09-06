@@ -32,6 +32,13 @@ module PlayerDocumentKeys =
           Match = $"a/{account}/match"
           MatchHistory = $"a/{account}/match-history" }
 
+    /// Where one archived battle lives: under the history's key, by the battle's id.
+    let archivedMatch (keys: PlayerDocumentKeys) (matchId: string) =
+        $"{keys.MatchHistory}/{matchId}"
+
+    /// The prefix every archived battle of this player is under, and the index is not.
+    let archivedMatchPrefix (keys: PlayerDocumentKeys) = $"{keys.MatchHistory}/"
+
     let ofPrincipal (principal: ApplicationPrincipal) =
         match principal with
         | ApplicationPrincipal.BrowserLocal -> browserLocal

@@ -226,10 +226,22 @@ type LocalMatchService
         ) =
         MatchRecovery.discardMatchHistory context profile request cancellationToken
 
-    /// Deletes the saved battle and its history.
+    /// Deletes the saved battle, the history's index and every archived battle it names.
     member _.PurgeSavedMatches([<Optional>] cancellationToken: CancellationToken) =
         task {
             do! documents.Delete(keys.Match, cancellationToken)
+            let! history = documents.Read(keys.MatchHistory, cancellationToken)
+
+            match history with
+            | null -> ()
+            | stored ->
+                for id in MatchMigrationJson.archivedMatchIds stored.Json do
+                    do!
+                        documents.Delete(
+                            PlayerDocumentKeys.archivedMatch keys id,
+                            cancellationToken
+                        )
+
             do! documents.Delete(keys.MatchHistory, cancellationToken)
             context.Cached <- null
         }

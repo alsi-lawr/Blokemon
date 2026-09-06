@@ -565,6 +565,18 @@ public sealed class LifecycleServerTests
                 new ClaimStarterDeckRequest(Guid.NewGuid(), "growroom")
             )
         ).EnsureSuccessStatusCode();
+        // A history as the game stores it: the index, and one document per archived battle.
+        var keys = PlayerDocumentKeysModule.forAccount(account);
+        const string archivedId = "77777777-7777-7777-7777-777777777777";
+        await host.WithStore(store =>
+            store.Create(
+                keys.MatchHistory,
+                $$"""{"schemaVersion":4,"authorityVersion":"authority","matchIds":["{{archivedId}}"]}"""
+            )
+        );
+        await host.WithStore(store =>
+            store.Create(PlayerDocumentKeysModule.archivedMatch(keys, archivedId), "{}")
+        );
         (await client.PostAsJsonAsync("/api/purge", new { })).EnsureSuccessStatusCode();
         var afterPurge = (await host.WithStore(store => store.List("")))
             .Select(static s => s.Key)

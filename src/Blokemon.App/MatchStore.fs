@@ -99,11 +99,11 @@ module internal MatchStore =
                 | MatchMigrationOutcome.Failed error -> return Error error
         }
 
-    /// Appends a finished battle to the history as it stands. The history is data that exists:
-    /// nothing here reads, replays or checks what is already archived, and the battle being
-    /// archived was verified while it was the saved battle. A battle already archived under its
-    /// id is left as it is, so a start retried after the history was written, but before the new
-    /// battle was, does not archive it twice.
+    /// Archives a finished battle as it stands: the battle becomes its own document, and its id
+    /// goes on the index. The history is data that exists: nothing here reads, replays or checks
+    /// what is already archived, and the battle being archived was verified while it was the
+    /// saved battle. A battle already on the index is left as it is, so a start retried after
+    /// the index was written, but before the new battle was, does not archive it twice.
     let archiveCompletedMatch
         (context: MatchContext)
         (profile: LocalProfile)
@@ -125,7 +125,7 @@ module internal MatchStore =
                                 None,
                                 { SchemaVersion = matchHistorySchemaVersion
                                   AuthorityVersion = catalogue.Mechanics.ManifestVersion
-                                  Matches = ImmutableArray<MatchDocument>.Empty }
+                                  MatchIds = ImmutableArray<string>.Empty }
                             )
                     | document ->
                         let! resolved = resolveHistory context profile document cancellationToken
@@ -142,24 +142,22 @@ module internal MatchStore =
             match history with
             | Error failure -> return failure
             | Ok(resolvedStored, document) ->
-                let matchId = completed.Document.Start.MatchId
+                let matchId = completed.Document.Start.MatchId.Value
 
-                let archivedAlready =
-                    document.Matches
-                    |> Seq.exists (fun archived ->
-                        not (isMissing archived)
-                        && not (isMissing archived.Start)
-                        && archived.Start.MatchId = matchId)
-
-                if archivedAlready then
+                if document.MatchIds |> Seq.contains matchId then
                     return MatchArchiveOutcome.Ready
                 else
+                    // The battle as it stands, as its own document; one already there is left.
+                    let! _ =
+                        documents.Create(
+                            PlayerDocumentKeys.archivedMatch context.Keys matchId,
+                            JsonSerializer.Serialize(completed.Document, MatchJson.Options),
+                            cancellationToken
+                        )
+
                     let changed =
                         { document with
-                            Matches =
-                                ImmutableArray.CreateRange(
-                                    Seq.append document.Matches [ completed.Document ]
-                                ) }
+                            MatchIds = document.MatchIds.Add matchId }
 
                     let json = JsonSerializer.Serialize(changed, MatchJson.Options)
 

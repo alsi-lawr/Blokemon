@@ -203,24 +203,6 @@ public sealed class MatchJsonTests
     }
 
     [Test]
-    public async Task HistoryWithAbsentCollectionMembers_NormalizesEveryArchivedBattle()
-    {
-        var history = $$"""
-            {"schemaVersion":3,"authorityVersion":"authority-1","matches":[{{DocumentWithAbsentCollectionMembers}}]}
-            """;
-
-        var normalized = MatchDocumentNormalization.historyDocument(
-            JsonSerializer.Deserialize<MatchHistoryDocument>(history, MatchJson.Options)!
-        );
-
-        var archived = normalized.Matches.Single();
-        archived.Start.FirstDeck.Cards.ShouldBeEmpty();
-        archived.Start.SecondDeck.Cards.ShouldBeEmpty();
-        archived.Commands[0].Choices.ShouldBeEmpty();
-        await Task.CompletedTask;
-    }
-
-    [Test]
     public async Task NormalizedDocument_WritesTheAbsentCollectionsAsEmptyArrays()
     {
         var normalized = MatchDocumentNormalization.matchDocument(

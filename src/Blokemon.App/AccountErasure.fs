@@ -112,6 +112,14 @@ module AccountErasure =
                 let keys = PlayerDocumentKeys.forAccount account
                 do! documents.Delete(keys.Profile, cancellationToken)
                 do! documents.Delete(keys.Match, cancellationToken)
+
+                do!
+                    deleteUnder
+                        documents
+                        listing
+                        (PlayerDocumentKeys.archivedMatchPrefix keys)
+                        cancellationToken
+
                 do! documents.Delete(keys.MatchHistory, cancellationToken)
                 do! deleteUnder documents listing (backupPrefix keys) cancellationToken
 

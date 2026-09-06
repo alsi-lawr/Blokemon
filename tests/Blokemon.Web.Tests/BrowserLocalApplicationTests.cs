@@ -710,10 +710,10 @@ public sealed class BrowserLocalApplicationTests
     }
 
     [Test]
-    public async Task BrowserJourney_LeavesAnArchivedBattleWithTheSameIdAsItIsAndStartsTheNext()
+    public async Task BrowserJourney_LeavesABattleAlreadyOnTheIndexAsItIsAndStartsTheNext()
     {
-        // The history is data that exists. A battle already archived under the finished battle's
-        // id is not compared with it, replayed or replaced: the next battle simply starts.
+        // The history is data that exists. A battle already on the index under the finished
+        // battle's id is not compared with it, replayed or replaced: the next battle simply starts.
         var catalogue = Catalogue();
         var documents = new MemoryDocumentStore();
         var server = new ServerHandler(null);
@@ -735,42 +735,134 @@ public sealed class BrowserLocalApplicationTests
             )
         ).Application;
         await CompleteMatch(application, started);
-        var activeBefore = (await documents.Read("match"))!;
-        var archived = JsonNode.Parse(activeBefore.Json)!.AsObject();
-        archived["commands"] = new JsonArray();
-        archived["clientCommands"] = new JsonArray();
-        var history = new JsonObject
+        var index = new JsonObject
         {
-            ["schemaVersion"] = 3,
+            ["schemaVersion"] = 4,
             ["authorityVersion"] = catalogue.Mechanics.ManifestVersion,
-            ["matches"] = new JsonArray(archived),
+            ["matchIds"] = new JsonArray(started.Match!.Frame.Id.ToString("D")),
         };
-        await documents.Create("match-history", history.ToJsonString());
-        var historyBefore = (await documents.Read("match-history"))!;
+        await documents.Create("match-history", index.ToJsonString());
+        var indexBefore = (await documents.Read("match-history"))!;
 
         var replacement = Value(
             await application.StartMatch(
                 new(Guid.Parse("98444444-4444-4444-4444-444444444444"), claimed.Decks.Single().Id)
             )
         ).Application;
-        var historyAfter = await documents.Read("match-history");
+        var indexAfter = await documents.Read("match-history");
+        var archived = await documents.Read($"match-history/{started.Match.Frame.Id:D}");
 
         replacement.Match!.Frame.IsComplete.ShouldBeFalse();
-        replacement.Match.Frame.Id.ShouldNotBe(started.Match!.Frame.Id);
-        historyAfter.ShouldBe(historyBefore);
+        replacement.Match.Frame.Id.ShouldNotBe(started.Match.Frame.Id);
+        indexAfter.ShouldBe(indexBefore);
+        archived.ShouldBeNull();
         server.Requests.ShouldBeEmpty();
     }
 
     [Test]
-    public async Task BrowserJourney_StartsTheNextBattleWithoutReplayingTheArchivedOnes()
+    public async Task BrowserJourney_StartsTheNextBattleWithoutReadingTheArchivedOnes()
     {
-        // Starting a battle appends the finished one to the history as it stands and reads nothing
-        // into what is already there. An archived battle cut short in storage, which no replay
-        // would accept, is carried along untouched and holds nothing up.
+        // Starting a battle writes the finished one as its own document and puts its id on the
+        // index; nothing archived is read. An archived battle cut short in storage, which no
+        // replay would accept, is carried along untouched and holds nothing up.
         var catalogue = Catalogue();
         var documents = new MemoryDocumentStore();
         var server = new ServerHandler(null);
         var application = Application(catalogue, documents, server);
+        var (deckId, firstId, secondId) = await TwoFinishedBattles(application);
+        var stored = (await documents.Read($"match-history/{firstId}"))!;
+        var damaged = JsonNode.Parse(stored.Json)!.AsObject();
+        var commands = damaged["commands"]!.AsArray();
+        commands.Count.ShouldBeGreaterThan(1);
+        damaged["commands"] = new JsonArray(commands[0]!.DeepClone());
+        damaged["clientCommands"] = new JsonArray();
+        await documents.Update($"match-history/{firstId}", stored.Revision, damaged.ToJsonString());
+        var cutShort = (await documents.Read($"match-history/{firstId}"))!;
+
+        var third = Value(
+            await application.StartMatch(
+                new(Guid.Parse("99555555-5555-5555-5555-555555555555"), deckId)
+            )
+        ).Application;
+        var index = JsonNode.Parse((await documents.Read("match-history"))!.Json)!.AsObject();
+        var secondArchived = await documents.Read($"match-history/{secondId}");
+
+        third.Match!.Frame.IsComplete.ShouldBeFalse();
+        index["schemaVersion"]!.GetValue<int>().ShouldBe(4);
+        index["matchIds"]!
+            .AsArray()
+            .Select(static id => id!.GetValue<string>())
+            .ShouldBe([firstId, secondId]);
+        (await documents.Read($"match-history/{firstId}")).ShouldBe(cutShort);
+        secondArchived.ShouldNotBeNull();
+        JsonNode.Parse(secondArchived!.Json)!["start"]!["matchId"]!["value"]!
+            .GetValue<string>()
+            .ShouldBe(secondId);
+        server.Requests.ShouldBeEmpty();
+    }
+
+    [Test]
+    public async Task BrowserJourney_DiscardingTheHistoryRemovesEveryArchivedBattle()
+    {
+        // The index names what a discard removes: the index goes, and every battle it names.
+        // The finished saved battle, not yet archived, is not the history's and stays.
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var server = new ServerHandler(null);
+        var application = Application(catalogue, documents, server);
+        var (_, firstId, _) = await TwoFinishedBattles(application);
+        var index = (await documents.Read("match-history"))!;
+        var incompatible = JsonNode.Parse(index.Json)!.AsObject();
+        incompatible["authorityVersion"] = "arbitrary-authority";
+        await documents.Update("match-history", index.Revision, incompatible.ToJsonString());
+        (await documents.Read($"match-history/{firstId}")).ShouldNotBeNull();
+        var saved = (await documents.Read("match"))!;
+        var gated = Value(await application.State());
+        var recovery = gated.MatchRecovery!;
+
+        var discarded = Value(
+            await application.DiscardMatchHistory(new(recovery.Revision, recovery.ContentIdentity))
+        );
+
+        recovery.Kind.ShouldBe(MatchRecoveryKindView.MatchHistoryUnsupportedVersion);
+        discarded.MatchRecovery.ShouldBeNull();
+        (await documents.Read("match-history")).ShouldBeNull();
+        (await documents.Read($"match-history/{firstId}")).ShouldBeNull();
+        (await documents.Read("match")).ShouldBe(saved);
+        server.Requests.ShouldBeEmpty();
+    }
+
+    [Test]
+    public async Task BrowserJourney_PurgingRemovesEveryArchivedBattle()
+    {
+        var catalogue = Catalogue();
+        var documents = new MemoryDocumentStore();
+        var server = new ServerHandler(null);
+        var application = Application(catalogue, documents, server);
+        var (deckId, firstId, secondId) = await TwoFinishedBattles(application);
+        Value(
+            await application.StartMatch(
+                new(Guid.Parse("99666666-6666-6666-6666-666666666666"), deckId)
+            )
+        );
+        (await documents.Read($"match-history/{secondId}")).ShouldNotBeNull();
+
+        Value(await application.PurgeData());
+
+        (await documents.Read("match-history")).ShouldBeNull();
+        (await documents.Read($"match-history/{firstId}")).ShouldBeNull();
+        (await documents.Read($"match-history/{secondId}")).ShouldBeNull();
+        (await documents.Read("match")).ShouldBeNull();
+        (await documents.Read("profile")).ShouldBeNull();
+        server.Requests.ShouldBeEmpty();
+    }
+
+    // A browser-local player who has finished two battles. The first was archived when the
+    // second started; the second is the finished saved battle, archived when the next starts.
+    private static async Task<(Guid DeckId, string FirstId, string SecondId)> TwoFinishedBattles(
+        PlayModeApplication application
+    )
+    {
         Value(await application.SelectMode(PlayMode.BrowserLocal));
         Value(
             await application.CreateProfile(
@@ -795,32 +887,7 @@ public sealed class BrowserLocalApplicationTests
             )
         ).Application;
         await CompleteMatch(application, second);
-        var stored = (await documents.Read("match-history"))!;
-        var damaged = JsonNode.Parse(stored.Json)!.AsObject();
-        var entry = damaged["matches"]!.AsArray()[0]!.AsObject();
-        var commands = entry["commands"]!.AsArray();
-        commands.Count.ShouldBeGreaterThan(1);
-        entry["commands"] = new JsonArray(commands[0]!.DeepClone());
-        entry["clientCommands"] = new JsonArray();
-        var cutShort = entry.DeepClone();
-        await documents.Update("match-history", stored.Revision, damaged.ToJsonString());
-
-        var third = Value(
-            await application.StartMatch(
-                new(Guid.Parse("99555555-5555-5555-5555-555555555555"), deckId)
-            )
-        ).Application;
-        var archived = JsonNode.Parse((await documents.Read("match-history"))!.Json)![
-            "matches"
-        ]!.AsArray();
-
-        third.Match!.Frame.IsComplete.ShouldBeFalse();
-        archived.Count.ShouldBe(2);
-        JsonNode.DeepEquals(archived[0], cutShort).ShouldBeTrue();
-        archived[1]!["start"]!["matchId"]!["value"]!
-            .GetValue<string>()
-            .ShouldBe("99444444-4444-4444-4444-444444444444");
-        server.Requests.ShouldBeEmpty();
+        return (deckId, first.Match!.Frame.Id.ToString("D"), second.Match!.Frame.Id.ToString("D"));
     }
 
     [Test]

@@ -100,10 +100,14 @@ public sealed class MatchMigrationTests
     [Test]
     [Arguments(false)]
     [Arguments(true)]
-    public async Task CompatibleEarlierAuthorityHistory_MigratesBeforeReplacementForEachProvider(
+    public async Task CompatibleEarlierAuthorityHistory_BecomesAnIndexAndOneDocumentPerBattleForEachProvider(
         bool sqlite
     )
     {
+        // A history written before the index, at an earlier authority, is first laid out as an
+        // index and one document per battle - the source backed up exactly - and the index is then
+        // rebound to the current authority. The archived battle keeps the authority it was played
+        // under: it is data that exists, and the game never reads it again.
         await using var fixture = await DocumentStoreFixture.Create(sqlite);
         var catalogue = Catalogue();
         var profile = Profile(catalogue, "history-profile.json");
@@ -112,6 +116,9 @@ public sealed class MatchMigrationTests
             fixture.Store,
             profile
         );
+        var archivedId = JsonNode.Parse(historySource.Json)!["matches"]![0]!["start"]!["matchId"]![
+            "value"
+        ]!.GetValue<string>();
         var service = new LocalMatchService(catalogue, fixture.Store);
 
         var started = await service.Start(
@@ -119,24 +126,41 @@ public sealed class MatchMigrationTests
             profile.DisplayName.Value,
             new(Guid.Parse("30000000-0000-0000-0000-000000000003"), _firstDeck)
         );
-        var history = (await fixture.Store.Read("match-history"))!;
-        var backup = (await fixture.Store.Read(BackupKey("match-history", historySource)))!;
+        var index = (await fixture.Store.Read("match-history"))!;
+        var archived = (await fixture.Store.Read($"match-history/{archivedId}"))!;
+        var layoutBackup = (await fixture.Store.Read(BackupKey("match-history", historySource)))!;
+        var laidOut = new StoredDocument(
+            historySource.Revision + 1,
+            JsonSerializer.Serialize(
+                new MatchHistoryDocument(4, CompatibleEarlierAuthority, [archivedId]),
+                MatchJson.Options
+            )
+        );
+        var authorityBackup = (await fixture.Store.Read(BackupKey("match-history", laidOut)))!;
 
         started.Error.ShouldBeNull();
         started.View!.Frame.Id.ShouldBe(Guid.Parse("30000000-0000-0000-0000-000000000003"));
-        history.Revision.ShouldBe(historySource.Revision + 1);
-        var migratedJson = JsonNode.Parse(history.Json)!.AsObject();
-        migratedJson["schemaVersion"]!.GetValue<int>().ShouldBe(3);
-        migratedJson["authorityVersion"]!
+        index.Revision.ShouldBe(historySource.Revision + 2);
+        var indexJson = JsonNode.Parse(index.Json)!.AsObject();
+        indexJson["schemaVersion"]!.GetValue<int>().ShouldBe(4);
+        indexJson["authorityVersion"]!
             .GetValue<string>()
             .ShouldBe(catalogue.Mechanics.ManifestVersion);
-        migratedJson["matches"]!.AsArray().ShouldHaveSingleItem();
+        indexJson["matchIds"]!
+            .AsArray()
+            .Select(static id => id!.GetValue<string>())
+            .ShouldBe([archivedId]);
+        var archivedJson = JsonNode.Parse(archived.Json)!.AsObject();
+        archivedJson["authorityVersion"]!.GetValue<string>().ShouldBe(CompatibleEarlierAuthority);
+        JsonNode
+            .DeepEquals(archivedJson, JsonNode.Parse(historySource.Json)!["matches"]![0])
+            .ShouldBeTrue();
+        AssertBackup(layoutBackup, "match-history", historySource, "match-history-layout-3-to-4");
         AssertBackup(
-            backup,
+            authorityBackup,
             "match-history",
-            historySource,
-            MigrationIdentity(
-                "match-history",
+            laidOut,
+            HistoryMigrationIdentity(
                 CompatibleEarlierAuthority,
                 catalogue.Mechanics.ManifestVersion
             )
@@ -1198,9 +1222,9 @@ public sealed class MatchMigrationTests
     private static string EmptyCurrentHistory(string authority) =>
         new JsonObject
         {
-            ["schemaVersion"] = 3,
+            ["schemaVersion"] = 4,
             ["authorityVersion"] = authority,
-            ["matches"] = new JsonArray(),
+            ["matchIds"] = new JsonArray(),
         }.ToJsonString();
 
     private static string HistoryFixtureAtVersion(string fixture, int schema, string authority)
@@ -1240,6 +1264,11 @@ public sealed class MatchMigrationTests
         string sourceAuthority,
         string targetAuthority
     ) => $"{key}-authority-3-{sourceAuthority}-to-3-{targetAuthority}";
+
+    private static string HistoryMigrationIdentity(
+        string sourceAuthority,
+        string targetAuthority
+    ) => $"match-history-authority-4-{sourceAuthority}-to-4-{targetAuthority}";
 
     private static string Fixture(string name) =>
         File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "match-migrations", name));

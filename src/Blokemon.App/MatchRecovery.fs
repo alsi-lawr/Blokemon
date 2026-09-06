@@ -38,6 +38,7 @@ module internal MatchRecovery =
         expectedRevision
         expectedIdentity
         resolve
+        (alsoDelete: string -> string list)
         clearCache
         (cancellationToken: CancellationToken)
         =
@@ -76,7 +77,12 @@ module internal MatchRecovery =
 
                         match deleted with
                         | :? DocumentDeleteResult.Deleted
-                        | :? DocumentDeleteResult.Missing -> return complete cancellationToken
+                        | :? DocumentDeleteResult.Missing ->
+                            // What the deleted document named goes with it.
+                            for key in alsoDelete source.Json do
+                                do! context.Documents.Delete(key, cancellationToken)
+
+                            return complete cancellationToken
                         | _ -> return Error(stale ())
                     with error ->
                         let! current = context.Documents.Read(key, CancellationToken.None)
@@ -128,9 +134,11 @@ module internal MatchRecovery =
             request.ExpectedRevision
             request.ContentIdentity
             resolve
+            (fun _ -> [])
             true
             cancellationToken
 
+    /// Deletes the index and every archived battle it names.
     let discardMatchHistory
         (context: MatchContext)
         (profile: LocalProfile)
@@ -145,5 +153,8 @@ module internal MatchRecovery =
             request.ExpectedRevision
             request.ContentIdentity
             resolveHistory
+            (fun json ->
+                MatchMigrationJson.archivedMatchIds json
+                |> List.map (PlayerDocumentKeys.archivedMatch context.Keys))
             false
             cancellationToken
